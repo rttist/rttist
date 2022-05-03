@@ -4,7 +4,7 @@ import { Context }        from "../contexts/Context";
 import { TypeProperties } from "../declarations";
 import { getTypeId }      from "../utils/typeHelpers";
 
-export function getLiteralProperties(context: Context, typeNode: ts.TypeNode, type: ts.Type): TypeProperties | undefined
+export function getLiteralProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): TypeProperties | undefined
 {
 	const props: TypeProperties = {
 		id: getTypeId(type),
@@ -28,20 +28,23 @@ export function getLiteralProperties(context: Context, typeNode: ts.TypeNode, ty
 			return props;
 	}
 
-	if (ts.isNoSubstitutionTemplateLiteral(typeNode))
+	if (typeNode) // TODO: Try to solve using type, not typeNode
 	{
-		props.kind = TypeKind.TemplateLiteral;
-		props.value = typeNode.text;
-		return props;
-	}
-	else if (ts.isTemplateLiteral(typeNode))
-	{
-		props.kind = TypeKind.TemplateLiteral;
-		props.value = undefined;
-		props.template = {
-			head: (typeNode as ts.TemplateExpression).head.text,
-			templateSpans: (typeNode as ts.TemplateExpression).templateSpans.map(span => ({ expression: span.expression.getText(), literal: span.literal.text }))
-		};
+		if (ts.isNoSubstitutionTemplateLiteral(typeNode))
+		{
+			props.kind = TypeKind.TemplateLiteral;
+			props.value = typeNode.text;
+			return props;
+		}
+		else if (ts.isTemplateLiteral(typeNode))
+		{
+			props.kind = TypeKind.TemplateLiteral;
+			props.value = undefined;
+			props.template = {
+				head: (typeNode as ts.TemplateExpression).head.text,
+				templateSpans: (typeNode as ts.TemplateExpression).templateSpans.map(span => ({ expression: span.expression.getText(), literal: span.literal.text }))
+			};
+		}
 	}
 
 	return undefined;

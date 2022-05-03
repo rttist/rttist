@@ -1,4 +1,4 @@
-# JavaScript(/TypeScript) Runtime Types & Reflection (tst-reflect)
+# Advanced TypeScript Runtime Reflection System
 
 > **The mono repository of TypeScript runtime reflection packages.**
 

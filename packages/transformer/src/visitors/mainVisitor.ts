@@ -116,14 +116,16 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 	{
 		// type of decorator
 		let type: ts.Type | undefined = undefined;
+		let symbol: ts.Symbol | undefined = undefined;
 
 		if (ts.isCallExpression(node.expression))
 		{
 			type = context.typeChecker.getTypeAtLocation(node.expression.expression);
+			symbol = type.getSymbol();
 		}
 		else if (ts.isIdentifier(node.expression))
 		{
-			const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
+			symbol = context.typeChecker.getSymbolAtLocation(node.expression);
 
 			if (symbol)
 			{
@@ -131,7 +133,7 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 			}
 		}
 
-		if (type && hasReflectJsDoc(type.getSymbol()))
+		if (type && hasReflectJsDoc(symbol))
 		{
 			const res = processDecorator(node, type, context);
 

@@ -10,9 +10,8 @@ import { Context }              from "../contexts/Context";
  * @param typeNode
  * @param type
  */
-export function getPrimitiveTypeProperties(context: Context, typeNode: ts.TypeNode, type?: ts.Type): NativeTypeProperties | undefined
+export function getPrimitiveTypeProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): NativeTypeProperties | undefined
 {
-	type ??= context.typeChecker.getTypeAtLocation(typeNode);
 	return PrimitiveTypesMap[type.flags];
 
 	// if (mappedTypeProperties !== undefined)

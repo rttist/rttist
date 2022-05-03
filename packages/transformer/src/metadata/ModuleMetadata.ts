@@ -23,6 +23,12 @@ export class ModuleMetadata
 	 */
 	private static sourceFileIdCounter = 1;
 
+	/**
+	 * Module for unknown types.
+	 * @private
+	 */
+	private static unknownTypesModule?: ModuleMetadata;
+
 	private readonly moduleProperties: ModuleMetadataProperties;
 	private readonly types = new Map<ts.Type, TypeProperties>();
 	private readonly typesStack: TransformerTypeReference[] = [];
@@ -34,6 +40,28 @@ export class ModuleMetadata
 	constructor(private readonly context: TransformerContext, private readonly sourceFile: ts.SourceFile)
 	{
 		this.moduleProperties = this.gatherModuleProperties();
+	}
+
+	/**
+	 * Returns module for unknown types.
+	 * @param context
+	 */
+	public static getUnknownTypesModule(context: TransformerContext): ModuleMetadata
+	{
+		if (!ModuleMetadata.unknownTypesModule)
+		{
+			ModuleMetadata.unknownTypesModule = new ModuleMetadata(
+				context,
+				ts.factory.createSourceFile(
+					[],
+					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken
+					),
+					ts.NodeFlags.None
+				)
+			);
+		}
+
+		return ModuleMetadata.unknownTypesModule;
 	}
 
 	private static getSourceFileId(sourceFile: ts.SourceFile): number
@@ -57,7 +85,7 @@ export class ModuleMetadata
 	 * @param typeNode
 	 * @param type
 	 */
-	addType(typeNode: ts.TypeNode, type: ts.Type): TransformerTypeReference
+	addType(typeNode: ts.TypeNode | undefined, type: ts.Type): TransformerTypeReference
 	{
 		let existingProperties = this.types.get(type);
 
@@ -72,7 +100,7 @@ export class ModuleMetadata
 			}
 
 			this.typesStack.push(typeId);
-			existingProperties = getTypeProperties(this.context.currentSourceFileContext!.context, typeNode, type);
+			existingProperties = getTypeProperties(this.context.currentSourceFileContext!.context, typeNode, type); // Change SourceFileContext to stack??  
 			this.typesStack.pop();
 
 			if (existingProperties.id === undefined)

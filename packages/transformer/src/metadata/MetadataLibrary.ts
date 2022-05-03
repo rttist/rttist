@@ -1,6 +1,7 @@
 import * as ts                      from "typescript";
 import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations";
+import { getDeclaration }           from "../utils/symbolHelpers";
 import { MetadataFactory }          from "./MetadataFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
 import { IMetadataWriter }          from "./writer/IMetadataWriter";
@@ -83,20 +84,20 @@ export class MetadataLibrary
 
 	/**
 	 * Add type into the module metadata and return its properties.
-	 * @param typeNode
 	 * @param type
+	 * @param typeNode
 	 */
-	addType(typeNode: ts.TypeNode, type?: ts.Type): TransformerTypeReference
+	addType(type: ts.Type, typeNode: ts.TypeNode | undefined): TransformerTypeReference
 	{
-		type ??= this.context.checker.getTypeAtLocation(typeNode);
-		const sourceFile = typeNode.getSourceFile();
+		// type ??= this.context.checker.getTypeAtLocation(typeNode);
+		const sourceFile = typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
 
-		let existingModule = this.modules.get(sourceFile);
+		let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownTypesModule(this.context);
 
 		if (!existingModule)
 		{
-			existingModule = new ModuleMetadata(this.context, sourceFile);
-			this.modules.set(sourceFile, existingModule);
+			existingModule = new ModuleMetadata(this.context, sourceFile!);
+			this.modules.set(sourceFile!, existingModule);
 		}
 
 		const typeRef = existingModule.addType(typeNode, type);

@@ -35,7 +35,7 @@ export function getSignatureParameters(signature: ts.Signature, context: Context
 		if (declaration) {
 			parameters.push({
 				name: parameterSymbol.getName(),
-				type: declaration.type === undefined ? AnyTypeReference : (context.metadata.addType(declaration.type, type) || UnknownTypeReference),
+				type: declaration.type === undefined ? AnyTypeReference : (context.metadata.addType(type, declaration.type) || UnknownTypeReference),
 				optional: declaration.questionToken !== undefined || declaration.initializer !== undefined,
 			});
 		}

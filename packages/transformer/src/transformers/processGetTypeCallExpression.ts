@@ -10,7 +10,7 @@ export function processGetTypeCallExpression(context: Context, node: ts.CallExpr
 	// No type argument passed
 	if (!genericTypeNode)
 	{
-		// Calls like "getType(variable)" allowed. It returns runtime value.
+		// Calls like "getType(variable)" allowed by runtime. It returns runtime value. But we cannot do anything.
 		return undefined;
 	}
 
@@ -29,7 +29,7 @@ export function processGetTypeCallExpression(context: Context, node: ts.CallExpr
 	// Parameter is specific type
 	else
 	{
-		const typeReference = context.metadata.addType(genericTypeNode, genericType);
+		const typeReference = context.metadata.addType(genericType, genericTypeNode);
 		return context.metadata.factory.createTypeResolver(typeReference);
 	}
 }

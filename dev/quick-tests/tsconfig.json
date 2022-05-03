@@ -23,6 +23,6 @@
 		"metadata": {
 			"type": "typelib",
 		},
-		"debugMode": false
+		"debugMode": true
 	}
 }

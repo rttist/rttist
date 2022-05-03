@@ -23,7 +23,7 @@ import {
 import { getProperties }              from "./getProperties";
 
 type TypeMapperResult = TypeProperties | undefined;
-type TypeMapper = (type: ts.Type, typeNode: ts.TypeNode, context: Context) => TypeMapperResult;
+type TypeMapper = (type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context) => TypeMapperResult;
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
@@ -53,7 +53,7 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
  * @param typeNode
  * @param type
  */
-export function getTypeProperties(context: Context, typeNode: ts.TypeNode, type: ts.Type): TypeProperties
+export function getTypeProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): TypeProperties
 {
 	if (context.config.debugMode && typeNode)
 	{
@@ -236,7 +236,7 @@ export function getTypeProperties(context: Context, typeNode: ts.TypeNode, type:
 					const x = {
 						kind: TypeKind.Object, //TypeKind.TransientTypeReference,
 						name: (symbol.valueDeclaration.type.typeName as any).escapedText,
-						arguments: symbol.valueDeclaration.type.typeArguments?.map(typeNode => context.metadata.addType(typeNode)
+						arguments: symbol.valueDeclaration.type.typeArguments?.map(typeNode => context.metadata.addType(undefined, typeNode)
 
 							// getTypeCall(
 							// 	checker.getTypeAtLocation(typeNode),
@@ -569,29 +569,29 @@ export function getTypeProperties(context: Context, typeNode: ts.TypeNode, type:
 }
 
 
-function mapEnum(type: ts.EnumType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapEnum(type: ts.EnumType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapEnumLiteral(type: ts.UnionType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapEnumLiteral(type: ts.UnionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return {
 		id: getTypeId(type),
 		kind: TypeKind.EnumLiteral,
 		name: type.symbol.escapedName.toString(),
-		types: type.types.map(type => context.metadata.addType(typeNode, type)/*getTypeCall(type, undefined, context)*/)  // TODO: There cannot be "typeNode". AddType must be refactored cuz typeNode is not accessible in all cases.
+		types: type.types.map(type => context.metadata.addType(type, typeNode)/*getTypeCall(type, undefined, context)*/)  // TODO: There cannot be "typeNode". AddType must be refactored cuz typeNode is not accessible in all cases.
 	};
 }
 
-function mapESSymbol(type: ts.Type, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapESSymbol(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return {
 		kind: TypeKind.Symbol
 	};
 }
 
-function mapUniqueEESymbol(type: ts.UniqueESSymbolType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapUniqueEESymbol(type: ts.UniqueESSymbolType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return {
 		id: getTypeId(type),
@@ -600,7 +600,7 @@ function mapUniqueEESymbol(type: ts.UniqueESSymbolType, typeNode: ts.TypeNode, c
 	};
 }
 
-function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	const mapper = ObjectFlagsMappers[type.objectFlags];
 
@@ -728,7 +728,7 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context)
 
 				if (ext)
 				{
-					properties.baseType = context.metadata.addType(ext.types[0]);
+					properties.baseType = context.metadata.addType(undefined, ext.types[0]);
 					// getTypeCall(
 					// 	context.typeChecker.getTypeAtLocation(ext.types[0]),
 					// 	context.typeChecker.getSymbolAtLocation(ext.types[0]),
@@ -740,7 +740,7 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context)
 
 				if (impl)
 				{
-					properties.interface = context.metadata.addType(impl.types[0]);
+					properties.interface = context.metadata.addType(undefined, impl.types[0]);
 					// getTypeCall(
 					// 	context.typeChecker.getTypeAtLocation(impl.types[0]),
 					// 	context.typeChecker.getSymbolAtLocation(impl.types[0]),
@@ -759,7 +759,7 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context)
 
 						if (typeNode)
 						{
-							return context.metadata.addType(typeNode);
+							return context.metadata.addType(undefined, typeNode);
 						}
 						// 	context.typeChecker.getTypeAtLocation(typeParameterDeclaration),
 						// 	context.typeChecker.getSymbolAtLocation(typeParameterDeclaration),
@@ -805,7 +805,7 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context)
 	// };
 }
 
-function mapUnion(type: ts.UnionType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapUnion(type: ts.UnionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Union,
@@ -816,7 +816,7 @@ function mapUnion(type: ts.UnionType, typeNode: ts.TypeNode, context: Context): 
 	return undefined;
 }
 
-function mapIntersection(type: ts.IntersectionType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapIntersection(type: ts.IntersectionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Intersection,
@@ -827,12 +827,12 @@ function mapIntersection(type: ts.IntersectionType, typeNode: ts.TypeNode, conte
 	return undefined;
 }
 
-function mapIndex(type: ts.IndexType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapIndex(type: ts.IndexType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapIndexedAccessType(type: ts.IndexedAccessType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapIndexedAccessType(type: ts.IndexedAccessType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.IndexedAccess,
@@ -845,7 +845,7 @@ function mapIndexedAccessType(type: ts.IndexedAccessType, typeNode: ts.TypeNode,
 	return undefined;
 }
 
-function mapConditional(type: ts.ConditionalType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapConditional(type: ts.ConditionalType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	const ct = type.root.node;
 	const extendsType = context.typeChecker.getTypeAtLocation(ct.extendsType);
@@ -863,12 +863,12 @@ function mapConditional(type: ts.ConditionalType, typeNode: ts.TypeNode, context
 	return undefined;
 }
 
-function mapTemplateLiteral(type: ts.TemplateLiteralType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapTemplateLiteral(type: ts.TemplateLiteralType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapTypeParameter(type: ts.Type, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapTypeParameter(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
 {
 	const declaration = getDeclaration(type.symbol);
 
@@ -881,16 +881,8 @@ function mapTypeParameter(type: ts.Type, typeNode: ts.TypeNode, context: Context
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
 				generic: {
-					constraint: declaration.constraint && context.metadata.addType(declaration.constraint
-						// context.typeChecker.getTypeAtLocation(declaration.constraint),
-						// context.typeChecker.getSymbolAtLocation(declaration.constraint),
-						// context
-					) || undefined,
-					default: declaration.default && context.metadata.addType(declaration.default
-						// context.typeChecker.getTypeAtLocation(declaration.default),
-						// context.typeChecker.getSymbolAtLocation(declaration.default),
-						// context
-					) || undefined
+					constraint: declaration.constraint && context.metadata.addType(undefined, declaration.constraint) || undefined,
+					default: declaration.default && context.metadata.addType(undefined, declaration.default) || undefined
 				}
 			};
 		}

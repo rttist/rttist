@@ -1,9 +1,19 @@
-import * as ts     from "typescript";
-import { Context } from "../contexts/Context";
 import {
-	PropertyProperties,
-	UnknownTypeReference
-}                  from "../declarations";
+	AccessModifier,
+	Accessor,
+	TypeKind
+}                             from "@rtti/abstract";
+import * as ts                from "typescript";
+import { Context }            from "../contexts/Context";
+import { PropertyProperties } from "../declarations";
+import { getDecorators }      from "../getDecorators";
+import {
+	getAccessModifier,
+	getAccessor,
+	getType,
+	isReadonly
+}                             from "../helpers";
+import { getDeclaration }     from "../utils/symbolHelpers";
 
 /**
  * Return properties of type
@@ -13,6 +23,40 @@ import {
 export function getProperties(context: Context, type: ts.Type): Array<PropertyProperties> | undefined
 {
 	const properties = type.getProperties();
+	const result: Array<PropertyProperties> = [];
+
+	for (let prop of properties)
+	{
+		const declaration = getDeclaration(prop) as ts.PropertyDeclaration;
+		
+		if (declaration) {
+			const accessor = getAccessor(declaration);
+			const propType = getType(prop, context);
+
+			result.push({
+				name: prop.name,
+				type: context.metadata.addType(propType, declaration.type!), // TODO: Předělat na resolveType(Type, TypeNode?) nebo resolveAnd
+				decorators: getDecorators(prop, context),
+				accessModifier: getAccessModifier(declaration.modifiers),
+				accessor: accessor,
+				readonly: isReadonly(declaration.modifiers) || accessor == Accessor.Getter,
+				optional: declaration && (ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)) && !!declaration.questionToken
+			});
+		}
+		else {
+			result.push({
+				name: prop.name,
+				type: { kind: TypeKind.Unknown },
+				decorators: getDecorators(prop, context),
+				accessModifier: AccessModifier.Public,
+				accessor: Accessor.None,
+				readonly: false,
+				optional: false
+			});
+		}
+	}
+	
+	return result;
 
 	// TODO: Properties
 	// if (symbol?.members)
