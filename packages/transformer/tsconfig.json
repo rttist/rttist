@@ -5,7 +5,7 @@
 		"removeComments": true,
 		"sourceMap": true,
 		"stripInternal": true,
-		"strict": true,
+//		"strict": true,
 		"rootDir": "./src",
 		"baseUrl": "./src",
 		"outDir": "./dist",
