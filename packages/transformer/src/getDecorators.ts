@@ -1,9 +1,9 @@
 import * as ts                 from "typescript";
-import { getNodeLocationText } from "./utils/getNodeLocationText";
 import { getDeclaration }      from "./utils/symbolHelpers";
 import { Context }             from "./contexts/Context";
 import { DecoratorProperties } from "./declarations";
 import { log }                 from "./log";
+import { getNodeLocationText } from "./utils/traceHelpers";
 import { getTypeFullName }     from "./utils/typeHelpers";
 
 export function getDecorators(symbol: ts.Symbol, context: Context): Array<DecoratorProperties> | undefined

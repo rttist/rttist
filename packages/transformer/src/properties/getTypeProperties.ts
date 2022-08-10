@@ -9,13 +9,16 @@ import {
 }                                     from "../declarations";
 import { getTypeNodeIdentifier }      from "../utils/getTypeNodeIdentifier";
 import { getDeclaration }             from "../utils/symbolHelpers";
+import {
+	getNodeLocationText,
+	getTypeSourceLocationText
+} from "../utils/traceHelpers";
 import { getConstructors }            from "./getConstructors";
 import { getDecorators }              from "../getDecorators";
 import { log }                        from "../log";
 import { getMethods }                 from "./getMethods";
 import { getPrimitiveTypeProperties } from "./getPrimitiveTypeProperties";
 import { getLiteralProperties }       from "./getLiteralProperties";
-import { getNodeLocationText }        from "../utils/getNodeLocationText";
 import {
 	getTypeFullName,
 	getTypeId
@@ -55,9 +58,9 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
  */
 export function getTypeProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): TypeProperties
 {
-	if (context.config.debugMode && typeNode)
+	if (context.config.debugMode)
 	{
-		log.trace(getNodeLocationText(typeNode));
+		log.trace(getTypeSourceLocationText(type, context));
 	}
 
 	const primitiveTypeProperties = getPrimitiveTypeProperties(context, typeNode, type);

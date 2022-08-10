@@ -9,7 +9,7 @@ import {
 }                              from "../declarations";
 import { getTypeProperties }   from "../properties/getTypeProperties";
 import { getSourceFile }       from "../utils/findSourceFile";
-import { getNodeLocationText } from "../utils/getNodeLocationText";
+import { getNodeLocationText } from "../utils/traceHelpers";
 // import { getCanonizedPathOfImportedModule } from "../utils/path";
 import { getTypeId }           from "../utils/typeHelpers";
 
