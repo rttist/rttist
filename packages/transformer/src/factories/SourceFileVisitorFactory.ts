@@ -1,12 +1,13 @@
-import * as ts                from "typescript";
-import { MetadataTypeValues } from "../config-options";
-import { SourceFileContext }  from "../contexts/SourceFileContext";
-import { TransformerContext } from "../contexts/TransformerContext";
+import * as ts                   from "typescript";
+import { MetadataTypeValues }    from "../config-options";
+import { SourceFileContext }     from "../contexts/SourceFileContext";
+import { TransformerContext }    from "../contexts/TransformerContext";
 import {
 	MetadataSource,
 	TransformerTypeReference
 }                                from "../declarations";
 import { PACKAGE_ID }            from "../helpers";
+import { ModuleMetadata }        from "../metadata/ModuleMetadata";
 import { MiddlewareResult }      from "../middlewares";
 import { processMiddlewares }    from "../middlewares/processMiddlewares";
 import { updateSourceFile }      from "../transformers/updateSourceFile";
@@ -36,36 +37,37 @@ export class SourceFileVisitorFactory
 		const transformationContext = this.transformationContext;
 		const config = transformerContext.config;
 
-		return node =>
+		return sourceFileNode =>
 		{
 			// It should always be a SourceFile, but check it, just for case.
-			if (!ts.isSourceFile(node))
+			if (!ts.isSourceFile(sourceFileNode))
 			{
-				return node;
+				return sourceFileNode;
 			}
 
 			if (config.debugMode)
 			{
-				log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Visitation of file ${node.fileName} started.`);
+				log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} started.`);
 			}
 
 			// Create Context for the SourceFile
-			const sourceFileContext = new SourceFileContext(node, transformerContext, transformationContext);
+			const sourceFileContext = new SourceFileContext(sourceFileNode, transformerContext, transformationContext);
 
 			// Set Current SourceFileContext into the TransformerContext
 			transformerContext.setSourceFileContext(sourceFileContext);
 
 			// Visit node
-			let visitedNode = sourceFileContext.context.visit(node) as ts.SourceFile;
+			let visitedSourceFileNode = sourceFileContext.context.visit(sourceFileNode) as ts.SourceFile;
 
 			// PLUGINS
 			for (let plugin of config.plugins)
 			{
-				plugin.visit(node, sourceFileContext);
+				plugin.visit(sourceFileNode, sourceFileContext);
 			}
 
-			if (visitedNode)
+			if (visitedSourceFileNode)
 			{
+				// TODO: This must be fixed! SourceFileContext.metadata.getModules() returns all the modules again and again for each sourcefile, sourceFileContext.metadata is static singleton.
 				const modules = Array.from(sourceFileContext.metadata.getModules()).map(moduleMetadata => moduleMetadata.getModuleProperties());
 
 				// Filter 
@@ -84,11 +86,11 @@ export class SourceFileVisitorFactory
 				{
 					const metadataExpression = createValueExpression(metadata);
 					
-					// Update typelib
+					// TYPELIB - add import of metadata library
 					if (config.metadataType == MetadataTypeValues.typeLib)
 					{
-						visitedNode = updateSourceFile(
-							visitedNode, 
+						visitedSourceFileNode = updateSourceFile(
+							visitedSourceFileNode, 
 							[
 								sourceFileContext.metadata.factory.createTypeLibImport(sourceFileContext.sourceFile)
 							]
@@ -134,10 +136,10 @@ export class SourceFileVisitorFactory
 
 			if (config.debugMode)
 			{
-				log.trace(`${PACKAGE_ID}: Visitation of file ${node.fileName} has been finished.`);
+				log.trace(`${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} has been finished.`);
 			}
 
-			return visitedNode;
+			return visitedSourceFileNode;
 		};
 	}
 }

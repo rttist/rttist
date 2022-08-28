@@ -1,8 +1,11 @@
-import { Metadata }      from "../index";
-import type { Type }     from "../Type";
-import { TypeReference } from "./declarations";
+import type {
+	ConditionalTypeMetadata,
+	TypeReference
+}                   from "../declarations";
+import { Metadata } from "../Metadata";
+import { Type }     from "../Type";
 
-export class ConditionInfo
+export abstract class ConditionalType extends Type
 {
 	private readonly _extendsReference: TypeReference;
 	private readonly _trueTypeReference: TypeReference;
@@ -36,20 +39,12 @@ export class ConditionInfo
 		return this._falseType ?? (this._falseType = Metadata.resolveType(this._falseTypeReference));
 	}
 
-	/**
-	 * @param initializer
-	 */
-	constructor(initializer: ConditionInfoInitializer)
+	protected constructor(initializer: ConditionalTypeMetadata)
 	{
+		super(initializer);
+
 		this._extendsReference = initializer.extends;
 		this._trueTypeReference = initializer.trueType;
 		this._falseTypeReference = initializer.falseType;
 	}
-}
-
-export interface ConditionInfoInitializer
-{
-	extends: TypeReference;
-	trueType: TypeReference;
-	falseType: TypeReference;
 }

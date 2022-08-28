@@ -1,14 +1,15 @@
-import {
+import type {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier,
 	TypeReference
-}                 from "./declarations";
-import { Module } from "./Module";
+}                                   from "./declarations";
+import { resolveSingletonInstance } from "./helpers";
+import { Module }                   from "./Module";
 import {
 	NativeTypes,
 	Type
-}                 from "./Type";
+}                                   from "./Type";
 
 class MetadataLibrary
 {
@@ -128,14 +129,5 @@ class MetadataLibrary
 	}
 }
 
-const globalObject: any = typeof globalThis === "object"
-	? globalThis
-	: typeof window === "object"
-		? window
-		: global;
-
-const MetadataSymbol = Symbol.for("@rtti/abstract/Metadata");
-const instance: MetadataLibrary = globalObject[MetadataSymbol] || (globalObject[MetadataSymbol] = new MetadataLibrary());
-
 // noinspection JSUnusedGlobalSymbols
-export default instance;
+export const Metadata = resolveSingletonInstance("@rtti/abstract/Metadata", MetadataLibrary);

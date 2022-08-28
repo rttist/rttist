@@ -2,61 +2,110 @@ import {
 	AccessModifier,
 	Accessor,
 	TypeKind
-}                             from "@rtti/abstract";
-import * as ts                from "typescript";
-import { Context }            from "../contexts/Context";
-import { PropertyProperties } from "../declarations";
-import { getDecorators }      from "../getDecorators";
+}                         from "@rtti/abstract";
+import * as ts            from "typescript";
+import { Context }        from "../contexts/Context";
+import {
+	PropertyProperties,
+	UnknownTypeReference
+}                         from "../declarations";
+import { getDecorators }  from "../getDecorators";
 import {
 	getAccessModifier,
 	getAccessor,
 	getType,
 	isReadonly
-}                             from "../helpers";
-import { getDeclaration }     from "../utils/symbolHelpers";
+}                         from "../helpers";
+import { getDeclaration } from "../utils/symbolHelpers";
 
 /**
  * Return properties of type
- * @param context
  * @param type
+ * @param context
  */
-export function getProperties(context: Context, type: ts.Type): Array<PropertyProperties> | undefined
+export function getProperties(type: ts.Type, context: Context): Array<PropertyProperties> | undefined
 {
-	const properties = type.getProperties();
-	const result: Array<PropertyProperties> = [];
-
-	for (let prop of properties)
-	{
-		const declaration = getDeclaration(prop) as ts.PropertyDeclaration;
-		
-		if (declaration) {
+	return type.getProperties()
+		.filter(m =>
+			(m.flags & ts.SymbolFlags.Property) === ts.SymbolFlags.Property
+			|| (m.flags & ts.SymbolFlags.GetAccessor) === ts.SymbolFlags.GetAccessor
+			|| (m.flags & ts.SymbolFlags.SetAccessor) === ts.SymbolFlags.SetAccessor
+		)
+		.map<PropertyProperties>((memberSymbol: ts.Symbol) =>
+		{
+			const declaration = getDeclaration(memberSymbol);
 			const accessor = getAccessor(declaration);
-			const propType = getType(prop, context);
+			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional
+				|| (
+					declaration
+					&& (
+						ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)
+					)
+					&& !!declaration.questionToken
+				);
 
-			result.push({
-				name: prop.name,
-				type: context.metadata.addType(propType, declaration.type!), // TODO: Předělat na resolveType(Type, TypeNode?) nebo resolveAnd
-				decorators: getDecorators(prop, context),
-				accessModifier: getAccessModifier(declaration.modifiers),
+			let type = getType(memberSymbol, context);
+
+			// NOTE: Removing undefined from types of optional properties. This is not a good idea.
+			// if (type && optional && context.config.parsedCommandLine?.options.strictNullChecks === true)
+			// {
+			// 	const addNullBack = type.isUnion() && type.types.some(t => (t.flags & ts.TypeFlags.Null) !== 0);
+			//	
+			// 	type = context.typeChecker.getNonNullableType(type);
+			//	
+			// 	if (addNullBack) {
+			// 		type = context.typeChecker.getNullableType(type, ts.TypeFlags.Null);
+			// 	}
+			// }
+
+			return {
+				name: memberSymbol.escapedName.toString(),
+				type: type && context.metadata.addType(type, /*declaration.type!*/undefined, context) || UnknownTypeReference,
+				decorators: getDecorators(memberSymbol, context),
+				accessModifier: getAccessModifier(declaration?.modifiers),
 				accessor: accessor,
-				readonly: isReadonly(declaration.modifiers) || accessor == Accessor.Getter,
-				optional: declaration && (ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)) && !!declaration.questionToken
-			});
-		}
-		else {
-			result.push({
-				name: prop.name,
-				type: { kind: TypeKind.Unknown },
-				decorators: getDecorators(prop, context),
-				accessModifier: AccessModifier.Public,
-				accessor: Accessor.None,
-				readonly: false,
-				optional: false
-			});
-		}
-	}
-	
-	return result;
+				readonly: isReadonly(declaration?.modifiers) || accessor == Accessor.Getter,
+				optional: optional
+			};
+		});
+
+
+	// const properties = type.getProperties();
+	// const result: Array<PropertyProperties> = [];
+	//
+	// for (let prop of properties)
+	// {
+	// 	const declaration = getDeclaration(prop) as ts.PropertyDeclaration;
+	//	
+	// 	if (declaration) {
+	// 		const accessor = getAccessor(declaration);
+	// 		const propType = getType(prop, context);
+	//
+	// 		result.push({
+	// 			name: prop.name,
+	// 			type: context.metadata.addType(propType, /*declaration.type!*/undefined, context), // TODO: Předělat na resolveType(Type, TypeNode?) nebo resolveAnd
+	// 			decorators: getDecorators(prop, context),
+	// 			accessModifier: getAccessModifier(declaration.modifiers),
+	// 			accessor: accessor,
+	// 			readonly: isReadonly(declaration.modifiers) || accessor == Accessor.Getter,
+	// 			optional: declaration && (ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)) && !!declaration.questionToken
+	// 		});
+	// 	}
+	// 	else {
+	// 		result.push({
+	// 			name: prop.name,
+	// 			type: { kind: TypeKind.Unknown },
+	// 			decorators: getDecorators(prop, context),
+	// 			accessModifier: AccessModifier.Public,
+	// 			accessor: Accessor.None,
+	// 			readonly: false,
+	// 			optional: false
+	// 		});
+	// 	}
+	// }
+	//
+	// return result;
+
 
 	// TODO: Properties
 	// if (symbol?.members)

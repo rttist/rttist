@@ -31,7 +31,6 @@ export abstract class TypeBuilderBase
 	 */
 	setName(typeName: string)
 	{
-
 		this.typeName = typeName;
 	}
 

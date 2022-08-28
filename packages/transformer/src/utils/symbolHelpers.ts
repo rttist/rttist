@@ -14,7 +14,7 @@ export function getDeclaration<TDeclaration extends ts.Declaration = ts.Declarat
 	return (symbol.valueDeclaration || symbol.declarations?.[0]) as TDeclaration | undefined; // TODO: Check valueDeclaration vs declaration
 }
 
-export function getSourceFile(symbol: ts.Symbol): ts.SourceFile
+export function getSourceFile(symbol: ts.Symbol): ts.SourceFile | undefined
 {
-	return getDeclaration(symbol).getSourceFile();
+	return getDeclaration(symbol)?.getSourceFile();
 }

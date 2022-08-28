@@ -1,19 +1,19 @@
-import Metadata   from "./Metadata";
-import { Type }   from "./Type";
-import { Module } from "./Module";
+import { Metadata } from "./Metadata";
+import { Type }     from "./Type";
+import { Module }   from "./Module";
+import "./globals";
+import "./ReflectOverload";
 
 export {
-	Type,
-	TypeMetadata
-}                              from "./Type";
+	Type
+}        from "./Type";
 export {
 	Module,
 	ModuleMetadata
-}                              from "./Module";
-export { default as Metadata } from "./Metadata";
-export *                       from "./enums";
-export *                       from "./declarations";
-export *                       from "./builders";
+}        from "./Module";
+export * from "./enums";
+export * from "./declarations";
+export * from "./builders";
 
 Metadata.addType(
 	Type.Any,

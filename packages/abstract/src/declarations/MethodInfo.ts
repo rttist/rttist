@@ -1,12 +1,12 @@
-import { AccessModifier } from "../enums";
-import { Metadata }       from "../index";
-import type { Type }      from "../Type";
-import { TypeReference }  from "./declarations";
-import { DecoratorInfo }  from "./DecoratorInfo";
+import type { Type }          from "../Type";
+import type { TypeReference } from "./declarations";
+import type { DecoratorInfo } from "./DecoratorInfo";
+import { AccessModifier }     from "../enums";
+import { Metadata }           from "../Metadata";
 import {
 	MethodInfoBase,
 	MethodInfoBaseInitializer
-}                         from "./MethodInfoBase";
+}                             from "./MethodInfoBase";
 
 /**
  * Represents a method of a type.

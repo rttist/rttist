@@ -1,4 +1,4 @@
-import { ParameterInfo } from "./ParameterInfo";
+import type { ParameterInfo } from "./ParameterInfo";
 
 export abstract class MethodInfoBase
 {

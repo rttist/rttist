@@ -1,11 +1,11 @@
+import type { DecoratorInfo } from "./DecoratorInfo";
+import type { TypeReference } from "./declarations";
+import type { Type }          from "../Type";
 import {
 	AccessModifier,
-	Accessor,
-	Metadata
-}                        from "../index";
-import { DecoratorInfo } from "./DecoratorInfo";
-import { TypeReference } from "./declarations";
-import type { Type }     from "../Type";
+	Accessor
+}                             from "../index";
+import { Metadata }           from "../Metadata";
 
 /**
  * Details about property of an objec.

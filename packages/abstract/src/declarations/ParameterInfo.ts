@@ -1,5 +1,5 @@
-import { Metadata }      from "../index";
 import type { Type }     from "../Type";
+import { Metadata }      from "../Metadata";
 import { TypeReference } from "./declarations";
 
 /**

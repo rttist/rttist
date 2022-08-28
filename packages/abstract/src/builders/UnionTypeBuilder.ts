@@ -1,6 +1,6 @@
 import { TypeKind }        from "../enums";
-import Metadata            from "../Metadata";
-import { Module }          from "../Module";
+import { Metadata }        from "../Metadata";
+import { UnionType }       from "../types/UnionType";
 import { Type }            from "../Type";
 import { TypeBuilderBase } from "./TypeBuilderBase";
 
@@ -47,7 +47,7 @@ export class UnionTypeBuilder extends TypeBuilderBase
 			return types[0];
 		}
 
-		const type = new Type({
+		const type = new UnionType({
 			id: Symbol(),
 			name: this.typeName,
 			fullName: this.fullName,

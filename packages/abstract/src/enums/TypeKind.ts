@@ -7,6 +7,7 @@ export enum TypeKind
 	Interface,
 	Class,
 	TypeParameter,
+	Alias,
 	ConditionalType,
 	IndexedAccess,
 	Module,

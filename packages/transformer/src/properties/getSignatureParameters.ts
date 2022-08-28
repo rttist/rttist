@@ -32,15 +32,19 @@ export function getSignatureParameters(signature: ts.Signature, context: Context
 		const declaration = getDeclaration<ts.ParameterDeclaration>(parameterSymbol);
 		const type = getType(parameterSymbol, context);
 
-		if (declaration) {
+		if (declaration)
+		{
 			parameters.push({
 				name: parameterSymbol.getName(),
-				type: declaration.type === undefined ? AnyTypeReference : (context.metadata.addType(type, declaration.type) || UnknownTypeReference),
+				type: type === undefined
+					? AnyTypeReference
+					: context.metadata.addType(type, undefined/*declaration.type*/, context),
 				optional: declaration.questionToken !== undefined || declaration.initializer !== undefined,
 			});
 		}
-		else {
-			
+		else
+		{
+
 		}
 	}
 

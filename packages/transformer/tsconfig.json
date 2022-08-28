@@ -5,6 +5,7 @@
 		"removeComments": true,
 		"sourceMap": true,
 		"stripInternal": true,
+		"strictNullChecks": true,
 //		"strict": true,
 		"rootDir": "./src",
 		"baseUrl": "./src",
@@ -17,6 +18,9 @@
 		]
 	},
 	"references": [
+		{
+			"path": "../core"
+		},
 		{
 			"path": "../abstract"
 		},

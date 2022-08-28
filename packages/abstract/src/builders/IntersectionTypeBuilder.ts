@@ -1,8 +1,8 @@
-import { TypeKind }        from "../enums";
-import Metadata            from "../Metadata";
-import { Module }          from "../Module";
-import { Type }            from "../Type";
-import { TypeBuilderBase } from "./TypeBuilderBase";
+import { TypeKind }         from "../enums";
+import { Metadata }         from "../Metadata";
+import { Type }             from "../Type";
+import { IntersectionType } from "../types/IntersectionType";
+import { TypeBuilderBase }  from "./TypeBuilderBase";
 
 export class IntersectionTypeBuilder extends TypeBuilderBase
 {
@@ -41,7 +41,7 @@ export class IntersectionTypeBuilder extends TypeBuilderBase
 			return Type.Never;
 		}
 
-		const type = new Type({
+		const type = new IntersectionType({
 			id: Symbol(),
 			name: this.typeName,
 			fullName: this.fullName,

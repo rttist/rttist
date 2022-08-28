@@ -36,8 +36,19 @@ export function flatten(typeToFlatten: Type): {
 	methods: { [methodName: string]: MethodInfo }
 }
 {
-	const interfaceMembers = typeToFlatten.interface?.flattenInheritedMembers() ?? { properties: {}, methods: {} };
-	const baseTypeMembers = typeToFlatten.baseType?.flattenInheritedMembers() ?? { properties: {}, methods: {} };
+	const interfaceMembers = (
+			typeToFlatten.isClass()
+				? typeToFlatten.interface?.flattenInheritedMembers()
+				: undefined
+		)
+		?? { properties: {}, methods: {} };
+
+	const baseTypeMembers = (
+			typeToFlatten.isExtendable()
+				? typeToFlatten.baseType?.flattenInheritedMembers()
+				: undefined
+		)
+		?? { properties: {}, methods: {} };
 
 	const properties = Object.assign(interfaceMembers.properties, baseTypeMembers.properties);
 	const methods = Object.assign(interfaceMembers.methods, baseTypeMembers.methods);
@@ -48,11 +59,11 @@ export function flatten(typeToFlatten: Type): {
 		const propertyUnitedMap = new Map<string, Array<PropertyInfo>>();
 		const methodUnitedMap = new Map<string, Array<MethodInfo>>();
 
-		const types = typeToFlatten.getTypes();
+		const types = typeToFlatten.types;
 
 		for (const type of types)
 		{
-			for (let property of type.getProperties())
+			for (let property of type.isObjectLike() ? type.getProperties() : [])
 			{
 				let array = propertyUnitedMap.get(property.name);
 
@@ -64,7 +75,7 @@ export function flatten(typeToFlatten: Type): {
 				array.push(property);
 			}
 
-			for (let method of type.getMethods())
+			for (let method of type.isObjectLike() ? type.getMethods() : [])
 			{
 				let array = methodUnitedMap.get(method.name);
 
@@ -149,12 +160,12 @@ export function flatten(typeToFlatten: Type): {
 		}
 	}
 
-	for (let property of typeToFlatten.getProperties())
+	for (let property of typeToFlatten.isObjectLike() ? typeToFlatten.getProperties() : [])
 	{
 		properties[property.name] = property;
 	}
 
-	for (let method of typeToFlatten.getMethods())
+	for (let method of typeToFlatten.isObjectLike() ? typeToFlatten.getMethods() : [])
 	{
 		methods[method.name] = method;
 	}

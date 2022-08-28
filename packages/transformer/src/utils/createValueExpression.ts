@@ -12,12 +12,14 @@ export function createValueExpression(value: any): ts.Expression
 
 		if (typeof value == "number")
 		{
-			return ts.factory.createNumericLiteral(value.toString());
+			return ts.factory.createNumericLiteral(value);
 		}
 
 		if (typeof value == "boolean")
 		{
-			return value ? ts.factory.createTrue() : ts.factory.createFalse();
+			return value 
+				? ts.factory.createTrue() 
+				: ts.factory.createFalse();
 		}
 
 		if (value instanceof Array)

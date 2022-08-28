@@ -47,23 +47,23 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 			return node;
 		}
 
-		// GETTYPE<TType>()
-		// Is it call of some function named "getType"?
-		if (ts.isIdentifier(node.expression) && node.expression.escapedText == GET_TYPE_FNC_NAME)
+		// Reflect.getType<TType>()
+		if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.escapedText === "getType" 
+			&& ts.isIdentifier(node.expression.expression) && node.expression.expression.escapedText === "Reflect")
 		{
-			// Function/method type
-			const fncType = context.typeChecker.getTypeAtLocation(node.expression);
-
-			// Check if it's our getType<T>() by checking it has our special static property.
-			if (fncType.getProperty(TYPE_ID_PROPERTY_NAME))
-			{
+			// // Function/method type
+			// const fncType = context.typeChecker.getTypeAtLocation(node.expression.expression);
+			//
+			// // Check if it's our getType<T>() by checking it has our special static property.
+			// if (fncType.getProperty(TYPE_ID_PROPERTY_NAME))
+			// {
 				const res = processGetTypeCallExpression(context, node);
 
 				if (res)
 				{
 					return res;
 				}
-			}
+			// }
 		}
 
 			// SOMETHING<TType>()

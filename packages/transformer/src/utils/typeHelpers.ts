@@ -6,18 +6,22 @@ import {
 	PATH_SEPARATOR_REGEX
 }                             from "../helpers";
 import {
-	getDeclaration,
 	getSourceFile
-} from "./symbolHelpers";
+}                             from "./symbolHelpers";
 
-export function getSymbol(type: ts.Type, context: Context): ts.Symbol
+export function getSymbol(type: ts.Type, context: Context): ts.Symbol | undefined
 {
+	if (type.symbol === undefined)
+	{
+		return undefined;
+	}
+
 	if ((type.symbol.flags & ts.SymbolFlags.Alias) !== 0)
 	{
 		return context.typeChecker.getAliasedSymbol(type.symbol);
 	}
 
-	return type.symbol;
+	return type.symbol as (ts.Symbol | undefined);
 }
 
 /**
@@ -53,7 +57,21 @@ export function getTypeFullName(type: ts.Type, context: Context)
 {
 	let { packageName, rootDir } = TransformerContext.instance.config;
 	const symbol = getSymbol(type, context);
-	let filePath = getSourceFile(symbol).fileName;
+
+	if (symbol === undefined)
+	{
+		context.log.error("Symbol of type not found. Unable to generate 'fullName'.");
+		return "{{invalid}}";
+	}
+
+	let filePath = getSourceFile(symbol)?.fileName;
+
+	if (filePath === undefined)
+	{
+		context.log.error(`SourceFile of symbol '${symbol.escapedName}' not found. Unable to generate 'fullName'.`);
+		return "{{invalid}}";
+	}
+
 	const nodeModulesIndex = filePath.lastIndexOf(nodeModulesPattern);
 
 	if (nodeModulesIndex != -1)

@@ -1,15 +1,15 @@
-import { TypeKind }       from "@rtti/abstract";
-import * as ts            from "typescript";
-import { Context }        from "../contexts/Context";
-import { TypeProperties } from "../declarations";
-import { getTypeId }      from "../utils/typeHelpers";
+import { TypeKind }              from "@rtti/abstract";
+import * as ts                   from "typescript";
+import { Context }               from "../contexts/Context";
+import { LiteralTypeProperties } from "../declarations";
+import { getTypeId }             from "../utils/typeHelpers";
 
-export function getLiteralProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): TypeProperties | undefined
+export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
 {
-	const props: TypeProperties = {
+	const props: LiteralTypeProperties = {
 		id: getTypeId(type),
 		kind: TypeKind.Unknown,
-		value: (type as any).value
+		value: type.value
 	};
 
 	switch (type.flags)
@@ -28,24 +28,24 @@ export function getLiteralProperties(context: Context, typeNode: ts.TypeNode | u
 			return props;
 	}
 
-	if (typeNode) // TODO: Try to solve using type, not typeNode
-	{
-		if (ts.isNoSubstitutionTemplateLiteral(typeNode))
-		{
-			props.kind = TypeKind.TemplateLiteral;
-			props.value = typeNode.text;
-			return props;
-		}
-		else if (ts.isTemplateLiteral(typeNode))
-		{
-			props.kind = TypeKind.TemplateLiteral;
-			props.value = undefined;
-			props.template = {
-				head: (typeNode as ts.TemplateExpression).head.text,
-				templateSpans: (typeNode as ts.TemplateExpression).templateSpans.map(span => ({ expression: span.expression.getText(), literal: span.literal.text }))
-			};
-		}
-	}
+	// if (typeNode) // TODO: Try to solve using type, not typeNode
+	// {
+	// 	if (ts.isNoSubstitutionTemplateLiteral(typeNode))
+	// 	{
+	// 		props.kind = TypeKind.TemplateLiteral;
+	// 		props.value = typeNode.text;
+	// 		return props;
+	// 	}
+	// 	else if (ts.isTemplateLiteral(typeNode))
+	// 	{
+	// 		props.kind = TypeKind.TemplateLiteral;
+	// 		props.value = undefined;
+	// 		props.template = {
+	// 			head: (typeNode as ts.TemplateExpression).head.text,
+	// 			templateSpans: (typeNode as ts.TemplateExpression).templateSpans.map(span => ({ expression: span.expression.getText(), literal: span.literal.text }))
+	// 		};
+	// 	}
+	// }
 
 	return undefined;
 }

@@ -1,6 +1,8 @@
-import type { Type }               from "../Type";
-import { IntersectionTypeBuilder } from "./IntersectionTypeBuilder";
-import { UnionTypeBuilder }        from "./UnionTypeBuilder";
+import type { Type }                from "../Type";
+import { ArrayTypeBuilder }         from "./ArrayBuilder";
+import { IntersectionTypeBuilder }  from "./IntersectionTypeBuilder";
+import { ObjectLiteralTypeBuilder } from "./ObjectLiteralTypeBuilder";
+import { UnionTypeBuilder }         from "./UnionTypeBuilder";
 
 export abstract class TypeBuilder
 {
@@ -12,5 +14,15 @@ export abstract class TypeBuilder
 	static createIntersection(types: Type[]): IntersectionTypeBuilder
 	{
 		return new IntersectionTypeBuilder().addTypes(...types);
+	}
+
+	static createArray(): ArrayTypeBuilder
+	{
+		return new ArrayTypeBuilder();
+	}
+
+	static createObject(): ObjectLiteralTypeBuilder
+	{
+		return new ObjectLiteralTypeBuilder();
 	}
 }

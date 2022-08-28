@@ -1,18 +1,17 @@
-import { TemplateInfoInitializer } from "@rtti/abstract/dist/declarations/TemplateInfo";
 import { NativeTypeKind }          from "@rtti/abstract/dist/enums/TypeKind";
 import * as ts                     from "typescript";
 import type {
 	TypeMetadata,
 	ModuleReference,
 	NativeTypeReference,
-	GenericInfoInitializer,
 	PropertyInfoInitializer,
-	DecoratorInfoInitializer
+	DecoratorInfoInitializer,
+	IndexInfoInitializer
 }                                  from "@rtti/abstract";
 import {
 	AccessModifier,
 	ModuleIdentifier,
-	TypeKind,
+	TypeKind
 }                                  from "@rtti/abstract";
 import type { Context }            from "./contexts/Context";
 
@@ -22,31 +21,26 @@ import type { Context }            from "./contexts/Context";
 export type TransformerTypeReference = number | NativeTypeReference;
 
 type BaseTypeProperties =
-	Omit<TypeMetadata, "ctor" | "ctorSync" | "id" | "name" | "module" | "kind" | "template" | "constructors" | "generic" | "properties" | "methods" | "decorators">
+	Omit<TypeMetadata, "id" | "name" | "module" | "kind" /* | "ctor" | "ctorSync" | "template" | "constructors" | "generic" | "properties" | "methods" | "decorators"*/>
 	& {
-	notExported?: true;
+	// exported?: true;
 
 	name?: string;
 	module?: ModuleReference;
 
-	ctor?: ts.Expression;
-	ctorSync?: ts.Expression;
-
-	template?: TemplateProperties;
-	constructors?: ConstructorProperties[];
-	generic?: GenericProperties;
-
-	properties?: PropertyProperties[];
-	methods?: MethodProperties[];
-	decorators?: DecoratorProperties[];
+	// ctor?: ts.Expression;
+	// ctorSync?: ts.Expression;
+	//
+	// template?: TemplateProperties;
+	// constructors?: ConstructorProperties[];
+	// generic?: TypeParameterProperties;
+	//
+	// properties?: PropertyProperties[];
+	// methods?: MethodProperties[];
+	// decorators?: DecoratorProperties[];
 };
-export type NativeTypeProperties = BaseTypeProperties & { kind: NativeTypeKind, id?: undefined };
-type NonNativeTypeProperties = BaseTypeProperties & { id: number, kind: TypeKind };
-
-/**
- * Properties of a Type
- */
-export type TypeProperties = NativeTypeProperties | NonNativeTypeProperties;
+export type NativeBaseTypeProperties = BaseTypeProperties & { kind: NativeTypeKind, id?: undefined };
+type NonNativeBaseTypeProperties = BaseTypeProperties & { id: number, kind: TypeKind };
 
 /**
  * Reference to the Unknown type.
@@ -127,12 +121,13 @@ export interface MethodProperties extends MethodBaseProperties
 	decorators?: DecoratorProperties[];
 }
 
-export interface TemplateProperties extends TemplateInfoInitializer
-{
-}
+// export interface TemplateProperties extends TemplateInfoInitializer
+// {
+// }
 
-export interface GenericProperties extends Omit<GenericInfoInitializer, "constraint" | "default">
+export interface TypeParameterProperties extends NonNativeBaseTypeProperties
 {
+	genericTypeDefinition?: TransformerTypeReference;
 	constraint?: TransformerTypeReference;
 	default?: TransformerTypeReference;
 }
@@ -143,9 +138,47 @@ export interface PropertyProperties extends Omit<PropertyInfoInitializer, "decor
 	decorators?: Array<DecoratorProperties>;
 }
 
+export interface IndexProperties extends Omit<IndexInfoInitializer, "key" | "type">
+{
+	key: TransformerTypeReference;
+	type: TransformerTypeReference;
+}
+
 export interface DecoratorProperties extends DecoratorInfoInitializer
 {
 }
+
+/**
+ * Properties of a LiteralType.
+ */
+export type LiteralTypeProperties = (NativeBaseTypeProperties | NonNativeBaseTypeProperties) & {
+	value?: any;
+};
+
+export type UnionTypeProperties = NonNativeBaseTypeProperties & {
+	types: TransformerTypeReference[];
+}
+
+export type IntersectionTypeProperties = NonNativeBaseTypeProperties & {
+	types: TransformerTypeReference[];
+}
+
+export type ObjectProperties = NonNativeBaseTypeProperties & {
+	properties?: PropertyProperties[];
+	indexes?: IndexProperties[];
+	methods?: MethodProperties[];
+}
+
+/**
+ * Properties of a Type.
+ */
+export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypeProperties
+	| LiteralTypeProperties
+	| UnionTypeProperties
+	| IntersectionTypeProperties
+	| ObjectProperties
+	| TypeParameterProperties
+	;
 
 
 // /**

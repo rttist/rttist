@@ -16,9 +16,7 @@ export interface MiddlewareContext
 {
 	sourceFileContext: SourceFileContext;
 	metadata: MetadataSource;
-
-	get result(): MiddlewareResult | undefined;
-
+	result: MiddlewareResult | undefined;
 	setResult(expression: MiddlewareResult): void;
 }
 

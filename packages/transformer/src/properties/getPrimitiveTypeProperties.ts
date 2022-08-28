@@ -1,16 +1,14 @@
 import { TypeKind }             from "@rtti/abstract";
-import * as ts                  from "typescript";
-import { NativeTypeProperties } from "../declarations";
-import { Context }              from "../contexts/Context";
-
+import * as ts                      from "typescript";
+import { NativeBaseTypeProperties } from "../declarations";
+import { Context }                  from "../contexts/Context";
 
 /**
  * Return TypeProperties whether the type is a primitive native type.
- * @param context
- * @param typeNode
  * @param type
+ * @param context
  */
-export function getPrimitiveTypeProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): NativeTypeProperties | undefined
+export function getPrimitiveTypeProperties(type: ts.Type, context: Context): NativeBaseTypeProperties | undefined
 {
 	return PrimitiveTypesMap[type.flags];
 
@@ -102,7 +100,7 @@ export function getPrimitiveTypeProperties(context: Context, typeNode: ts.TypeNo
 // 	);
 // }
 
-const PrimitiveTypesMap: { [flag: number]: NativeTypeProperties } = {
+const PrimitiveTypesMap: { [flag: number]: NativeBaseTypeProperties } = {
 	[ts.TypeFlags.String]: { kind: TypeKind.String },
 	[ts.TypeFlags.Number]: { kind: TypeKind.Number },
 	[ts.TypeFlags.Boolean]: { kind: TypeKind.Boolean },

@@ -5,8 +5,9 @@ import {
 	ModuleMetadataProperties,
 	ModuleProperties,
 	TransformerTypeReference,
-	TypeProperties
-}                              from "../declarations";
+	TypeProperties,
+	UnknownTypeReference
+} from "../declarations";
 import { getTypeProperties }   from "../properties/getTypeProperties";
 import { getSourceFile }       from "../utils/findSourceFile";
 import { getNodeLocationText } from "../utils/traceHelpers";
@@ -82,10 +83,9 @@ export class ModuleMetadata
 
 	/**
 	 * Add type into the module metadata and return its properties.
-	 * @param typeNode
 	 * @param type
 	 */
-	addType(typeNode: ts.TypeNode | undefined, type: ts.Type): TransformerTypeReference
+	addType(type: ts.Type): TransformerTypeReference
 	{
 		let existingProperties = this.types.get(type);
 
@@ -100,12 +100,12 @@ export class ModuleMetadata
 			}
 
 			this.typesStack.push(typeId);
-			existingProperties = getTypeProperties(this.context.currentSourceFileContext!.context, typeNode, type); // Change SourceFileContext to stack??  
+			existingProperties = getTypeProperties(type, this.context.currentSourceFileContext!.context); // Change SourceFileContext to stack??  
 			this.typesStack.pop();
 
 			if (existingProperties.id === undefined)
 			{
-				return existingProperties;
+				return UnknownTypeReference; // TODO: Is correct?
 			}
 
 			this.types.set(type, existingProperties);
@@ -113,7 +113,7 @@ export class ModuleMetadata
 
 		if (existingProperties.id === undefined)
 		{
-			return existingProperties;
+			return UnknownTypeReference; // TODO: Is correct?
 		}
 
 		return existingProperties.id;

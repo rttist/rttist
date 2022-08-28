@@ -1,60 +1,36 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { TemplateInfo } from "./declarations/TemplateInfo";
-import Metadata         from "./Metadata";
-import {
-	AsyncCtorReference,
-	ConditionInfo,
-	ConstructorInfo,
-	DecoratorInfo,
-	EnumInfo,
-	GenericInfo,
-	IndexedAccessInfo,
+import type {
+	FlattenedObject,
 	MethodInfo,
 	ModuleIdentifier,
 	ParameterInfo,
 	PropertyInfo,
-	SyncCtorReference,
 	TypeIdentifier,
+	TypeMetadata,
 	TypeReference
-}                       from "./declarations";
+} from "./declarations";
+import type { ClassType }                    from "./types/ClassType";
+import type { ConditionalType }              from "./types/ConditionalType";
+import type { EnumType }                     from "./types/EnumType";
+import type { ExtendableObjectLikeTypeBase } from "./types/ExtendableObjectLikeTypeBase";
+import type { GenericType }                  from "./types/GenericType";
+import type { InterfaceType }                from "./types/InterfaceType";
+import type { IntersectionType }             from "./types/IntersectionType";
+import { ObjectLikeTypeBase }                from "./types/ObjectLikeTypeBase";
+import type { ObjectType }                   from "./types/ObjectType";
+import type { TemplateType }                 from "./types/TemplateType";
+import type { TypeParameterType }            from "./types/TypeParameterType";
+import type { LiteralType }                  from "./types/LiteralType";
+import type { UnionType }                    from "./types/UnionType";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                  from "./enums";
-import { Module }  from "./Module";
-import { flatten } from "./utils/flatten";
-
-export interface TypeMetadata
-{
-	id?: TypeIdentifier;
-	kind: TypeKind;
-	name: string;
-	module: ModuleIdentifier;
-	fullName?: string;
-	exported?: boolean;
-
-	ctor?: AsyncCtorReference;
-	ctorSync?: SyncCtorReference;
-
-	decorators?: Array<DecoratorInfo>;
-	properties?: Array<PropertyInfo>;
-	constructors?: Array<ConstructorInfo>;
-	methods?: Array<MethodInfo>;
-
-	value?: any;
-	template?: TemplateInfo;
-	condition?: ConditionInfo;
-	indexedAccess?: IndexedAccessInfo;
-	generic?: GenericInfo;
-	baseType?: TypeReference;
-	interface?: TypeReference;
-
-	typeParameters?: Array<TypeReference>;
-	types?: Array<TypeReference>;
-	typeArgs?: Array<TypeReference>;
-}
+}                                            from "./enums";
+import { Metadata }                          from "./Metadata";
+import { Module }                            from "./Module";
+import { flatten }                           from "./utils/flatten";
 
 const NID = Module.Native.id;
 
@@ -89,41 +65,20 @@ export class Type
 	public static readonly BigInt64Array: Type = new Type({ name: "BigInt64Array", kind: TypeKind.BigInt64Array, module: NID });
 	public static readonly BigUint64Array: Type = new Type({ name: "BigUint64Array", kind: TypeKind.BigUint64Array, module: NID });
 
-	private _module?: Module;
-	private _baseType?: Type;
-	private _interface?: Type;
-	private _types?: Array<Type>;
-	private _typeArgs?: Array<Type>;
-	private _typeParameters?: Array<Type>;
-	private _enum?: EnumInfo;
 	private _flattened?: { properties: { [p: string]: PropertyInfo }; methods: { [p: string]: MethodInfo } };
 
+
 	private readonly _id: TypeIdentifier;
-	private readonly _ctor?: AsyncCtorReference;
-	private readonly _ctorSync?: SyncCtorReference;
 	private readonly _kind: TypeKind;
-	private readonly _name: string;
 	private readonly _fullName: string;
+	private readonly _name: string;
 	private readonly _exported: boolean;
 
-	private readonly _properties: Array<PropertyInfo>;
-	private readonly _methods: Array<MethodInfo>;
-	private readonly _decorators: Array<DecoratorInfo>;
-	private readonly _constructors: Array<ConstructorInfo>;
-
-	private readonly _value?: any;
-	private readonly _template?: TemplateInfo;
-	private readonly _condition?: ConditionInfo;
-	private readonly _indexedAccess?: IndexedAccessInfo;
-	private readonly _generic?: GenericInfo;
-
 	private readonly _moduleReference: ModuleIdentifier;
-	private readonly _baseTypeReference?: TypeReference;
-	private readonly _interfaceReference?: TypeReference;
+	private readonly _typeParameterReferences: TypeReference[];
 
-	private readonly _typesReference: Array<TypeReference>;
-	private readonly _typeArgsReference: Array<TypeReference>;
-	private readonly _typeParametersReference: Array<TypeReference>;
+	private _module?: Module;
+	private _typeParameters?: Type[];
 
 	/**
 	 * Type identifier.
@@ -134,103 +89,11 @@ export class Type
 	}
 
 	/**
-	 * @param initializer
+	 * Kind of the type.
 	 */
-	constructor(initializer: TypeMetadata)
+	get kind(): TypeKind
 	{
-		this._id = initializer.id ?? Symbol();
-		this._ctor = initializer.ctor;
-		this._ctorSync = initializer.ctorSync;
-		this._kind = initializer.kind;
-		this._name = initializer.name;
-		this._fullName = initializer.fullName || "";
-		this._moduleReference = initializer.module;
-		this._exported = initializer.exported || false;
-
-		this._properties = initializer.properties || [];
-		this._methods = initializer.methods || [];
-		this._decorators = initializer.decorators || [];
-		this._constructors = initializer.constructors || [];
-
-		this._value = initializer.value;
-		this._template = initializer.template;
-		this._condition = initializer.condition;
-		this._indexedAccess = initializer.indexedAccess;
-		this._generic = initializer.generic;
-
-		this._baseTypeReference = initializer.baseType;
-		this._interfaceReference = initializer.interface;
-
-		this._typesReference = initializer.types || [];
-		this._typeParametersReference = initializer.typeParameters || [];
-		this._typeArgsReference = initializer.typeArgs || [];
-	}
-
-	/**
-	 * Module which declare type represented by the this Type instance.
-	 */
-	get module(): Module
-	{
-		return this._module ?? (this._module = Metadata.resolveModule(this._moduleReference));
-	}
-
-	/**
-	 * Information about template literal.
-	 */
-	get template(): TemplateInfo | undefined
-	{
-		return this._template;
-	}
-
-	/**
-	 * Information about generic conditional type.
-	 */
-	get condition(): ConditionInfo | undefined
-	{
-		return this._condition;
-	}
-
-	/**
-	 * Information about generic type.
-	 */
-	get generic(): GenericInfo | undefined
-	{
-		return this._generic;
-	}
-
-	/**
-	 * Information about indexed access type.
-	 */
-	get indexedAccess(): IndexedAccessInfo | undefined
-	{
-		return this._indexedAccess;
-	}
-
-	/**
-	 * Base type
-	 * @description Base type from which this type extends from or undefined if type is Object.
-	 */
-	get baseType(): Type | undefined
-	{
-		if (!this._baseTypeReference)
-		{
-			return undefined;
-		}
-
-		return this._baseType ?? (this._baseType = Metadata.resolveType(this._baseTypeReference));
-	}
-
-	/**
-	 * Interface which this type implements
-	 */
-	get interface(): Type | undefined
-	{
-		if (!this._interfaceReference)
-		{
-			return undefined;
-		}
-
-		return this._interface ?? (this._interface = Metadata.resolveType(this._interfaceReference));
+		return this._kind;
 	}
 
 	/**
@@ -243,19 +106,19 @@ export class Type
 	}
 
 	/**
+	 * Module which declare type represented by the this Type instance.
+	 */
+	get module(): Module
+	{
+		return this._module ?? (this._module = Metadata.resolveModule(this._moduleReference));
+	}
+
+	/**
 	 * Name of the type.
 	 */
 	get name(): string
 	{
 		return this._name;
-	}
-
-	/**
-	 * Kind of the type.
-	 */
-	get kind(): TypeKind
-	{
-		return this._kind;
 	}
 
 	/**
@@ -267,11 +130,18 @@ export class Type
 	}
 
 	/**
-	 * Underlying value in case of literal type.
+	 * @param initializer
 	 */
-	get literalValue(): any
+	constructor(initializer: TypeMetadata)
 	{
-		return this._value;
+		this._id = initializer.id ?? Symbol();
+		this._kind = initializer.kind;
+		this._name = initializer.name;
+		this._fullName = initializer.fullName || "";
+		this._moduleReference = initializer.module;
+		this._exported = initializer.exported || false;
+
+		this._typeParameterReferences = initializer.typeParameters || [];
 	}
 
 	/**
@@ -289,43 +159,150 @@ export class Type
 	}
 
 	/**
+	 * Returns array of generic type parameters.
+	 * @internal Exposed by {@link GenericType}.
+	 */
+	getTypeParameters(): ReadonlyArray<Type>
+	{
+		return (
+			this._typeParameters ?? (this._typeParameters = this._typeParameterReferences.map(type => Metadata.resolveType(type)))
+		).slice();
+	}
+
+	//////////////////////////////////////////////////////////////////// GUARDS /////////////////////////////////////////////////////////////////
+
+	/**
+	 * Check whether the type is generic.
+	 */
+	isGenericType(): this is GenericType<Type>
+	{
+		return this._typeParameterReferences.length > 0;
+	}
+
+	/**
+	 * Check whether the type is generic.
+	 */
+	isTypeParameter(): this is TypeParameterType
+	{
+		return false;
+	}
+
+	/**
 	 * Returns a value indicating whether the Type is container for unified Types or not.
 	 */
-	isUnion(): boolean
+	isUnion(): this is UnionType
 	{
-		return this.kind === TypeKind.Union;
+		return this._kind === TypeKind.Union;
 	}
 
 	/**
 	 * Returns a value indicating whether the Type is container for intersecting Types or not.
 	 */
-	isIntersection(): boolean
+	isIntersection(): this is IntersectionType
 	{
-		return this.kind === TypeKind.Intersection;
+		return this._kind === TypeKind.Intersection;
 	}
+
+	/**
+	 * Returns a value indicating whether the Type is a class or not.
+	 */
+	isClass(): this is ClassType
+	{
+		return this._kind === TypeKind.Class;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type can extend other type or not.
+	 * @description True for classes and interfaces.
+	 */
+	isExtendable(): this is ExtendableObjectLikeTypeBase
+	{
+		return this._kind === TypeKind.Class;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type is a interface or not.
+	 */
+	isInterface(): this is InterfaceType
+	{
+		return this._kind === TypeKind.Interface;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type is an literal or not.
+	 */
+	isLiteral(): this is LiteralType
+	{
+		return LiteralTypeKinds.indexOf(this._kind) !== -1;
+	}
+
+	/**
+	 * Returns true if type is union or intersection of types
+	 */
+	isUnionOrIntersection(): this is (UnionType | IntersectionType)
+	{
+		return this.isUnion() || this.isIntersection();
+	}
+
+	/**
+	 * Check if this type is an array.
+	 */
+	isArray(): this is GenericType<ClassType>
+	{
+		return this._kind === TypeKind.Array || this._kind === TypeKind.Tuple;
+		// return (this.isNative() || this._kind == TypeKind.LiteralType) && this.name == "Array";
+	}
+
+	/**
+	 * Check if this type is a Tuple.
+	 */
+	isTuple(): this is GenericType<ClassType>
+	{
+		return this._kind === TypeKind.Tuple;
+	}
+
+	/**
+	 * Determines whether the object represented by the current Type is an Enum.
+	 * @return {boolean}
+	 */
+	isEnum(): this is EnumType
+	{
+		return this._kind == TypeKind.Enum;
+	}
+
+	/**
+	 * Determines whether the object represented by the current Type is an Conditional type.
+	 * @return {boolean}
+	 */
+	isConditional(): this is ConditionalType
+	{
+		return this._kind == TypeKind.ConditionalType;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type is an object or not.
+	 */
+	isObject(): this is ObjectType
+	{
+		return this._kind == TypeKind.Object;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type is an object or not.
+	 */
+	isTemplate(): this is TemplateType // TODO: TemplateLiteral vs Template expression
+	{
+		return this._kind == TypeKind.TemplateLiteral;
+	}
+
+	//////////////////////////////////////////////////////////////////// CHECKS /////////////////////////////////////////////////////////////////
 
 	/**
 	 * Returns true whether current Type is instantiable.
 	 */
 	isInstantiable(): boolean
 	{
-		return this.isClass();
-	}
-
-	/**
-	 * Returns a value indicating whether the Type is a class or not.
-	 */
-	isClass(): boolean
-	{
-		return this.kind == TypeKind.Class;
-	}
-
-	/**
-	 * Returns a value indicating whether the Type is a interface or not.
-	 */
-	isInterface(): boolean
-	{
-		return this.kind == TypeKind.Interface;
+		return this.isClass(); // TODO: Array, Date etc...
 	}
 
 	/**
@@ -333,39 +310,7 @@ export class Type
 	 */
 	isPromise(): boolean
 	{
-		return this.kind === TypeKind.Promise;
-	}
-
-	/**
-	 * Returns a value indicating whether the Type is an literal or not.
-	 */
-	isLiteral(): boolean
-	{
-		return LiteralTypeKinds.indexOf(this.kind) !== -1;
-	}
-
-	/**
-	 * Returns a value indicating whether the Type is an template literal or not.
-	 */
-	isTemplateLiteral(): boolean
-	{
-		return this.kind === TypeKind.TemplateLiteral;
-	}
-
-	/**
-	 * Returns a value indicating whether the Type is an object literal or not.
-	 */
-	isObjectLiteral(): boolean
-	{
-		return this._kind == TypeKind.Object;
-	}
-
-	/**
-	 * Returns true if type is union or intersection of types
-	 */
-	isUnionOrIntersection(): boolean
-	{
-		return this.isUnion() || this.isIntersection();
+		return this._kind === TypeKind.Promise;
 	}
 
 	/**
@@ -373,7 +318,7 @@ export class Type
 	 */
 	isPrimitive(): boolean
 	{
-		return PrimitiveTypeKinds.indexOf(this.kind) !== -1;
+		return PrimitiveTypeKinds.indexOf(this._kind) !== -1;
 	}
 
 	/**
@@ -381,7 +326,7 @@ export class Type
 	 */
 	isString(): boolean
 	{
-		return this.kind === TypeKind.String || this.kind === TypeKind.StringLiteral || this.kind === TypeKind.TemplateLiteral;
+		return this._kind === TypeKind.String || this._kind === TypeKind.StringLiteral || this._kind === TypeKind.TemplateLiteral;
 	}
 
 	/**
@@ -389,7 +334,7 @@ export class Type
 	 */
 	isNumber(): boolean
 	{
-		return this.kind === TypeKind.Number || this.kind === TypeKind.NumberLiteral;
+		return this._kind === TypeKind.Number || this._kind === TypeKind.NumberLiteral;
 	}
 
 	/**
@@ -397,7 +342,7 @@ export class Type
 	 */
 	isBigInt(): boolean
 	{
-		return this.kind === TypeKind.BigInt || this.kind === TypeKind.BigIntLiteral;
+		return this._kind === TypeKind.BigInt || this._kind === TypeKind.BigIntLiteral;
 	}
 
 	/**
@@ -405,25 +350,8 @@ export class Type
 	 */
 	isBoolean(): boolean
 	{
-		return this.kind === TypeKind.Boolean || this.kind === TypeKind.BooleanLiteral;
-		// return (this.isNative() || this.kind == TypeKind.LiteralType) && this.name == "boolean";
-	}
-
-	/**
-	 * Check if this type is an array.
-	 */
-	isArray(): boolean
-	{
-		return this.kind === TypeKind.Array || this.kind === TypeKind.Tuple;
-		// return (this.isNative() || this.kind == TypeKind.LiteralType) && this.name == "Array";
-	}
-
-	/**
-	 * Check if this type is a Tuple.
-	 */
-	isTuple(): boolean
-	{
-		return this.kind === TypeKind.Tuple;
+		return this._kind === TypeKind.Boolean || this._kind === TypeKind.BooleanLiteral;
+		// return (this.isNative() || this._kind == TypeKind.LiteralType) && this.name == "boolean";
 	}
 
 	/**
@@ -431,7 +359,7 @@ export class Type
 	 */
 	isAny(): boolean
 	{
-		return this.kind === TypeKind.Any;
+		return this._kind === TypeKind.Any;
 	}
 
 	/**
@@ -439,7 +367,7 @@ export class Type
 	 */
 	isNever(): boolean
 	{
-		return this.kind === TypeKind.Never;
+		return this._kind === TypeKind.Never;
 	}
 
 	/**
@@ -447,7 +375,7 @@ export class Type
 	 */
 	isVoid(): boolean
 	{
-		return this.kind === TypeKind.Void;
+		return this._kind === TypeKind.Void;
 	}
 
 	/**
@@ -455,7 +383,7 @@ export class Type
 	 */
 	isUndefined(): boolean
 	{
-		return this.kind === TypeKind.Undefined;
+		return this._kind === TypeKind.Undefined;
 	}
 
 	/**
@@ -463,178 +391,56 @@ export class Type
 	 */
 	isNull(): boolean
 	{
-		return this.kind === TypeKind.Null;
+		return this._kind === TypeKind.Null;
 	}
 
 	/**
-	 * Check if this type is an "unknown".
-	 */
-	isUnknown(): boolean
-	{
-		return this.kind === TypeKind.Unknown;
-	}
-
-	/**
-	 *
 	 * @return {boolean}
 	 */
-	isObjectLike(): boolean
+	isObjectLike(): this is ObjectLikeTypeBase
 	{
-		return this.isObjectLiteral() || this.isClass() || this.isInterface();
+		return this.isObject() || this.isClass() || this.isInterface();
 	}
+
+	// TODO: isTemplate vs isTemplateLiteral.
+	// /**
+	//  * Returns a value indicating whether the Type is an template literal or not.
+	//  */
+	// isTemplateLiteral(): boolean
+	// {
+	// 	return this._kind === TypeKind.TemplateLiteral;
+	// }
 
 	/**
-	 * Determines whether the object represented by the current Type is an Enum.
-	 * @return {boolean}
+	 * Returns string representation of the type.
 	 */
-	isEnum(): boolean
+	toString(): string
 	{
-		return this.kind == TypeKind.Enum;
+		return `{${TypeKind[this._kind]} ${this.name} (${this.fullName})}`;
 	}
 
-	/**
-	 * Returns information about the enumerable elements.
-	 */
-	getEnum(): EnumInfo | undefined
-	{
-		if (!this.isEnum())
-		{
-			return undefined;
-		}
 
-		return this._enum ?? (this._enum = new EnumInfo(this));
-	}
+	//////////////////////////////////////////////    NOT REFACTORED   ///////////////////////////////////////
 
-	/**
-	 * Constructor function in case Type is class.
-	 */
-	getCtor(): Promise<{ new(...args: any[]): any } | undefined>
-	{
-		return this._ctor?.() ?? Promise.resolve(undefined);
-	}
-
-	/**
-	 * List of underlying types in case Type is union or intersection.
-	 */
-	getTypes(): ReadonlyArray<Type>
-	{
-		if (!this._typesReference)
-		{
-			return [];
-		}
-
-		return (this._types ?? (this._types = this._typesReference.map(type => Metadata.resolveType(type)))).slice();
-	}
-
-	/**
-	 * Returns array of type parameters.
-	 */
-	getTypeParameters(): ReadonlyArray<Type>
-	{
-		if (!this._typeParametersReference)
-		{
-			return [];
-		}
-
-		return (this._typeParameters ?? (this._typeParameters = this._typeParametersReference.map(type => Metadata.resolveType(type)))).slice();
-	}
-
-	/**
-	 * Returns type arguments in case of generic type.
-	 */
-	getTypeArguments(): ReadonlyArray<Type>
-	{
-		if (!this._typeArgsReference)
-		{
-			return [];
-		}
-
-		return (this._typeArgs ?? (this._typeArgs = this._typeArgsReference.map(type => Metadata.resolveType(type)))).slice();
-	}
-
-	/**
-	 * Returns constructor description when Type is a class.
-	 */
-	getConstructors(): ReadonlyArray<ConstructorInfo> | undefined
-	{
-		if (!this.isClass())
-		{
-			return undefined;
-		}
-
-		return this._constructors.slice();
-	}
-
-	/**
-	 * Returns array of properties.
-	 */
-	getProperties(): ReadonlyArray<PropertyInfo>
-	{
-		return this._properties.slice();
-	}
-
-	/**
-	 * Returns property matched by name.
-	 */
-	getProperty(name: string): PropertyInfo | undefined
-	{
-		return this._properties.find(x => x.name === name);
-	}
-
-	/**
-	 * Returns array of methods.
-	 */
-	getMethods(): ReadonlyArray<MethodInfo>
-	{
-		return this._methods.slice();
-	}
-
-	/**
-	 * Returns method matched by name.
-	 */
-	getMethod(name: string): MethodInfo | undefined
-	{
-		return this._methods.find(x => x.name === name);
-	}
-
-	/**
-	 * Returns array of decorators.
-	 */
-	getDecorators(): ReadonlyArray<DecoratorInfo>
-	{
-		return this._decorators.slice();
-	}
+	// /**
+	//  * Returns type arguments in case of generic type.
+	//  */
+	// getTypeArguments(): ReadonlyArray<Type>
+	// {
+	// 	if (!this._typeArgsReference)
+	// 	{
+	// 		return [];
+	// 	}
+	//
+	// 	return (this._typeArgs ?? (this._typeArgs = this._typeArgsReference.map(type => Metadata.resolveType(type)))).slice();
+	// }
 
 	/**
 	 * Returns object with all methods and properties from current Type and all methods and properties inherited from base types and interfaces to this Type.
 	 */
-	flattenInheritedMembers(): {
-		properties: { [propertyName: string]: PropertyInfo },
-		methods: { [methodName: string]: MethodInfo }
-	}
+	flattenInheritedMembers(): FlattenedObject
 	{
 		return this._flattened ?? (this._flattened = flatten(this));
-	}
-
-	/**
-	 * Determines whether the class represented by the current Type derives from the class represented by the specified Type.
-	 * @param {Type} classType
-	 */
-	isSubclassOf(classType: Type): boolean
-	{
-		return classType.isClass() && this.isClass() && this.baseType !== undefined && (this.baseType.is(classType) || this.baseType.isSubclassOf(classType));
-	}
-
-	/**
-	 * Determines whether the current Type derives from the specified Type.
-	 * @param {Type} targetType
-	 */
-	isDerivedFrom(targetType: Type): boolean
-	{
-		return this.is(targetType)
-			|| this.baseType?.isAssignableTo(targetType)
-			|| this.interface?.isAssignableTo(targetType)
-			|| false;
 	}
 
 	/**
@@ -643,7 +449,7 @@ export class Type
 	 * @param {Type} target
 	 * @return {boolean}
 	 */
-	isStructurallyAssignableTo(target: Type)
+	isStructurallyAssignableTo(target: Type): boolean
 	{
 		if (!this.isObjectLike() || !target.isObjectLike())
 		{
@@ -654,9 +460,9 @@ export class Type
 		const currentProperties = Object.values(currentMembers.properties);
 		const currentMethods = Object.values(currentMembers.methods);
 
-		const targetMembers = target.flattenInheritedMembers();
-		const targetProperties = Object.values(targetMembers.properties);
-		const targetMethods = Object.values(targetMembers.methods);
+		const targetMembers: FlattenedObject = target.flattenInheritedMembers();
+		const targetProperties: PropertyInfo[] = Object.values(targetMembers.properties);
+		const targetMethods: MethodInfo[] = Object.values(targetMembers.methods);
 
 		// All the target properties are required (may be optional), so all of them must be present in current Type.. to be assignable
 		return targetProperties.every(targetProperty =>
@@ -707,7 +513,7 @@ export class Type
 				return false;
 			}
 
-			const targetTypes = target.getTypes();
+			const targetTypes = target.types;
 
 			// Source is not container, but it can be subtype
 			if (!this.isUnionOrIntersection())
@@ -723,36 +529,27 @@ export class Type
 				return false;
 			}
 
-			return this.getTypes().every(thisType => targetTypes.some(targetType => thisType.isAssignableTo(targetType))) || false;
-		}
-
-		// Both must be array or not
-		if (this.isArray() != target.isArray())
-		{
-			return false;
+			return this.types.every(thisType => targetTypes.some(targetType => thisType.isAssignableTo(targetType))) || false;
 		}
 
 		// It is array. Type of array must match.
 		if (this.isArray())
 		{
-			return this.getTypeArguments()[0].isDerivedFrom(target.getTypeArguments()[0])
-				// anonymous type check
-				|| this.isStructurallyAssignableTo(target.getTypeArguments()[0])
-				|| false;
+			if (!target.isArray())
+			{
+				return false;
+			}
+
+			const thisTypeParam = this.getTypeParameters()[0];
+			const targetTypeParam = target.getTypeParameters()[0];
+
+			return thisTypeParam.isAssignableTo(targetTypeParam);
 		}
 
-		return this.isDerivedFrom(target)
+		return (this.isExtendable() && this.isDerivedFrom(target))
 			// anonymous type check
 			|| this.isStructurallyAssignableTo(target)
 			|| false;
-	}
-
-	/**
-	 * Returns string representation of the type.
-	 */
-	toString(): string
-	{
-		return `{${TypeKind[this.kind]} ${this.name} (${this.fullName})}`;
 	}
 }
 

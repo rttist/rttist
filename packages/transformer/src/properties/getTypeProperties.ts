@@ -1,5 +1,5 @@
-import { TypeKind }                   from "@rtti/abstract";
 import * as ts                        from "typescript";
+import { TypeKind }                   from "@rtti/abstract";
 import { MetadataTypeValues }         from "../config-options";
 import { Context }                    from "../contexts/Context";
 import {
@@ -9,10 +9,7 @@ import {
 }                                     from "../declarations";
 import { getTypeNodeIdentifier }      from "../utils/getTypeNodeIdentifier";
 import { getDeclaration }             from "../utils/symbolHelpers";
-import {
-	getNodeLocationText,
-	getTypeSourceLocationText
-} from "../utils/traceHelpers";
+import { getTypeSourceLocationText }  from "../utils/traceHelpers";
 import { getConstructors }            from "./getConstructors";
 import { getDecorators }              from "../getDecorators";
 import { log }                        from "../log";
@@ -26,7 +23,7 @@ import {
 import { getProperties }              from "./getProperties";
 
 type TypeMapperResult = TypeProperties | undefined;
-type TypeMapper = (type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context) => TypeMapperResult;
+type TypeMapper = (type: ts.Type/*, typeNode: ts.TypeNode | undefined*/, context: Context) => TypeMapperResult;
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
@@ -52,61 +49,66 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 
 /**
  * Return TypeProperties object describing given type.
- * @param context
- * @param typeNode
  * @param type
+ * @param context
  */
-export function getTypeProperties(context: Context, typeNode: ts.TypeNode | undefined, type: ts.Type): TypeProperties
+export function getTypeProperties(type: ts.Type, context: Context): TypeProperties
 {
 	if (context.config.debugMode)
 	{
 		log.trace(getTypeSourceLocationText(type, context));
 	}
 
-	const primitiveTypeProperties = getPrimitiveTypeProperties(context, typeNode, type);
+	const primitiveTypeProperties = getPrimitiveTypeProperties(type, context);
 
 	if (primitiveTypeProperties !== undefined)
 	{
 		return primitiveTypeProperties;
 	}
 
-	const literalDescriptionResult = getLiteralProperties(context, typeNode, type);
-
-	if (literalDescriptionResult !== undefined)
+	if (type.isLiteral())
 	{
-		return literalDescriptionResult;
+		const literalDescriptionResult = getLiteralProperties(type, context);
+
+		if (literalDescriptionResult !== undefined)
+		{
+			return literalDescriptionResult;
+		}
+
+		context.log.warn("Unhandled Literal type (flags: " + type.flags + ").\r\n\t" + getTypeSourceLocationText(type, context));
+		return UnknownTypeProperties;
 	}
 
 	const mapper = TypeFlagsMappers[type.flags];
 
 	if (mapper === undefined)
 	{
-		context.log.warn("Unhandled type kind " + type.flags + "\r\n\t" + getNodeLocationText(typeNode));
+		context.log.warn("No mapper found for the types with flags " + type.flags + ").\r\n\t" + getTypeSourceLocationText(type, context));
 		return UnknownTypeProperties;
 	}
 
-	const mapperResult = mapper(type, typeNode, context);
+	const mapperResult = mapper(type, context);
 
 	if (mapperResult)
 	{
 		return mapperResult;
 	}
 
-	context.log.warn("Unhandled type kind " + type.flags);
+	context.log.debug(`Mapper '${mapper.name}' returned invalid result for type with flags ${type.flags}.\r\n\t` + getTypeSourceLocationText(type, context));
 
 
-	let symbol = undefined;
-	let typeSymbol = type.getSymbol();
+	// let symbol = undefined;
+	// let typeSymbol = type.getSymbol();
 
-	if (type.aliasSymbol)
-	{
-		symbol = type.aliasSymbol;
-	}
-
-	if (!symbol && typeSymbol)
-	{
-		symbol = typeSymbol;
-	}
+	// if (type.aliasSymbol)
+	// {
+	// 	symbol = type.aliasSymbol;
+	// }
+	//
+	// if (!symbol && typeSymbol)
+	// {
+	// 	symbol = typeSymbol;
+	// }
 
 	// if (type.isUnion() && (type.flags & ts.TypeFlags.EnumLiteral) == ts.TypeFlags.EnumLiteral)
 	// {
@@ -128,7 +130,7 @@ export function getTypeProperties(context: Context, typeNode: ts.TypeNode | unde
 	// 	};
 	// }
 
-	const checker = context.typeChecker;
+	// const checker = context.typeChecker;
 
 	// if (type.isUnionOrIntersection())
 	// {
@@ -193,94 +195,95 @@ export function getTypeProperties(context: Context, typeNode: ts.TypeNode | unde
 	// 	}
 	// }
 
-	if (symbol)
-	{
-		if (symbol.flags == ts.SymbolFlags.TypeLiteral && type.flags == ts.TypeFlags.Object) // TODO: CHeck what is in type.objectFlags!
-		{
-			if (context.config.debugMode)
-			{
-				log.info("Symbol is TypeLiteral of Object type.");
-			}
-
-			const declaration = symbol.declarations?.[0];
-
-			if (declaration && ts.isTypeLiteralNode(declaration) && type.aliasSymbol)
-			{
-				const x = {
-					kind: TypeKind.Object,
-					name: type.aliasSymbol.name,
-					fullName: getTypeFullName(type, context),
-					properties: getProperties(context, type)
-				};
-
-				return UnknownTypeProperties;
-			}
-
-			const x = {
-				kind: TypeKind.Object,
-				properties: getProperties(context, type)
-			};
-
-			return UnknownTypeProperties;
-		}
-
-		if (symbol.valueDeclaration && (
-			ts.isPropertyDeclaration(symbol.valueDeclaration)
-			|| ts.isPropertySignature(symbol.valueDeclaration)
-			|| ts.isVariableDeclaration(symbol.valueDeclaration)
-			|| ts.isParameter(symbol.valueDeclaration)
-		))
-		{
-			if (symbol.valueDeclaration.type) // TODO: Review. This whole section is bullshit!
-			{
-				if (ts.isTypeReferenceNode(symbol.valueDeclaration.type)
-					&& typeSymbol && (typeSymbol.flags & ts.SymbolFlags.Transient) == ts.SymbolFlags.Transient)
-				{
-					const x = {
-						kind: TypeKind.Object, //TypeKind.TransientTypeReference,
-						name: (symbol.valueDeclaration.type.typeName as any).escapedText,
-						arguments: symbol.valueDeclaration.type.typeArguments?.map(typeNode => context.metadata.addType(undefined, typeNode)
-
-							// getTypeCall(
-							// 	checker.getTypeAtLocation(typeNode),
-							// 	checker.getSymbolAtLocation(typeNode),
-							// 	context
-							// )
-						) || [],
-					};
-
-					return UnknownTypeProperties;
-				}
-
-				// TODO: Review this union & intersection. There is Union & Intersection handled on line ~86
-				let isUnion, isIntersection = false;
-
-				if (
-					(isUnion = ts.isUnionTypeNode(symbol.valueDeclaration.type))
-					|| (isIntersection = ts.isIntersectionTypeNode(symbol.valueDeclaration.type))
-				)
-				{
-					throw new Error("DEBUG Union or intersection!"); // TODO: remove this; Unions and Intersections should be handled above
-					// const types = symbol.valueDeclaration.type.types
-					// 	.map(typeNode => getTypeCall(
-					// 			checker.getTypeAtLocation(typeNode),
-					// 			checker.getSymbolAtLocation(typeNode),
-					// 			context
-					// 		)
-					// 	);
-					//
-					// return {
-					// 	properties: {
-					// 		n: symbol.escapedName.toString(),
-					// 		k: isUnion ? TypeKind.Union : TypeKind.Intersection,
-					// 		types: types
-					// 	},
-					// 	localType: false
-					// };
-				}
-			}
-		}
-	}
+	// if (symbol)
+	// {
+	// 	if (symbol.flags == ts.SymbolFlags.TypeLiteral && type.flags == ts.TypeFlags.Object) // TODO: CHeck what is in type.objectFlags!
+	// 	{
+	// 		if (context.config.debugMode)
+	// 		{
+	// 			log.info("Symbol is TypeLiteral of Object type.");
+	// 		}
+	//
+	// 		const declaration = symbol.declarations?.[0];
+	//
+	// 		if (declaration && ts.isTypeLiteralNode(declaration) && type.aliasSymbol)
+	// 		{
+	// 			const x = {
+	// 				kind: TypeKind.Object,
+	// 				name: type.aliasSymbol.name,
+	// 				fullName: getTypeFullName(type, context),
+	// 				properties: getProperties(type, context)
+	// 			};
+	//
+	// 			return UnknownTypeProperties;
+	// 		}
+	//
+	// 		const x = {
+	// 			kind: TypeKind.Object,
+	// 			properties: getProperties(type, context)
+	// 		};
+	//
+	// 		return UnknownTypeProperties;
+	// 	}
+	//
+	// 	if (symbol.valueDeclaration && (
+	// 		ts.isPropertyDeclaration(symbol.valueDeclaration)
+	// 		|| ts.isPropertySignature(symbol.valueDeclaration)
+	// 		|| ts.isVariableDeclaration(symbol.valueDeclaration)
+	// 		|| ts.isParameter(symbol.valueDeclaration)
+	// 	))
+	// 	{
+	// 		if (symbol.valueDeclaration.type) // TODO: Review. This whole section is bullshit!
+	// 		{
+	// 			if (ts.isTypeReferenceNode(symbol.valueDeclaration.type)
+	// 				&& typeSymbol && (typeSymbol.flags & ts.SymbolFlags.Transient) == ts.SymbolFlags.Transient)
+	// 			{
+	// 				const x = {
+	// 					kind: TypeKind.Object, //TypeKind.TransientTypeReference,
+	// 					name: (symbol.valueDeclaration.type.typeName as any).escapedText,
+	// 					arguments: symbol.valueDeclaration.type.typeArguments?.map(typeNode => context.metadata.addType(undefined, undefined, context)
+	// 					// arguments: symbol.valueDeclaration.type.typeArguments?.map(typeNode => context.metadata.addType(undefined, typeNode)
+	//
+	// 						// getTypeCall(
+	// 						// 	checker.getTypeAtLocation(typeNode),
+	// 						// 	checker.getSymbolAtLocation(typeNode),
+	// 						// 	context
+	// 						// )
+	// 					) || [],
+	// 				};
+	//
+	// 				return UnknownTypeProperties;
+	// 			}
+	//
+	// 			// TODO: Review this union & intersection. There is Union & Intersection handled on line ~86
+	// 			let isUnion, isIntersection = false;
+	//
+	// 			if (
+	// 				(isUnion = ts.isUnionTypeNode(symbol.valueDeclaration.type))
+	// 				|| (isIntersection = ts.isIntersectionTypeNode(symbol.valueDeclaration.type))
+	// 			)
+	// 			{
+	// 				throw new Error("DEBUG Union or intersection!"); // TODO: remove this; Unions and Intersections should be handled above
+	// 				// const types = symbol.valueDeclaration.type.types
+	// 				// 	.map(typeNode => getTypeCall(
+	// 				// 			checker.getTypeAtLocation(typeNode),
+	// 				// 			checker.getSymbolAtLocation(typeNode),
+	// 				// 			context
+	// 				// 		)
+	// 				// 	);
+	// 				//
+	// 				// return {
+	// 				// 	properties: {
+	// 				// 		n: symbol.escapedName.toString(),
+	// 				// 		k: isUnion ? TypeKind.Union : TypeKind.Intersection,
+	// 				// 		types: types
+	// 				// 	},
+	// 				// 	localType: false
+	// 				// };
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
 	return UnknownTypeProperties;
@@ -572,29 +575,29 @@ export function getTypeProperties(context: Context, typeNode: ts.TypeNode | unde
 }
 
 
-function mapEnum(type: ts.EnumType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapEnum(type: ts.EnumType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapEnumLiteral(type: ts.UnionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapEnumLiteral(type: ts.UnionType/*, typeNode: ts.TypeNode undefined*/, context: Context): TypeMapperResult
 {
 	return {
 		id: getTypeId(type),
 		kind: TypeKind.EnumLiteral,
 		name: type.symbol.escapedName.toString(),
-		types: type.types.map(type => context.metadata.addType(type, typeNode)/*getTypeCall(type, undefined, context)*/)  // TODO: There cannot be "typeNode". AddType must be refactored cuz typeNode is not accessible in all cases.
+		types: type.types.map(type => context.metadata.addType(type, undefined, context)/*getTypeCall(type, undefined, context)*/)  // TODO: There cannot be "typeNode". AddType must be refactored cuz typeNode is not accessible in all cases.
 	};
 }
 
-function mapESSymbol(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapESSymbol(type: ts.Type/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	return {
 		kind: TypeKind.Symbol
 	};
 }
 
-function mapUniqueEESymbol(type: ts.UniqueESSymbolType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapUniqueEESymbol(type: ts.UniqueESSymbolType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	return {
 		id: getTypeId(type),
@@ -603,13 +606,13 @@ function mapUniqueEESymbol(type: ts.UniqueESSymbolType, typeNode: ts.TypeNode | 
 	};
 }
 
-function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/ , context: Context): TypeMapperResult
 {
 	const mapper = ObjectFlagsMappers[type.objectFlags];
 
 	if (mapper)
 	{
-		const mapperResult = mapper(type, typeNode, context);
+		const mapperResult = mapper(type, context);
 
 		if (mapperResult)
 		{
@@ -633,14 +636,14 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode | undefined, conte
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol.getEscapedName().toString(),
 			fullName: getTypeFullName(type, context),
-			properties: getProperties(context, type),
-			methods: getMethods(context, type),
-			decorators: decorators,
+			properties: getProperties(type, context),
+			methods: getMethods(type, context),
+			// decorators: decorators,
 		};
 
 		if (type.objectFlags == ts.ObjectFlags.Class)
 		{
-			properties.constructors = getConstructors(type, context);
+			// properties.constructors = getConstructors(type, context);
 
 			const constructorExport = undefined;//getExportOfConstructor(symbol, context); // TODO: Implement
 
@@ -667,113 +670,113 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode | undefined, conte
 			// If it is not exported, it must be getType<> of local class; in that case, we have direct access to class. But this type info must be generated in file.
 			else
 			{
-				properties.notExported = true;
+				properties.exported = false;
 
-				if (ts.isTypeReferenceNode(typeNode))
-				{
-					let expression: ts.Expression = getTypeNodeIdentifier(typeNode) as ts.Expression;
-
-					if (expression)
-					{
-						// In "typelib" mode we have to use typeof() to ensure there will be no error after getting ctor, 
-						// because Identifier will be undefined in typelib file
-						if (context.config.metadataType == MetadataTypeValues.typeLib)
-						{
-							expression = ts.factory.createConditionalExpression(
-								ts.factory.createBinaryExpression(
-									ts.factory.createTypeOfExpression(expression),
-									ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
-									ts.factory.createStringLiteral("function")
-								),
-								ts.factory.createToken(ts.SyntaxKind.QuestionToken),
-								expression,
-								ts.factory.createToken(ts.SyntaxKind.ColonToken),
-								ts.factory.createIdentifier("undefined")
-							);
-						}
-
-						// function() { return Promise.resolve(TypeCtor) }
-						properties.ctor = ts.factory.createFunctionExpression(
-							undefined,
-							undefined,
-							undefined,
-							undefined,
-							[],
-							undefined,
-							ts.factory.createBlock([
-								ts.factory.createReturnStatement(
-									ts.factory.createCallExpression(
-										ts.factory.createPropertyAccessExpression(
-											ts.factory.createIdentifier("Promise"),
-											ts.factory.createIdentifier("resolve")
-										),
-										undefined,
-										[
-											expression
-										]
-									)
-								)
-							], true)
-						);
-					}
-				}
+				// if (ts.isTypeReferenceNode(typeNode))
+				// {
+				// 	let expression: ts.Expression = getTypeNodeIdentifier(typeNode) as ts.Expression;
+				//
+				// 	if (expression)
+				// 	{
+				// 		// In "typelib" mode we have to use typeof() to ensure there will be no error after getting ctor, 
+				// 		// because Identifier will be undefined in typelib file
+				// 		if (context.config.metadataType == MetadataTypeValues.typeLib)
+				// 		{
+				// 			expression = ts.factory.createConditionalExpression(
+				// 				ts.factory.createBinaryExpression(
+				// 					ts.factory.createTypeOfExpression(expression),
+				// 					ts.factory.createToken(ts.SyntaxKind.EqualsEqualsToken),
+				// 					ts.factory.createStringLiteral("function")
+				// 				),
+				// 				ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+				// 				expression,
+				// 				ts.factory.createToken(ts.SyntaxKind.ColonToken),
+				// 				ts.factory.createIdentifier("undefined")
+				// 			);
+				// 		}
+				//
+				// 		// function() { return Promise.resolve(TypeCtor) }
+				// 		properties.ctor = ts.factory.createFunctionExpression(
+				// 			undefined,
+				// 			undefined,
+				// 			undefined,
+				// 			undefined,
+				// 			[],
+				// 			undefined,
+				// 			ts.factory.createBlock([
+				// 				ts.factory.createReturnStatement(
+				// 					ts.factory.createCallExpression(
+				// 						ts.factory.createPropertyAccessExpression(
+				// 							ts.factory.createIdentifier("Promise"),
+				// 							ts.factory.createIdentifier("resolve")
+				// 						),
+				// 						undefined,
+				// 						[
+				// 							expression
+				// 						]
+				// 					)
+				// 				)
+				// 			], true)
+				// 		);
+				// 	}
+				// }
 			}
 		}
 
 		const declaration = getDeclaration(symbol);
 
-		if (declaration && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)))
-		{
-			// extends & implements
-			if (declaration.heritageClauses)
-			{
-				const ext = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ExtendsKeyword)[0];
-
-				if (ext)
-				{
-					properties.baseType = context.metadata.addType(undefined, ext.types[0]);
-					// getTypeCall(
-					// 	context.typeChecker.getTypeAtLocation(ext.types[0]),
-					// 	context.typeChecker.getSymbolAtLocation(ext.types[0]),
-					// 	context
-					// );
-				}
-
-				const impl = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ImplementsKeyword)[0];
-
-				if (impl)
-				{
-					properties.interface = context.metadata.addType(undefined, impl.types[0]);
-					// getTypeCall(
-					// 	context.typeChecker.getTypeAtLocation(impl.types[0]),
-					// 	context.typeChecker.getSymbolAtLocation(impl.types[0]),
-					// 	context
-					// );
-				}
-			}
-
-			// Type parameters
-			if (declaration.typeParameters)
-			{
-				properties.typeParameters = declaration.typeParameters.map(typeParameterDeclaration => {
-						// typeParameterDeclaration.
-						const type = context.typeChecker.getTypeAtLocation(typeParameterDeclaration);
-						const typeNode = context.typeChecker.typeToTypeNode(type, declaration, undefined); // TODO: Review this!!!!!!!!!
-
-						if (typeNode)
-						{
-							return context.metadata.addType(undefined, typeNode);
-						}
-						// 	context.typeChecker.getTypeAtLocation(typeParameterDeclaration),
-						// 	context.typeChecker.getSymbolAtLocation(typeParameterDeclaration),
-						// 	context
-						// )
-
-						return UnknownTypeReference;
-					}
-				);
-			}
-		}
+		// if (declaration && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)))
+		// {
+		// 	// extends & implements
+		// 	if (declaration.heritageClauses)
+		// 	{
+		// 		const ext = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ExtendsKeyword)[0];
+		//
+		// 		if (ext)
+		// 		{
+		// 			properties.baseType = context.metadata.addType(undefined, ext.types[0]);
+		// 			// getTypeCall(
+		// 			// 	context.typeChecker.getTypeAtLocation(ext.types[0]),
+		// 			// 	context.typeChecker.getSymbolAtLocation(ext.types[0]),
+		// 			// 	context
+		// 			// );
+		// 		}
+		//
+		// 		const impl = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ImplementsKeyword)[0];
+		//
+		// 		if (impl)
+		// 		{
+		// 			properties.interface = context.metadata.addType(undefined, impl.types[0]);
+		// 			// getTypeCall(
+		// 			// 	context.typeChecker.getTypeAtLocation(impl.types[0]),
+		// 			// 	context.typeChecker.getSymbolAtLocation(impl.types[0]),
+		// 			// 	context
+		// 			// );
+		// 		}
+		// 	}
+		//
+		// 	// Type parameters
+		// 	if (declaration.typeParameters)
+		// 	{
+		// 		properties.typeParameters = declaration.typeParameters.map(typeParameterDeclaration => {
+		// 				// typeParameterDeclaration.
+		// 				const type = context.typeChecker.getTypeAtLocation(typeParameterDeclaration);
+		// 				const typeNode = context.typeChecker.typeToTypeNode(type, declaration, undefined); // TODO: Review this!!!!!!!!!
+		//
+		// 				if (typeNode)
+		// 				{
+		// 					return context.metadata.addType(undefined, typeNode);
+		// 				}
+		// 				// 	context.typeChecker.getTypeAtLocation(typeParameterDeclaration),
+		// 				// 	context.typeChecker.getSymbolAtLocation(typeParameterDeclaration),
+		// 				// 	context
+		// 				// )
+		//
+		// 				return UnknownTypeReference;
+		// 			}
+		// 		);
+		// 	}
+		// }
 
 		return properties;
 	}
@@ -808,7 +811,7 @@ function mapObject(type: ts.ObjectType, typeNode: ts.TypeNode | undefined, conte
 	// };
 }
 
-function mapUnion(type: ts.UnionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapUnion(type: ts.UnionType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Union,
@@ -819,7 +822,7 @@ function mapUnion(type: ts.UnionType, typeNode: ts.TypeNode | undefined, context
 	return undefined;
 }
 
-function mapIntersection(type: ts.IntersectionType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapIntersection(type: ts.IntersectionType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Intersection,
@@ -830,12 +833,12 @@ function mapIntersection(type: ts.IntersectionType, typeNode: ts.TypeNode | unde
 	return undefined;
 }
 
-function mapIndex(type: ts.IndexType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapIndex(type: ts.IndexType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapIndexedAccessType(type: ts.IndexedAccessType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapIndexedAccessType(type: ts.IndexedAccessType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.IndexedAccess,
@@ -848,7 +851,7 @@ function mapIndexedAccessType(type: ts.IndexedAccessType, typeNode: ts.TypeNode 
 	return undefined;
 }
 
-function mapConditional(type: ts.ConditionalType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapConditional(type: ts.ConditionalType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
 {
 	const ct = type.root.node;
 	const extendsType = context.typeChecker.getTypeAtLocation(ct.extendsType);
@@ -866,12 +869,12 @@ function mapConditional(type: ts.ConditionalType, typeNode: ts.TypeNode | undefi
 	return undefined;
 }
 
-function mapTemplateLiteral(type: ts.TemplateLiteralType, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapTemplateLiteral(type: ts.TemplateLiteralType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapTypeParameter(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TypeMapperResult
+function mapTypeParameter(type: ts.Type/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	const declaration = getDeclaration(type.symbol);
 
@@ -883,19 +886,17 @@ function mapTypeParameter(type: ts.Type, typeNode: ts.TypeNode | undefined, cont
 				id: getTypeId(type),
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
-				generic: {
-					constraint: declaration.constraint && context.metadata.addType(undefined, declaration.constraint) || undefined,
-					default: declaration.default && context.metadata.addType(undefined, declaration.default) || undefined
-				}
+				constraint: declaration.constraint && context.metadata.addType(context.typeChecker.getTypeAtLocation(declaration.constraint), undefined, context) || undefined,
+				default: declaration.default && context.metadata.addType(context.typeChecker.getTypeAtLocation(declaration.default), undefined, context) || undefined
 			};
 		}
 	}
 
-	context.log.error("Unable to resolve TypeParameter's declaration.");
+	context.log.warn("Unhandled TypeParameter.\r\n\t" + getTypeSourceLocationText(type, context));
 	return UnknownTypeProperties;
 }
 
-function mapTuple(type: ts.TupleType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapTuple(type: ts.TupleType/*, typeNode: ts.TypeNode*/, context: Context): TypeMapperResult
 {
 	const symbol = type.aliasSymbol || type.symbol;
 
@@ -919,13 +920,13 @@ function mapTuple(type: ts.TupleType, typeNode: ts.TypeNode, context: Context): 
 	};
 }
 
-function mapObjectLiteral(type: ts.ObjectType, typeNode: ts.TypeNode, context: Context): TypeMapperResult
+function mapObjectLiteral(type: ts.ObjectType/*, typeNode: ts.TypeNode*/, context: Context): TypeMapperResult
 {
-	const symbol = type.aliasSymbol || type.symbol;
+	// const symbol = type.aliasSymbol || type.symbol;
 
 	return {
 		id: getTypeId(type),
 		kind: TypeKind.Object,
-		properties: getProperties(context, type)
+		properties: getProperties(type, context)
 	};
 }
