@@ -1,9 +1,10 @@
-import { GenericTypeRegister } from "./GenericTypeRegister";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rtti/core";
+import { GenericTypeRegister }     from "./GenericTypeRegister";
 import {
 	getGlobalThis,
 	getTypeOfRuntimeValue
-}                              from "./helpers";
-import { Type }                from "./Type";
+}                                  from "./helpers";
+import { Type }                    from "./Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -31,4 +32,19 @@ Reflect.getType = function getType<T>(...args: any[]): Type {
 Reflect.getGenericClass = function getGenericClass<T extends { new(...args: any[]): any }>(classCtor: T, ...typeParameters: Type[]): T
 {
 	return GenericTypeRegister.getGenericClass(classCtor, typeParameters);
+};
+
+Reflect.getClassTypeParam = function getClassTypeParam(instance: any, typeParameterIndex: number): Type {
+	return (Object.getPrototypeOf(instance)[PROTOTYPE_TYPE_PROPERTY] as Type)
+		.getTypeParameters()[typeParameterIndex] ?? Type.Unknown;
+};
+
+Reflect.constructGeneric = function constructGeneric<TType = any>(
+	target: { new(...args: any): TType } | Function,
+	typeParameters: Type[],
+	argumentsList: ArrayLike<any>,
+	newTarget?: Function
+): TType {
+	const Class = Reflect.getGenericClass(target as { new(...args: any): TType }, ...typeParameters);
+	return Reflect.construct(Class, argumentsList, newTarget);
 };

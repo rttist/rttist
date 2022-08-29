@@ -46,7 +46,7 @@ class Register
 
 		if (!genericClass)
 		{
-			const name = classCtor.name;
+			const name = classCtor.name + "{}";
 
 			this.createdTypes[fullName] = genericClass = {
 				[name]: class extends classCtor
@@ -54,6 +54,9 @@ class Register
 					constructor(...args: any[])
 					{
 						super(...args);
+						// this.__getType = () => {
+						// 	return Reflect.getType(this);
+						// }
 					}
 				}
 			}[name];
