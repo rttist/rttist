@@ -7,10 +7,24 @@ import { Metadata }           from "../Metadata";
  */
 export class IndexInfo
 {
+	/**
+	 * @internal
+	 */
 	private readonly _keyTypeReference: TypeReference;
+
+	/**
+	 * @internal
+	 */
 	private readonly _typeReference: TypeReference;
 
+	/**
+	 * @internal
+	 */
 	private _keyType?: Type;
+
+	/**
+	 * @internal
+	 */
 	private _type?: Type;
 
 	/**
@@ -42,7 +56,7 @@ export class IndexInfo
 	{
 		this._keyTypeReference = initializer.key;
 		this._typeReference = initializer.type;
-		this.readonly = initializer.readonly;
+		this.readonly = initializer.readonly || false;
 	}
 }
 
@@ -50,5 +64,5 @@ export interface IndexInfoInitializer
 {
 	key: TypeReference;
 	type: TypeReference;
-	readonly: boolean;
+	readonly?: boolean;
 }

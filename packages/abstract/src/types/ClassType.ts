@@ -1,15 +1,14 @@
 import type {
 	AsyncCtorReference,
 	ClassTypeMetadata,
-	ConstructorInfo,
 	DecoratorInfo,
-	MethodInfo,
-	TypeReference
+	TypeReference,
+	Signature
 }                                       from "../declarations";
+import type { GenericType }             from "./GenericType";
 import { Metadata }                     from "../Metadata";
 import { Type }                         from "../Type";
 import { ExtendableObjectLikeTypeBase } from "./ExtendableObjectLikeTypeBase";
-import { GenericType }                  from "./GenericType";
 
 export class ClassType extends ExtendableObjectLikeTypeBase
 {
@@ -18,7 +17,7 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	private _interface?: Type;
 	private readonly _ctor: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
-	private readonly _constructors: ReadonlyArray<ConstructorInfo>;
+	private readonly _constructors: ReadonlyArray<Signature>;
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 
 	/**
@@ -40,8 +39,8 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 
 		this._ctor = initializer.ctor;
 		this._interfaceReference = initializer.interface;
-		this._constructors = initializer.constructors ?? [];
-		this._decorators = initializer.decorators ?? [];
+		this._constructors = Object.freeze(initializer.constructors ?? []);
+		this._decorators = Object.freeze(initializer.decorators ?? []);
 	}
 
 	/**
@@ -61,11 +60,11 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	}
 
 	/**
-	 * Returns constructor description when Type is a class.
+	 * Returns array of constructor signatures.
 	 */
-	getConstructors(): ReadonlyArray<ConstructorInfo>
+	getConstructors(): ReadonlyArray<Signature>
 	{
-		return this._constructors.slice();
+		return this._constructors;
 	}
 
 	/**
@@ -73,7 +72,7 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	 */
 	getDecorators(): ReadonlyArray<DecoratorInfo>
 	{
-		return this._decorators.slice();
+		return this._decorators;
 	}
 
 	/**
@@ -99,7 +98,7 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	isDerivedFrom(targetType: Type): boolean
 	{
 		return super.isDerivedFrom(targetType)
-			|| this.interface?.isAssignableTo(targetType)
+			// || this.interface?.isAssignableTo(targetType) // TODO: Solve.
 			|| false;
 	}
 }

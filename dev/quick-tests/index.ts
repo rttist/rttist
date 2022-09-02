@@ -1,4 +1,4 @@
-import {} from "@rtti/abstract";
+// import "@rtti/abstract";
 import { SomeType } from "./SomeType";
 
 Reflect.getType<number>();

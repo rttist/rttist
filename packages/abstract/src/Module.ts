@@ -46,7 +46,7 @@ export class Module
 	 */
 	constructor(initializer: ModuleMetadata)
 	{
-		this._id = initializer.id || Symbol();
+		this._id = initializer.id;// || Symbol();
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._children = initializer.children || [];
@@ -73,7 +73,7 @@ export class Module
 
 export interface ModuleMetadata
 {
-	id?: ModuleIdentifier;
+	id: ModuleIdentifier;
 	name: string;
 	path: string;
 	children?: Module[];

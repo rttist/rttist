@@ -6,7 +6,7 @@ export class DecoratorInfo
 	/**
 	 * @internal
 	 */
-	private readonly _args: Array<any>;
+	private readonly _args: ReadonlyArray<any>;
 
 	/**
 	 * Decorator name
@@ -25,15 +25,15 @@ export class DecoratorInfo
 	{
 		this.name = initializer.name;
 		this.fullName = initializer.fullName;
-		this._args = initializer.args || [];
+		this._args = Object.freeze(initializer.args || []);
 	}
 
 	/**
 	 * List of literal arguments
 	 */
-	getArguments(): Array<any>
+	getArguments(): ReadonlyArray<any>
 	{
-		return this._args.slice();
+		return this._args;
 	}
 }
 

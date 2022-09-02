@@ -1,48 +1,28 @@
 import type {
-	TypeReference,
 	FunctionTypeMetadata,
-	ParameterInfo
-}                           from "../declarations";
-import { Metadata }         from "../Metadata";
-import { Type }             from "../Type";
-import type { GenericType } from "./GenericType";
+	Signature
+} from "../declarations";
+import { Type } from "../Type";
 
 export class FunctionType extends Type
 {
-	private readonly _returnTypeReference: TypeReference;
-
-	private readonly _parameters: Array<ParameterInfo>;
-	private _returnType?: Type;
-
 	/**
-	 * Return type of the function.
+	 * @internal
 	 */
-	get returnType(): Type
-	{
-		return this._returnType ?? (this._returnType = Metadata.resolveType(this._returnTypeReference));
-	}
+	private readonly _signatures: ReadonlyArray<Signature>;
 
 	constructor(initializer: FunctionTypeMetadata)
 	{
 		super(initializer);
 
-		this._parameters = initializer.parameters;
-		this._returnTypeReference = initializer.returnType;
+		this._signatures = Object.freeze(initializer.signatures || []);
 	}
 
 	/**
-	 * Return parameters.
+	 * Returns array of method signatures.
 	 */
-	getParameters(): ReadonlyArray<ParameterInfo>
+	getSignatures(): ReadonlyArray<Signature>
 	{
-		return this._parameters.slice();
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	isGenericType(): this is GenericType<FunctionType>
-	{
-		return super.isGenericType();
+		return this._signatures;
 	}
 }

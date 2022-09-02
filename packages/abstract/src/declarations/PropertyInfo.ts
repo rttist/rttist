@@ -7,19 +7,38 @@ import {
 }                             from "../index";
 import { Metadata }           from "../Metadata";
 
+
+export interface PropertyInfoInitializer
+{
+	name: string;
+	type: TypeReference;
+	decorators?: Array<DecoratorInfo>;
+	optional?: boolean;
+	readonly?: boolean;
+	accessModifier?: AccessModifier;
+	accessor?: Accessor;
+}
+
 /**
  * Details about property of an objec.
  */
 export class PropertyInfo
 {
-	private readonly _typeReference: TypeReference;
-	private _type?: Type;
-
 	/**
 	 * Property decorators
 	 * @internal
 	 */
-	private _decorators: ReadonlyArray<DecoratorInfo>;
+	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
+	
+	/**
+	 * @internal
+	 */
+	private readonly _typeReference: TypeReference;
+
+	/**
+	 * @internal
+	 */
+	private _type?: Type;
 
 	/**
 	 * Property name
@@ -61,7 +80,7 @@ export class PropertyInfo
 	{
 		this.name = initializer.name;
 		this._typeReference = initializer.type;
-		this._decorators = initializer.decorators || [];
+		this._decorators = Object.freeze(initializer.decorators || []);
 		this.optional = !!initializer.optional;
 		this.accessModifier = initializer.accessModifier ?? AccessModifier.Public;
 		this.accessor = initializer.accessor ?? Accessor.None;
@@ -73,17 +92,6 @@ export class PropertyInfo
 	 */
 	getDecorators(): ReadonlyArray<DecoratorInfo>
 	{
-		return this._decorators.slice();
+		return this._decorators;
 	}
-}
-
-export interface PropertyInfoInitializer
-{
-	name: string;
-	type: TypeReference;
-	decorators?: Array<DecoratorInfo>;
-	optional?: boolean;
-	readonly?: boolean;
-	accessModifier?: AccessModifier;
-	accessor?: Accessor;
 }

@@ -7,9 +7,10 @@
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": "../..",
-//		"typeRoots": [
-//			"../../node_modules/@types"
-//		],
+		"typeRoots": [
+			"../../node_modules/@types",
+			"../../node_modules/@rtti/abstract/node_modules/@types"
+		],
 		"plugins": [
 			{
 				"transform": "tst-reflect-transformer"

@@ -1,6 +1,5 @@
 import type {
 	AsyncCtorReference,
-	ConstructorInfo,
 	DecoratorInfo,
 	MethodInfo,
 	ModuleIdentifier,
@@ -9,13 +8,13 @@ import type {
 	TypeIdentifier,
 	TypeReference,
 	IndexInfo,
-	ParameterInfo
+	Signature
 }                   from "./index";
 import { TypeKind } from "../enums";
 
 export interface TypeMetadata
 {
-	id?: TypeIdentifier;
+	id: TypeIdentifier;
 	kind: TypeKind;
 	fullName?: string;
 	module: ModuleIdentifier;
@@ -52,7 +51,7 @@ export interface ClassTypeMetadata extends ExtendableObjectLikeBaseTypeMetadata
 {
 	ctor: AsyncCtorReference;
 	ctorSync?: SyncCtorReference;
-	constructors: ReadonlyArray<ConstructorInfo>;
+	constructors: ReadonlyArray<Signature>;
 	interface?: TypeReference;
 	decorators: ReadonlyArray<DecoratorInfo>;
 }
@@ -90,6 +89,5 @@ export interface ConditionalTypeMetadata extends TypeMetadata
 
 export interface FunctionTypeMetadata extends TypeMetadata
 {
-	parameters: Array<ParameterInfo>;
-	returnType: TypeReference;
+	signatures: Signature[];
 }

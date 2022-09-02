@@ -1,30 +1,29 @@
-import type { Type }          from "../Type";
-import type { TypeReference } from "./declarations";
 import type { DecoratorInfo } from "./DecoratorInfo";
 import { AccessModifier }     from "../enums";
-import { Metadata }           from "../Metadata";
-import {
-	MethodInfoBase,
-	MethodInfoBaseInitializer
-}                             from "./MethodInfoBase";
+import { Signature }          from "./Signature";
+
+export interface MethodInfoInitializer
+{
+	name: string;
+	signatures: Signature[];
+	optional?: boolean;
+	accessModifier?: AccessModifier;
+	decorators?: DecoratorInfo[];
+}
 
 /**
  * Represents a method of a type.
  */
-export class MethodInfo extends MethodInfoBase
+export class MethodInfo
 {
 	private readonly _name: string;
-	private readonly _returnTypeReference: TypeReference;
 	private readonly _optional: boolean;
-	private readonly _typeParametersReference: Array<TypeReference>;
-	private readonly _decorators: Array<DecoratorInfo>;
+	private readonly _signatures: ReadonlyArray<Signature>;
+	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 	private readonly _accessModifier: AccessModifier;
 
-	private _returnType?: Type;
-	private _typeParameters?: Array<Type>;
-
 	/**
-	 * Name of this method
+	 * Name of the method.
 	 */
 	get name(): string
 	{
@@ -32,15 +31,7 @@ export class MethodInfo extends MethodInfoBase
 	}
 
 	/**
-	 * Return type of this method
-	 */
-	get returnType(): Type
-	{
-		return this._returnType ?? (this._returnType = Metadata.resolveType(this._returnTypeReference));
-	}
-
-	/**
-	 * Method is optional
+	 * Method is optional.
 	 */
 	get optional(): boolean
 	{
@@ -48,7 +39,7 @@ export class MethodInfo extends MethodInfoBase
 	}
 
 	/**
-	 * Access modifier
+	 * Access modifier.
 	 */
 	get accessModifier(): AccessModifier
 	{
@@ -56,28 +47,16 @@ export class MethodInfo extends MethodInfoBase
 	}
 
 	/**
-	 * Internal method constructor
+	 * Internal method constructor.
 	 * @internal
 	 */
 	constructor(initializer: MethodInfoInitializer)
 	{
-		super(initializer);
-
 		this._name = initializer.name;
-		this._typeParametersReference = initializer.typeParameters || [];
-		this._returnTypeReference = initializer.returnType;
 		this._optional = !!initializer.optional;
 		this._accessModifier = initializer.accessModifier ?? AccessModifier.Public;
-		this._decorators = initializer.decorators || [];
-	}
-
-	/**
-	 * Returns array of generic type parameters.
-	 * @return {Array<Type>}
-	 */
-	getTypeParameters(): ReadonlyArray<Type>
-	{
-		return this._typeParameters?.slice() ?? (this._typeParameters = this._typeParametersReference.map(type => Metadata.resolveType(type)));
+		this._signatures = Object.freeze(initializer.signatures || []);
+		this._decorators = Object.freeze(initializer.decorators || []);
 	}
 
 	/**
@@ -85,16 +64,14 @@ export class MethodInfo extends MethodInfoBase
 	 */
 	getDecorators(): ReadonlyArray<DecoratorInfo>
 	{
-		return this._decorators.slice();
+		return this._decorators;
 	}
-}
 
-export interface MethodInfoInitializer extends MethodInfoBaseInitializer
-{
-	name: string;
-	typeParameters?: TypeReference[];
-	returnType: TypeReference;
-	optional?: boolean;
-	accessModifier?: AccessModifier;
-	decorators?: DecoratorInfo[];
+	/**
+	 * Returns array of method signatures.
+	 */
+	getSignatures(): ReadonlyArray<Signature>
+	{
+		return this._signatures;
+	}
 }

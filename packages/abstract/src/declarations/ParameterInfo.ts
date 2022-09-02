@@ -7,26 +7,33 @@ import { TypeReference } from "./declarations";
  */
 export class ParameterInfo
 {
+	/**
+	 * @internal
+	 */
 	private readonly _typeReference: TypeReference;
+
+	/**
+	 * @internal
+	 */
 	private _type?: Type;
 
 	/**
-	 * Parameter name
+	 * Name of the parameter.
 	 */
 	readonly name: string;
 
 	/**
-	 * Parameter is optional
+	 * Parameter is optional.
 	 */
 	readonly optional: boolean;
 
 	/**
-	 * Parameter is rest
+	 * Parameter is the rest rest parameter.
 	 */
 	readonly rest: boolean;
 
 	/**
-	 * Type of the parameter
+	 * Type of the parameter.
 	 */
 	get type(): Type
 	{
