@@ -75,3 +75,11 @@ typings/
 
 # next.js build output
 .next
+
+# CSharp
+/obj
+
+
+
+# Excludes
+!packages/abstract/node_modules/@types/rtti/index.d.ts

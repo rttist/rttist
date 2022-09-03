@@ -1,7 +1,7 @@
-import { Metadata }           from "../Metadata";
-import { Type }               from "../Type";
-import { TypeReference }      from "./declarations";
+import type { Type }          from "../Type";
 import type { ParameterInfo } from "./ParameterInfo";
+import type { TypeReference } from "./declarations";
+import { Metadata }           from "../Metadata";
 
 export interface SignatureInitializerBase
 {
@@ -16,17 +16,17 @@ export abstract class Signature
 	 * @internal
 	 */
 	private readonly _parameters: ReadonlyArray<ParameterInfo>;
-	
+
 	/**
 	 * @internal
 	 */
 	private readonly _returnTypeReference: TypeReference;
-	
+
 	/**
 	 * @internal
 	 */
 	private readonly _typeParametersReference: ReadonlyArray<TypeReference>;
-	
+
 	/**
 	 * @internal
 	 */
@@ -44,7 +44,7 @@ export abstract class Signature
 	{
 		return this._returnType ?? (this._returnType = Metadata.resolveType(this._returnTypeReference));
 	}
-	
+
 	/**
 	 * @param initializer
 	 */

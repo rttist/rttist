@@ -39,7 +39,17 @@ class MetadataLibrary
 	{
 		for (let type of types)
 		{
-			this.types.set(type.id ?? Symbol(), type);
+			if (!type.id)
+			{
+				throw new Error("Given type has invalid id.");
+			}
+
+			if (this.types.has(type.id))
+			{
+				throw new Error(`Type with id '${type.id}' already exists.`);
+			}
+
+			this.types.set(type.id, type);
 		}
 	}
 

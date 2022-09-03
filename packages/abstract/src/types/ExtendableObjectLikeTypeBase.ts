@@ -1,7 +1,9 @@
-import type { TypeReference }                        from "../declarations";
-import type { ExtendableObjectLikeBaseTypeMetadata } from "../declarations/TypeMetadata";
+import type {
+	ExtendableObjectLikeBaseTypeMetadata,
+	TypeReference
+} from "../declarations";
 import { Metadata }                                  from "../Metadata";
-import { Type }                                      from "../Type";
+import type { Type }                                      from "../Type";
 import { ObjectLikeTypeBase }                        from "./ObjectLikeTypeBase";
 
 export class ExtendableObjectLikeTypeBase extends ObjectLikeTypeBase

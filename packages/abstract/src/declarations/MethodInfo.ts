@@ -1,13 +1,25 @@
+import {
+	AccessModifierFlagsOffset,
+	getAccessModifier
+}                             from "../utils/flags";
 import type { DecoratorInfo } from "./DecoratorInfo";
 import { AccessModifier }     from "../enums";
+import { PropertyFlags }      from "./PropertyInfo";
 import { Signature }          from "./Signature";
+
+export enum MethodFlags
+{
+	Optional = 1,
+
+	Private = AccessModifier.Private << (AccessModifierFlagsOffset),
+	Protected = AccessModifier.Protected << (AccessModifierFlagsOffset),
+}
 
 export interface MethodInfoInitializer
 {
+	flags: MethodFlags;
 	name: string;
 	signatures: Signature[];
-	optional?: boolean;
-	accessModifier?: AccessModifier;
 	decorators?: DecoratorInfo[];
 }
 
@@ -16,10 +28,29 @@ export interface MethodInfoInitializer
  */
 export class MethodInfo
 {
+	/**
+	 * @internal
+	 */
 	private readonly _name: string;
+
+	/**
+	 * @internal
+	 */
 	private readonly _optional: boolean;
+
+	/**
+	 * @internal
+	 */
 	private readonly _signatures: ReadonlyArray<Signature>;
+
+	/**
+	 * @internal
+	 */
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
+
+	/**
+	 * @internal
+	 */
 	private readonly _accessModifier: AccessModifier;
 
 	/**
@@ -53,10 +84,10 @@ export class MethodInfo
 	constructor(initializer: MethodInfoInitializer)
 	{
 		this._name = initializer.name;
-		this._optional = !!initializer.optional;
-		this._accessModifier = initializer.accessModifier ?? AccessModifier.Public;
 		this._signatures = Object.freeze(initializer.signatures || []);
 		this._decorators = Object.freeze(initializer.decorators || []);
+		this._accessModifier = getAccessModifier(initializer.flags);
+		this._optional = (initializer.flags & PropertyFlags.Optional) !== 0;
 	}
 
 	/**

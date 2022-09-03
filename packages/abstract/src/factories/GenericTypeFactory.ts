@@ -1,8 +1,12 @@
 import { TypeKind }    from "../enums";
 import { Metadata }    from "../Metadata";
 import { Type }        from "../Type";
-import { ClassType }   from "../types/ClassType";
-import { GenericType } from "../types/GenericType";
+import {
+	ClassType,
+	GenericType
+} from "../types";
+
+let genericTypeCounter = 1;
 
 export class GenericTypeFactory
 {
@@ -13,7 +17,7 @@ export class GenericTypeFactory
 	{
 		const type = new ClassType({
 			kind: TypeKind.Class,
-			id: Symbol(),
+			id: (genericTypeCounter++) + "#" + genericTypeFullName,
 			name: genericTypeDefinition.name,
 			fullName: genericTypeFullName,
 			typeParameters: typeParameters.map(tp => tp.id),

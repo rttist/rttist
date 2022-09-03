@@ -1,6 +1,6 @@
 export enum AccessModifier
 {
-	Private,
-	Protected,
-	Public
+	Public = 0,
+	Private = 1,
+	Protected = 2,
 }

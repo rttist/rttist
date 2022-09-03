@@ -9,16 +9,16 @@ import type {
 	TypeReference,
 	IndexInfo,
 	Signature
-}                   from "./index";
-import { TypeKind } from "../enums";
+}                        from "./index";
+import type { TypeKind } from "../enums";
 
 export interface TypeMetadata
 {
 	id: TypeIdentifier;
 	kind: TypeKind;
-	fullName?: string;
 	module: ModuleIdentifier;
 	name: string;
+	fullName?: string;
 	exported?: boolean;
 	typeParameters?: TypeReference[];
 }

@@ -1,22 +1,31 @@
-import { ModuleIdentifier } from "./declarations";
-import type { Type }        from "./Type";
+import type { ModuleIdentifier } from "./declarations";
+import type { Type }             from "./Type";
+
+export interface ModuleMetadata
+{
+	id: ModuleIdentifier;
+	name: string;
+	path: string;
+	children?: Module[];
+	types?: Type[];
+}
 
 export class Module
 {
 	/**
 	 * Module for all the native types.
 	 */
-	public static readonly Native: Module = new Module({ id: Symbol("Native module ID"), name: "native", path: "" });
+	public static readonly Native: Module = new Module({ id: "::native::", name: "native", path: "" });
 
 	/**
 	 * Module for dynamic types without specific module.
 	 */
-	public static readonly Dynamic: Module = new Module({ id: Symbol("Dynamic module ID"), name: "dynamic", path: "" });
+	public static readonly Dynamic: Module = new Module({ id: "::dynamic::", name: "dynamic", path: "" });
 
 	/**
 	 * Unknown module.
 	 */
-	public static readonly Unknown: Module = new Module({ id: Symbol("Unknown module ID"), name: "unknown", path: "" });
+	public static readonly Unknown: Module = new Module({ id: "::unknown::", name: "unknown", path: "" });
 
 	private readonly _children: Module[];
 	private readonly _types: Type[];
@@ -69,13 +78,4 @@ export class Module
 	{
 		return this._types.slice();
 	}
-}
-
-export interface ModuleMetadata
-{
-	id: ModuleIdentifier;
-	name: string;
-	path: string;
-	children?: Module[];
-	types?: Type[];
 }

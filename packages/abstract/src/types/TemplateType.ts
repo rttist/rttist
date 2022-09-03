@@ -1,7 +1,7 @@
 import type { TemplateTypeMetadata } from "../declarations";
 import { Type }                      from "../Type";
 
-export abstract class TemplateType extends Type
+export class TemplateType extends Type
 {
 	public readonly head: string;
 	public readonly templateSpans: Array<{ expression: string, literal: string }>;

@@ -5,43 +5,49 @@ import type {
 	TypeIdentifier,
 	TypeMetadata,
 	TypeReference
-}                                            from "./declarations";
-import { ComparableByKind }                  from "./enums/TypeKindSets";
-import type { ClassType }                    from "./types/ClassType";
-import type { ConditionalType }              from "./types/ConditionalType";
-import type { EnumType }                     from "./types/EnumType";
-import type { ExtendableObjectLikeTypeBase } from "./types/ExtendableObjectLikeTypeBase";
-import { FunctionType }                      from "./types/FunctionType";
-import type { GenericType }                  from "./types/GenericType";
-import type { InterfaceType }                from "./types/InterfaceType";
-import type { IntersectionType }             from "./types/IntersectionType";
-import { ObjectLikeTypeBase }                from "./types/ObjectLikeTypeBase";
-import type { ObjectType }                   from "./types/ObjectType";
-import type { TemplateType }                 from "./types/TemplateType";
-import type { TypeParameterType }            from "./types/TypeParameterType";
-import type { LiteralType }                  from "./types/LiteralType";
-import type { UnionType }                    from "./types/UnionType";
+}                   from "./declarations";
+import type {
+	ClassType,
+	ConditionalType,
+	EnumType,
+	ExtendableObjectLikeTypeBase,
+	FunctionType,
+	GenericType,
+	InterfaceType,
+	IntersectionType,
+	LiteralType,
+	ObjectLikeTypeBase,
+	ObjectType,
+	TemplateType,
+	TypeParameterType,
+	UnionType
+}                   from "./types";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                                            from "./enums";
-import { Metadata }                          from "./Metadata";
-import { Module }                            from "./Module";
+}                   from "./enums";
+import { Metadata } from "./Metadata";
+import { Module }   from "./Module";
 
 const NID = Module.Native.id;
+const createdNativeTypes = new Set();
 
 /**
  * Create native type from object.
  */
 function cn(name: string, kind: TypeKind): Type
 {
-	return new Type({
+	const type = new Type({
 		kind,
 		name,
 		id: "native::" + name,
 		module: NID
 	});
+
+	createdNativeTypes.add(type);
+
+	return type;
 }
 
 /**
@@ -144,6 +150,11 @@ export class Type
 	 */
 	constructor(initializer: TypeMetadata)
 	{
+		if (createdNativeTypes.has(initializer.kind))
+		{
+			throw new Error("Cannot create native type multiple times.");
+		}
+
 		this._id = initializer.id;// ?? Symbol();
 		this._kind = initializer.kind;
 		this._name = initializer.name;
@@ -155,12 +166,11 @@ export class Type
 	}
 
 	/**
-	 *
 	 * @private
 	 */
 	private isComparableByKind(): boolean
 	{
-		return ComparableByKind.has(this._kind);
+		return !!NativeTypes[this._kind];
 	}
 
 	/**
@@ -169,19 +179,12 @@ export class Type
 	 */
 	is(target: Type)
 	{
-
-
-		if (this.isPrimitive() || target.isPrimitive())
+		if (this.isComparableByKind())
 		{
 			return this._kind === target._kind;
 		}
 
-		if (this._kind === TypeKind.Unknown || target._kind === TypeKind.Unknown)
-		{
-			return this._kind === target._kind;
-		}
-
-		return this._fullName === target._fullName;
+		return this._id === target._id;
 	}
 
 	/**

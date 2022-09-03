@@ -1,3 +1,10 @@
+export interface DecoratorInfoInitializer
+{
+	name: string;
+	fullName: string;
+	args?: Array<any>;
+}
+
 /**
  * Represents a decorator of a class, method or parameter.
  */
@@ -35,11 +42,4 @@ export class DecoratorInfo
 	{
 		return this._args;
 	}
-}
-
-export interface DecoratorInfoInitializer
-{
-	name: string;
-	fullName?: string;
-	args?: Array<any>;
 }

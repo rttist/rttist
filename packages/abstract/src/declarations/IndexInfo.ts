@@ -2,6 +2,19 @@ import type { Type }          from "../Type";
 import type { TypeReference } from "./declarations";
 import { Metadata }           from "../Metadata";
 
+export enum IndexFlags {
+	None = 0,
+	
+	Readonly = 1,
+}
+
+export interface IndexInfoInitializer
+{
+	flags: IndexFlags;
+	key: TypeReference;
+	type: TypeReference;
+}
+
 /**
  * Index description
  */
@@ -56,13 +69,6 @@ export class IndexInfo
 	{
 		this._keyTypeReference = initializer.key;
 		this._typeReference = initializer.type;
-		this.readonly = initializer.readonly || false;
+		this.readonly = (initializer.flags & IndexFlags.Readonly) !== 0;
 	}
-}
-
-export interface IndexInfoInitializer
-{
-	key: TypeReference;
-	type: TypeReference;
-	readonly?: boolean;
 }

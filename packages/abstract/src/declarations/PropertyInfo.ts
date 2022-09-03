@@ -6,21 +6,37 @@ import {
 	Accessor
 }                             from "../index";
 import { Metadata }           from "../Metadata";
+import {
+	AccessModifierFlagsOffset,
+	AccessorFlagsOffset,
+	getAccessModifier,
+	getAccessor
+}                             from "../utils/flags";
 
+export enum PropertyFlags
+{
+	None = 0,
+
+	Optional = 1,
+	Readonly = 1 << 1,
+
+	Private = AccessModifier.Private << (AccessModifierFlagsOffset),
+	Protected = AccessModifier.Protected << (AccessModifierFlagsOffset),
+
+	Getter = Accessor.Getter << (AccessorFlagsOffset),
+	Setter = Accessor.Setter << (AccessorFlagsOffset),
+}
 
 export interface PropertyInfoInitializer
 {
+	flags: PropertyFlags;
 	name: string;
 	type: TypeReference;
 	decorators?: Array<DecoratorInfo>;
-	optional?: boolean;
-	readonly?: boolean;
-	accessModifier?: AccessModifier;
-	accessor?: Accessor;
 }
 
 /**
- * Details about property of an objec.
+ * Details about property of an object.
  */
 export class PropertyInfo
 {
@@ -29,7 +45,7 @@ export class PropertyInfo
 	 * @internal
 	 */
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
-	
+
 	/**
 	 * @internal
 	 */
@@ -81,10 +97,10 @@ export class PropertyInfo
 		this.name = initializer.name;
 		this._typeReference = initializer.type;
 		this._decorators = Object.freeze(initializer.decorators || []);
-		this.optional = !!initializer.optional;
-		this.accessModifier = initializer.accessModifier ?? AccessModifier.Public;
-		this.accessor = initializer.accessor ?? Accessor.None;
-		this.readonly = !!initializer.readonly;
+		this.accessModifier = getAccessModifier(initializer.flags);
+		this.accessor = getAccessor(initializer.flags);
+		this.optional = (initializer.flags & PropertyFlags.Optional) !== 0;
+		this.readonly = (initializer.flags & PropertyFlags.Readonly) !== 0;
 	}
 
 	/**

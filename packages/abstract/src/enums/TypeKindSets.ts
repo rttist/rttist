@@ -20,8 +20,8 @@ export const PrimitiveTypeKinds = [
 	TypeKind.Never,
 ];
 
-export const ComparableByKind = new Set<TypeKind>([
-	...PrimitiveTypeKinds, // TODO: Verify if having Symbol here is Okay. Is every symbol a symbol? 
-	TypeKind.Any,
-	TypeKind.Unknown
-]);
+// export const ComparableByKind = new Set<TypeKind>([
+// 	...PrimitiveTypeKinds, // TODO: Verify if having Symbol here is Okay. Is every symbol a symbol? 
+// 	TypeKind.Any,
+// 	TypeKind.Unknown
+// ]);

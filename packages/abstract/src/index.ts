@@ -1,8 +1,9 @@
+// keep order of imports
+import "@types/rtti";
 import { Metadata } from "./Metadata";
-import { Type }     from "./Type";
 import { Module }   from "./Module";
-import "./globals";
-import "./ReflectOverload";
+import { Type }     from "./Type";
+import "./Reflect";
 
 export {
 	Type
@@ -13,6 +14,7 @@ export {
 }        from "./Module";
 export * from "./enums";
 export * from "./declarations";
+export * from "./types";
 export * from "./builders";
 
 Metadata.addType(
