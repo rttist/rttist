@@ -1,9 +1,11 @@
-import type { GenericType } from "../types/GenericType";
-import { TypeKind }         from "../enums";
-import { Metadata }         from "../Metadata";
-import { Type }             from "../Type";
-import { ClassType }        from "../types/ClassType";
-import { TypeBuilderBase }  from "./TypeBuilderBase";
+import { TypeKind }        from "../enums";
+import { Metadata }        from "../Metadata";
+import { Type }            from "../Type";
+import {
+	ClassType,
+	GenericType
+} from "../types";
+import { TypeBuilderBase } from "./TypeBuilderBase";
 
 export class ArrayTypeBuilder extends TypeBuilderBase
 {
@@ -31,7 +33,7 @@ export class ArrayTypeBuilder extends TypeBuilderBase
 	build(): GenericType<ClassType>
 	{
 		const type = new ClassType({
-			id: Symbol(),
+			id: this.fullName,
 			kind: TypeKind.Array,
 			name: this.typeName,
 			fullName: this.fullName,

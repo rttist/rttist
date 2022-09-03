@@ -10,7 +10,7 @@ export interface SignatureInitializerBase
 	returnType: TypeReference;
 }
 
-export abstract class Signature
+export class Signature
 {
 	/**
 	 * @internal
@@ -48,7 +48,7 @@ export abstract class Signature
 	/**
 	 * @param initializer
 	 */
-	protected constructor(initializer: SignatureInitializerBase)
+	constructor(initializer: SignatureInitializerBase)
 	{
 		this._parameters = Object.freeze(initializer.parameters || []);
 		this._typeParametersReference = initializer.typeParameters || [];

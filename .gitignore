@@ -78,8 +78,3 @@ typings/
 
 # CSharp
 /obj
-
-
-
-# Excludes
-!packages/abstract/node_modules/@types/rtti/index.d.ts

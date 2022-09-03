@@ -42,7 +42,7 @@ export class IntersectionTypeBuilder extends TypeBuilderBase
 		}
 
 		const type = new IntersectionType({
-			id: Symbol(),
+			id: this.fullName,
 			name: this.typeName,
 			fullName: this.fullName,
 			kind: TypeKind.Intersection,

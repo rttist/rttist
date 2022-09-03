@@ -1,10 +1,10 @@
 import type {
 	ExtendableObjectLikeBaseTypeMetadata,
 	TypeReference
-} from "../declarations";
-import { Metadata }                                  from "../Metadata";
-import type { Type }                                      from "../Type";
-import { ObjectLikeTypeBase }                        from "./ObjectLikeTypeBase";
+}                             from "../declarations";
+import { Metadata }           from "../Metadata";
+import type { Type }          from "../Type";
+import { ObjectLikeTypeBase } from "./ObjectLikeTypeBase";
 
 export class ExtendableObjectLikeTypeBase extends ObjectLikeTypeBase
 {
@@ -38,7 +38,8 @@ export class ExtendableObjectLikeTypeBase extends ObjectLikeTypeBase
 	isDerivedFrom(targetType: Type): boolean
 	{
 		return this.is(targetType)
-			|| this.baseType?.isAssignableTo(targetType)
+			|| this._baseType?.isDerivedFrom(targetType)
+			// || this.baseType?.isAssignableTo(targetType)
 			|| false;
 	}
 }

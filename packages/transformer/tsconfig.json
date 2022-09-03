@@ -17,17 +17,6 @@
 			"node_modules/@types"
 		]
 	},
-	"references": [
-		{
-			"path": "../core"
-		},
-		{
-			"path": "../abstract"
-		},
-		{
-			"path": "../runtime"
-		}
-	],
 	"include": [
 		"./src/**/*.ts"
 	],

@@ -30,7 +30,6 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^16.0.0",
 		"typescript": "4.8.x"
 	},
 	"repository": {

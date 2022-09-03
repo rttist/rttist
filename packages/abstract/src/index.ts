@@ -1,5 +1,4 @@
 // keep order of imports
-import "@types/rtti";
 import { Metadata } from "./Metadata";
 import { Module }   from "./Module";
 import { Type }     from "./Type";

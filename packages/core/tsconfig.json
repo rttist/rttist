@@ -9,11 +9,7 @@
 		"outDir": "dist",
 		"rootDir": "./src",
 		"baseUrl": "./src",
-		"composite": true,
-		"typeRoots": [
-			"../../node_modules/@types",
-			"node_modules/@types"
-		]
+		"composite": true
 	},
 	"include": [
 		"./src/**/*.ts"

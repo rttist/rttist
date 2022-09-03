@@ -8,9 +8,6 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"prepare": "npx tsc"
 	},
-	"typescript": {
-		"definition": "dist/globals.d.ts"
-	},
 	"files": [
 		"dist/**/*.js",
 		"dist/**/*.d.ts"
@@ -30,9 +27,11 @@
 	],
 	"author": "Roman Jámbor",
 	"license": "MIT",
+	"dependencies": {
+		"@rtti/core": "x"
+	},
 	"devDependencies": {
-		"@types/node": "^16.0.0",
-		"typescript": "4.0.x"
+		"typescript": "4.8.x"
 	},
 	"repository": {
 		"type": "git",

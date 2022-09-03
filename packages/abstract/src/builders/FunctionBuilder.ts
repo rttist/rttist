@@ -1,9 +1,13 @@
-import { ParameterInfo }   from "../declarations";
+import {
+	ParameterFlags,
+	ParameterInfo,
+	Signature
+}                          from "../declarations";
 import { TypeKind }        from "../enums";
 import { Metadata }        from "../Metadata";
 import { Module }          from "../Module";
 import { Type }            from "../Type";
-import { FunctionType }    from "../types/FunctionType";
+import { FunctionType }    from "../types";
 import { TypeBuilderBase } from "./TypeBuilderBase";
 
 export class FunctionBuilder extends TypeBuilderBase
@@ -39,7 +43,7 @@ export class FunctionBuilder extends TypeBuilderBase
 		builder.setParameters(paramsIterator.map(i => new ParameterInfo({
 			name: "param" + i,
 			type: Type.Any.id,
-			optional: false
+			flags: ParameterFlags.Optional
 		})));
 
 		builder.setReturnType(Type.Unknown);
@@ -63,18 +67,22 @@ export class FunctionBuilder extends TypeBuilderBase
 	build(): Type
 	{
 		const type = new FunctionType({
-			id: Symbol(),
+			id: this.fullName,
 			kind: TypeKind.Function,
 			fullName: this.fullName,
 			module: Module.Dynamic.id,
 			name: this.typeName,
-			parameters: this.parameters,
-			typeParameters: [],
-			returnType: this.returnType.id,
+			signatures: [
+				new Signature({
+					typeParameters: [],
+					returnType: this.returnType.id,
+					parameters: this.parameters,
+				})
+			]
 		});
-		
+
 		Metadata.addType(type);
-		
+
 		return type;
 	}
 }

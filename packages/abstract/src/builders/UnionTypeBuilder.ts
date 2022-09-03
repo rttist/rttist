@@ -1,6 +1,6 @@
 import { TypeKind }        from "../enums";
 import { Metadata }        from "../Metadata";
-import { UnionType }       from "../types/UnionType";
+import { UnionType }       from "../types";
 import { Type }            from "../Type";
 import { TypeBuilderBase } from "./TypeBuilderBase";
 
@@ -48,7 +48,7 @@ export class UnionTypeBuilder extends TypeBuilderBase
 		}
 
 		const type = new UnionType({
-			id: Symbol(),
+			id: this.fullName,
 			name: this.typeName,
 			fullName: this.fullName,
 			kind: TypeKind.Union,
@@ -57,7 +57,7 @@ export class UnionTypeBuilder extends TypeBuilderBase
 		});
 
 		Metadata.addType(type);
-		
+
 		return type;
 	}
 }

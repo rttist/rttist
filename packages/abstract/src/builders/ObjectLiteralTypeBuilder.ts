@@ -1,12 +1,12 @@
-import { PropertyInfo }          from "../declarations";
 import {
-	Accessor,
-	TypeKind
-}                                from "../enums";
+	PropertyFlags,
+	PropertyInfo
+}                                from "../declarations";
+import { TypeKind }              from "../enums";
 import { getTypeOfRuntimeValue } from "../helpers";
 import { Metadata }              from "../Metadata";
 import { Type }                  from "../Type";
-import { ObjectType }            from "../types/ObjectType";
+import { ObjectType }            from "../types";
 import { TypeBuilderBase }       from "./TypeBuilderBase";
 
 export class ObjectLiteralTypeBuilder extends TypeBuilderBase
@@ -52,9 +52,7 @@ export class ObjectLiteralTypeBuilder extends TypeBuilderBase
 						new PropertyInfo({
 							name: prop,
 							type: type.id,
-							optional: false,
-							accessor: Accessor.Getter,
-							readonly: true
+							flags: PropertyFlags.Readonly | PropertyFlags.Getter
 						})
 					);
 				}
@@ -64,9 +62,7 @@ export class ObjectLiteralTypeBuilder extends TypeBuilderBase
 						new PropertyInfo({
 							name: prop,
 							type: type.id,
-							optional: false,
-							accessor: Accessor.Setter,
-							readonly: false
+							flags: PropertyFlags.Setter
 						})
 					);
 				}
@@ -76,8 +72,7 @@ export class ObjectLiteralTypeBuilder extends TypeBuilderBase
 						new PropertyInfo({
 							name: prop,
 							type: type.id,
-							optional: false,
-							readonly: !desc.writable
+							flags: desc.writable ? PropertyFlags.None : PropertyFlags.Readonly
 						})
 					);
 				}
@@ -104,7 +99,7 @@ export class ObjectLiteralTypeBuilder extends TypeBuilderBase
 	{
 		const type = new ObjectType({
 			kind: TypeKind.Object,
-			id: Symbol(),
+			id: this.fullName,
 			name: this.typeName,
 			fullName: this.fullName,
 			properties: this.properties,
