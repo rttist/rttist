@@ -1,15 +1,13 @@
 import * as ts                      from "typescript";
 import { TransformerTypeReference } from "../declarations/general";
 import { createValueExpression }    from "../utils/createValueExpression";
-import type { TransformerContext }  from "../contexts/TransformerContext";
-import type { MetadataLibrary }     from "./MetadataLibrary";
 
 export class MetadataNodeFactory
 {
 	// private readonly typeFactoryIdentifier: ts.Identifier;
 	// private readonly metadataIdentifier: ts.Identifier;
 
-	constructor(private readonly metadata: MetadataLibrary, private readonly context: TransformerContext)
+	constructor(/*private readonly metadata: MetadataLibrary, private readonly context: TransformerContext*/)
 	{
 		// this.typeFactoryIdentifier = ts.factory.createIdentifier("__τ"); // TODO: Load from config! reflection.typeFactory
 		// this.metadataIdentifier = ts.factory.createIdentifier("__Ω");

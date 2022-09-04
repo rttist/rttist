@@ -1,11 +1,11 @@
-import * as ts                    from "typescript";
+import * as ts               from "typescript";
 import {
 	ConfigObject,
 	createConfig
-}                                 from "../config";
-import { MetadataLibrary }        from "../metadata/MetadataLibrary";
-import { MetadataManager }        from "../metadata/MetadataManager";
-import type { SourceFileContext } from "./SourceFileContext";
+}                            from "../config";
+import { MetadataLibrary }   from "../metadata/MetadataLibrary";
+import { MetadataManager }   from "../metadata/MetadataManager";
+import { SourceFileContext } from "./SourceFileContext";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
 let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
@@ -143,22 +143,33 @@ export class TransformerContext
 	 * @internal
 	 * @param context
 	 */
-	setSourceFileContext(context: SourceFileContext)
+	private setSourceFileContext(context: SourceFileContext)
 	{
 		this.sourceFileContext = context;
 	}
 
-	visitSourceFile(sourceFileNode: ts.SourceFile, transformationContext: ts.TransformationContext, callback: (sourceFileContext) => ts.SourceFile): ts.SourceFile
+	visitSourceFile(
+		sourceFileNode: ts.SourceFile,
+		transformationContext: ts.TransformationContext,
+		callback: (sourceFileContext: SourceFileContext) => ts.SourceFile
+	): ts.SourceFile
 	{
-		const visitedSourceFile = callback(sourceFileNode);
+		// Create SourceFile context and register it.
+		const sourceFileContext = new SourceFileContext(sourceFileNode, this, transformationContext);
+		this.setSourceFileContext(sourceFileContext);
 
+		// Callback
+		const visitedSourceFile = callback(sourceFileContext);
+
+		// If given SourceFile is one of the root files.
 		if (this.rootFileNames.has(sourceFileNode.fileName))
 		{
 			this._numberOfVisitedRootFileNames++;
 
+			// If it is last root SourceFile.
 			if (this._numberOfVisitedRootFileNames == this.rootFileNames.size)
 			{
-				this.metadataManager.emit();
+				this.metadataManager.emitMetadataLibrary();
 			}
 		}
 

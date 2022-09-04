@@ -33,6 +33,11 @@ export class SourceFileContext
 		return this._metadata;
 	}
 
+	get sourceFile(): ts.SourceFile
+	{
+		return this._sourceFile;
+	}
+
 	/**
 	 * Construct SourceFile context.
 	 * @param sourceFile
@@ -56,11 +61,6 @@ export class SourceFileContext
 		this._context = new Context(this, mainVisitor);
 	}
 
-	get sourceFile(): ts.SourceFile
-	{
-		return this._sourceFile;
-	}
-
 	// /**
 	//  * Get the metadata library writer handler
 	//  */
@@ -68,4 +68,9 @@ export class SourceFileContext
 	// {
 	// 	return this.transformerContext.metaWriter;
 	// }
+
+	visit(): ts.SourceFile
+	{
+		return this.context.visit(this._sourceFile) as ts.SourceFile;
+	}
 }

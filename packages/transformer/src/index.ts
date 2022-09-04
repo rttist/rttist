@@ -6,10 +6,6 @@ export default function transform(program: ts.Program): ts.TransformerFactory<ts
 {
 	TransformerContext.init(program);
 
-	// const roots = program.getRootFileNames();
-	// console.log("!!!!!!! INIT, roots:", roots.length);
-	// console.log(roots);
-
 	return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
 	{
 		const visitorFactory = new SourceFileVisitorFactory(context);

@@ -5,9 +5,9 @@ import { TransformerTypeReference } from "../declarations/general";
 import {
 	getSourceFile
 }                                   from "../utils/symbolHelpers";
-import { getSymbol }           from "../utils/typeHelpers";
-import { MetadataNodeFactory } from "./MetadataNodeFactory";
-import { ModuleMetadata }      from "./ModuleMetadata";
+import { getSymbol }                from "../utils/typeHelpers";
+import { MetadataNodeFactory }      from "./MetadataNodeFactory";
+import { ModuleMetadata }           from "./ModuleMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -45,7 +45,7 @@ export class MetadataLibrary
 			throw new Error("This constructor is protected.");
 		}
 
-		this.nodeFactory = new MetadataNodeFactory(this, context);
+		this.nodeFactory = new MetadataNodeFactory();
 		// this.writer = MetadataWriterFactory.create(context);
 	}
 

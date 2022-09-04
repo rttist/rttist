@@ -1,6 +1,6 @@
-import * as ts               from "typescript";
-import { SourceFileContext } from "../contexts/SourceFileContext";
-import { MetadataSource }    from "../declarations/TypeProperties";
+import * as ts                     from "typescript";
+import type { TransformerContext } from "../contexts/TransformerContext";
+import type { MetadataSource }     from "../declarations/TypeProperties";
 
 /**
  * Interface of "Next" middleware object.
@@ -14,7 +14,7 @@ export type MiddlewareResult = ts.CallExpression | ts.ArrayLiteralExpression | t
 
 export interface MiddlewareContext
 {
-	sourceFileContext: SourceFileContext;
+	transformerContext: TransformerContext;
 	metadata: MetadataSource;
 	result: MiddlewareResult | undefined;
 

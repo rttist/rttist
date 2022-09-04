@@ -28,7 +28,7 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"dependencies": {
-		"@rtti/core": "x"
+		"@rtti/core": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "4.8.x"

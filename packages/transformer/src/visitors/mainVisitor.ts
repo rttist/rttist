@@ -1,8 +1,3 @@
-import {
-	GET_TYPE_FNC_NAME,
-	REFLECTED_TYPE_ID,
-	TYPE_ID_PROPERTY_NAME
-}                                       from "tst-reflect";
 import * as ts                          from "typescript";
 import { Context }                      from "../contexts/Context";
 import {
@@ -15,6 +10,7 @@ import { processDecorator }             from "../transformers/processDecorator";
 import { processGenericCallExpression } from "../transformers/processGenericCallExpression";
 import { processGetTypeCallExpression } from "../transformers/processGetTypeCallExpression";
 import DeclarationVisitor               from "./declarationVisitor";
+import { PROTOTYPE_TYPE_PROPERTY }      from "@rtti/core";
 
 /**
  * Main visitor, splitting visitation into specific parts
@@ -48,7 +44,7 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 		}
 
 		// Reflect.getType<TType>()
-		if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.escapedText === "getType" 
+		if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.escapedText === "getType"
 			&& ts.isIdentifier(node.expression.expression) && node.expression.expression.escapedText === "Reflect")
 		{
 			// // Function/method type
@@ -57,12 +53,12 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 			// // Check if it's our getType<T>() by checking it has our special static property.
 			// if (fncType.getProperty(TYPE_ID_PROPERTY_NAME))
 			// {
-				const res = processGetTypeCallExpression(context, node);
+			const res = processGetTypeCallExpression(context, node);
 
-				if (res)
-				{
-					return res;
-				}
+			if (res)
+			{
+				return res;
+			}
 			// }
 		}
 
@@ -163,7 +159,7 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 								node.name as ts.Expression,
 								"prototype"
 							),
-							ts.factory.createStringLiteral(REFLECTED_TYPE_ID)
+							ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 						),
 						ts.factory.createToken(ts.SyntaxKind.EqualsToken),
 						ts.factory.createNumericLiteral(typeId)

@@ -61,7 +61,6 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 				name: memberSymbol.escapedName.toString(),
 				type: type && context.metadata.addType(type, /*declaration.type!*/undefined, context) || UnknownTypeReference,
 				decorators: getDecorators(memberSymbol, context),
-				accessModifier: accessModifier,
 				flags: (
 						isReadonly(declaration?.modifiers) || accessor == Accessor.Getter
 							? PropertyFlags.Readonly
