@@ -1,7 +1,7 @@
 import * as ts                 from "typescript";
+import { DecoratorProperties } from "./declarations/TypeProperties";
 import { getDeclaration }      from "./utils/symbolHelpers";
 import { Context }             from "./contexts/Context";
-import { DecoratorProperties } from "./declarations";
 import { log }                 from "./log";
 import { getNodeLocationText } from "./utils/traceHelpers";
 import { getTypeFullName }     from "./utils/typeHelpers";
@@ -17,7 +17,7 @@ export function getDecorators(symbol: ts.Symbol, context: Context): Array<Decora
 
 	const decorators: Array<DecoratorProperties> = [];
 
-	for (let decorator of declaration.decorators)
+	for (let decorator of (declaration.modifiers?.filter(m => m.kind === ts.SyntaxKind.Decorator) || []) as ts.Decorator[])
 	{
 		const identifier = ts.isCallExpression(decorator.expression)
 			? decorator.expression.getFirstToken()

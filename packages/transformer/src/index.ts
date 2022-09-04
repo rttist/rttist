@@ -8,7 +8,9 @@ export default function transform(program: ts.Program): ts.TransformerFactory<ts
 
 	return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
 	{
-		const sourceFileVisitor = new SourceFileVisitorFactory(context, program).create();
+		const visitorFactory = new SourceFileVisitorFactory(context);
+		const sourceFileVisitor = visitorFactory.create();
+		
 		return (node) => ts.visitNode(node, sourceFileVisitor);
 	};
 }

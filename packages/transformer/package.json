@@ -5,8 +5,8 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "npx tsc",
-		"watch": "npx tsc --watch"
+		"prepare": "tsc",
+		"watch": "tsc --watch"
 	},
 	"files": [
 		"dist/**/*",

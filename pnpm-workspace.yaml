@@ -3,3 +3,4 @@
     - 'packages/abstract'
     - 'packages/runtime'
     - 'packages/transformer'
+    - 'dev'

@@ -1,16 +1,17 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
-		"target": "ES2020",
+		"module": "NodeNext",
+		"target": "ESNext",
+		"esModuleInterop": true,
 		"removeComments": false,
 		"declaration": true,
 		"sourceMap": true,
 		"experimentalDecorators": true,
-		"rootDir": "../..",
-		"typeRoots": [
-			"../../node_modules/@types",
-			"../../node_modules/@rtti/abstract/node_modules/@types"
-		],
+		"rootDir": "..",
+		//		"typeRoots": [
+		//			"../../node_modules/@types",
+		//			"../../node_modules/@rtti/abstract/node_modules/@types"
+		//		],
 		"plugins": [
 			{
 				"transform": "tst-reflect-transformer"
@@ -22,7 +23,7 @@
 	],
 	"reflection": {
 		"metadata": {
-			"type": "typelib",
+			"type": "typelib"
 		},
 		"debugMode": true
 	}

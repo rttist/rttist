@@ -1,16 +1,9 @@
 import * as ts                        from "typescript";
 import { TypeKind }                   from "@rtti/abstract";
-import { MetadataTypeValues }         from "../config-options";
 import { Context }                    from "../contexts/Context";
-import {
-	TypeProperties,
-	UnknownTypeProperties,
-	UnknownTypeReference
-}                                     from "../declarations";
-import { getTypeNodeIdentifier }      from "../utils/getTypeNodeIdentifier";
+import { TypeProperties }             from "../declarations/TypeProperties";
 import { getDeclaration }             from "../utils/symbolHelpers";
 import { getTypeSourceLocationText }  from "../utils/traceHelpers";
-import { getConstructors }            from "./getConstructors";
 import { getDecorators }              from "../getDecorators";
 import { log }                        from "../log";
 import { getMethods }                 from "./getMethods";
@@ -21,6 +14,7 @@ import {
 	getTypeId
 }                                     from "../utils/typeHelpers";
 import { getProperties }              from "./getProperties";
+import { UnknownTypeProperties }      from "../consts";
 
 type TypeMapperResult = TypeProperties | undefined;
 type TypeMapper = (type: ts.Type/*, typeNode: ts.TypeNode | undefined*/, context: Context) => TypeMapperResult;
@@ -606,7 +600,7 @@ function mapUniqueEESymbol(type: ts.UniqueESSymbolType/*, typeNode: ts.TypeNode 
 	};
 }
 
-function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/ , context: Context): TypeMapperResult
+function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/, context: Context): TypeMapperResult
 {
 	const mapper = ObjectFlagsMappers[type.objectFlags];
 
@@ -670,7 +664,7 @@ function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/ , c
 			// If it is not exported, it must be getType<> of local class; in that case, we have direct access to class. But this type info must be generated in file.
 			else
 			{
-				properties.exported = false;
+				properties.exported = undefined;
 
 				// if (ts.isTypeReferenceNode(typeNode))
 				// {
@@ -811,7 +805,7 @@ function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/ , c
 	// };
 }
 
-function mapUnion(type: ts.UnionType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
+function mapUnion(type: ts.UnionType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Union,
@@ -822,7 +816,7 @@ function mapUnion(type: ts.UnionType/*, typeNode: ts.TypeNode | undefined*/ , co
 	return undefined;
 }
 
-function mapIntersection(type: ts.IntersectionType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
+function mapIntersection(type: ts.IntersectionType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Intersection,
@@ -833,12 +827,12 @@ function mapIntersection(type: ts.IntersectionType/*, typeNode: ts.TypeNode | un
 	return undefined;
 }
 
-function mapIndex(type: ts.IndexType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
+function mapIndex(type: ts.IndexType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	return undefined;
 }
 
-function mapIndexedAccessType(type: ts.IndexedAccessType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
+function mapIndexedAccessType(type: ts.IndexedAccessType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.IndexedAccess,
@@ -851,7 +845,7 @@ function mapIndexedAccessType(type: ts.IndexedAccessType/*, typeNode: ts.TypeNod
 	return undefined;
 }
 
-function mapConditional(type: ts.ConditionalType/*, typeNode: ts.TypeNode | undefined*/ , context: Context): TypeMapperResult
+function mapConditional(type: ts.ConditionalType/*, typeNode: ts.TypeNode | undefined*/, context: Context): TypeMapperResult
 {
 	const ct = type.root.node;
 	const extendsType = context.typeChecker.getTypeAtLocation(ct.extendsType);

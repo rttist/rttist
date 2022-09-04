@@ -1,4 +1,5 @@
 import fs                          from "fs";
+import { PackageInfo }             from "./declarations/general";
 import { log }                     from "./log";
 import path                        from "path";
 import {
@@ -17,7 +18,6 @@ import {
 	Mode,
 	ModeValues
 }                                  from "./config-options";
-import type { PackageInfo }        from "./declarations";
 import { PACKAGE_ID }              from "./helpers";
 import { makeRe }                  from "minimatch";
 import { MetadataMiddleware }      from "./middlewares";

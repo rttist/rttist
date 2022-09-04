@@ -1,7 +1,7 @@
-import * as ts                        from "typescript";
-import { ConstructorProperties }      from "../declarations";
-import { getSignatureParameters }     from "./getSignatureParameters";
-import { Context }                    from "../contexts/Context";
+import * as ts                    from "typescript";
+import { ConstructorProperties }  from "../declarations/TypeProperties";
+import { getSignatureParameters } from "./getSignatureParameters";
+import { Context }                from "../contexts/Context";
 
 export function getConstructors(type: ts.Type, context: Context): ConstructorProperties[] | undefined
 {

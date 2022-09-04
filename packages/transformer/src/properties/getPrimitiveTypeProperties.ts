@@ -1,7 +1,7 @@
-import { TypeKind }             from "@rtti/abstract";
+import { TypeKind }                 from "@rtti/abstract";
 import * as ts                      from "typescript";
-import { NativeBaseTypeProperties } from "../declarations";
 import { Context }                  from "../contexts/Context";
+import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
 
 /**
  * Return TypeProperties whether the type is a primitive native type.

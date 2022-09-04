@@ -1,8 +1,6 @@
-import * as ts                    from "typescript";
-import { Context }                from "../contexts/Context";
-import {
-	MethodProperties
-} from "../declarations";
+import * as ts              from "typescript";
+import { Context }          from "../contexts/Context";
+import { MethodProperties } from "../declarations/TypeProperties";
 
 // export function getMethodGenerics(symbol: ts.Symbol, context: Context): Array<MethodProperties>
 // {

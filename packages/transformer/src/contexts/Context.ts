@@ -1,6 +1,6 @@
-import * as ts                     from "typescript";
-import type { SourceFileContext }  from "./SourceFileContext";
-import type { TransformerVisitor } from "../declarations";
+import * as ts                    from "typescript";
+import { TransformerVisitor }     from "../declarations/general";
+import type { SourceFileContext } from "./SourceFileContext";
 
 /**
  * Context of visitors

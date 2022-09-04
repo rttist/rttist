@@ -1,6 +1,6 @@
 import * as ts                                            from "typescript";
+import { UnknownTypeReference }                           from "../consts";
 import { Context }                                        from "../contexts/Context";
-import { UnknownTypeReference }                           from "../declarations";
 import { FunctionLikeDeclarationGenericParametersDetail } from "../FunctionLikeDeclarationGenericParametersDetail";
 import { getErrorMessage }                                from "../utils/getErrorMessage";
 import { getGenericParametersDetails }                    from "../getGenericParametersDetails";
@@ -102,16 +102,16 @@ export function processGenericCallExpression(context: Context, node: ts.CallExpr
 			{
 				genericType ??= context.typeChecker.getTypeAtLocation(typeArgumentNode!);
 				const genericTypeSymbol = genericType.getSymbol();
-				
+
 				const ref = context.metadata.addType(genericType, /*typeArgumentNode!*/undefined, context); // TODO: Solve TypeNode	
-				
+
 				typePropertyVal = context.metadata.factory.createTypeResolver(ref);
-					// getTypeCall(
-					// 	genericType,
-					// 	genericTypeSymbol,
-					// 	context,
-					// 	typeArgumentNode && ts.isTypeReferenceNode(typeArgumentNode) ? typeArgumentNode.typeName : undefined
-					// );
+				// getTypeCall(
+				// 	genericType,
+				// 	genericTypeSymbol,
+				// 	context,
+				// 	typeArgumentNode && ts.isTypeReferenceNode(typeArgumentNode) ? typeArgumentNode.typeName : undefined
+				// );
 			}
 			else
 			{

@@ -2,15 +2,10 @@ import * as ts                   from "typescript";
 import { MetadataTypeValues }    from "../config-options";
 import { SourceFileContext }     from "../contexts/SourceFileContext";
 import { TransformerContext }    from "../contexts/TransformerContext";
-import {
-	MetadataSource,
-	TransformerTypeReference
-}                                from "../declarations";
+import { MetadataSource }        from "../declarations/TypeProperties";
 import { PACKAGE_ID }            from "../helpers";
-import { ModuleMetadata }        from "../metadata/ModuleMetadata";
 import { MiddlewareResult }      from "../middlewares";
 import { processMiddlewares }    from "../middlewares/processMiddlewares";
-import { updateSourceFile }      from "../transformers/updateSourceFile";
 import {
 	color,
 	log,
@@ -25,9 +20,8 @@ export class SourceFileVisitorFactory
 {
 	/**
 	 * @param transformationContext
-	 * @param program
 	 */
-	constructor(private readonly transformationContext: ts.TransformationContext, private readonly program: ts.Program)
+	constructor(private readonly transformationContext: ts.TransformationContext)
 	{
 	}
 
@@ -36,6 +30,12 @@ export class SourceFileVisitorFactory
 		const transformerContext = TransformerContext.instance;
 		const transformationContext = this.transformationContext;
 		const config = transformerContext.config;
+		
+		// program.isSourceFileFromExternalLibrary()
+		// program.isSourceFileDefaultLibrary();
+		// program.getRootFileNames()
+		const sourceFileCount = transformerContext.program.getSourceFiles().length;
+		let processedSourceFiles = 0;
 
 		return sourceFileNode =>
 		{
@@ -65,36 +65,41 @@ export class SourceFileVisitorFactory
 				plugin.visit(sourceFileNode, sourceFileContext);
 			}
 
-			if (visitedSourceFileNode)
+			if (config.debugMode)
 			{
+				log.trace(`${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} has been finished.`);
+			}
+
+			// Increase SourceFile counter
+			processedSourceFiles++;
+			
+			if (processedSourceFiles === sourceFileCount) 
+			{
+				log.debug("Last file visited!");
+
 				// TODO: This must be fixed! SourceFileContext.metadata.getModules() returns all the modules again and again for each sourcefile, sourceFileContext.metadata is static singleton.
 				const modules = Array.from(sourceFileContext.metadata.getModules()).map(moduleMetadata => moduleMetadata.getModuleProperties());
 
-				// Filter 
-				if (config.metadataType == MetadataTypeValues.inline)
-				{
-					for (const module of modules) {
-						const typesInFile: TransformerTypeReference[] = sourceFileContext.metadata.getInFileTypes(sourceFileContext.sourceFile);
-						module.types = module.types?.filter(type => typesInFile.some(typeInFileReference => type.id == typeInFileReference || (type.id == undefined && type.kind == typeInFileReference)));
-					}
-				}
-				
+				// // Filter 
+				// if (config.metadataType == MetadataTypeValues.inline)
+				// {
+				// 	for (const module of modules) {
+				// 		const typesInFile: TransformerTypeReference[] = sourceFileContext.metadata.getInFileTypes(sourceFileContext.sourceFile);
+				// 		module.types = module.types?.filter(type => typesInFile.some(typeInFileReference => type.id == typeInFileReference || (type.id == undefined && type.kind == typeInFileReference)));
+				// 	}
+				// }
+
 				const source: MetadataSource = { modules };
 				const metadata: MiddlewareResult = processMiddlewares(sourceFileContext, source);
 
 				if (metadata)
 				{
 					const metadataExpression = createValueExpression(metadata);
-					
+
 					// TYPELIB - add import of metadata library
 					if (config.metadataType == MetadataTypeValues.typeLib)
 					{
-						visitedSourceFileNode = updateSourceFile(
-							visitedSourceFileNode, 
-							[
-								sourceFileContext.metadata.factory.createTypeLibImport(sourceFileContext.sourceFile)
-							]
-						);
+						log.debug("Generating metadata file.");
 						
 						// 		const propertiesStatements: Array<[number, ts.ObjectLiteralExpression]> = [];
 						// 		const typeIdUniqueObj: { [key: number]: boolean } = {};
@@ -118,10 +123,10 @@ export class SourceFileVisitorFactory
 						//
 						transformerContext.metadata.writer.writeModule(metadataExpression);//writeMetaProperties(propertiesStatements, typeCtor, transformationContext);
 					}
-					else if (config.metadataType == MetadataTypeValues.inline) 
+					else if (config.metadataType == MetadataTypeValues.inline)
 					{
 						console.warn("Mode 'inline' is not implemented yet.");
-						
+
 						//const types = sourceFileContext.metadata.getInFileTypes(sourceFileContext.sourceFile);
 
 						// for (let moduleMetadata of modules)
@@ -132,11 +137,6 @@ export class SourceFileVisitorFactory
 						// }
 					}
 				}
-			}
-
-			if (config.debugMode)
-			{
-				log.trace(`${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} has been finished.`);
 			}
 
 			return visitedSourceFileNode;

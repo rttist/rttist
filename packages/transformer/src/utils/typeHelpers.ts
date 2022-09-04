@@ -1,3 +1,7 @@
+import {
+	ModuleIdentifier,
+	TypeIdentifier
+} from "@rtti/abstract";
 import path                   from "path";
 import * as ts                from "typescript";
 import { Context }            from "../contexts/Context";
@@ -6,8 +10,9 @@ import {
 	PATH_SEPARATOR_REGEX
 }                             from "../helpers";
 import {
+	getDeclaration,
 	getSourceFile
-}                             from "./symbolHelpers";
+} from "./symbolHelpers";
 
 export function getSymbol(type: ts.Type, context: Context): ts.Symbol | undefined
 {
@@ -34,15 +39,32 @@ export function isArrayType(type: ts.Type): boolean
 	return !!(type.flags & ts.TypeFlags.Object) && type.symbol?.escapedName == "Array"; // TODO: Check ObjectFlags && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.ArrayLiteral && ??
 }
 
-let typeIdCounter = -1;
-
 /**
  * Returns id of given type
  * @param type
  */
-export function getTypeId(type: ts.Type): number
+export function getTypeId(type: ts.Type): TypeIdentifier
 {
-	return (type as any).id ?? (type as any).__reflectId ?? ((type as any).__reflectId = typeIdCounter--);
+	const declaration = getDeclaration(type.symbol);
+	
+	if (!declaration) {
+		// TODO: Handle this state! This occur for every native type (string, number etc.)
+		return "";
+	}
+
+	const sourceFileId = getSourceFileId(declaration.getSourceFile());
+	
+	// TODO: Handle this properly.
+	return sourceFileId + "::" + type.symbol.escapedName;
+}
+
+// TODO: Move somewhere, with getTypeId
+export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
+{
+	// TODO: Detect root of the package where the type is and use name of the package as root.
+	//  Cache generated SourceFile id on the SourceFile.
+	
+	return sourceFile.fileName;
 }
 
 

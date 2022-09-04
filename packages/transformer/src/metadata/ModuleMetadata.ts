@@ -1,29 +1,24 @@
-import { ModuleReference }     from "@rtti/abstract";
-import * as ts                 from "typescript";
-import { TransformerContext }  from "../contexts/TransformerContext";
+import { ModuleReference }          from "@rtti/abstract";
+import * as ts                      from "typescript";
+import { UnknownTypeReference }     from "../consts";
+import { TransformerContext }       from "../contexts/TransformerContext";
+import { TransformerTypeReference } from "../declarations/general";
 import {
 	ModuleMetadataProperties,
 	ModuleProperties,
-	TransformerTypeReference,
-	TypeProperties,
-	UnknownTypeReference
-} from "../declarations";
-import { getTypeProperties }   from "../properties/getTypeProperties";
-import { getSourceFile }       from "../utils/findSourceFile";
-import { getNodeLocationText } from "../utils/traceHelpers";
+	TypeProperties
+}                                   from "../declarations/TypeProperties";
+import { getTypeProperties }        from "../properties/getTypeProperties";
+import { getSourceFile }            from "../utils/findSourceFile";
+import { getNodeLocationText }      from "../utils/traceHelpers";
 // import { getCanonizedPathOfImportedModule } from "../utils/path";
-import { getTypeId }           from "../utils/typeHelpers";
+import { getSourceFileId, getTypeId }                from "../utils/typeHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
  */
 export class ModuleMetadata
 {
-	/**
-	 * Static counter of SourceFiles.
-	 */
-	private static sourceFileIdCounter = 1;
-
 	/**
 	 * Module for unknown types.
 	 * @private
@@ -63,11 +58,6 @@ export class ModuleMetadata
 		}
 
 		return ModuleMetadata.unknownTypesModule;
-	}
-
-	private static getSourceFileId(sourceFile: ts.SourceFile): number
-	{
-		return (sourceFile as any).__reflectId ?? (sourceFile as any).id ?? ((sourceFile as any).__reflectId = ModuleMetadata.sourceFileIdCounter++); // TODO: Check if sourcefile has "id"
 	}
 
 	/**
@@ -125,7 +115,7 @@ export class ModuleMetadata
 
 		return {
 			name,
-			id: ModuleMetadata.getSourceFileId(this.sourceFile),
+			id: getSourceFileId(this.sourceFile),
 			path: this.sourceFile.fileName,
 			children: this.getChildrenReferences(this.sourceFile)
 		};
@@ -151,7 +141,7 @@ export class ModuleMetadata
 
 			if (childSourceFile)
 			{
-				references.push(ModuleMetadata.getSourceFileId(childSourceFile));
+				references.push(getSourceFileId(childSourceFile));
 			}
 			else
 			{

@@ -6,7 +6,7 @@ import {
 }                                from "../../config-options";
 import { Context }               from "../../contexts/Context";
 import { TransformerContext }    from "../../contexts/TransformerContext";
-import { ImportInfo }            from "../../declarations";
+import { ImportInfo }            from "../../declarations/TypeProperties";
 import { PATH_SEPARATOR_REGEX, } from "../../helpers";
 import { log }                   from "../../log";
 import { IMetadataWriter }       from "./IMetadataWriter";

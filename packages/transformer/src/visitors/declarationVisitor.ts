@@ -89,7 +89,6 @@ export default class DeclarationVisitor
 		{
 			return ts.factory.updateMethodDeclaration(
 				node,
-				node.decorators,
 				node.modifiers,
 				node.asteriskToken,
 				node.name,
@@ -104,7 +103,6 @@ export default class DeclarationVisitor
 		// else if (ts.isFunctionDeclaration(node))
 		return ts.factory.updateFunctionDeclaration(
 			node,
-			node.decorators,
 			node.modifiers,
 			node.asteriskToken,
 			node.name,

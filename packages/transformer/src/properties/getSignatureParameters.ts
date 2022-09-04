@@ -1,14 +1,11 @@
-import * as ts            from "typescript";
-import { Context }        from "../contexts/Context";
-import {
-	AnyTypeReference,
-	ParameterProperties,
-	UnknownTypeReference
-}                         from "../declarations";
+import * as ts                 from "typescript";
+import { AnyTypeReference }    from "../consts";
+import { Context }             from "../contexts/Context";
+import { ParameterProperties } from "../declarations/TypeProperties";
 import {
 	getType
-}                         from "../helpers";
-import { getDeclaration } from "../utils/symbolHelpers";
+}                              from "../helpers";
+import { getDeclaration }      from "../utils/symbolHelpers";
 
 /**
  * Process the signature of the method and create a parameter description for each parameter

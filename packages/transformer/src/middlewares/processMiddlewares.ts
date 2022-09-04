@@ -1,6 +1,6 @@
 import * as ts                  from "typescript";
 import { SourceFileContext }    from "../contexts/SourceFileContext";
-import { MetadataSource }       from "../declarations";
+import { MetadataSource }       from "../declarations/TypeProperties";
 import {
 	MetadataMiddleware,
 	MiddlewareContext,

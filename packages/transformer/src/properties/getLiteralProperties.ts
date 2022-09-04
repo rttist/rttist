@@ -1,7 +1,7 @@
 import { TypeKind }              from "@rtti/abstract";
 import * as ts                   from "typescript";
 import { Context }               from "../contexts/Context";
-import { LiteralTypeProperties } from "../declarations";
+import { LiteralTypeProperties } from "../declarations/TypeProperties";
 import { getTypeId }             from "../utils/typeHelpers";
 
 export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined

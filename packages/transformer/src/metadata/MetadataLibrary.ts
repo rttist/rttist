@@ -1,9 +1,8 @@
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
 import { TransformerContext }       from "../contexts/TransformerContext";
-import { TransformerTypeReference } from "../declarations";
+import { TransformerTypeReference } from "../declarations/general";
 import {
-	getDeclaration,
 	getSourceFile
 }                                   from "../utils/symbolHelpers";
 import { getSymbol }                from "../utils/typeHelpers";
@@ -96,7 +95,7 @@ export class MetadataLibrary
 	addType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
 		// type ??= this.context.checker.getTypeAtLocation(typeNode);
-		const symbol = getSymbol(type, context)
+		const symbol = getSymbol(type, context);
 		const sourceFile = symbol && getSourceFile(symbol);//typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
 
 		let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownTypesModule(this.context);

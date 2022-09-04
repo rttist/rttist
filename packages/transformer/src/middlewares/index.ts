@@ -1,6 +1,6 @@
 import * as ts               from "typescript";
 import { SourceFileContext } from "../contexts/SourceFileContext";
-import { MetadataSource }    from "../declarations";
+import { MetadataSource }    from "../declarations/TypeProperties";
 
 /**
  * Interface of "Next" middleware object.
@@ -17,6 +17,7 @@ export interface MiddlewareContext
 	sourceFileContext: SourceFileContext;
 	metadata: MetadataSource;
 	result: MiddlewareResult | undefined;
+
 	setResult(expression: MiddlewareResult): void;
 }
 

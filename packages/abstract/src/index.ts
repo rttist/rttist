@@ -14,7 +14,7 @@ export {
 export * from "./enums";
 export * from "./declarations";
 export * from "./types";
-export * from "./builders";
+export * from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
 
 Metadata.addType(
 	Type.Any,

@@ -1,10 +1,11 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rtti/core";
-import { GenericTypeRegister }     from "./GenericTypeRegister";
+import { PROTOTYPE_TYPE_PROPERTY }     from "@rtti/core";
+import { GenericTypeRegister }         from "./GenericTypeRegister";
 import {
 	getGlobalThis,
 	getTypeOfRuntimeValue
-}                                  from "./helpers";
-import { Type }                    from "./Type";
+}                                      from "./helpers";
+import { Metadata as MetadataLibrary } from "./Metadata";
+import { Type }                        from "./Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -12,6 +13,8 @@ declare global
 {
 	namespace Reflect
 	{
+		export const Metadata: typeof MetadataLibrary;
+
 		/**
 		 * The static Reflect.construct() method acts like the new operator, but as a function.
 		 * It is equivalent to calling new target(...args). It gives also the added option to specify a different prototype.

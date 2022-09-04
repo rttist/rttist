@@ -221,7 +221,7 @@ export function getSourceFileImports(sourceFile: ts.SourceFile): ts.ImportDeclar
  * Return AccessModifier
  * @param modifiers
  */
-export function getAccessModifier(modifiers?: ts.ModifiersArray): AccessModifier
+export function getAccessModifier(modifiers?: ts.NodeArray<ts.ModifierLike>): AccessModifier
 {
 	const kinds = modifiers?.map(m => m.kind) ?? [];
 
@@ -264,7 +264,7 @@ export function getAccessor(node?: ts.Declaration): Accessor
  * Return true if there is readonly modifier
  * @param modifiers
  */
-export function isReadonly(modifiers?: ts.ModifiersArray): boolean
+export function isReadonly(modifiers?: ts.NodeArray<ts.ModifierLike>): boolean
 {
 	return modifiers?.some(m => m.kind == ts.SyntaxKind.ReadonlyKeyword) ?? false;
 }

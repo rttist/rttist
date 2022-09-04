@@ -22,6 +22,15 @@ importers:
       ttypescript: 1.5.13_s5ojjbx2isjkawqptqpitvy25q
       typescript: 4.8.2
 
+  dev:
+    specifiers:
+      '@rtti/abstract': workspace:*
+      tst-reflect-transformer: workspace:*
+    dependencies:
+      '@rtti/abstract': link:../packages/abstract
+    devDependencies:
+      tst-reflect-transformer: link:../packages/transformer
+
   packages/abstract:
     specifiers:
       '@rtti/core': x
