@@ -4,7 +4,7 @@ import type { Type }          from "../Type";
 import {
 	AccessModifier,
 	Accessor
-}                             from "../index";
+}                             from "../enums";
 import { Metadata }           from "../Metadata";
 import {
 	AccessModifierFlagsOffset,

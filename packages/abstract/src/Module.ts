@@ -1,3 +1,4 @@
+import { ModuleIds }             from "./const-type-identifiers";
 import type { ModuleIdentifier } from "./declarations";
 import type { Type }             from "./Type";
 
@@ -15,17 +16,17 @@ export class Module
 	/**
 	 * Module for all the native types.
 	 */
-	public static readonly Native: Module = new Module({ id: "::native::", name: "native", path: "" });
+	public static readonly Native: Module = new Module({ id: ModuleIds.Native, name: "native", path: "" });
 
 	/**
 	 * Module for dynamic types without specific module.
 	 */
-	public static readonly Dynamic: Module = new Module({ id: "::dynamic::", name: "dynamic", path: "" });
+	public static readonly Dynamic: Module = new Module({ id: ModuleIds.Dynamic, name: "dynamic", path: "" });
 
 	/**
 	 * Unknown module.
 	 */
-	public static readonly Unknown: Module = new Module({ id: "::unknown::", name: "unknown", path: "" });
+	public static readonly Unknown: Module = new Module({ id: ModuleIds.Unknown, name: "unknown", path: "" });
 
 	private readonly _children: Module[];
 	private readonly _types: Type[];

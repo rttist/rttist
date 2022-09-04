@@ -1,7 +1,9 @@
 # Welcome to TS Reflection Contributing Guide
+
 Thank You for investing your time in contributing to my project! :tada:
 
 ## How to Start
+
 * Fork the repository,
 * create a branch with your feature,
 * install pnpm (`npm i pnpm -g`) if you don't have it yet.
@@ -15,10 +17,12 @@ Thank You for investing your time in contributing to my project! :tada:
 * make a PR into the `devel` branch.
 
 ## Debugging
-Run compiler using `node ttypescript\bin\tsc` inside one of the dev directories, 
+
+Run compiler using `node ttypescript\bin\tsc` inside one of the dev directories,
 eg. `cd dev/di && node ../node_modules\ttypescript\bin\tsc`
 
 ### Debug mode
+
 To enable debug logging, you must update tsconfig.json and add `reflection.debugMode = true`.
 
 ```json
@@ -28,3 +32,10 @@ To enable debug logging, you must update tsconfig.json and add `reflection.debug
     }
 }
 ```
+
+## Some rules
+
+* Use type imports `import type {} from ""` whenever it is possible. In abstract package there is problem with circular dependencies so type imports help to identify issues.
+
+## TODO
+* Use LazyType, LazyModule, LazyTypeArray in classes inheriting from Type.

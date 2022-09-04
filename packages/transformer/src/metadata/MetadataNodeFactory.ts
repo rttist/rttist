@@ -4,7 +4,7 @@ import { createValueExpression }    from "../utils/createValueExpression";
 import type { TransformerContext }  from "../contexts/TransformerContext";
 import type { MetadataLibrary }     from "./MetadataLibrary";
 
-export class MetadataFactory
+export class MetadataNodeFactory
 {
 	// private readonly typeFactoryIdentifier: ts.Identifier;
 	// private readonly metadataIdentifier: ts.Identifier;

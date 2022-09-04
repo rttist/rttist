@@ -30,6 +30,6 @@ export function processGetTypeCallExpression(context: Context, node: ts.CallExpr
 	else
 	{
 		const typeReference = context.metadata.addType(genericType/*, genericTypeNode*/, undefined, context);
-		return context.metadata.factory.createTypeResolver(typeReference);
+		return context.metadata.nodeFactory.createTypeResolver(typeReference);
 	}
 }

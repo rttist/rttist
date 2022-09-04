@@ -1,11 +1,9 @@
 // noinspection JSUnusedGlobalSymbols
 
 import type {
-	ModuleIdentifier,
 	TypeIdentifier,
 	TypeMetadata,
-	TypeReference
-}                   from "./declarations";
+}                      from "./declarations";
 import type {
 	ClassType,
 	ConditionalType,
@@ -21,16 +19,21 @@ import type {
 	TemplateType,
 	TypeParameterType,
 	UnionType
-}                   from "./types";
+}                      from "./types";
+import type { Module } from "./Module";
+
+import {
+	ModuleIds,
+	NativeTypeIdPrefix
+}                        from "./const-type-identifiers";
+import { LazyModule }    from "./LazyModule";
+import { LazyTypeArray } from "./LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                   from "./enums";
-import { Metadata } from "./Metadata";
-import { Module }   from "./Module";
+}                        from "./enums";
 
-const NID = Module.Native.id;
 const createdNativeTypes = new Set();
 
 /**
@@ -41,8 +44,8 @@ function cn(name: string, kind: TypeKind): Type
 	const type = new Type({
 		kind,
 		name,
-		id: "native::" + name,
-		module: NID
+		id: NativeTypeIdPrefix + name,
+		module: ModuleIds.Native
 	});
 
 	createdNativeTypes.add(type);
@@ -89,12 +92,8 @@ export class Type
 	private readonly _fullName: string;
 	private readonly _name: string;
 	private readonly _exported: boolean;
-
-	private readonly _moduleReference: ModuleIdentifier;
-	private readonly _typeParameterReferences: TypeReference[];
-
-	private _module?: Module;
-	private _typeParameters?: ReadonlyArray<Type>;
+	private readonly _moduleRef: LazyModule;
+	private readonly _typeParametersRef: LazyTypeArray;
 
 	/**
 	 * Type identifier.
@@ -126,7 +125,7 @@ export class Type
 	 */
 	get module(): Module
 	{
-		return this._module ?? (this._module = Metadata.resolveModule(this._moduleReference));
+		return this._moduleRef.module;
 	}
 
 	/**
@@ -159,10 +158,10 @@ export class Type
 		this._kind = initializer.kind;
 		this._name = initializer.name;
 		this._fullName = initializer.fullName || "";
-		this._moduleReference = initializer.module;
 		this._exported = initializer.exported || false;
 
-		this._typeParameterReferences = initializer.typeParameters || [];
+		this._moduleRef = new LazyModule(initializer.module);
+		this._typeParametersRef = new LazyTypeArray(initializer.typeParameters || []);
 	}
 
 	/**
@@ -193,12 +192,7 @@ export class Type
 	 */
 	getTypeParameters(): ReadonlyArray<Type>
 	{
-		if (!this._typeParameters)
-		{
-			this._typeParameters = Object.freeze(this._typeParameterReferences.map(type => Metadata.resolveType(type)));
-		}
-
-		return this._typeParameters;
+		return this._typeParametersRef.types;
 	}
 
 	//////////////////////////////////////////////////////////////////// GUARDS /////////////////////////////////////////////////////////////////
@@ -208,7 +202,7 @@ export class Type
 	 */
 	isGenericType(): this is GenericType<Type>
 	{
-		return this._typeParameterReferences.length > 0;
+		return this._typeParametersRef.length > 0;
 	}
 
 	/**

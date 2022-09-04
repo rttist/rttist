@@ -63,7 +63,7 @@ export function processDecorator(node: ts.Decorator, decoratorType: ts.Type, con
 	
 	const typeArgumentDescription = {
 		genericTypeName: genericParamName,
-		reflectedType: context.metadata.factory.createTypeResolver(ref)
+		reflectedType: context.metadata.nodeFactory.createTypeResolver(ref)
 		// 	getTypeCall(
 		// 	genericType,
 		// 	genericTypeSymbol,

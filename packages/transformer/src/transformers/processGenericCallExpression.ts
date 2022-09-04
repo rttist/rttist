@@ -105,7 +105,7 @@ export function processGenericCallExpression(context: Context, node: ts.CallExpr
 
 				const ref = context.metadata.addType(genericType, /*typeArgumentNode!*/undefined, context); // TODO: Solve TypeNode	
 
-				typePropertyVal = context.metadata.factory.createTypeResolver(ref);
+				typePropertyVal = context.metadata.nodeFactory.createTypeResolver(ref);
 				// getTypeCall(
 				// 	genericType,
 				// 	genericTypeSymbol,
@@ -115,7 +115,7 @@ export function processGenericCallExpression(context: Context, node: ts.CallExpr
 			}
 			else
 			{
-				typePropertyVal = context.metadata.factory.createTypeResolver(UnknownTypeReference);
+				typePropertyVal = context.metadata.nodeFactory.createTypeResolver(UnknownTypeReference);
 			}
 
 			args.push({

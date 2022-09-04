@@ -1,20 +1,26 @@
-// keep order of imports
-import { Metadata } from "./Metadata";
-import { Module }   from "./Module";
-import { Type }     from "./Type";
+// keep order of imports & exports - there are circular dependencies
+import { LazyType }   from "./LazyType";
+import { LazyModule } from "./LazyModule";
+import { Type }       from "./Type";
+import { Module }     from "./Module";
+import { Metadata }   from "./Metadata";
 import "./Reflect";
 
-export {
-	Type
-}        from "./Type";
+export *            from "./enums";
+export *            from "./declarations";
 export {
 	Module,
 	ModuleMetadata
-}        from "./Module";
-export * from "./enums";
-export * from "./declarations";
-export * from "./types";
-export * from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
+}                   from "./Module";
+export {
+	Type
+}                   from "./Type";
+export *            from "./types";
+export { Metadata } from "./Metadata";
+export *            from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
+
+LazyType.resolver = Metadata.resolveType;
+LazyModule.resolver = Metadata.resolveModule;
 
 Metadata.addType(
 	Type.Any,

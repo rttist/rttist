@@ -5,11 +5,9 @@ import { TransformerTypeReference } from "../declarations/general";
 import {
 	getSourceFile
 }                                   from "../utils/symbolHelpers";
-import { getSymbol }                from "../utils/typeHelpers";
-import { MetadataFactory }          from "./MetadataFactory";
-import { ModuleMetadata }           from "./ModuleMetadata";
-import { IMetadataWriter }          from "./writer/IMetadataWriter";
-import { MetadataWriterFactory }    from "./writer/MetadataWriterFactory";
+import { getSymbol }           from "../utils/typeHelpers";
+import { MetadataNodeFactory } from "./MetadataNodeFactory";
+import { ModuleMetadata }      from "./ModuleMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -24,7 +22,7 @@ export class MetadataLibrary
 	/**
 	 * Metadata factory.
 	 */
-	public readonly factory: MetadataFactory;
+	public readonly nodeFactory: MetadataNodeFactory;
 
 	/**
 	 * Map of types used in which SourceFile.
@@ -32,10 +30,10 @@ export class MetadataLibrary
 	 */
 	private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
 
-	/**
-	 * Metadata writer.
-	 */
-	public readonly writer: IMetadataWriter;
+	// /**
+	//  * Metadata writer.
+	//  */
+	// public readonly writer: IMetadataWriter;
 
 	/**
 	 * @protected
@@ -47,22 +45,22 @@ export class MetadataLibrary
 			throw new Error("This constructor is protected.");
 		}
 
-		this.factory = new MetadataFactory(this, context);
-		this.writer = MetadataWriterFactory.create(context);
+		this.nodeFactory = new MetadataNodeFactory(this, context);
+		// this.writer = MetadataWriterFactory.create(context);
 	}
 
-	/**
-	 * Get singleton instance of MetadataLibrary.
-	 */
-	static get instance(): MetadataLibrary
-	{
-		if (!instance)
-		{
-			throw new Error("tst-reflect: MetadataLibrary hasn't been initiated yet!");
-		}
-
-		return instance;
-	}
+	// /**
+	//  * Get singleton instance of MetadataLibrary.
+	//  */
+	// static get instance(): MetadataLibrary
+	// {
+	// 	if (!instance)
+	// 	{
+	// 		throw new Error("tst-reflect: MetadataLibrary hasn't been initiated yet!");
+	// 	}
+	//
+	// 	return instance;
+	// }
 
 	/**
 	 * Init Metadata library.
@@ -109,7 +107,7 @@ export class MetadataLibrary
 		const typeRef = existingModule.addType(type);
 		const sourceFileContext = this.context.currentSourceFileContext;
 
-		if (typeof typeRef === "number" && sourceFileContext)
+		if (typeof typeRef === "string" && sourceFileContext)
 		{
 			let typeRefs = this.sourceFileContextTypes.get(sourceFileContext.sourceFile);
 

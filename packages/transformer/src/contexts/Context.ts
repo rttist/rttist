@@ -74,7 +74,7 @@ export class Context
 		ts.visitEachChild(node, this.visitor, this._sourceFileContext.transformationContext);
 	}
 
-	createNestedContext<TReturn = undefined>(visitor: TransformerVisitor, contextAction: (context: Context) => TReturn)
+	createNestedContext<TReturn = undefined>(visitor: TransformerVisitor, contextAction: (context: Context) => TReturn): TReturn
 	{
 		const context = new Context(this._sourceFileContext, visitor);
 		return contextAction(context);

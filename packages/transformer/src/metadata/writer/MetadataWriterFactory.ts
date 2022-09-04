@@ -1,24 +1,24 @@
-import { MetadataTypeValues }    from "../../config-options";
-import { TransformerContext }    from "../../contexts/TransformerContext";
-import { IMetadataWriter }       from "./IMetadataWriter";
-import { InlineMetadataWriter }  from "./InlineMetadataWriter";
-import { TypeLibMetadataWriter } from "./TypeLibMetadataWriter";
-
-export const MetadataWriterFactory = {
-	/**
-	 * Create new instance of MetadataWriter
-	 * @param context
-	 */
-	create(context: TransformerContext): IMetadataWriter
-	{
-		switch (context.config.metadataType)
-		{
-			case MetadataTypeValues.inline:
-				return new InlineMetadataWriter(context.config.projectDir, context);
-			case MetadataTypeValues.typeLib:
-				return new TypeLibMetadataWriter(context.config.typeLibFilePath, context);
-		}
-		
-		return new InlineMetadataWriter(context.config.projectDir, context);
-	}
-};
+// import { MetadataTypeValues }    from "../../config-options";
+// import { TransformerContext }    from "../../contexts/TransformerContext";
+// import { IMetadataWriter }       from "./IMetadataWriter";
+// import { InlineMetadataWriter }  from "./InlineMetadataWriter";
+// import { TypeLibMetadataWriter } from "./TypeLibMetadataWriter";
+//
+// export const MetadataWriterFactory = {
+// 	/**
+// 	 * Create new instance of MetadataWriter
+// 	 * @param context
+// 	 */
+// 	create(context: TransformerContext): IMetadataWriter
+// 	{
+// 		switch (context.config.metadataType)
+// 		{
+// 			case MetadataTypeValues.inline:
+// 				return new InlineMetadataWriter(context.config.projectDir, context);
+// 			case MetadataTypeValues.typeLib:
+// 				return new TypeLibMetadataWriter(context.config.typeLibFilePath, context);
+// 		}
+//		
+// 		return new InlineMetadataWriter(context.config.projectDir, context);
+// 	}
+// };

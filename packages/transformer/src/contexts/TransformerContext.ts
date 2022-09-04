@@ -4,14 +4,21 @@ import {
 	createConfig
 }                                 from "../config";
 import { MetadataLibrary }        from "../metadata/MetadataLibrary";
+import { MetadataManager }        from "../metadata/MetadataManager";
 import type { SourceFileContext } from "./SourceFileContext";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
-let instance: TransformerContext = (global as any)[InstanceKey] || null;
+let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
 
 export class TransformerContext
 {
 	// private _metaWriter?: IMetadataWriter;
+
+	/**
+	 * Metadata manager use to work with metadata.
+	 * @private
+	 */
+	private readonly metadataManager: MetadataManager;
 
 	/**
 	 * SourceFile context set for each visiting SourceFile.
@@ -43,6 +50,17 @@ export class TransformerContext
 	 * Metadata library.
 	 */
 	public readonly metadata: MetadataLibrary;
+
+	/**
+	 * List of root filenames.
+	 * @description Paths of all TS files matched by "include" (not in "exclude") from tsconfig.
+	 * It is preferred to include only one root file and let other files be included by imports.
+	 * Root files are transformer as last.
+	 * If no include is defied in tsconfig, default rule is applied which are all files in directory.
+	 */
+	public readonly rootFileNames: ReadonlySet<string>;
+
+	private _numberOfVisitedRootFileNames = 0;
 
 	/**
 	 * Get singleton instance of TransformerContext.
@@ -95,6 +113,10 @@ export class TransformerContext
 		this.config = config;
 		this.tsConfig = config.parsedCommandLine.options;
 		this.checker = program.getTypeChecker();
+
+		this.rootFileNames = new Set(program.getRootFileNames());
+
+		this.metadataManager = new MetadataManager(this);
 		this.metadata = MetadataLibrary.init(this);
 	}
 
@@ -104,13 +126,12 @@ export class TransformerContext
 	 */
 	static init(program: ts.Program)
 	{
-		const config = createConfig(program);
+		if (instance !== undefined)
+		{
+			throw new Error("TransformerContext.init called twice!");
+		}
 
-		// // If metadata library allowed
-		// if (!this._metaWriter)
-		// {
-		// 	this._metaWriter = MetadataWriterFactory.create(this);
-		// }
+		const config = createConfig(program);
 
 		instance = Reflect.construct(TransformerContext, [
 			program,
@@ -125,6 +146,23 @@ export class TransformerContext
 	setSourceFileContext(context: SourceFileContext)
 	{
 		this.sourceFileContext = context;
+	}
+
+	visitSourceFile(sourceFileNode: ts.SourceFile, transformationContext: ts.TransformationContext, callback: (sourceFileContext) => ts.SourceFile): ts.SourceFile
+	{
+		const visitedSourceFile = callback(sourceFileNode);
+
+		if (this.rootFileNames.has(sourceFileNode.fileName))
+		{
+			this._numberOfVisitedRootFileNames++;
+
+			if (this._numberOfVisitedRootFileNames == this.rootFileNames.size)
+			{
+				this.metadataManager.emit();
+			}
+		}
+
+		return visitedSourceFile;
 	}
 }
 
