@@ -1,7 +1,9 @@
+import { TypeIdentifier } from "./declarations";
+
 export interface DecoratorInfoInitializer
 {
 	name: string;
-	fullName: string;
+	id: TypeIdentifier;
 	args?: Array<any>;
 }
 
@@ -23,7 +25,7 @@ export class DecoratorInfo
 	/**
 	 * Decorator full name
 	 */
-	readonly fullName?: string;
+	readonly id: TypeIdentifier;
 
 	/**
 	 * @param initializer
@@ -31,7 +33,7 @@ export class DecoratorInfo
 	constructor(initializer: DecoratorInfoInitializer)
 	{
 		this.name = initializer.name;
-		this.fullName = initializer.fullName;
+		this.id = initializer.id;
 		this._args = Object.freeze(initializer.args || []);
 	}
 

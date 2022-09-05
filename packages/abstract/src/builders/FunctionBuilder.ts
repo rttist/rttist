@@ -69,7 +69,7 @@ export class FunctionBuilder extends TypeBuilderBase
 		const type = new FunctionType({
 			id: this.fullName,
 			kind: TypeKind.Function,
-			fullName: this.fullName,
+			// fullName: this.fullName,
 			module: Module.Dynamic.id,
 			name: this.typeName,
 			signatures: [

@@ -40,7 +40,7 @@ export class MetadataManager
 			.then(() => {
 				// if (this.transformerContext.config.debugMode)
 				// {
-					log.log(LogLevel.Trace, color.cyan, `Typelib file generated: '${this.libraryFileEmitter.getTypelibOutputPath()}'`);
+				log.log(LogLevel.Trace, color.cyan, `Typelib file generated: '${this.transformerContext.config.metadataTypelibPath}'`);
 				// }
 			})
 			.catch(error => {

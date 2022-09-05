@@ -36,7 +36,7 @@ export class ArrayTypeBuilder extends TypeBuilderBase
 			id: this.fullName,
 			kind: TypeKind.Array,
 			name: this.typeName,
-			fullName: this.fullName,
+			// fullName: this.fullName,
 			typeParameters: [this.type?.id ?? Type.Any.id],
 			ctor: () => Promise.resolve(Array),
 			ctorSync: () => Array,

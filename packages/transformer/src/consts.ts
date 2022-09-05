@@ -32,3 +32,6 @@ export const PACKAGE_ID = "tst-reflect-transformer";
 //  * Name of decorator or JSDoc comment marking method for tracing
 //  */
 // export const TRACE_DECORATOR = "trace";
+
+// TODO: Move this from here and from /abstract to core
+export const NativeTypeIdPrefix = "native::";

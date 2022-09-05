@@ -28,12 +28,20 @@ export class Config
 	public readonly metadataMiddlewares: MetadataMiddleware[];
 
 	public readonly projectDir: string;
+	public readonly rootDir: string;
 	public readonly outDir: string;
 	public readonly packageName: string;
 	public readonly typeFactory: string;
 
 	public readonly metadataIndexPath: string;
 	public readonly metadataTypelibPath: string;
+
+	/**
+	 * Virtual path (TS context) from rootDir.
+	 * There will never exists any typelib file. It's just a path, where its TS file would be.
+	 */
+	public readonly metadataTypelibVirtualPath: string;
+	
 	public readonly encode: boolean;
 
 	public readonly compilerOptions: ts.CompilerOptions;
@@ -54,12 +62,15 @@ export class Config
 		this.metadataMiddlewares = options.metadata.middlewares.map(middleware => this.getMiddleware(middleware, projectRoot));
 
 		this.projectDir = projectRoot;
-		this.outDir = compilerOptions.outDir || this.projectDir;
+		this.rootDir = compilerOptions.rootDir || projectRoot;
+		this.outDir = compilerOptions.outDir || projectRoot;
 		this.packageName = packageInfo.name;
 		this.typeFactory = options.metadata.typeFactory;
 
-		this.metadataIndexPath = options.metadata.metadataIndexPath;
-		this.metadataTypelibPath = options.metadata.metadataTypelibPath;
+		this.metadataIndexPath = path.join(this.outDir, options.metadata.metadataIndexPath);
+		this.metadataTypelibPath = path.join(this.outDir, options.metadata.metadataTypelibPath);
+		this.metadataTypelibVirtualPath = path.join(this.rootDir, options.metadata.metadataTypelibPath);
+		
 		this.encode = ["true", true].includes(options.metadata.encode);
 
 		this.compilerOptions = compilerOptions;

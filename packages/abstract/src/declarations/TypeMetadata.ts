@@ -18,7 +18,7 @@ export interface TypeMetadata
 	kind: TypeKind;
 	module: ModuleIdentifier;
 	name: string;
-	fullName?: string;
+	// fullName?: string;
 	exported?: boolean;
 	typeParameters?: TypeReference[];
 	nullable?: true;

@@ -89,7 +89,7 @@ export class Type
 
 	private readonly _id: TypeIdentifier;
 	private readonly _kind: TypeKind;
-	private readonly _fullName: string;
+	// private readonly _fullName: string;
 	private readonly _name: string;
 	private readonly _exported: boolean;
 	private readonly _moduleRef: LazyModule;
@@ -111,14 +111,14 @@ export class Type
 		return this._kind;
 	}
 
-	/**
-	 * Full qualified name of the type.
-	 * @description Contains file path based to project root.
-	 */
-	get fullName(): string
-	{
-		return this._fullName;
-	}
+	// /**
+	//  * Full qualified name of the type.
+	//  * @description Contains file path based to project root.
+	//  */
+	// get fullName(): string
+	// {
+	// 	return this._fullName;
+	// }
 
 	/**
 	 * Module which declare type represented by the this Type instance.
@@ -157,7 +157,7 @@ export class Type
 		this._id = initializer.id;// ?? Symbol();
 		this._kind = initializer.kind;
 		this._name = initializer.name;
-		this._fullName = initializer.fullName || "";
+		// this._fullName = initializer.fullName || "";
 		this._exported = initializer.exported || false;
 
 		this._moduleRef = new LazyModule(initializer.module);
@@ -456,7 +456,7 @@ export class Type
 	 */
 	toString(): string
 	{
-		return `${TypeKind[this._kind]}\{${this.fullName}}`;
+		return `${TypeKind[this._kind]}\{${this.id}}`;
 	}
 
 

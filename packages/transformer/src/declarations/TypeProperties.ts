@@ -11,7 +11,10 @@
 	TypeMetadata
 } from "@rtti/abstract";
 import { NativeTypeKind } from "@rtti/abstract/dist/enums/TypeKind";
-import { Match, TransformerTypeReference } from "./general";
+import {
+	Match,
+	TransformerTypeReference
+} from "./general";
 
 /**
  * Properties of general Type.
@@ -20,10 +23,11 @@ type BaseTypeProperties = Match<keyof TypeMetadata, {
 	id?: TypeIdentifier;
 	kind: TypeKind;
 	name?: string;
-	fullName?: string;
+	// fullName?: string;
 	module?: ModuleReference;
 	exported?: true;
 	typeParameters?: TypeParameterProperties[];
+	nullable?: true;
 }>;
 
 export type NativeBaseTypeProperties = Omit<BaseTypeProperties, "id" | "kind"> & { kind: NativeTypeKind, id?: undefined };

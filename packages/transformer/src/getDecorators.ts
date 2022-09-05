@@ -4,7 +4,9 @@ import { getDeclaration }      from "./utils/symbolHelpers";
 import { Context }             from "./contexts/Context";
 import { log }                 from "./log";
 import { getNodeLocationText } from "./utils/traceHelpers";
-import { getTypeFullName }     from "./utils/typeHelpers";
+import {
+	getTypeId
+} from "./utils/typeHelpers";
 
 export function getDecorators(symbol: ts.Symbol, context: Context): Array<DecoratorProperties> | undefined
 {
@@ -67,7 +69,8 @@ export function getDecorators(symbol: ts.Symbol, context: Context): Array<Decora
 
 		decorators.push({
 			name: decoratorSymbol!.escapedName.toString(),
-			fullName: getTypeFullName(decoratorType, context),
+			id: getTypeId(decoratorType),
+			// fullName: getTypeFullName(decoratorType, context),
 			args: args.length === 0 ? undefined : args
 		});
 	}

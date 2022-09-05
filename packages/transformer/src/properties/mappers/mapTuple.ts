@@ -3,7 +3,6 @@ import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 import {
-	getTypeFullName,
 	getTypeId
 }                           from "../../utils/typeHelpers";
 
@@ -25,7 +24,7 @@ export function mapTuple(type: ts.TupleType, context: Context): TypeMapperResult
 		id: getTypeId(type),
 		kind: TypeKind.Tuple,
 		name: symbol?.name,
-		fullName: getTypeFullName(type, context),
+		// fullName: getTypeFullName(type, context),
 		// TODO: Properties
 		// properties: type.typeArguments?.map((propType, i) => ({ n: i.toString(), t: getTypeCall(propType, undefined, context, getCtorTypeReference(propType.symbol)) }))
 	};

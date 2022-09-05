@@ -9,7 +9,6 @@ import { TypeProperties }   from "../../declarations/TypeProperties";
 import { getDecorators }    from "../../getDecorators";
 import { getDeclaration }   from "../../utils/symbolHelpers";
 import {
-	getTypeFullName,
 	getTypeId
 }                           from "../../utils/typeHelpers";
 import { getMethods }       from "../getMethods";
@@ -52,7 +51,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			id: getTypeId(type),
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol.getEscapedName().toString(),
-			fullName: getTypeFullName(type, context),
+			// fullName: getTypeFullName(type, context),
 			properties: getProperties(type, context),
 			methods: getMethods(type, context),
 			// decorators: decorators,

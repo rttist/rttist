@@ -92,7 +92,13 @@ export class ModuleMetadata
 			}
 
 			this.typesStack.push(typeId);
-			existingProperties = getTypeProperties(type, this.context.currentSourceFileContext!.context); // Change SourceFileContext to stack??  
+			existingProperties = getTypeProperties(type, this.context.currentSourceFileContext!.context); // Change SourceFileContext to stack??
+			
+			if (!this.context.tsConfig.strictNullChecks)
+			{
+				existingProperties.nullable = true;
+			}
+			
 			this.typesStack.pop();
 
 			if (existingProperties.id === undefined)

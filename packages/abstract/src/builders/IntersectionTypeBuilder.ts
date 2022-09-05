@@ -44,7 +44,7 @@ export class IntersectionTypeBuilder extends TypeBuilderBase
 		const type = new IntersectionType({
 			id: this.fullName,
 			name: this.typeName,
-			fullName: this.fullName,
+			// fullName: this.fullName,
 			kind: TypeKind.Intersection,
 			types: types.map(t => t.id),
 			module: this.moduleReference

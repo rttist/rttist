@@ -19,7 +19,7 @@ export class GenericTypeFactory
 			kind: TypeKind.Class,
 			id: (genericTypeCounter++) + "#" + genericTypeFullName,
 			name: genericTypeDefinition.name,
-			fullName: genericTypeFullName,
+			// fullName: genericTypeFullName,
 			typeParameters: typeParameters.map(tp => tp.id),
 			module: genericTypeDefinition.module.id,
 			properties: genericTypeDefinition.getProperties(),

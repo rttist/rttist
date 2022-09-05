@@ -1,11 +1,7 @@
-import * as ts                      from "typescript";
-import { TransformerContext }       from "../contexts/TransformerContext";
-import { TransformerTypeReference } from "../declarations/general";
-import { MetadataSource }           from "../declarations/TypeProperties";
-import { MiddlewareResult }         from "../middlewares";
-import { processMiddlewares }       from "../middlewares/processMiddlewares";
-import { updateSourceFile }         from "../transformers/updateSourceFile";
-import { createValueExpression }    from "../utils/createValueExpression";
+import * as ts from "typescript";
+import path from "path";
+import { TransformerContext } from "../contexts/TransformerContext";
+import { updateSourceFile } from "../transformers/updateSourceFile";
 
 export class SourceFileMetadataUpdater
 {
@@ -20,7 +16,7 @@ export class SourceFileMetadataUpdater
 	{
 		// TODO: This solves nothing. TypeProperties are still the same. We don't have reference to the type.
 		//  We should add identifier to the properties and use it here and remove in typelib.
-		
+
 		// TODO: Solve differently. This iterate over all modules from whole Program; those already processed.
 		// const modules = Array.from(this.transformerContext.metadata.getModules()).map(moduleMetadata => moduleMetadata.getModuleProperties());
 		//
@@ -46,7 +42,11 @@ export class SourceFileMetadataUpdater
 		return updateSourceFile(
 			sourceFile,
 			[
-				
+				ts.factory.createImportDeclaration(
+					undefined,
+					undefined,
+					ts.factory.createStringLiteral(path.relative(path.dirname(sourceFile.fileName), this.transformerContext.config.metadataTypelibVirtualPath))
+				)
 				// ts.factory.createExpressionStatement(expression)
 			]
 		);

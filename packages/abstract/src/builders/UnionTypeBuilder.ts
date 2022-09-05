@@ -50,7 +50,7 @@ export class UnionTypeBuilder extends TypeBuilderBase
 		const type = new UnionType({
 			id: this.fullName,
 			name: this.typeName,
-			fullName: this.fullName,
+			// fullName: this.fullName,
 			kind: TypeKind.Union,
 			types: types.map(t => t.id),
 			module: this.moduleReference

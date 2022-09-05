@@ -162,7 +162,7 @@ export class TransformerContext
 		this.setSourceFileContext(sourceFileContext);
 
 		// Callback
-		const visitedSourceFile = callback(sourceFileContext);
+		const visitedSourceFile = this.metadataManager.updateSourceFile(callback(sourceFileContext));
 
 		// If given SourceFile is one of the root files.
 		if (this.rootFileNames.has(sourceFileNode.fileName))

@@ -101,7 +101,7 @@ export class ObjectLiteralTypeBuilder extends TypeBuilderBase
 			kind: TypeKind.Object,
 			id: this.fullName,
 			name: this.typeName,
-			fullName: this.fullName,
+			// fullName: this.fullName,
 			properties: this.properties,
 			methods: [],
 			indexes: [],

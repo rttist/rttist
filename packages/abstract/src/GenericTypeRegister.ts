@@ -17,9 +17,9 @@ class Register
 	 * @param typeParameters
 	 * @private
 	 */
-	private getFullName(genericTypeDefinition: Type, typeParameters: Type[])
+	private getId(genericTypeDefinition: Type, typeParameters: Type[])
 	{
-		return genericTypeDefinition.fullName + "{" + typeParameters.map(tp => tp.fullName).join(",") + "}";
+		return genericTypeDefinition.id + "{" + typeParameters.map(tp => tp.id).join(",") + "}";
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Register
 			} as T;
 		}
 
-		const fullName = this.getFullName(genericTypeDefinition, typeParameters);
+		const fullName = this.getId(genericTypeDefinition, typeParameters);
 		let genericClass: T = this.createdTypes[fullName] as T;
 
 		if (!genericClass)

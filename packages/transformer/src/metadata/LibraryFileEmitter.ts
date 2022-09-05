@@ -66,29 +66,19 @@ export class LibraryFileEmitter
 
 	private async write(metadataExpression: ts.Expression): Promise<void>
 	{
-		const typelibOutputPath = this.getTypelibOutputPath();
+		const typelibOutputPath = this.transformerContext.config.metadataTypelibPath;
 		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
 
 		// Write typelib
 		writeFileSync(typelibOutputPath, transpiledTypelib.outputText, { encoding: "utf8", flag: "w" });
 
 		// Write index
-		const indexOutputPath = this.getIndexOutputPath();
+		const indexOutputPath = this.transformerContext.config.metadataIndexPath;
 		writeFileSync(indexOutputPath, this.getIndex(), { encoding: "utf8", flag: "w" });
 
 		return Promise.resolve();
 		// TODO: Use async write. Currently I have issue with it. Node exists before its Promise is resolved so file is usually created but empty and no .then() nor .catch() is executed.
 		// await writeFile(fileName, transpiledSource.outputText, { encoding: "utf8", flag: "w" });
-	}
-
-	public getTypelibOutputPath()
-	{
-		return join(this.transformerContext.config.outDir, this.transformerContext.config.metadataTypelibPath);
-	}
-
-	public getIndexOutputPath()
-	{
-		return join(this.transformerContext.config.outDir, this.transformerContext.config.metadataIndexPath);
 	}
 
 	/**
@@ -126,7 +116,15 @@ export class LibraryFileEmitter
 
 		return ts.transpileModule(source, {
 			fileName: fileName,
-			compilerOptions: this.transformerContext.config.compilerOptions
+			compilerOptions: {
+				...this.transformerContext.config.compilerOptions,
+				declaration: false,
+				strict: false,
+				sourceMap: false,
+				importHelpers: false,
+				skipLibCheck: true,
+				skipDefaultLibCheck: true
+			}
 		});
 	}
 
@@ -137,7 +135,7 @@ export class LibraryFileEmitter
 			const types = (props.types || [])
 				?.filter(type => type.id !== undefined)
 				.map(type => `"${type.id}"`);
-			
+
 			return `{"module": "${props.id}","types":[\n\t${types.join(",\n\t")}\n ]}`;
 		});
 		return "[\n " + modules.join(",\n ") + "]";
