@@ -2,7 +2,6 @@ import * as path          from "path";
 import {
 	AccessModifier,
 	Accessor,
-	TypeKind
 }                         from "@rtti/abstract";
 import {
 	REFLECT_DECORATOR
@@ -12,27 +11,6 @@ import { Context }        from "./contexts/Context";
 import { getDeclaration } from "./utils/symbolHelpers";
 
 export const PATH_SEPARATOR_REGEX = /\\/g;
-
-/**
- * Name of parameter for method/function declarations containing generic getType() calls
- */
-export const GENERIC_PARAMS = "__genericParams__";
-
-/**
- * Package name/identifier
- */
-export const PACKAGE_ID = "tst-reflect-transformer";
-
-/**
- * Name of decorator or JSDoc comment marking method for tracing
- */
-export const TRACE_DECORATOR = "trace";
-
-/**
- * Properties of Unknown type
- * @type {{k: TypeKind, n: string}}
- */
-export const UNKNOWN_TYPE_PROPERTIES = { k: TypeKind.Unknown };
 
 // /**
 //  * Variable to cache created "unknown" type call
@@ -141,22 +119,22 @@ export function hasReflectJsDoc(symbol: ts.Symbol | undefined): boolean
 	return symbol.getJsDocTags().some(tag => tag.name === REFLECT_DECORATOR);
 }
 
-/**
- * Check that function-like declaration has JSDoc with @trace tag.
- * @param fncType
- */
-export function hasTraceJsDoc(fncType: ts.Type): boolean
-{
-	const symbol = fncType.getSymbol();
-
-	if (!symbol)
-	{
-		return false;
-	}
-
-	// If declaration contains @trace in JSDoc comment, pass all generic arguments
-	return symbol.getJsDocTags().some(tag => tag.name === TRACE_DECORATOR);
-}
+// /**
+//  * Check that function-like declaration has JSDoc with @trace tag.
+//  * @param fncType
+//  */
+// export function hasTraceJsDoc(fncType: ts.Type): boolean
+// {
+// 	const symbol = fncType.getSymbol();
+//
+// 	if (!symbol)
+// 	{
+// 		return false;
+// 	}
+//
+// 	// If declaration contains @trace in JSDoc comment, pass all generic arguments
+// 	return symbol.getJsDocTags().some(tag => tag.name === TRACE_DECORATOR);
+// }
 
 export function getSourceFileImports(sourceFile: ts.SourceFile): ts.ImportDeclaration[]
 {

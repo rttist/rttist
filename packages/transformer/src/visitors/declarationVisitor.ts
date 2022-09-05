@@ -1,8 +1,8 @@
 import { REFLECT_DECORATOR }           from "tst-reflect";
 import * as ts                         from "typescript";
+import { GENERIC_PARAMS }              from "../consts";
 import { Context }                     from "../contexts/Context";
 import { getErrorMessage }             from "../utils/getErrorMessage";
-import { GENERIC_PARAMS }              from "../helpers";
 import { getGenericParametersDetails } from "../getGenericParametersDetails";
 import { log }                         from "../log";
 

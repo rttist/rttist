@@ -1,18 +1,16 @@
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-} from "@rtti/abstract";
-import path                   from "path";
-import * as ts                from "typescript";
-import { Context }            from "../contexts/Context";
-import { TransformerContext } from "../contexts/TransformerContext";
-import {
-	PATH_SEPARATOR_REGEX
-}                             from "../helpers";
+}                               from "@rtti/abstract";
+import path                     from "path";
+import * as ts                  from "typescript";
+import { Context }              from "../contexts/Context";
+import { TransformerContext }   from "../contexts/TransformerContext";
+import { PATH_SEPARATOR_REGEX } from "../helpers";
 import {
 	getDeclaration,
 	getSourceFile
-} from "./symbolHelpers";
+}                               from "./symbolHelpers";
 
 export function getSymbol(type: ts.Type, context: Context): ts.Symbol | undefined
 {

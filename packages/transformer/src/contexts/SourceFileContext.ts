@@ -1,9 +1,9 @@
-import * as ts                from "typescript";
-import { MetadataLibrary }    from "../metadata/MetadataLibrary";
-import { Context }            from "./Context";
-import { Logger }             from "../log";
-import { mainVisitor }        from "../visitors/mainVisitor";
-import { TransformerContext } from "./TransformerContext";
+import * as ts                     from "typescript";
+import type { TransformerContext } from "./TransformerContext";
+import type { MetadataLibrary }    from "../metadata/MetadataLibrary";
+import { Context }                 from "./Context";
+import { Logger }                  from "../log";
+import { mainVisitor }             from "../visitors/mainVisitor";
 
 export class SourceFileContext
 {

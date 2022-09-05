@@ -9,7 +9,7 @@ import { Context } from "./contexts/Context";
  * Function detecting right getType() call
  * @param node
  * @param context
- * @returns false: node is not getTypeCall and visitation of childs should process | NodeType: it is getTypeCall and this is type of generic argument | undefined: stop visitation, it's call expression but not getType<T>()
+ * @returns false: node is not getTypeCall and visitation of children should process | NodeType: it is getTypeCall and this is type of generic argument | undefined: stop visitation, it's call expression but not getType<T>()
  */
 export function isGetTypeCall(node: ts.Node, context: Context): false | ts.TypeNode
 {

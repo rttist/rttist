@@ -1,4 +1,4 @@
-import { PACKAGE_ID } from "./helpers";
+import { PACKAGE_ID } from "./consts";
 
 export const color = {
 	yellow: 33,

@@ -1,6 +1,5 @@
 import * as ts                from "typescript";
 import { TransformerContext } from "../contexts/TransformerContext";
-import { PACKAGE_ID }         from "../helpers";
 import {
 	color,
 	log,
@@ -40,7 +39,7 @@ export class SourceFileVisitorFactory
 			const visitedSourceFileNode = transformerContext.visitSourceFile(sourceFileNode, transformationContext, sourceFileContext => {
 				if (config.debugMode)
 				{
-					log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} started.`);
+					log.log(LogLevel.Trace, color.cyan, `Visitation of file ${sourceFileNode.fileName} started.`);
 				}
 
 				// // Create Context for the SourceFile
@@ -61,7 +60,7 @@ export class SourceFileVisitorFactory
 
 				if (config.debugMode)
 				{
-					log.trace(`${PACKAGE_ID}: Visitation of file ${sourceFileNode.fileName} has been finished.`);
+					log.trace(`Visitation of file ${sourceFileNode.fileName} has been finished.`);
 				}
 
 				return visitedSourceFileNode;

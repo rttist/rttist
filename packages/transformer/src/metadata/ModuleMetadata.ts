@@ -11,8 +11,10 @@ import {
 import { getTypeProperties }        from "../properties/getTypeProperties";
 import { getSourceFile }            from "../utils/findSourceFile";
 import { getNodeLocationText }      from "../utils/traceHelpers";
-// import { getCanonizedPathOfImportedModule } from "../utils/path";
-import { getSourceFileId, getTypeId }                from "../utils/typeHelpers";
+import {
+	getSourceFileId,
+	getTypeId
+}                                   from "../utils/typeHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.

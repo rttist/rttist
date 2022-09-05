@@ -11,7 +11,6 @@ Reflect.getType<ObjAlias>();
 Reflect.getType<{ foo: string, bar: number }>();
 Reflect.getType<SomeType>();
 
-
 class Foo<T>
 {
 	constructor(bar: T, ...rest: any[]) {

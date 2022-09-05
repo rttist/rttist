@@ -1,5 +1,5 @@
 import * as ts            from "typescript";
-import { GENERIC_PARAMS } from "../helpers";
+import { GENERIC_PARAMS } from "../consts";
 
 /**
  * EMIT: __genericParam__ && __genericParam__.X

@@ -18,7 +18,7 @@ export class LibraryFileEmitter
 		this.transformerContext = transformerContext;
 	}
 
-	async emit(metadataExpression: ts.Expression): Promise<void>
+	emit(metadataExpression: ts.Expression): Promise<void>
 	{
 
 		// // TYPELIB - add import of metadata library
@@ -47,7 +47,7 @@ export class LibraryFileEmitter
 		// 		}
 		//
 
-		await this.write(metadataExpression);
+		return this.write(metadataExpression);
 		// }
 		// else if (config.metadataType == MetadataTypeValues.inline)
 		// {

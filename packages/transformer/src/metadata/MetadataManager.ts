@@ -1,6 +1,5 @@
 import type { TransformerContext }   from "../contexts/TransformerContext";
 import type { MetadataSource }       from "../declarations/TypeProperties";
-import { PACKAGE_ID }                from "../helpers";
 import type { MiddlewareResult }     from "../middlewares";
 import { processMiddlewares }        from "../middlewares/processMiddlewares";
 import { createValueExpression }     from "../utils/createValueExpression";
@@ -41,7 +40,7 @@ export class MetadataManager
 			.then(() => {
 				// if (this.transformerContext.config.debugMode)
 				// {
-					log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Typelib file generated: '${this.libraryFileEmitter.getTypelibOutputPath()}'`);
+					log.log(LogLevel.Trace, color.cyan, `Typelib file generated: '${this.libraryFileEmitter.getTypelibOutputPath()}'`);
 				// }
 			})
 			.catch(error => {

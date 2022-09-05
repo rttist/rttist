@@ -21,6 +21,7 @@ export interface TypeMetadata
 	fullName?: string;
 	exported?: boolean;
 	typeParameters?: TypeReference[];
+	nullable?: true;
 }
 
 export interface ObjectLikeBaseTypeMetadata extends TypeMetadata
