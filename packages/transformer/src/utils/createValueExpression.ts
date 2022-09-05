@@ -5,17 +5,17 @@ export function createValueExpression(value: any): ts.Expression
 {
 	if (value != undefined)
 	{
-		if (typeof value == "string")
+		if (typeof value === "string")
 		{
 			return ts.factory.createStringLiteral(value);
 		}
 
-		if (typeof value == "number")
+		if (typeof value === "number")
 		{
 			return ts.factory.createNumericLiteral(value);
 		}
 
-		if (typeof value == "boolean")
+		if (typeof value === "boolean")
 		{
 			return value 
 				? ts.factory.createTrue() 
@@ -27,7 +27,7 @@ export function createValueExpression(value: any): ts.Expression
 			return ts.factory.createArrayLiteralExpression(value.map(val => createValueExpression(val)));
 		}
 
-		if (value.constructor == Object)
+		if (value.constructor === Object)
 		{
 			let propertyAssignments: Array<ts.PropertyAssignment> = [];
 

@@ -36,7 +36,7 @@ export function getSymbol(type: ts.Type, context: Context): ts.Symbol | undefine
 export function isArrayType(type: ts.Type): boolean
 {
 	// [Hookyns] Check if type is Array. I found no direct way to do so.
-	return !!(type.flags & ts.TypeFlags.Object) && type.symbol?.escapedName == "Array"; // TODO: Check ObjectFlags && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.ArrayLiteral && ??
+	return !!(type.flags & ts.TypeFlags.Object) && type.symbol?.escapedName === "Array"; // TODO: Check ObjectFlags && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.ArrayLiteral && ??
 }
 
 /**

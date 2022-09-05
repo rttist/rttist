@@ -11,11 +11,7 @@
 		"baseUrl": "./src",
 		"outDir": "./dist",
 		"composite": true,
-		"esModuleInterop": true,
-		"typeRoots": [
-			"../../node_modules/@types",
-			"node_modules/@types"
-		]
+		"esModuleInterop": true
 	},
 	"include": [
 		"./src/**/*.ts"

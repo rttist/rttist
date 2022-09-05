@@ -111,7 +111,7 @@ export class ModuleMetadata
 
 	private gatherModuleProperties(): ModuleMetadataProperties
 	{
-		const name = this.sourceFile.moduleName == undefined ? "" : this.sourceFile.moduleName;
+		const name = this.sourceFile.moduleName === undefined ? "" : this.sourceFile.moduleName;
 
 		return {
 			name,

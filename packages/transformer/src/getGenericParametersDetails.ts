@@ -102,7 +102,7 @@ function exploreGetTypeCalls(node: ts.Node, context: Context)
 		let genericType = context.typeChecker.getTypeAtLocation(genericTypeNode);
 
 		// Parameter is another generic type
-		if (genericType.flags == ts.TypeFlags.TypeParameter
+		if (genericType.flags === ts.TypeFlags.TypeParameter
 			&& context.usedGenericParameters != undefined
 			&& ts.isTypeReferenceNode(genericTypeNode) && ts.isIdentifier(genericTypeNode.typeName))
 		{

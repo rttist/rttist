@@ -46,7 +46,7 @@ export const UNKNOWN_TYPE_PROPERTIES = { k: TypeKind.Unknown };
  */
 export function getType(symbol: ts.Symbol, context: Context): ts.Type | undefined
 {
-	if (symbol.flags == ts.SymbolFlags.Interface/* || symbol.flags == ts.SymbolFlags.Alias*/)
+	if (symbol.flags === ts.SymbolFlags.Interface/* || symbol.flags == ts.SymbolFlags.Alias*/)
 	{
 		return context.typeChecker.getDeclaredTypeOfSymbol(symbol);
 	}
@@ -123,7 +123,7 @@ export function getTypeSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Sy
  */
 export function isExpression(value: any)
 {
-	return value.hasOwnProperty("kind") && (value.constructor.name == "NodeObject" || value.constructor.name == "IdentifierObject" || value.constructor.name == "TokenObject");
+	return value.hasOwnProperty("kind") && (value.constructor.name === "NodeObject" || value.constructor.name === "IdentifierObject" || value.constructor.name === "TokenObject");
 }
 
 /**
@@ -246,12 +246,12 @@ export function getAccessor(node?: ts.Declaration): Accessor
 {
 	if (node != undefined)
 	{
-		if (node.kind == ts.SyntaxKind.GetAccessor)
+		if (node.kind === ts.SyntaxKind.GetAccessor)
 		{
 			return Accessor.Getter;
 		}
 
-		if (node.kind == ts.SyntaxKind.SetAccessor)
+		if (node.kind === ts.SyntaxKind.SetAccessor)
 		{
 			return Accessor.Setter;
 		}
@@ -266,7 +266,7 @@ export function getAccessor(node?: ts.Declaration): Accessor
  */
 export function isReadonly(modifiers?: ts.NodeArray<ts.ModifierLike>): boolean
 {
-	return modifiers?.some(m => m.kind == ts.SyntaxKind.ReadonlyKeyword) ?? false;
+	return modifiers?.some(m => m.kind === ts.SyntaxKind.ReadonlyKeyword) ?? false;
 }
 
 // /**
@@ -384,7 +384,7 @@ const IGNORE_PROPERTY_NAME = "__ignore-node-reflection";
  */
 export function isNodeIgnored(node: ts.Node)
 {
-	return node.pos == -1 || (node as any)[IGNORE_PROPERTY_NAME];
+	return node.pos === -1 || (node as any)[IGNORE_PROPERTY_NAME];
 }
 
 /**

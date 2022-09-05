@@ -68,9 +68,9 @@ export function getDecorators(symbol: ts.Symbol, context: Context): Array<Decora
 		decorators.push({
 			name: decoratorSymbol!.escapedName.toString(),
 			fullName: getTypeFullName(decoratorType, context),
-			args: args.length == 0 ? undefined : args
+			args: args.length === 0 ? undefined : args
 		});
 	}
 
-	return decorators.length == 0 ? undefined : decorators;
+	return decorators.length === 0 ? undefined : decorators;
 }

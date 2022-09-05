@@ -17,7 +17,7 @@ export function processGetTypeCallExpression(context: Context, node: ts.CallExpr
 	let genericType = context.typeChecker.getTypeAtLocation(genericTypeNode);
 
 	// Parameter is another generic type; replace by "__genericParam__.X", where X is name of generic parameter
-	if (genericType.flags == ts.TypeFlags.TypeParameter) // TODO: If it is declared on class, replace by Reflect.getType(this).getTypeParameters()[index of required generic type]
+	if (genericType.flags === ts.TypeFlags.TypeParameter) // TODO: If it is declared on class, replace by Reflect.getType(this).getTypeParameters()[index of required generic type]
 	{
 		if (ts.isTypeReferenceNode(genericTypeNode) && ts.isIdentifier(genericTypeNode.typeName))
 		{

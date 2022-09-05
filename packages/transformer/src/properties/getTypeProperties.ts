@@ -635,7 +635,7 @@ function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/, co
 			// decorators: decorators,
 		};
 
-		if (type.objectFlags == ts.ObjectFlags.Class)
+		if (type.objectFlags === ts.ObjectFlags.Class)
 		{
 			// properties.constructors = getConstructors(type, context);
 

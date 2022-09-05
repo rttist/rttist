@@ -51,7 +51,7 @@ export function processGenericCallExpression(context: Context, node: ts.CallExpr
 			let genericType: ts.Type | undefined;
 
 			// INFER type from passed argument
-			if (typeArgumentNode == undefined)
+			if (typeArgumentNode === undefined)
 			{
 				let argsIndex = 0;
 
@@ -66,7 +66,7 @@ export function processGenericCallExpression(context: Context, node: ts.CallExpr
 							type = parameter.type.elementType;
 						}
 
-						if (ts.isTypeReferenceNode(type) && type.typeName.getText() == genericParamName)
+						if (ts.isTypeReferenceNode(type) && type.typeName.getText() === genericParamName)
 						{
 							genericType = context.typeChecker.getTypeAtLocation(node.arguments[argsIndex]);
 

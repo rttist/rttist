@@ -170,7 +170,7 @@ export class TransformerContext
 			this._numberOfVisitedRootFileNames++;
 
 			// If it is last root SourceFile.
-			if (this._numberOfVisitedRootFileNames == this.rootFileNames.size)
+			if (this._numberOfVisitedRootFileNames === this.rootFileNames.size)
 			{
 				this.metadataManager.emitMetadataLibrary();
 			}

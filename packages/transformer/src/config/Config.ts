@@ -102,20 +102,20 @@ export class Config
 		try
 		{
 			const packageJson = fs.readFileSync(path.join(root, "package.json"), "utf-8");
-			return { rootDir: root, name: JSON.parse(packageJson).name || UNKNOWN_PACKAGE_NAME };
+			return { packageRoot: root, name: JSON.parse(packageJson).name || UNKNOWN_PACKAGE_NAME };
 		}
 		catch (e)
 		{
-			if (path.parse(root).root == root)
+			if (path.parse(root).root === root)
 			{
 				// as any -> internal
-				return { rootDir: undefined as any, name: UNKNOWN_PACKAGE_NAME };
+				return { packageRoot: undefined as any, name: UNKNOWN_PACKAGE_NAME };
 			}
 
 			// Try to get parent folder package
 			const packageInfo = this.getPackage(path.normalize(path.join(root, "..")), true);
 
-			if (packageInfo.rootDir == undefined)
+			if (packageInfo.packageRoot === undefined)
 			{
 				// If this is recursive check, return undefined root as received from parent folder check
 				if (recursiveCheck)
@@ -124,7 +124,7 @@ export class Config
 				}
 
 				// This is top level check; return original root passed as argument
-				return { rootDir: root, name: packageInfo.name };
+				return { packageRoot: root, name: packageInfo.name };
 			}
 
 			return packageInfo;

@@ -34,8 +34,8 @@ export class SourceFileMetadataUpdater
 					type.exported === undefined
 					// found in given SourceFile
 					&& typesInFile.some(typeInFileReference =>
-						type.id == typeInFileReference
-						|| (type.id == undefined && typeof typeInFileReference !== "string" && type.kind == typeInFileReference.kind)
+						type.id === typeInFileReference
+						|| (type.id === undefined && typeof typeInFileReference !== "string" && type.kind === typeInFileReference.kind)
 					)
 			);
 		}
