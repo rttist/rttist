@@ -66,39 +66,29 @@ export class LibraryFileEmitter
 
 	private async write(metadataExpression: ts.Expression): Promise<void>
 	{
-		const sourceFile = this.createSourceFile(metadataExpression);
-		const source = this.printToTypeScriptCode(sourceFile);
-		const fileName = this.getLibraryOutputFilePath();
+		const typelibOutputPath = this.getTypelibOutputPath();
+		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
 
-		const transpiledSource = ts.transpileModule(source, {
-			fileName: fileName,
-			compilerOptions: this.transformerContext.config.parsedCommandLine.options
-		});
+		// Write typelib
+		writeFileSync(typelibOutputPath, transpiledTypelib.outputText, { encoding: "utf8", flag: "w" });
 
-		writeFileSync(fileName, transpiledSource.outputText, { encoding: "utf8", flag: "w" });
+		// Write index
+		const indexOutputPath = this.getIndexOutputPath();
+		writeFileSync(indexOutputPath, this.getIndex(), { encoding: "utf8", flag: "w" });
+
 		return Promise.resolve();
 		// TODO: Use async write. Currently I have issue with it. Node exists before its Promise is resolved so file is usually created but empty and no .then() nor .catch() is executed.
 		// await writeFile(fileName, transpiledSource.outputText, { encoding: "utf8", flag: "w" });
 	}
 
-	public getLibraryOutputFilePath()
+	public getTypelibOutputPath()
 	{
-		const outFileName = join(this.transformerContext.config.outDir, "__typelib.js");
+		return join(this.transformerContext.config.outDir, this.transformerContext.config.metadataTypelibPath);
+	}
 
-		// const parsedCommandLine = this.transformerContext.config.parsedCommandLine;
-		// let outFileName: string | undefined = undefined;
-		//
-		// if (parsedCommandLine)
-		// {
-		// 	if (parsedCommandLine.fileNames.indexOf(fileName) == -1)
-		// 	{
-		// 		parsedCommandLine.fileNames.push(fileName);
-		// 	}
-		//
-		// 	outFileName = ts.getOutputFileNames(parsedCommandLine, fileName, false).filter(fn => fn.slice(-3) == ".js" || fn.slice(-4) == ".jsx")[0];
-		// }
-
-		return outFileName;
+	public getIndexOutputPath()
+	{
+		return join(this.transformerContext.config.outDir, this.transformerContext.config.metadataIndexPath);
 	}
 
 	/**
@@ -127,5 +117,29 @@ export class LibraryFileEmitter
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
 			ts.NodeFlags.None
 		);
+	}
+
+	private getTranspiledTypelib(metadataExpression: ts.Expression, fileName: string): ts.TranspileOutput
+	{
+		const sourceFile = this.createSourceFile(metadataExpression);
+		const source = this.printToTypeScriptCode(sourceFile);
+
+		return ts.transpileModule(source, {
+			fileName: fileName,
+			compilerOptions: this.transformerContext.config.compilerOptions
+		});
+	}
+
+	private getIndex()
+	{
+		const modules = Array.from(this.transformerContext.metadata.getModules()).map(module => {
+			const props = module.getModuleProperties();
+			const types = (props.types || [])
+				?.filter(type => type.id !== undefined)
+				.map(type => `"${type.id}"`);
+			
+			return `{"module": "${props.id}","types":[\n\t${types.join(",\n\t")}\n ]}`;
+		});
+		return "[\n " + modules.join(",\n ") + "]";
 	}
 }

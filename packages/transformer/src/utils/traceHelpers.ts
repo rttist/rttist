@@ -18,7 +18,7 @@ export function getTypeSourceLocationText(type: ts.Type, context: Context): stri
 
 	if (symbol === undefined)
 	{
-		context.log.error("Cannot find Symbol of Type. Source location info cannot be created.\r\n\tType:", type["intrinsicName"] ?? type);
+		context.log.error("Cannot find Symbol of Type. Source location info cannot be created.\r\n\tType:", (type as any)["intrinsicName"] ?? type);
 		return "Unknown type location.";
 	}
 

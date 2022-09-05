@@ -1,8 +1,10 @@
 import * as ts               from "typescript";
+import { Config }            from "../config/Config";
 import {
-	ConfigObject,
-	createConfig
-}                            from "../config";
+	color,
+	log,
+	LogLevel
+}                            from "../log";
 import { MetadataLibrary }   from "../metadata/MetadataLibrary";
 import { MetadataManager }   from "../metadata/MetadataManager";
 import { SourceFileContext } from "./SourceFileContext";
@@ -34,7 +36,7 @@ export class TransformerContext
 	/**
 	 * Configuration object.
 	 */
-	public config: ConfigObject;
+	public config: Config;
 
 	/**
 	 * TypeScript CompilerOptions.
@@ -102,7 +104,7 @@ export class TransformerContext
 	 * Protected constructor.
 	 * @protected
 	 */
-	protected constructor(program: ts.Program, config: ConfigObject)
+	protected constructor(program: ts.Program, config: Config)
 	{
 		if (new.target != Activator)
 		{
@@ -111,7 +113,7 @@ export class TransformerContext
 
 		this.program = program;
 		this.config = config;
-		this.tsConfig = config.parsedCommandLine.options;
+		this.tsConfig = config.compilerOptions;
 		this.checker = program.getTypeChecker();
 
 		this.rootFileNames = new Set(program.getRootFileNames());
@@ -123,20 +125,21 @@ export class TransformerContext
 	/**
 	 * Init context.
 	 * @param program
+	 * @param config
 	 */
-	static init(program: ts.Program)
+	static init(program: ts.Program, config: Config)
 	{
 		if (instance !== undefined)
 		{
 			throw new Error("TransformerContext.init called twice!");
 		}
 
-		const config = createConfig(program);
-
 		instance = Reflect.construct(TransformerContext, [
 			program,
 			config
 		], Activator);
+
+		log.log(LogLevel.Info, color.blue, "Detected project root: " + config.projectDir);
 	}
 
 	/**

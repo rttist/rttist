@@ -1,4 +1,4 @@
-import { getType } from "tst-reflect";
+import "@rtti/abstract";
 
 module foobar
 {
@@ -131,4 +131,4 @@ class FinalClass extends BaseGenericClass<{ genFoo: Array<{ genArrBar: string }>
 	}
 }
 
-console.log(getType<FinalClass>());
+console.log(Reflect.getType<FinalClass>());

@@ -7,23 +7,21 @@
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": "..",
+		"outDir": "dist",
 		//		"typeRoots": [
 		//			"../../node_modules/@types",
 		//			"../../node_modules/@rtti/abstract/node_modules/@types"
 		//		],
 		"plugins": [
 			{
-				"transform": "tst-reflect-transformer"
+				"transform": "tst-reflect-transformer",
+				"reflection": {
+					"debugMode": true
+				}
 			}
 		]
 	},
 	"include": [
 		"index.ts"
-	],
-	"reflection": {
-		"metadata": {
-			"type": "typelib"
-		},
-		"debugMode": true
-	}
+	]
 }

@@ -1,8 +1,7 @@
-import {getType, Type} from "tst-reflect";
-import "./metadata.lib";
+import "@rtti/abstract";
 
 function inferType<TType>() {
-	return getType<TType>().name;
+	return Reflect.getType<TType>().name;
 }
 
 const val = 5;
@@ -17,7 +16,7 @@ abstract class LoggerFactory {
 	 */
 	createLogger<TCategory = undefined>(...categoryName: TCategory extends undefined ? [string] : []): ILogger
 	{
-		const type = getType<TCategory>();
+		const type = Reflect.getType<TCategory>();
 		console.dir(type);
 		const category = categoryName?.[0] ?? type?.name;
 		console.log(category);
@@ -55,5 +54,5 @@ class Foo
 }
 
 const variable: Foo = new Foo(5);
-console.log(getType<Foo>());
-console.log(getType<typeof variable>());
+console.log(Reflect.getType<Foo>());
+console.log(Reflect.getType<typeof variable>());

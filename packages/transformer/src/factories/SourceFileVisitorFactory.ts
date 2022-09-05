@@ -1,18 +1,11 @@
-import * as ts                   from "typescript";
-import { EmitHint }              from "typescript";
-import { MetadataTypeValues }    from "../config-options";
-import { SourceFileContext }     from "../contexts/SourceFileContext";
-import { TransformerContext }    from "../contexts/TransformerContext";
-import { MetadataSource }        from "../declarations/TypeProperties";
-import { PACKAGE_ID }            from "../helpers";
+import * as ts                from "typescript";
+import { TransformerContext } from "../contexts/TransformerContext";
+import { PACKAGE_ID }         from "../helpers";
 import {
 	color,
 	log,
 	LogLevel
-}                                from "../log";
-import { MiddlewareResult }      from "../middlewares";
-import { processMiddlewares }    from "../middlewares/processMiddlewares";
-import { createValueExpression } from "../utils/createValueExpression";
+}                             from "../log";
 
 /**
  * Factory of SourceFile visitor.
@@ -56,7 +49,7 @@ export class SourceFileVisitorFactory
 				// // Set Current SourceFileContext into the TransformerContext
 				// transformerContext.setSourceFileContext(sourceFileContext);
 				//
-				
+
 				// Visit SourceFile
 				let visitedSourceFileNode = sourceFileContext.visit();
 

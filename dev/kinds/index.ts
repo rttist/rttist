@@ -2,9 +2,8 @@ import {
 	Type,
 	TypeKind
 }                  from "@rtti/abstract";
-import { getType } from "tst-reflect";
 
-getType<{ foo: string, bar: number }>();
+Reflect.getType<{ foo: string, bar: number }>();
 
 interface ISomething
 {
@@ -22,11 +21,12 @@ interface ISomething
 }
 
 // Interface
-getType<ISomething>();
+Reflect.getType<ISomething>();
 
 function decorator(target: any)
 {
 }
+
 
 @decorator
 class Something implements ISomething
@@ -53,15 +53,15 @@ class Something implements ISomething
 }
 
 // CLass
-getType<Something>();
+Reflect.getType<Something>();
 
 // TransientTypeReference
-getType<Readonly<{ foo: string }>>();
-getType<Partial<{ foo: string }>>();
+Reflect.getType<Readonly<{ foo: string }>>();
+Reflect.getType<Partial<{ foo: string }>>();
 
 // Tuple
-getType<[named: string, tuple: string]>();
-getType<[string, number]>();
+Reflect.getType<[named: string, tuple: string]>();
+Reflect.getType<[string, number]>();
 
 // TypeParameter
 class GenericType<T>
@@ -69,7 +69,7 @@ class GenericType<T>
 	foo: T;
 }
 
-getType<GenericType<string>>(); // Class will have the TypeParameter
+Reflect.getType<GenericType<string>>(); // Class will have the TypeParameter
 
 // ConditionalType
 interface ConditionalType
@@ -77,7 +77,7 @@ interface ConditionalType
 	method<T>(): T extends string ? never : number;
 }
 
-getType<ConditionalType>(); // Method has ConditionalType return type
+Reflect.getType<ConditionalType>(); // Method has ConditionalType return type
 
 // IndexedAccess
 interface IndexedAccess
@@ -85,7 +85,7 @@ interface IndexedAccess
 	method<K extends keyof TypeKind>(key: K): TypeKind[K];
 }
 
-getType<IndexedAccess>();
+Reflect.getType<IndexedAccess>();
 
 // Module
 module Mod
@@ -100,28 +100,28 @@ namespace Ns
 	{
 	}
 }
-getType<typeof Mod>();
-getType<typeof Ns>();
+Reflect.getType<typeof Mod>();
+Reflect.getType<typeof Ns>();
 
 // Union
-getType<string | number>();
+Reflect.getType<string | number>();
 
 // Intersection
 console.log("intersection");
-getType<{ foo: string } & { foo: string, bar: number }>();
+Reflect.getType<{ foo: string } & { foo: string, bar: number }>();
 
 // Method
-getType<IndexedAccess["method"]>();
+Reflect.getType<IndexedAccess["method"]>();
 
 // Function
 const fn = function (a: any) {
 };
-getType<typeof fn>();
+Reflect.getType<typeof fn>();
 
 // GeneratorFunction
 const genFn = function* (a: any) {
 };
-getType<typeof genFn>();
+Reflect.getType<typeof genFn>();
 
 // Enum
 enum Enm
@@ -129,64 +129,64 @@ enum Enm
 	One, Two
 }
 
-getType<Enm>();
+Reflect.getType<Enm>();
 
 // Enum literal
-getType<Enm.One>();
+Reflect.getType<Enm.One>();
 
-getType<any>();
-getType<unknown>();
-getType<undefined>();
-getType<null>();
-getType<void>();
+Reflect.getType<any>();
+Reflect.getType<unknown>();
+Reflect.getType<undefined>();
+Reflect.getType<null>();
+Reflect.getType<void>();
 
-getType<string>();
-getType<number>();
-getType<BigInt>();
-getType<Boolean>();
-getType<Date>();
+Reflect.getType<string>();
+Reflect.getType<number>();
+Reflect.getType<BigInt>();
+Reflect.getType<Boolean>();
+Reflect.getType<Date>();
 
-getType<Array<number>>();
-getType<number[]>();
+Reflect.getType<Array<number>>();
+Reflect.getType<number[]>();
 
-getType<Map<string, string>>();
-getType<WeakMap<Function, string>>();
-getType<Set<string>>();
-getType<WeakSet<Function>>();
+Reflect.getType<Map<string, string>>();
+Reflect.getType<WeakMap<Function, string>>();
+Reflect.getType<Set<string>>();
+Reflect.getType<WeakSet<Function>>();
 
-getType<Int8Array>();
-getType<Uint8Array>();
-getType<Uint8ClampedArray>();
-getType<Int16Array>();
-getType<Uint16Array>();
-getType<Int32Array>();
-getType<Uint32Array>();
-getType<Float32Array>();
-getType<Float64Array>();
-getType<BigInt64Array>();
-getType<BigUint64Array>();
+Reflect.getType<Int8Array>();
+Reflect.getType<Uint8Array>();
+Reflect.getType<Uint8ClampedArray>();
+Reflect.getType<Int16Array>();
+Reflect.getType<Uint16Array>();
+Reflect.getType<Int32Array>();
+Reflect.getType<Uint32Array>();
+Reflect.getType<Float32Array>();
+Reflect.getType<Float64Array>();
+Reflect.getType<BigInt64Array>();
+Reflect.getType<BigUint64Array>();
 
-getType<Symbol>();
-getType<Promise<boolean>>();
-getType<Error>();
-getType<RegExp>();
+Reflect.getType<Symbol>();
+Reflect.getType<Promise<boolean>>();
+Reflect.getType<Error>();
+Reflect.getType<RegExp>();
 
-getType<ArrayBuffer>();
-getType<SharedArrayBuffer>();
-getType<Atomics>();
-getType<DataView>();
-getType<Generator>();
+Reflect.getType<ArrayBuffer>();
+Reflect.getType<SharedArrayBuffer>();
+Reflect.getType<Atomics>();
+Reflect.getType<DataView>();
+Reflect.getType<Generator>();
 
 // Proxy TODO: Probably will not work, typeof proxy object is type of that object, proxy is not a type
 const proxy = new Proxy({}, {});
-getType<typeof proxy>();
+Reflect.getType<typeof proxy>();
 
 const regexLiteral = /[a-b]/;
-getType<typeof regexLiteral>();
+Reflect.getType<typeof regexLiteral>();
 
-getType<5>();
-getType<"string">();
-getType<true>();
+Reflect.getType<5>();
+Reflect.getType<"string">();
+Reflect.getType<true>();
 const bigint = BigInt(5);
-getType<typeof bigint>();
-getType<`Some bigint ${bigint} here`>();
+Reflect.getType<typeof bigint>();
+Reflect.getType<`Some bigint ${bigint} here`>();

@@ -1,18 +1,19 @@
-import * as ts                      from "typescript";
-import { TransformerContext }       from "./contexts/TransformerContext";
-import { SourceFileVisitorFactory } from "./factories/SourceFileVisitorFactory";
+import * as ts                             from "typescript";
+import { Config }                          from "./config/Config";
+import { OptionalConfigReflectionSection } from "./config/ConfigReflectionSection";
+import { TransformerContext }              from "./contexts/TransformerContext";
+import { SourceFileVisitorFactory }        from "./factories/SourceFileVisitorFactory";
 
-export default function transform(program: ts.Program): ts.TransformerFactory<ts.SourceFile>
+export default function transform(program: ts.Program, config?: { reflection?: OptionalConfigReflectionSection }): ts.TransformerFactory<ts.SourceFile>
 {
-	TransformerContext.init(program);
+	TransformerContext.init(program, new Config(program, config?.reflection || {}));
 
 	return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
 	{
 		const visitorFactory = new SourceFileVisitorFactory(context);
 
 		return (sourceFileNode) => {
-			
-			// TODO: Remove this, because transformer is never called for external files anyway
+			// TODO: Is transformer even called for external library files?
 			// Skip if it is external SourceFile
 			if (program.isSourceFileFromExternalLibrary(sourceFileNode))
 			{

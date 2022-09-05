@@ -41,7 +41,7 @@ export class MetadataManager
 			.then(() => {
 				// if (this.transformerContext.config.debugMode)
 				// {
-					log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Typelib file generated: '${this.libraryFileEmitter.getLibraryOutputFilePath()}'`);
+					log.log(LogLevel.Trace, color.cyan, `${PACKAGE_ID}: Typelib file generated: '${this.libraryFileEmitter.getTypelibOutputPath()}'`);
 				// }
 			})
 			.catch(error => {

@@ -6,7 +6,7 @@ import { Context }       from "../contexts/Context";
  * @internal
  */
 export type PackageInfo = {
-	rootDir: string;
+	rootDir: string; // TODO: Rename to packageRoot
 	name: string;
 }
 

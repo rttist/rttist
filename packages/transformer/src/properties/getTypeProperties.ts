@@ -77,7 +77,7 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 
 	if (mapper === undefined)
 	{
-		context.log.warn("No mapper found for the types with flags " + type.flags + ").\r\n\t" + getTypeSourceLocationText(type, context));
+		context.log.warn("No mapper found for the types with flags " + type.flags + ".\r\n\t" + getTypeSourceLocationText(type, context));
 		return UnknownTypeProperties;
 	}
 

@@ -6,7 +6,7 @@
 		"sourceMap": true,
 		"stripInternal": true,
 		"strictNullChecks": true,
-//		"strict": true,
+		"strict": true,
 		"rootDir": "./src",
 		"baseUrl": "./src",
 		"outDir": "./dist",

@@ -26,7 +26,7 @@ export function getSymbol(type: ts.Type, context: Context): ts.Symbol | undefine
 		return context.typeChecker.getAliasedSymbol(type.symbol);
 	}
 
-	return type.symbol as (ts.Symbol | undefined);
+	return type.symbol;
 }
 
 /**
@@ -77,7 +77,7 @@ const nodeModulesPattern = "/node_modules/";
  */
 export function getTypeFullName(type: ts.Type, context: Context)
 {
-	let { packageName, rootDir } = TransformerContext.instance.config;
+	let { packageName, projectDir } = TransformerContext.instance.config;
 	const symbol = getSymbol(type, context);
 
 	if (symbol === undefined)
@@ -100,9 +100,9 @@ export function getTypeFullName(type: ts.Type, context: Context)
 	{
 		filePath = filePath.slice(nodeModulesIndex + nodeModulesPattern.length);
 	}
-	else if (rootDir)
+	else if (projectDir)
 	{
-		filePath = packageName + "/" + path.relative(rootDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
+		filePath = packageName + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
 	}
 
 	// ts.getNameOfDeclaration()
