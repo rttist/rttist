@@ -68,6 +68,7 @@ export class Signature
 	 */
 	getTypeParameters(): ReadonlyArray<Type>
 	{
-		return this._typeParameters?.slice() ?? (this._typeParameters = this._typeParametersReference.map(type => Metadata.resolveType(type)));
+		return this._typeParameters?.slice() 
+			?? (this._typeParameters = this._typeParametersReference.map(type => Metadata.resolveType(type)));
 	}
 }

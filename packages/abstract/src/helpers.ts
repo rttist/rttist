@@ -85,7 +85,12 @@ export function getTypeOfRuntimeValue(value: any): Type
 		return arrayBuilder.setGenericType(unionBuilder.build()).build();
 	}
 
-	if (typeof value === "function" && (value.prototype == undefined || Object.getOwnPropertyDescriptor(value, "prototype")?.writable === true))
+	if (typeof value === "function"
+		&& (
+			value.prototype == undefined
+			|| Object.getOwnPropertyDescriptor(value, "prototype")?.writable === true
+		)
+	)
 	{
 		return FunctionBuilder.fromFunction(value);
 	}

@@ -16,7 +16,10 @@
 			{
 				"transform": "tst-reflect-transformer",
 				"reflection": {
-					"debugMode": true
+					"debugMode": true,
+					"metadata": {
+						"encode": true
+					}
 				}
 			}
 		]

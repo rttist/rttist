@@ -4,7 +4,7 @@ import { Type }            from "../Type";
 import {
 	ClassType,
 	GenericType
-} from "../types";
+}                          from "../types";
 import { TypeBuilderBase } from "./TypeBuilderBase";
 
 export class ArrayTypeBuilder extends TypeBuilderBase

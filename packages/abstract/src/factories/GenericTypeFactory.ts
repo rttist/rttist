@@ -1,10 +1,10 @@
-import { TypeKind }    from "../enums";
-import { Metadata }    from "../Metadata";
-import { Type }        from "../Type";
+import { TypeKind } from "../enums";
+import { Metadata } from "../Metadata";
+import { Type }     from "../Type";
 import {
 	ClassType,
 	GenericType
-} from "../types";
+}                   from "../types";
 
 let genericTypeCounter = 1;
 
@@ -13,7 +13,11 @@ export class GenericTypeFactory
 	/**
 	 * Creates new generic type from generic type declaration.
 	 */
-	static create(genericTypeDefinition: ClassType, typeParameters: Type[], genericTypeFullName: string): GenericType<ClassType>
+	static create(
+		genericTypeDefinition: ClassType,
+		typeParameters: Type[],
+		genericTypeFullName: string
+	): GenericType<ClassType>
 	{
 		const type = new ClassType({
 			kind: TypeKind.Class,

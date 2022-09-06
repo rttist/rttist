@@ -1,6 +1,6 @@
 import { ModuleIdentifier } from "../declarations";
 import { Module }           from "../Module";
-import { Type }            from "../Type";
+import { Type }             from "../Type";
 
 let typeIdCounter = 0;
 

@@ -1,7 +1,10 @@
 import { TransformerContext } from "../contexts/TransformerContext";
 import { log }                from "../log";
 import { writeFile }          from "fs/promises";
-import { writeFileSync }      from "fs";
+import {
+	writeFileSync,
+	readFileSync
+}                             from "fs";
 import { join }               from "path";
 import * as ts                from "typescript";
 
@@ -70,7 +73,7 @@ export class LibraryFileEmitter
 		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
 
 		// Write typelib
-		writeFileSync(typelibOutputPath, transpiledTypelib.outputText, { encoding: "utf8", flag: "w" });
+		writeFileSync(typelibOutputPath, transpiledTypelib, { encoding: "utf8", flag: "w" });
 
 		// Write index
 		const indexOutputPath = this.transformerContext.config.metadataIndexPath;
@@ -101,7 +104,11 @@ export class LibraryFileEmitter
 		return ts.factory.createSourceFile(
 			[
 				// TODO: Add import `import from "@rtti/abstract";` or `require("@rtti/abstract")` based on ESM
-				ts.factory.createImportDeclaration(undefined, undefined, ts.factory.createStringLiteral("@rtti/abstract")),
+				ts.factory.createImportDeclaration(
+					undefined,
+					undefined,
+					ts.factory.createStringLiteral("@rtti/abstract")
+				),
 				ts.factory.createExpressionStatement(metadataExpression)
 			],
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
@@ -109,12 +116,12 @@ export class LibraryFileEmitter
 		);
 	}
 
-	private getTranspiledTypelib(metadataExpression: ts.Expression, fileName: string): ts.TranspileOutput
+	private getTranspiledTypelib(metadataExpression: ts.Expression, fileName: string): string
 	{
 		const sourceFile = this.createSourceFile(metadataExpression);
 		const source = this.printToTypeScriptCode(sourceFile);
 
-		return ts.transpileModule(source, {
+		let transpiledTypelib = ts.transpileModule(source, {
 			fileName: fileName,
 			compilerOptions: {
 				...this.transformerContext.config.compilerOptions,
@@ -125,7 +132,18 @@ export class LibraryFileEmitter
 				skipLibCheck: true,
 				skipDefaultLibCheck: true
 			}
-		});
+		}).outputText;
+
+		if (this.transformerContext.config.encode)
+		{
+			const stub = readFileSync(
+				join(__dirname, "..", "..", "templates", "typelib.template.ts"),
+				{ encoding: "utf-8" }
+			);
+			transpiledTypelib = transpiledTypelib + stub;
+		}
+
+		return transpiledTypelib;
 	}
 
 	private getIndex()

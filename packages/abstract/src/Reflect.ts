@@ -23,16 +23,23 @@ declare global
 		 * @param newTarget The constructor whose prototype should be used. See also the new.target operator. If newTarget is not present, its value defaults to target.
 		 * @returns A new instance of target (or newTarget, if present), initialized by target as a constructor with the given argumentsList.
 		 */
-		export function construct<TType>(target: { new(...args: any): TType } | Function, argumentsList: ArrayLike<any>, newTarget?: Function): TType;
+		export function construct<TType>(
+			target: { new(...args: any): TType } | Function,
+			argumentsList: ArrayLike<any>,
+			newTarget?: Function
+		): TType;
 
 		/**
 		 * The static Reflect.construct() method acts like the new operator, but as a function.
-		 * It is equivalent to calling new target(...args). It gives also the added option to specify a different prototype.
+		 * It is equivalent to calling new target(...args).
+		 * It gives also the added option to specify a different prototype.
 		 * @param target The target function to call.
 		 * @param typeParameters An array specifying the type arguments.
 		 * @param argumentsList An array-like object specifying the arguments with which target should be called.
-		 * @param newTarget The constructor whose prototype should be used. See also the new.target operator. If newTarget is not present, its value defaults to target.
-		 * @returns A new instance of target (or newTarget, if present), initialized by target as a constructor with the given argumentsList.
+		 * @param newTarget The constructor whose prototype should be used.
+		 * See also the new.target operator. If newTarget is not present, its value defaults to target.
+		 * @returns A new instance of target (or newTarget, if present),
+		 * initialized by target as a constructor with the given argumentsList.
 		 */
 		export function constructGeneric<TType = any>(
 			target: { new(...args: any): TType } | Function,
@@ -57,7 +64,10 @@ declare global
 		 * @param classCtor
 		 * @param typeParameters
 		 */
-		export function getGenericClass<T extends { new(...args: any[]): any }>(classCtor: T, ...typeParameters: Type[]): T;
+		export function getGenericClass<T extends { new(...args: any[]): any }>(
+			classCtor: T,
+			...typeParameters: Type[]
+		): T;
 
 		/**
 		 * @internal
@@ -79,17 +89,22 @@ Reflect.getType = function getType<T>(...args: any[]): Type {
 	if (!globalObject[ERROR_DISABLE_PROPERTY_NAME])
 	{
 		console.debug("[ERR] Reflect: You call `Reflect.getType()` function directly. " +
-			"You have probably wrong configuration, because some @rtti transformer should replace this call by the Type instance.\n" +
+			"You have probably wrong configuration, because some @rtti transformer " +
+			"should replace this call by the Type instance.\n" +
 			"If you have right configuration it may be BUG so try to create an issue.\n" +
 			"If it is not an issue and you don't want to see this debug message, " +
-			"create field '" + ERROR_DISABLE_PROPERTY_NAME + "' in global object (window | global | globalThis) eg. `window['" + ERROR_DISABLE_PROPERTY_NAME + "'] = true;`");
+			"create field '" + ERROR_DISABLE_PROPERTY_NAME + "' in global object (window | global | globalThis) " +
+			"eg. `window['" + ERROR_DISABLE_PROPERTY_NAME + "'] = true;`");
 	}
 
 	// In case of direct call, we'll return Unknown type.
 	return Type.Unknown;
 };
 
-Reflect.getGenericClass = function getGenericClass<T extends { new(...args: any[]): any }>(classCtor: T, ...typeParameters: Type[]): T
+Reflect.getGenericClass = function getGenericClass<T extends { new(...args: any[]): any }>(
+	classCtor: T,
+	...typeParameters: Type[]
+): T
 {
 	return GenericTypeRegister.getGenericClass(classCtor, typeParameters);
 };

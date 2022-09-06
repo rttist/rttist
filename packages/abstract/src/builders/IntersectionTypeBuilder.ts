@@ -51,7 +51,7 @@ export class IntersectionTypeBuilder extends TypeBuilderBase
 		});
 
 		Metadata.addType(type);
-		
+
 		return type;
 	}
 }

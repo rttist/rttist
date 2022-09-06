@@ -2,9 +2,10 @@ import type { Type }          from "../Type";
 import type { TypeReference } from "./declarations";
 import { Metadata }           from "../Metadata";
 
-export enum IndexFlags {
+export enum IndexFlags
+{
 	None = 0,
-	
+
 	Readonly = 1,
 }
 

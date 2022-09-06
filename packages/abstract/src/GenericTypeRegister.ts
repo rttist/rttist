@@ -1,7 +1,7 @@
-import { PROTOTYPE_TYPE_PROPERTY }  from "@rtti/core";
-import { GenericTypeFactory }       from "./factories/GenericTypeFactory";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rtti/core";
+import { GenericTypeFactory } from "./factories/GenericTypeFactory";
 import { resolveSingletonInstance } from "./helpers";
-import type { Type }                from "./Type";
+import type { Type } from "./Type";
 
 class Register
 {
@@ -61,7 +61,11 @@ class Register
 				}
 			}[name];
 
-			genericClass.prototype[PROTOTYPE_TYPE_PROPERTY] = GenericTypeFactory.create(genericTypeDefinition, typeParameters, fullName);
+			genericClass.prototype[PROTOTYPE_TYPE_PROPERTY] = GenericTypeFactory.create(
+				genericTypeDefinition,
+				typeParameters,
+				fullName
+			);
 		}
 
 		return genericClass;

@@ -1,7 +1,7 @@
 import type {
 	FunctionTypeMetadata,
 	Signature
-} from "../declarations";
+}               from "../declarations";
 import { Type } from "../Type";
 
 export class FunctionType extends Type
