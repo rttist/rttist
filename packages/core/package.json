@@ -1,6 +1,6 @@
 {
 	"name": "@rtti/core",
-	"version": "0.1.0",
+	"version": "1.0.0-dev20220901",
 	"description": "Core for transformers and runtimes of @rtti TypeScript reflection.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",

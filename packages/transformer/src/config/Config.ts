@@ -1,3 +1,9 @@
+import {
+	ConfigurationBuilder,
+	IConfigurationBuilder,
+	IRootConfiguration
+}                                       from "@netleaf/extensions-configuration";
+import * as deasync                     from "deasync";
 import type { MetadataMiddleware }      from "../middlewares";
 import type { SourceFileVisitorPlugin } from "../plugins";
 import fs                               from "fs";
@@ -11,11 +17,21 @@ import {
 	OptionalConfigReflectionSection
 }                                       from "./ConfigReflectionSection";
 
-export const DEFAULT_METADATA_TYPELIB_FILE_NAME = "metadata.typelib.js";
-export const DEFAULT_METADATA_INDEX_FILE_NAME = "metadata.index.json";
-export const DEFAULT_TYPELIB_FACTORY = "__τ";
-
 const UNKNOWN_PACKAGE_NAME = "@@this";
+
+const DefaultConfiguration: ConfigReflectionSection = {
+	debugMode: false,
+	plugins: [],
+	metadata: {
+		encode: true,
+		metadataTypelibPath: "metadata.typelib.js",
+		metadataIndexPath: "metadata.index.json",
+		typeFactory: "__τ",
+		middlewares: [],
+		include: [],
+		exclude: []
+	}
+};
 
 export class Config
 {
@@ -32,6 +48,7 @@ export class Config
 	public readonly outDir: string;
 	public readonly packageName: string;
 	public readonly typeFactory: string;
+	public readonly encode: boolean;
 
 	public readonly metadataIndexPath: string;
 	public readonly metadataTypelibPath: string;
@@ -41,65 +58,69 @@ export class Config
 	 * There will never exists any typelib file. It's just a path, where its TS file would be.
 	 */
 	public readonly metadataTypelibVirtualPath: string;
-	
-	public readonly encode: boolean;
 
 	public readonly compilerOptions: ts.CompilerOptions;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
 	{
-		const options = this.ensure(configSection);
+		// const options = this.ensure(configSection);
 		const compilerOptions = program.getCompilerOptions();
 		const projectRoot = path.dirname((compilerOptions as any).configFilePath || compilerOptions.rootDir);
 		const packageInfo = this.getPackage(projectRoot);
 
-		this.debugMode = ["true", true].includes(options.debugMode);
+		const reflectionConfig = this.getRootConfiguration(projectRoot, configSection);
+		const metadataConfig = reflectionConfig.getSection("metadata");
 
-		this.include = options.metadata.include.map(pattern => this.toRegex(pattern));
-		this.exclude = options.metadata.exclude.map(pattern => this.toRegex(pattern));
+		this.debugMode = ["true", true].includes(reflectionConfig.get("debugMode")!);
 
-		this.plugins = options.plugins.map(plugin => this.getPlugin(plugin, projectRoot));
-		this.metadataMiddlewares = options.metadata.middlewares.map(middleware => this.getMiddleware(middleware, projectRoot));
+		this.include = metadataConfig.get("include")!.map(pattern => this.toRegex(pattern));
+		this.exclude = metadataConfig.get("exclude")!.map(pattern => this.toRegex(pattern));
+
+		this.plugins = reflectionConfig.get("plugins")!.map(plugin => this.getPlugin(plugin, projectRoot));
+		this.metadataMiddlewares = metadataConfig.get("middlewares")!.map(middleware => this.getMiddleware(
+			middleware,
+			projectRoot
+		));
 
 		this.projectDir = projectRoot;
 		this.rootDir = compilerOptions.rootDir || projectRoot;
 		this.outDir = compilerOptions.outDir || projectRoot;
 		this.packageName = packageInfo.name;
-		this.typeFactory = options.metadata.typeFactory;
+		this.typeFactory = metadataConfig.get("typeFactory")!;
 
-		this.metadataIndexPath = path.join(this.outDir, options.metadata.metadataIndexPath);
-		this.metadataTypelibPath = path.join(this.outDir, options.metadata.metadataTypelibPath);
-		this.metadataTypelibVirtualPath = path.join(this.rootDir, options.metadata.metadataTypelibPath);
-		
-		this.encode = ["true", true].includes(options.metadata.encode);
+		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
+		this.metadataIndexPath = path.join(this.outDir, metadataConfig.get("metadataIndexPath")!);
+		this.metadataTypelibPath = path.join(this.outDir, typeLibPath);
+		this.metadataTypelibVirtualPath = path.join(this.rootDir, typeLibPath);
+
+		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
 
 		this.compilerOptions = compilerOptions;
 	}
 
-	/**
-	 * Returns "reflection" section from config; assigned over default values.
-	 * @param configSection
-	 */
-	ensure(configSection: OptionalConfigReflectionSection): ConfigReflectionSection
+	getRootConfiguration(
+		projectRoot: string,
+		transformerConfigSection: OptionalConfigReflectionSection
+	): IRootConfiguration<ConfigReflectionSection>
 	{
-		configSection.metadata ??= {};
+		const configBuilder: IConfigurationBuilder = new ConfigurationBuilder()
+			.setRootDirectory(projectRoot)
+			.addObject(DefaultConfiguration)
+			.addObject(transformerConfigSection)
+			.addJsonFile("rtti.config.json", { optional: true })
+			.addJsFile("rtti.config.js", { optional: true });
 
-		const debugMode = configSection.debugMode || false;
+		let done = false;
+		let configuration: IRootConfiguration<ConfigReflectionSection>;
 
-		return {
-			debugMode: debugMode,
-			plugins: configSection.plugins || [],
+		configBuilder.build().then(config => {
+			configuration = config;
+			done = true;
+		});
 
-			metadata: {
-				metadataTypelibPath: configSection.metadata.metadataTypelibPath?.toString() || DEFAULT_METADATA_TYPELIB_FILE_NAME,
-				metadataIndexPath: configSection.metadata.metadataIndexPath?.toString() || DEFAULT_METADATA_INDEX_FILE_NAME,
-				typeFactory: configSection.metadata.typeFactory || DEFAULT_TYPELIB_FACTORY,
-				middlewares: configSection.metadata.middlewares || [],
-				include: configSection.metadata.include || [],
-				exclude: configSection.metadata.exclude || [],
-				encode: configSection.metadata.encode || !debugMode
-			}
-		};
+		deasync.loopWhile(() => !done);
+
+		return configuration!;
 	}
 
 	/**

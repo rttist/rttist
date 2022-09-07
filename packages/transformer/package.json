@@ -1,6 +1,6 @@
 {
 	"name": "tst-reflect-transformer",
-	"version": "0.10.0",
+	"version": "1.0.0-dev20220901",
 	"description": "TypeScript Transformer for Runtime Types & Reflection",
 	"main": "dist/index.js",
 	"scripts": {
@@ -26,15 +26,18 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"devDependencies": {
+		"@types/deasync": "^0.1.2",
 		"@types/minimatch": "^3.0.5",
 		"@types/node": "^16.0.0"
 	},
 	"dependencies": {
-		"@rtti/abstract": "^0.1.0",
+		"@netleaf/extensions-configuration": "0.4.1",
+		"@rtti/abstract": "workspace:*",
 		"@rtti/core": "workspace:*",
 		"base32768": "^3.0.1",
+		"deasync": "^0.1.28",
 		"minimatch": "^5.0.1",
-		"tst-reflect": "^0.10.0",
+		"tst-reflect": "workspace:*",
 		"typescript": "^4.8.0"
 	},
 	"repository": {
