@@ -24,19 +24,19 @@ importers:
 
   dev:
     specifiers:
-      '@rtti/abstract': workspace:*
+      '@rttist/abstract': workspace:*
       tst-reflect-transformer: workspace:*
     dependencies:
-      '@rtti/abstract': link:../packages/abstract
+      '@rttist/abstract': link:../packages/abstract
     devDependencies:
       tst-reflect-transformer: link:../packages/transformer
 
   packages/abstract:
     specifiers:
-      '@rtti/core': workspace:*
+      '@rttist/core': workspace:*
       typescript: 4.8.x
     dependencies:
-      '@rtti/core': link:../core
+      '@rttist/core': link:../core
     devDependencies:
       typescript: 4.8.2
 
@@ -48,11 +48,11 @@ importers:
 
   packages/runtime:
     specifiers:
-      '@rtti/abstract': ^0.1.0
+      '@rttist/abstract': ^0.1.0
       '@types/node': ^16.0.0
       typescript: 4.8.x
     dependencies:
-      '@rtti/abstract': link:../abstract
+      '@rttist/abstract': link:../abstract
     devDependencies:
       '@types/node': 16.11.56
       typescript: 4.8.2
@@ -60,8 +60,8 @@ importers:
   packages/transformer:
     specifiers:
       '@netleaf/extensions-configuration': 0.4.1
-      '@rtti/abstract': workspace:*
-      '@rtti/core': workspace:*
+      '@rttist/abstract': workspace:*
+      '@rttist/core': workspace:*
       '@types/deasync': ^0.1.2
       '@types/minimatch': ^3.0.5
       '@types/node': ^16.0.0
@@ -72,8 +72,8 @@ importers:
       typescript: ^4.8.0
     dependencies:
       '@netleaf/extensions-configuration': 0.4.1
-      '@rtti/abstract': link:../abstract
-      '@rtti/core': link:../core
+      '@rttist/abstract': link:../abstract
+      '@rttist/core': link:../core
       base32768: 3.0.1
       deasync: 0.1.28
       minimatch: 5.1.0

@@ -1,7 +1,7 @@
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-}                               from "@rtti/abstract";
+}                               from "@rttist/abstract";
 import path                     from "path";
 import * as ts                  from "typescript";
 import {

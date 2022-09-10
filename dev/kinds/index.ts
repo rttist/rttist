@@ -1,7 +1,7 @@
 import {
 	Type,
 	TypeKind
-}                  from "@rtti/abstract";
+}                  from "@rttist/abstract";
 
 type Obj = { foo: string, readonly bar: number };
 Reflect.getType<Obj>();

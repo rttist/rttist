@@ -11,7 +11,7 @@ import { processGenericCallExpression } from "../transformers/processGenericCall
 import { processGetTypeCallExpression } from "../transformers/processGetTypeCallExpression";
 import { classVisitor }                 from "./classVisitor";
 import DeclarationVisitor               from "./declarationVisitor";
-import { PROTOTYPE_TYPE_PROPERTY }      from "@rtti/core";
+import { PROTOTYPE_TYPE_PROPERTY }      from "@rttist/core";
 
 /**
  * Main visitor, splitting visitation into specific parts

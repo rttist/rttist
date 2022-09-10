@@ -11,7 +11,7 @@ export class MetadataNodeFactory
 	{
 		// this.typeFactoryIdentifier = ts.factory.createIdentifier("__τ"); // TODO: Load from config! reflection.typeFactory
 		// this.metadataIdentifier = ts.factory.createIdentifier("__Ω");
-		// // TODO: Create `import { Metadata } from "@rtti/abstract";` (import or require based on tsconfig) in each file and generate `Metadata.resolveType(id)` in place of getType<T>() calls.
+		// // TODO: Create `import { Metadata } from "@rttist/abstract";` (import or require based on tsconfig) in each file and generate `Metadata.resolveType(id)` in place of getType<T>() calls.
 	}
 
 	/**

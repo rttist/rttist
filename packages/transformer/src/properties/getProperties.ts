@@ -2,7 +2,7 @@ import {
 	AccessModifier,
 	Accessor,
 	PropertyFlags
-}                               from "@rtti/abstract";
+}                               from "@rttist/abstract";
 import * as ts                  from "typescript";
 import { UnknownTypeReference }    from "../consts";
 import { Context }                 from "../contexts/Context";

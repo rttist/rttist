@@ -1,4 +1,4 @@
-import { PROTOTYPE_TYPE_PROPERTY }     from "@rtti/core";
+import { PROTOTYPE_TYPE_PROPERTY }     from "@rttist/core";
 import { GenericTypeRegister }         from "./GenericTypeRegister";
 import {
 	getGlobalThis,
@@ -86,7 +86,7 @@ Reflect.getType = function getType<T>(...args: any[]): Type {
 	if (!globalObject[ERROR_DISABLE_PROPERTY_NAME])
 	{
 		console.debug("[ERR] Reflect: You call `Reflect.getType()` function directly. " +
-			"You have probably wrong configuration, because some @rtti transformer " +
+			"You have probably wrong configuration, because some @rttist transformer " +
 			"should replace this call by the Type instance.\n" +
 			"If you have right configuration it may be BUG so try to create an issue.\n" +
 			"If it is not an issue and you don't want to see this debug message, " +

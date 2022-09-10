@@ -12,8 +12,8 @@
 	TypeKind,
 	TypeMetadata,
 	TypeReference
-}                         from "@rtti/abstract";
-import { NativeTypeKind } from "@rtti/abstract/dist/enums/TypeKind";
+}                         from "@rttist/abstract";
+import { NativeTypeKind } from "@rttist/abstract/dist/enums/TypeKind";
 import {
 	Match,
 	TransformerTypeReference

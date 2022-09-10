@@ -1,6 +1,6 @@
 import {
 	Type
-} from "@rtti/abstract";
+} from "@rttist/abstract";
 // import { REFLECTED_TYPE_ID }        from "./consts";
 // import { ExtendedTypeBuilder }      from "./type-builder/ExtendedTypeBuilder";
 // import { ObjectLiteralTypeBuilder } from "./type-builder/ObjectLiteralTypeBuilder";

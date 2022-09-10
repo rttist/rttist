@@ -2,7 +2,7 @@ import * as path          from "path";
 import {
 	AccessModifier,
 	Accessor,
-}                         from "@rtti/abstract";
+}                         from "@rttist/abstract";
 import {
 	REFLECT_DECORATOR
 }                         from "tst-reflect";

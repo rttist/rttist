@@ -25,7 +25,7 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"dependencies": {
-		"@rtti/abstract": "^0.1.0"
+		"@rttist/abstract": "^0.1.0"
 	},
 	"devDependencies": {
 		"@types/node": "^16.0.0",

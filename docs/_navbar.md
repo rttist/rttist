@@ -1,0 +1,4 @@
+- Translations
+    - [English](/)
+    - [Česky](/cz/)
+    - [Deutsch](/de/)

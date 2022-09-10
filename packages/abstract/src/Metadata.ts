@@ -140,4 +140,4 @@ class MetadataLibrary
 }
 
 // noinspection JSUnusedGlobalSymbols
-export const Metadata = resolveSingletonInstance("@rtti/abstract/Metadata", MetadataLibrary);
+export const Metadata = resolveSingletonInstance("@rttist/abstract/Metadata", MetadataLibrary);

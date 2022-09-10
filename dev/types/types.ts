@@ -1,4 +1,4 @@
-import "@rtti/abstract";
+import "@rttist/abstract";
 
 module foobar
 {

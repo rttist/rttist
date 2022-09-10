@@ -1,4 +1,4 @@
-﻿import { TypeKind }                 from "@rtti/abstract";
+﻿import { TypeKind }                 from "@rttist/abstract";
 import { TransformerTypeReference } from "./declarations/general";
 import { TypeProperties }           from "./declarations/TypeProperties";
 

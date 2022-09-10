@@ -103,11 +103,11 @@ export class LibraryFileEmitter
 	{
 		return ts.factory.createSourceFile(
 			[
-				// TODO: Add import `import from "@rtti/abstract";` or `require("@rtti/abstract")` based on ESM
+				// TODO: Add import `import from "@rttist/abstract";` or `require("@rttist/abstract")` based on ESM
 				ts.factory.createImportDeclaration(
 					undefined,
 					undefined,
-					ts.factory.createStringLiteral("@rtti/abstract")
+					ts.factory.createStringLiteral("@rttist/abstract")
 				),
 				ts.factory.createExpressionStatement(metadataExpression)
 			],

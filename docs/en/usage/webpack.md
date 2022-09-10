@@ -2,7 +2,7 @@
 
 > If you use Angular or something else which has webpack encapsulated and under its own control, 
 > this Usage variant may not work properly. 
-> Angular has own [Usage](./angular.md) description.
+> Angular has own [Usage](angular.md) description.
 
 ## With `ts-loader`
 > ! `ts-loader` is recommended because you don't need `ttypescript` and it has better performance than `awesome-typescript-loader`.

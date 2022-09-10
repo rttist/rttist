@@ -10,7 +10,7 @@
 		"outDir": "dist",
 		//		"typeRoots": [
 		//			"../../node_modules/@types",
-		//			"../../node_modules/@rtti/abstract/node_modules/@types"
+		//			"../../node_modules/@rttist/abstract/node_modules/@types"
 		//		],
 		"plugins": [
 			{

@@ -1,39 +1,35 @@
-# Advanced TypeScript Runtime Reflection System
-#### Runtime Type Information
-
 [![tst-reflect](https://img.shields.io/npm/v/tst-reflect.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect)](https://www.npmjs.com/package/tst-reflect)
 [![tst-reflect-transformer](https://img.shields.io/npm/v/tst-reflect-transformer.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect-transformer)](https://www.npmjs.com/package/tst-reflect-transformer)
 [![License MIT](https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square)](https://opensource.org/licenses/MIT)
-![Code coverage](./coverage/badge.svg)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+![Code coverage](../coverage/badge.svg)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+# RTTIST
+<sup><i>Pronounce /ˈɑː(r)tɪst/ the same as Artist.</i> Means Run-Time Type Information System for Typescript.</sup>
 
-<br>
-<center>
+> Advanced TypeScript runtime reflection system, inspired by the C#'s reflection.
 
-[Examples](#examples)
-| [How to start](#how-to-start)
-| [Docs](https://hookyns.github.io/tst-reflect-docs/)
-| [Changelog](https://github.com/Hookyns/tst-reflect/blob/main/CHANGELOG.md)
-| [Contributors](#contributors-)
 
-[//]: # (| [Configuration [wiki]]&#40;https://github.com/Hookyns/tst-reflect/wiki/Configuration&#41;)
+<center style="float:left">
+
+![Reflect](_images/logo_256_flat.png)
 </center>
 
----
 
 ## About
+<p style="text-align: justify">
+This project is all about runtime <strong>reflection</strong>. 
+TypeScript itself contains rich type information but it is all dev time only. 
+But TypeScript provide its compiler API, with access to type checker and ability to transform the code. 
+Using this API we wrote a transformer plugin for TypeScript which generates runtime type information 
+and modify your code slightly so you can reflect your types, even type parameters of classes, methods and functions.
+</p>
 
-Yeap! How the title says, this project is about runtime **reflection** with runtime **generic** types. 
-All thanks to custom TypeScript transformer plugin.
+<p style="clear: both;"></p>
 
-<center>
+## Features
 
-![Reflect](./assets/logo_thin_384.png)
-</center>
-
-### Features
 - Regular TypeScript, no annotations required to use the reflection,
 - generate metadata of modules and types,
 - dynamic imports of reflected types,
@@ -50,49 +46,10 @@ All thanks to custom TypeScript transformer plugin.
 - CJS & ESM,
 - but no pre-implemented features like validators or type-guards!
 
-## How to Get the Type
-Use function `getType<TType>(runtimeValue?: any): Type` from native `Reflect` namespace; extended by package `@rttist/abstract`.
-```typescript
-type Alias = string | boolean;
-interface Ifce {}
-class Cls {}
-function func() {}
-
-Reflect.getType<Alias>();
-Reflect.getType<Ifce>();
-Reflect.getType<Cls>();
-Reflect.getType<typeof func>();
-
-const cls = new Cls();
-Reflect.getType(cls);
-Reflect.getType(Cls);
-Reflect.getType(func);
-Reflect.getType("some string or any other runtime value");
-
-// Reflection over Type parameters
-class Generic<TType> {
-	constructor() {
-		Reflect.getType<TType>();
-	}
-	
-	method<TMeth>() {
-		Reflect.getType<TType>();
-		Reflect.getType<TMeth>();
-	}
-}
-```
-
 ## Examples
 [//]: # (TODO: List of StackBlitz examples)
 
-## How to Start
 
-- [Usage With Plain TypeScript](./docs/usage/plain-ts.md)
-- [Usage With Webpack](./docs/usage/webpack.md)
-- [Usage With Angular](./docs/usage/angular.md)
-- [Usage With Parcel](./docs/usage/parcel.md)
-- [Usage With Rollup](./docs/usage/rollup.md)
-- [Usage With ts-node](./docs/usage/ts-node.md)
 
 ## Contributors ✨
 

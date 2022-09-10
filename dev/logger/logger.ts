@@ -1,4 +1,4 @@
-import "@rtti/abstract";
+import "@rttist/abstract";
 
 function inferType<TType>() {
 	return Reflect.getType<TType>().name;

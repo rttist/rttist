@@ -3,7 +3,7 @@
 // 	Type,
 // 	ModuleReference,
 // 	Module
-// } from "@rtti/abstract";
+// } from "@rttist/abstract";
 
 export * from "./consts";
 export * from "./reflect";

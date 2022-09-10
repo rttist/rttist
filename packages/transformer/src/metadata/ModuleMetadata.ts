@@ -1,5 +1,5 @@
 import * as ts                      from "typescript";
-import { ModuleReference }          from "@rtti/abstract";
+import { ModuleReference }          from "@rttist/abstract";
 import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations/general";
 import {

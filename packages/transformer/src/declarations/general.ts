@@ -1,4 +1,4 @@
-﻿import { TypeReference } from "@rtti/abstract";
+﻿import { TypeReference } from "@rttist/abstract";
 import * as ts           from "typescript";
 import { Context }       from "../contexts/Context";
 

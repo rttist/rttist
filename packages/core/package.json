@@ -1,7 +1,7 @@
 {
-	"name": "@rtti/core",
+	"name": "@rttist/core",
 	"version": "1.0.0-dev20220901",
-	"description": "Core for transformers and runtimes of @rtti TypeScript reflection.",
+	"description": "Core for transformers and runtimes of @rttist TypeScript reflection.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
@@ -13,7 +13,7 @@
 		"dist/**/*.d.ts"
 	],
 	"keywords": [
-		"@rtti",
+		"@rttist",
 		"abstract",
 		"declaration",
 		"type",

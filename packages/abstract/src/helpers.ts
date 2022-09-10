@@ -1,4 +1,4 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rtti/core";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import {
 	FunctionBuilder,
 	ObjectLiteralTypeBuilder,

@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"dependencies": {
-		"@rtti/abstract": "workspace:*"
+		"@rttist/abstract": "workspace:*"
 	},
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*"

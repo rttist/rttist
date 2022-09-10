@@ -1,5 +1,5 @@
 {
-	"name": "@rtti/abstract",
+	"name": "@rttist/abstract",
 	"version": "0.1.0",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "dist/index.js",
@@ -9,12 +9,12 @@
 		"prepare": "tsc"
 	},
 	"files": [
-		"ts-lib-rtti.d.ts",
+		"ts-lib-rttist.d.ts",
 		"dist/**/*.js",
 		"dist/**/*.d.ts"
 	],
 	"typescript": {
-		"definition": "ts-lib-rtti.d.ts"
+		"definition": "ts-lib-rttist.d.ts"
 	},
 	"keywords": [
 		"abstract",
@@ -32,7 +32,7 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"dependencies": {
-		"@rtti/core": "workspace:*"
+		"@rttist/core": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "4.8.x"
