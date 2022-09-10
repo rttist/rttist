@@ -46,9 +46,44 @@ and modify your code slightly so you can reflect your types, even type parameter
 - CJS & ESM,
 - but no pre-implemented features like validators or type-guards!
 
-## Examples
+## Showcase
 [//]: # (TODO: List of StackBlitz examples)
 
+```typescript
+import { Type } from '@rttist/abstract';
+
+abstract class AwesomeFeature {
+  protected constructor(protected isCool: boolean) {}
+}
+
+class TypeScriptRuntimeReflection<TProps> extends AwesomeFeature {
+  like = ".NET";
+  props?: TProps;
+
+  constructor(isCool: boolean)
+  constructor(isCool: boolean, props: TProps)
+  constructor(isCool: boolean, props?: TProps) {
+    super(isCool);
+    this.props = props;
+  }
+}
+
+// Here we have some function with type parameter
+function printTypeInfo<TType>() {
+  const type: Type = Reflect.getType<TType>(); // getting the type passed as type argument
+
+  console.log(`
+    Type name: ${type.name}, extends: ${type.baseType.name}
+      Constructors:`,
+        type.getConstructors().map(ctor => ctor.getParameters().map(param => `${param.name}: ${param.type.name}`)), `
+      Properties:`,
+        type.getProperties().map(prop => `${prop.name}: ${prop.type.name}`)
+  );
+}
+
+printTypeInfo<AwesomeFeature>();
+printTypeInfo<TypeScriptRuntimeReflection<{}>>();
+```
 
 
 ## Contributors ✨
