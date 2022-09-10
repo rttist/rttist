@@ -6,10 +6,9 @@ import {
 	TypeMapperResult
 }                           from "../../declarations/mappers";
 import { TypeProperties }   from "../../declarations/TypeProperties";
-import { getDecorators }    from "../../getDecorators";
 import { getDeclaration }   from "../../utils/symbolHelpers";
 import {
-	getTypeId
+	getTypeRef
 }                           from "../../utils/typeHelpers";
 import { getMethods }       from "../getMethods";
 import { getProperties }    from "../getProperties";
@@ -42,13 +41,13 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 	if ((type.objectFlags & ts.ObjectFlags.Class) || (type.objectFlags & ts.ObjectFlags.Interface))
 	{
-		const decorators = getDecorators(symbol, context);
+		// const decorators = getDecorators(symbol, context);
 		let localType = false;
 
 		let props = type.getProperties();
 
 		const properties: TypeProperties = {
-			id: getTypeId(type),
+			id: getTypeRef(type, context.typeChecker),
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol.getEscapedName().toString(),
 			// fullName: getTypeFullName(type, context),

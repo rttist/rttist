@@ -29,7 +29,7 @@ export function processGetTypeCallExpression(context: Context, node: ts.CallExpr
 	// Parameter is specific type
 	else
 	{
-		const typeReference = context.metadata.addType(genericType/*, genericTypeNode*/, undefined, context);
+		const typeReference = context.metadata.addTypeAndOrGetId(genericType/*, genericTypeNode*/, undefined, context);
 		return context.metadata.nodeFactory.createTypeResolver(typeReference);
 	}
 }

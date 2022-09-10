@@ -43,17 +43,18 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
  */
 export function getTypeProperties(type: ts.Type, context: Context): TypeProperties
 {
-	if (context.config.debugMode)
-	{
-		log.trace(getTypeSourceLocationText(type, context));
-	}
-
-	const primitiveTypeProperties = getPrimitiveTypeProperties(type, context);
-
-	if (primitiveTypeProperties !== undefined)
-	{
-		return primitiveTypeProperties;
-	}
+	// if (context.config.debugMode)
+	// {
+	// 	log.trace(getTypeSourceLocationText(type, context));
+	// }	
+	
+	// It's gonna never be primitive type, cuz they are handled by getTypeRef()
+	// const primitiveTypeProperties = getPrimitiveTypeProperties(type, context);
+	//
+	// 	if (primitiveTypeProperties !== undefined)
+	// 	{
+	// 		return primitiveTypeProperties;
+	// 	}
 
 	if (type.isLiteral())
 	{

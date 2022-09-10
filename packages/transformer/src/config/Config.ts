@@ -28,7 +28,7 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		metadataIndexPath: "metadata.index.json",
 		typeFactory: "__τ",
 		middlewares: [],
-		include: [],
+		include: ["**/*"],
 		exclude: []
 	}
 };
@@ -60,18 +60,23 @@ export class Config
 	public readonly metadataTypelibVirtualPath: string;
 
 	public readonly compilerOptions: ts.CompilerOptions;
+	public readonly parsedCommandLine?: ts.ParsedCommandLine;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
 	{
 		// const options = this.ensure(configSection);
 		const compilerOptions = program.getCompilerOptions();
-		const projectRoot = path.dirname((compilerOptions as any).configFilePath || compilerOptions.rootDir);
+		const tsConfigPath = (compilerOptions as any).configFilePath;
+		const projectRoot = path.dirname(tsConfigPath || compilerOptions.rootDir);
 		const packageInfo = this.getPackage(projectRoot);
 
 		const reflectionConfig = this.getRootConfiguration(projectRoot, configSection);
 		const metadataConfig = reflectionConfig.getSection("metadata");
+		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
 
 		this.debugMode = ["true", true].includes(reflectionConfig.get("debugMode")!);
+		this.compilerOptions = compilerOptions;
+		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(tsConfigPath, undefined, ts.sys as any);
 
 		this.include = metadataConfig.get("include")!.map(pattern => this.toRegex(pattern));
 		this.exclude = metadataConfig.get("exclude")!.map(pattern => this.toRegex(pattern));
@@ -87,15 +92,11 @@ export class Config
 		this.outDir = compilerOptions.outDir || projectRoot;
 		this.packageName = packageInfo.name;
 		this.typeFactory = metadataConfig.get("typeFactory")!;
+		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
 
-		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
 		this.metadataIndexPath = path.join(this.outDir, metadataConfig.get("metadataIndexPath")!);
 		this.metadataTypelibPath = path.join(this.outDir, typeLibPath);
 		this.metadataTypelibVirtualPath = path.join(this.rootDir, typeLibPath);
-
-		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
-
-		this.compilerOptions = compilerOptions;
 	}
 
 	getRootConfiguration(
@@ -103,12 +104,7 @@ export class Config
 		transformerConfigSection: OptionalConfigReflectionSection
 	): IRootConfiguration<ConfigReflectionSection>
 	{
-		const configBuilder: IConfigurationBuilder = new ConfigurationBuilder()
-			.setRootDirectory(projectRoot)
-			.addObject(DefaultConfiguration)
-			.addObject(transformerConfigSection)
-			.addJsonFile("rtti.config.json", { optional: true })
-			.addJsFile("rtti.config.js", { optional: true });
+		const configBuilder: IConfigurationBuilder = this.createBuilder(projectRoot, transformerConfigSection);
 
 		let done = false;
 		let configuration: IRootConfiguration<ConfigReflectionSection>;
@@ -129,7 +125,7 @@ export class Config
 	 * @return {string}
 	 * @private
 	 */
-	getPackage(root: string, recursiveCheck: boolean = false): PackageInfo
+	private getPackage(root: string, recursiveCheck: boolean = false): PackageInfo
 	{
 		try
 		{
@@ -163,7 +159,7 @@ export class Config
 		}
 	}
 
-	getPlugin(pluginPath: string, projectRoot: string): SourceFileVisitorPlugin
+	private getPlugin(pluginPath: string, projectRoot: string): SourceFileVisitorPlugin
 	{
 		const plugin = require(path.resolve(projectRoot, pluginPath));
 
@@ -180,7 +176,7 @@ export class Config
 		return plugin.default;
 	}
 
-	getMiddleware(middlewarePath: string, projectRoot: string): MetadataMiddleware
+	private getMiddleware(middlewarePath: string, projectRoot: string): MetadataMiddleware
 	{
 		const middleware = require(path.resolve(projectRoot, middlewarePath));
 
@@ -197,7 +193,7 @@ export class Config
 		return middleware.default;
 	}
 
-	toRegex(pattern: string): RegExp
+	private toRegex(pattern: string): RegExp
 	{
 		const regex = makeRe(pattern);
 
@@ -209,5 +205,18 @@ export class Config
 		}
 
 		return regex;
+	}
+
+	private createBuilder(
+		projectRoot: string,
+		transformerConfigSection: OptionalConfigReflectionSection
+	)
+	{
+		return new ConfigurationBuilder()
+			.setRootDirectory(projectRoot)
+			.addObject(DefaultConfiguration)
+			.addObject(transformerConfigSection)
+			.addJsonFile("reflect.config.json", { optional: true })
+			.addJsFile("reflect.config.js", { optional: true });
 	}
 }

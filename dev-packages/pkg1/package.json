@@ -1,0 +1,8 @@
+{
+	"private": true,
+	"name": "dev-pkg1",
+	"reflection": {
+		"index": "dist/metadata.index.json",
+		"typelib": "dist/metadata.typelib.js"
+	}
+}

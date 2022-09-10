@@ -4,17 +4,20 @@
 	IndexInfoInitializer,
 	ModuleIdentifier,
 	ModuleReference,
+	ParameterInfo,
 	PropertyFlags,
 	PropertyInfoInitializer,
+	SignatureInitializerBase,
 	TypeIdentifier,
 	TypeKind,
-	TypeMetadata
-} from "@rtti/abstract";
+	TypeMetadata,
+	TypeReference
+}                         from "@rtti/abstract";
 import { NativeTypeKind } from "@rtti/abstract/dist/enums/TypeKind";
 import {
 	Match,
 	TransformerTypeReference
-} from "./general";
+}                         from "./general";
 
 /**
  * Properties of general Type.
@@ -30,8 +33,12 @@ type BaseTypeProperties = Match<keyof TypeMetadata, {
 	nullable?: true;
 }>;
 
-export type NativeBaseTypeProperties = Omit<BaseTypeProperties, "id" | "kind"> & { kind: NativeTypeKind, id?: undefined };
-export type NonNativeBaseTypeProperties = Omit<BaseTypeProperties, "id" | "kind"> & { id: TypeIdentifier, kind: TypeKind };
+export type NativeBaseTypeProperties =
+	Omit<BaseTypeProperties, "id" | "kind">
+	& { kind: NativeTypeKind, id?: undefined };
+export type NonNativeBaseTypeProperties =
+	Omit<BaseTypeProperties, "id" | "kind">
+	& { id: TypeIdentifier, kind: TypeKind };
 
 /**
  * Properties of a Module.
@@ -66,6 +73,8 @@ export interface ParameterProperties
 	type: TransformerTypeReference;
 	optional?: boolean;
 	rest?: boolean;
+	initializer?: any;
+	decorators?: DecoratorProperties[];
 }
 
 export interface MethodBaseProperties
@@ -73,9 +82,12 @@ export interface MethodBaseProperties
 	parameters: Array<ParameterProperties>;
 }
 
-export interface ConstructorProperties extends MethodBaseProperties
-{
-}
+export type SignatureProperties = Match<keyof SignatureInitializerBase,
+	{
+		parameters?: Array<ParameterProperties>;
+		typeParameters?: TransformerTypeReference[];
+		returnType: TransformerTypeReference;
+	}>;
 
 export interface MethodProperties extends MethodBaseProperties
 {
@@ -111,9 +123,12 @@ export interface IndexProperties extends Omit<IndexInfoInitializer, "key" | "typ
 	type: TransformerTypeReference;
 }
 
-export interface DecoratorProperties extends DecoratorInfoInitializer
-{
-}
+export type DecoratorProperties = Match<keyof DecoratorInfoInitializer,
+	{
+		name: string;
+		id: TypeIdentifier;
+		args?: Array<any>;
+	}>;
 
 /**
  * Properties of a LiteralType.

@@ -2,7 +2,7 @@ import { TypeKind }         from "@rtti/abstract";
 import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
-import { getTypeId }        from "../../utils/typeHelpers";
+import { getTypeRef }       from "../../utils/typeHelpers";
 import { getProperties }    from "../getProperties";
 
 export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMapperResult
@@ -10,7 +10,7 @@ export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMap
 	// const symbol = type.aliasSymbol || type.symbol;
 
 	return {
-		id: getTypeId(type),
+		id: getTypeRef(type, context.typeChecker),
 		kind: TypeKind.Object,
 		properties: getProperties(type, context)
 	};

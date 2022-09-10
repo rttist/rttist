@@ -2,12 +2,12 @@ import { TypeKind }              from "@rtti/abstract";
 import * as ts                   from "typescript";
 import { Context }               from "../contexts/Context";
 import { LiteralTypeProperties } from "../declarations/TypeProperties";
-import { getTypeId }             from "../utils/typeHelpers";
+import { getTypeRef }            from "../utils/typeHelpers";
 
 export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
 {
 	const props: LiteralTypeProperties = {
-		id: getTypeId(type),
+		id: getTypeRef(type, context.typeChecker),
 		kind: TypeKind.Unknown,
 		value: type.value
 	};

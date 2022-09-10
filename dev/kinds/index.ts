@@ -3,6 +3,8 @@ import {
 	TypeKind
 }                  from "@rtti/abstract";
 
+type Obj = { foo: string, readonly bar: number };
+Reflect.getType<Obj>();
 Reflect.getType<{ foo: string, bar: number }>();
 
 interface ISomething
@@ -176,6 +178,11 @@ Reflect.getType<SharedArrayBuffer>();
 Reflect.getType<Atomics>();
 Reflect.getType<DataView>();
 Reflect.getType<Generator>();
+Reflect.getType<Iterable<any>>();
+Reflect.getType<IterableIterator<any>>();
+Reflect.getType<AsyncIterator<any>>();
+Reflect.getType<AsyncGenerator<any>>();
+Reflect.getType<AsyncGeneratorFunction>();
 
 // Proxy TODO: Probably will not work, typeof proxy object is type of that object, proxy is not a type
 const proxy = new Proxy({}, {});
@@ -189,4 +196,18 @@ Reflect.getType<"string">();
 Reflect.getType<true>();
 const bigint = BigInt(5);
 Reflect.getType<typeof bigint>();
+
 Reflect.getType<`Some bigint ${bigint} here`>();
+type World = "world";
+type HelloWorld = `Hello ${World}`;
+Reflect.getType<HelloWorld>();
+
+type Getters<Type> = {
+	[Property in keyof Type as `get${Capitalize<string & Property>}`]: () => Type[Property]
+};
+Reflect.getType<Getters<Obj>>();
+
+type CreateMutable<Type> = {
+	-readonly [Property in keyof Type]: Type[Property];
+};
+Reflect.getType<CreateMutable<Obj>>();

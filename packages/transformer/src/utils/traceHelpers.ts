@@ -14,7 +14,7 @@ export function getNodeLocationText(atNode: ts.Node)
 
 export function getTypeSourceLocationText(type: ts.Type, context: Context): string
 {
-	const symbol = getSymbol(type, context);
+	const symbol = getSymbol(type, context.typeChecker);
 
 	if (symbol === undefined)
 	{

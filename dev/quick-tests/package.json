@@ -1,4 +1,8 @@
 {
 	"private": true,
-	"name": "quick-tests"
+	"name": "quick-tests",
+	"reflection": {
+		"index": "dist/metadata.index.json",
+		"typelib": "dist/metadata.typelib.js"
+	}
 }

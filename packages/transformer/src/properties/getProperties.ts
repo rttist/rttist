@@ -4,17 +4,18 @@ import {
 	PropertyFlags
 }                               from "@rtti/abstract";
 import * as ts                  from "typescript";
-import { UnknownTypeReference } from "../consts";
-import { Context }              from "../contexts/Context";
-import { PropertyProperties }   from "../declarations/TypeProperties";
-import { getDecorators }        from "../getDecorators";
+import { UnknownTypeReference }    from "../consts";
+import { Context }                 from "../contexts/Context";
+import { PropertyProperties }      from "../declarations/TypeProperties";
 import {
 	getAccessModifier,
 	getAccessor,
 	getType,
 	isReadonly
-}                               from "../helpers";
-import { getDeclaration }       from "../utils/symbolHelpers";
+}                                  from "../helpers";
+import { getDecorators }           from "../utils/getDecorators";
+import { getDeclaration }          from "../utils/symbolHelpers";
+import { getDecoratorsProperties } from "./getDecoratorsProperties";
 
 /**
  * Return properties of type
@@ -59,8 +60,8 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 
 			return {
 				name: memberSymbol.escapedName.toString(),
-				type: type && context.metadata.addType(type, /*declaration.type!*/undefined, context) || UnknownTypeReference,
-				decorators: getDecorators(memberSymbol, context),
+				type: type === undefined ? UnknownTypeReference : context.metadata.addTypeAndOrGetId(type, /*declaration.type!*/undefined, context),
+				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
 						isReadonly(declaration?.modifiers) || accessor === Accessor.Getter
 							? PropertyFlags.Readonly

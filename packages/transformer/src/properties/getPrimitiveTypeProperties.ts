@@ -6,9 +6,8 @@ import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
 /**
  * Return TypeProperties whether the type is a primitive native type.
  * @param type
- * @param context
  */
-export function getPrimitiveTypeProperties(type: ts.Type, context: Context): NativeBaseTypeProperties | undefined
+export function getPrimitiveTypeProperties(type: ts.Type/*, context: Context*/): NativeBaseTypeProperties | undefined
 {
 	return PrimitiveTypesMap[type.flags];
 

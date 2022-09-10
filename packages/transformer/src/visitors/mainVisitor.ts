@@ -9,6 +9,7 @@ import { log }                          from "../log";
 import { processDecorator }             from "../transformers/processDecorator";
 import { processGenericCallExpression } from "../transformers/processGenericCallExpression";
 import { processGetTypeCallExpression } from "../transformers/processGetTypeCallExpression";
+import { classVisitor }                 from "./classVisitor";
 import DeclarationVisitor               from "./declarationVisitor";
 import { PROTOTYPE_TYPE_PROPERTY }      from "@rtti/core";
 
@@ -19,6 +20,16 @@ import { PROTOTYPE_TYPE_PROPERTY }      from "@rtti/core";
  */
 export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
+	if (ts.isClassDeclaration(nodeToVisit)) 
+	{
+		return classVisitor(nodeToVisit, context);
+	}
+
+	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
+	
+	
+	/*
+	
 	if ((ts.isMethodDeclaration(nodeToVisit) || ts.isFunctionDeclaration(nodeToVisit)))
 	{
 		const visitedDeclaration = DeclarationVisitor.instance.visitDeclaration(nodeToVisit, context);
@@ -170,4 +181,5 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 	}
 
 	return ts.visitEachChild(node, context.visitor, context.transformationContext);
+	*/
 }

@@ -5,12 +5,19 @@ import { TransformerTypeReference } from "../declarations/general";
 import {
 	getSourceFile
 }                                   from "../utils/symbolHelpers";
-import { getSymbol }                from "../utils/typeHelpers";
+import {
+	getSymbol,
+	getTypeRef
+}                                   from "../utils/typeHelpers";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
+import { PackageMetadata }          from "./PackageMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
+
+// TODO: Maybe remove this and just use PackageMetadata instead.
+type PackageInfo = { name: string, metadata: PackageMetadata  };
 
 export class MetadataLibrary
 {
@@ -29,6 +36,13 @@ export class MetadataLibrary
 	 * @private
 	 */
 	private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
+
+	/**
+	 * Map of packages from project dependencies.
+	 * @desc Key is package name.
+	 * @private
+	 */
+	private readonly packagesMetadata = new Map<string, PackageInfo>();
 
 	// /**
 	//  * Metadata writer.
@@ -85,18 +99,29 @@ export class MetadataLibrary
 	}
 
 	/**
-	 * Add type into the module metadata and return its properties.
+	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
 	 * @param type
 	 * @param typeNode
 	 * @param context
 	 */
-	addType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
+	addTypeAndOrGetId(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
+		const typeRef = getTypeRef(type, context.typeChecker);
+
+		// Native/primitive
+		if (typeof typeRef !== "string")
+		{
+			return typeRef;
+		}
+		
+		// ts.isExternalModule()
+		// context.program.isSourceFileFromExternalLibrary()
+
 		// type ??= this.context.checker.getTypeAtLocation(typeNode);
-		const symbol = getSymbol(type, context);
+		const symbol = getSymbol(type, context.typeChecker);
 		const sourceFile = symbol && getSourceFile(symbol);//typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
 
-		let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownTypesModule(this.context);
+		let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownModule(this.context);
 
 		if (!existingModule)
 		{
@@ -104,7 +129,10 @@ export class MetadataLibrary
 			this.modules.set(sourceFile!, existingModule);
 		}
 
-		const typeRef = existingModule.addType(type);
+		// Add type to Module
+		existingModule.addType(type);
+
+
 		const sourceFileContext = this.context.currentSourceFileContext;
 
 		if (typeof typeRef === "string" && sourceFileContext)

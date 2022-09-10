@@ -8,6 +8,11 @@ import { TypeProperties }           from "./declarations/TypeProperties";
 export const UnknownTypeReference: TransformerTypeReference = { kind: TypeKind.Unknown };
 
 /**
+ * Reference to the Void type.
+ */
+export const VoidTypeReference: TransformerTypeReference = { kind: TypeKind.Void };
+
+/**
  * The Unknown type properties.
  */
 export const UnknownTypeProperties: TypeProperties = { kind: TypeKind.Unknown };
@@ -35,3 +40,4 @@ export const PACKAGE_ID = "tst-reflect-transformer";
 
 // TODO: Move this from here and from /abstract to core
 export const NativeTypeIdPrefix = "native::";
+export const UnknownTypeIdentifier = NativeTypeIdPrefix + "unknown";

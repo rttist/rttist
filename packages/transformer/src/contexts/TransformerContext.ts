@@ -154,7 +154,7 @@ export class TransformerContext
 	visitSourceFile(
 		sourceFileNode: ts.SourceFile,
 		transformationContext: ts.TransformationContext,
-		callback: (sourceFileContext: SourceFileContext) => ts.SourceFile
+		visitor: (sourceFileContext: SourceFileContext) => ts.SourceFile
 	): ts.SourceFile
 	{
 		// Create SourceFile context and register it.
@@ -162,7 +162,7 @@ export class TransformerContext
 		this.setSourceFileContext(sourceFileContext);
 
 		// Callback
-		const visitedSourceFile = this.metadataManager.updateSourceFile(callback(sourceFileContext));
+		const visitedSourceFile = this.metadataManager.updateSourceFile(visitor(sourceFileContext));
 
 		// If given SourceFile is one of the root files.
 		if (this.rootFileNames.has(sourceFileNode.fileName))

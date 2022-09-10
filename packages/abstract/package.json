@@ -9,9 +9,13 @@
 		"prepare": "tsc"
 	},
 	"files": [
+		"ts-lib-rtti.d.ts",
 		"dist/**/*.js",
 		"dist/**/*.d.ts"
 	],
+	"typescript": {
+		"definition": "ts-lib-rtti.d.ts"
+	},
 	"keywords": [
 		"abstract",
 		"declaration",

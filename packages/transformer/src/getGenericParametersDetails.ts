@@ -28,7 +28,8 @@ export function getGenericParametersDetails(
 	}
 
 	// Check if details already exists,
-	let genericParametersDetail: FunctionLikeDeclarationGenericParametersDetail | undefined = (node as unknown as FunctionLikeDeclarationGenericParametersDetailNode)[STATE_PROP];
+	let genericParametersDetail: FunctionLikeDeclarationGenericParametersDetail | undefined 
+		= (node as unknown as FunctionLikeDeclarationGenericParametersDetailNode)[STATE_PROP];
 
 	if (genericParametersDetail)
 	{
@@ -53,7 +54,8 @@ export function getGenericParametersDetails(
 				requestedGenericsReflection: true
 			};
 
-			// Store expecting types on original declaration node (cuz that node will be still visited until end of "before" phase, one of the node modifications take effect inside phase)
+			// Store expecting types on original declaration node (cuz that node will be still visited 
+			// until end of "before" phase, one of the node modifications take effect inside phase)
 			(node as unknown as FunctionLikeDeclarationGenericParametersDetailNode)[STATE_PROP] = state;
 
 			return state;
@@ -68,7 +70,8 @@ export function getGenericParametersDetails(
 		{
 			const genericParams = node.typeParameters!.map(p => p.name.escapedText.toString());
 
-			// Store expecting types on original declaration node (cuz that node will be still visited until end of "before" phase, one of the node modifications take effect inside phase)
+			// Store expecting types on original declaration node (cuz that node will be still visited 
+			// until end of "before" phase, one of the node modifications take effect inside phase)
 			const state = {
 				usedGenericParameters: context.usedGenericParameters,
 				indexesOfGenericParameters: context.usedGenericParameters.map(p => genericParams.indexOf(p)),

@@ -4,7 +4,6 @@ import {
 	getGlobalThis,
 	getTypeOfRuntimeValue
 }                                      from "./helpers";
-import { Metadata as MetadataLibrary } from "./Metadata";
 import { Type }                        from "./Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
@@ -13,8 +12,6 @@ declare global
 {
 	namespace Reflect
 	{
-		export const Metadata: typeof MetadataLibrary;
-
 		/**
 		 * The static Reflect.construct() method acts like the new operator, but as a function.
 		 * It is equivalent to calling new target(...args). It gives also the added option to specify a different prototype.
@@ -74,7 +71,7 @@ declare global
 		 * @param instance
 		 * @param typeParameterIndex
 		 */
-		export function getClassTypeParam(instance: any, typeParameterIndex: number): Type;
+		export function getClassTypeParameter(instance: any, typeParameterIndex: number): Type;
 	}
 }
 
@@ -109,7 +106,7 @@ Reflect.getGenericClass = function getGenericClass<T extends { new(...args: any[
 	return GenericTypeRegister.getGenericClass(classCtor, typeParameters);
 };
 
-Reflect.getClassTypeParam = function getClassTypeParam(instance: any, typeParameterIndex: number): Type {
+Reflect.getClassTypeParameter = function getClassTypeParam(instance: any, typeParameterIndex: number): Type {
 	return (Object.getPrototypeOf(instance)[PROTOTYPE_TYPE_PROPERTY] as Type)
 		.getTypeParameters()[typeParameterIndex] ?? Type.Unknown;
 };

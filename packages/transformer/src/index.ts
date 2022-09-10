@@ -2,9 +2,12 @@ import * as ts                             from "typescript";
 import { Config }                          from "./config/Config";
 import { OptionalConfigReflectionSection } from "./config/ConfigReflectionSection";
 import { TransformerContext }              from "./contexts/TransformerContext";
-import { SourceFileVisitorFactory }        from "./factories/SourceFileVisitorFactory";
+import { SourceFileVisitorFactory }        from "./visitors/SourceFileVisitorFactory";
 
-export default function transform(program: ts.Program, config?: { reflection?: OptionalConfigReflectionSection }): ts.TransformerFactory<ts.SourceFile>
+export default function transform(
+	program: ts.Program,
+	config?: { reflection?: OptionalConfigReflectionSection }
+): ts.TransformerFactory<ts.SourceFile>
 {
 	TransformerContext.init(program, new Config(program, config?.reflection || {}));
 

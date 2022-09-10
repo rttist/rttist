@@ -1,6 +1,5 @@
-import { ModuleReference }          from "@rtti/abstract";
 import * as ts                      from "typescript";
-import { UnknownTypeReference }     from "../consts";
+import { ModuleReference }          from "@rtti/abstract";
 import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations/general";
 import {
@@ -11,10 +10,9 @@ import {
 import { getTypeProperties }        from "../properties/getTypeProperties";
 import { getSourceFile }            from "../utils/findSourceFile";
 import { getNodeLocationText }      from "../utils/traceHelpers";
-import {
-	getSourceFileId,
-	getTypeId
-}                                   from "../utils/typeHelpers";
+import { getSourceFileId }          from "../utils/typeHelpers";
+
+type TypeInfo = { properties: TypeProperties | undefined };
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -25,11 +23,16 @@ export class ModuleMetadata
 	 * Module for unknown types.
 	 * @private
 	 */
-	private static unknownTypesModule?: ModuleMetadata;
+	private static unknownModule?: ModuleMetadata;
+
+	/**
+	 * Module for native types.
+	 * @private
+	 */
+	private static nativeModule?: ModuleMetadata;
 
 	private readonly moduleProperties: ModuleMetadataProperties;
-	private readonly types = new Map<ts.Type, TypeProperties>();
-	private readonly typesStack: TransformerTypeReference[] = [];
+	private readonly types = new Map<ts.Type, TypeInfo>();
 
 	/**
 	 * @param context
@@ -44,11 +47,11 @@ export class ModuleMetadata
 	 * Returns module for unknown types.
 	 * @param context
 	 */
-	public static getUnknownTypesModule(context: TransformerContext): ModuleMetadata
+	public static getUnknownModule(context: TransformerContext): ModuleMetadata
 	{
-		if (!ModuleMetadata.unknownTypesModule)
+		if (!ModuleMetadata.unknownModule)
 		{
-			ModuleMetadata.unknownTypesModule = new ModuleMetadata(
+			ModuleMetadata.unknownModule = new ModuleMetadata(
 				context,
 				ts.factory.createSourceFile(
 					[],
@@ -59,7 +62,29 @@ export class ModuleMetadata
 			);
 		}
 
-		return ModuleMetadata.unknownTypesModule;
+		return ModuleMetadata.unknownModule;
+	}
+
+	/**
+	 * Returns module for unknown types.
+	 * @param context
+	 */
+	public static getNativeModule(context: TransformerContext): ModuleMetadata
+	{
+		if (!ModuleMetadata.nativeModule)
+		{
+			ModuleMetadata.nativeModule = new ModuleMetadata(
+				context,
+				ts.factory.createSourceFile(
+					[],
+					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken
+					),
+					ts.NodeFlags.None
+				)
+			);
+		}
+
+		return ModuleMetadata.nativeModule;
 	}
 
 	/**
@@ -69,52 +94,31 @@ export class ModuleMetadata
 	{
 		return {
 			...this.moduleProperties,
-			types: withoutTypes ? undefined : Array.from(this.types.values())
+			types: withoutTypes ? undefined : Array.from(this.types.values()).map(typeInfo => typeInfo.properties!)
 		};
 	}
 
 	/**
-	 * Add type into the module metadata and return its properties.
+	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
 	 * @param type
 	 */
-	addType(type: ts.Type): TransformerTypeReference
+	addType(type: ts.Type): boolean
 	{
 		let existingProperties = this.types.get(type);
 
-		if (!existingProperties)
+		if (existingProperties !== undefined)
 		{
-			const typeId = getTypeId(type);
-
-			// Type is already in the stack (this type is circular).
-			if (this.typesStack.includes(typeId))
-			{
-				return typeId;
-			}
-
-			this.typesStack.push(typeId);
-			existingProperties = getTypeProperties(type, this.context.currentSourceFileContext!.context); // Change SourceFileContext to stack??
-			
-			if (!this.context.tsConfig.strictNullChecks)
-			{
-				existingProperties.nullable = true;
-			}
-			
-			this.typesStack.pop();
-
-			if (existingProperties.id === undefined)
-			{
-				return UnknownTypeReference; // TODO: Is correct?
-			}
-
-			this.types.set(type, existingProperties);
+			return false;
 		}
 
-		if (existingProperties.id === undefined)
-		{
-			return UnknownTypeReference; // TODO: Is correct?
-		}
+		const typeInfo: TypeInfo = {
+			properties: undefined
+		};
 
-		return existingProperties.id;
+		this.types.set(type, typeInfo);
+		typeInfo.properties = getTypeProperties(type, this.context.currentSourceFileContext!.context);
+
+		return true;
 	}
 
 	private gatherModuleProperties(): ModuleMetadataProperties
@@ -153,7 +157,8 @@ export class ModuleMetadata
 			}
 			else
 			{
-				sourceFileContext.log.error(`SourceFile of module '${importDeclaration.moduleSpecifier.getText()}' not found.\r\n\tAt ${getNodeLocationText(importDeclaration)}`);
+				sourceFileContext.log.error(`SourceFile of module '${importDeclaration.moduleSpecifier.getText()}' `
+					+ `not found.\r\n\tAt ${getNodeLocationText(importDeclaration)}`);
 			}
 		}
 

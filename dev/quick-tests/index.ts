@@ -1,7 +1,53 @@
 import "@rtti/abstract";
 import { SomeType } from "./SomeType";
 
+Reflect.getType<any>();
+Reflect.getType<unknown>();
+Reflect.getType<undefined>();
+Reflect.getType<null>();
+Reflect.getType<void>();
+
+Reflect.getType<string>();
 Reflect.getType<number>();
+Reflect.getType<BigInt>();
+Reflect.getType<Boolean>();
+Reflect.getType<Date>();
+
+Reflect.getType<Array<number>>();
+Reflect.getType<number[]>();
+
+Reflect.getType<Map<string, string>>();
+Reflect.getType<WeakMap<Function, string>>();
+Reflect.getType<Set<string>>();
+Reflect.getType<WeakSet<Function>>();
+
+Reflect.getType<Int8Array>();
+Reflect.getType<Uint8Array>();
+Reflect.getType<Uint8ClampedArray>();
+Reflect.getType<Int16Array>();
+Reflect.getType<Uint16Array>();
+Reflect.getType<Int32Array>();
+Reflect.getType<Uint32Array>();
+Reflect.getType<Float32Array>();
+Reflect.getType<Float64Array>();
+Reflect.getType<BigInt64Array>();
+Reflect.getType<BigUint64Array>();
+
+Reflect.getType<Symbol>();
+Reflect.getType<Promise<boolean>>();
+Reflect.getType<Error>();
+Reflect.getType<RegExp>();
+
+Reflect.getType<ArrayBuffer>();
+Reflect.getType<SharedArrayBuffer>();
+Reflect.getType<Atomics>();
+Reflect.getType<DataView>();
+Reflect.getType<Generator>();
+Reflect.getType<Iterable<any>>();
+Reflect.getType<IterableIterator<any>>();
+Reflect.getType<AsyncIterator<any>>();
+Reflect.getType<AsyncGenerator<any>>();
+Reflect.getType<AsyncGeneratorFunction>();
 
 type Obj = { foo: string, bar: Obj };
 type ObjAlias = Obj;

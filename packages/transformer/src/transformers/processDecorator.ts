@@ -47,7 +47,7 @@ export function processDecorator(node: ts.Decorator, decoratorType: ts.Type, con
 		// 	context,
 		// 	genericTypeNode.name
 		// );
-		context.metadata.addType(genericType, /*genericTypeNode as any*/undefined, context); // TODO: Fix typenode!
+		context.metadata.addTypeAndOrGetId(genericType, /*genericTypeNode as any*/undefined, context); // TODO: Fix typenode!
 		
 		return undefined;
 	}
@@ -58,7 +58,7 @@ export function processDecorator(node: ts.Decorator, decoratorType: ts.Type, con
 	let callExpression: ts.CallExpression;
 	
 	
-	const ref = context.metadata.addType(genericType, /*genericTypeNode as any*/undefined, context); // TODO: Fix typenode!
+	const ref = context.metadata.addTypeAndOrGetId(genericType, /*genericTypeNode as any*/undefined, context); // TODO: Fix typenode!
 	
 	
 	const typeArgumentDescription = {

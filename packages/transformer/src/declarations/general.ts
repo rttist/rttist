@@ -26,3 +26,8 @@ export type Match<K extends keyof T, T> = {
  * TypeReference used inside transformer
  */
 export type TransformerTypeReference = TypeReference;
+
+/**
+ * Extended Type with our reflection info.
+ */
+export type ReflectedType = ts.Type & { _reflectId: string };

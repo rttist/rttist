@@ -1,10 +1,11 @@
-import * as ts                from "typescript";
-import { TransformerContext } from "../contexts/TransformerContext";
+import * as ts                  from "typescript";
+import { TransformerContext }   from "../contexts/TransformerContext";
 import {
 	color,
 	log,
 	LogLevel
-}                             from "../log";
+}                               from "../log";
+import { canIncludeSourceFile } from "../utils/canIncludeSourceFile";
 
 /**
  * Factory of SourceFile visitor.
@@ -30,8 +31,12 @@ export class SourceFileVisitorFactory
 
 		return sourceFileNode =>
 		{
-			// It should always be a SourceFile, but check it, just for case.
-			if (!ts.isSourceFile(sourceFileNode))
+			
+			if (
+				// It should always be a SourceFile, but check it, just for case.
+				!ts.isSourceFile(sourceFileNode)
+				|| !canIncludeSourceFile(sourceFileNode, config)
+			)
 			{
 				return sourceFileNode;
 			}

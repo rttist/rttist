@@ -1,17 +1,20 @@
-import * as ts                    from "typescript";
-import { ConstructorProperties }  from "../declarations/TypeProperties";
-import { getSignatureParameters } from "./getSignatureParameters";
-import { Context }                from "../contexts/Context";
+import * as ts                              from "typescript";
+import { VoidTypeReference }                from "../consts";
+import { Context }                          from "../contexts/Context";
+import { SignatureProperties }              from "../declarations/TypeProperties";
+import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
 
-export function getConstructors(type: ts.Type, context: Context): ConstructorProperties[] | undefined
+export function getConstructors(type: ts.Type, context: Context): SignatureProperties[] | undefined
 {
-	const constructors: Array<ConstructorProperties> = [];
+	const constructors: Array<SignatureProperties> = [];
 	const ctors = type.getConstructSignatures();
 
 	for (let ctorSignature of ctors)
 	{
 		constructors.push({
-			parameters: getSignatureParameters(ctorSignature, context)
+			returnType: VoidTypeReference,
+			parameters: getSignatureParametersProperties(ctorSignature, context),
+			//typeParameters: [] // TODO: Remove. Constructors have no type parameters ctorSignature.typeParameters?.map(typeParameter => getTypeParameterProperties(typeParameter, context))
 		});
 	}
 

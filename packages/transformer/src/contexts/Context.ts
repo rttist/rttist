@@ -45,6 +45,11 @@ export class Context
 		return this._sourceFileContext.checker;
 	}
 
+	get program(): ts.Program
+	{
+		return this._sourceFileContext.program;
+	}
+
 	constructor(sourceFileContext: SourceFileContext, visitor: TransformerVisitor)
 	{
 		this._sourceFileContext = sourceFileContext;
