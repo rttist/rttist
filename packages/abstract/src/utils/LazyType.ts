@@ -1,5 +1,5 @@
-import type { TypeReference } from "./declarations";
-import type { Type }          from "./Type";
+import type { TypeReference } from "../declarations";
+import type { Type }          from "../Type";
 
 /**
  * @internal

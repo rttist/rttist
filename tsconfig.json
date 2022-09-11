@@ -8,9 +8,6 @@
 			"path": "./packages/abstract/tsconfig.json"
 		},
 		{
-			"path": "./packages/runtime/tsconfig.json"
-		},
-		{
 			"path": "./packages/transformer/tsconfig.json"
 		}
 	],

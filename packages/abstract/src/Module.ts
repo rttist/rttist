@@ -1,4 +1,4 @@
-import { ModuleIds }             from "./const-type-identifiers";
+import { ModuleIds }             from "@rttist/core";
 import type { ModuleIdentifier } from "./declarations";
 import type { Type }             from "./Type";
 

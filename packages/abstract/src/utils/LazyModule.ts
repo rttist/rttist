@@ -1,5 +1,5 @@
-import type { ModuleReference } from "./declarations";
-import type { Module }          from "./Module";
+import type { ModuleReference } from "../declarations";
+import type { Module }          from "../Module";
 
 /**
  * @internal

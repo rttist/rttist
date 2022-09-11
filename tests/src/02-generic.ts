@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 test("It is possible to get type of generic argument, no function/method parameters.", () => {
 	function foo<T extends string|number>(): string | number

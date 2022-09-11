@@ -4,18 +4,18 @@ import { NodeBuilderFlags }        from "typescript";
 import { Context }                 from "../contexts/Context";
 import { createValueExpression }   from "../utils/createValueExpression";
 
-export function classVisitor(classDeclaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
+export function classVisitor(declaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
-	const type = context.typeChecker.getTypeAtLocation(classDeclaration);
+	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeReference = context.metadata.addTypeAndOrGetId(
 		type,
-		context.typeChecker.typeToTypeNode(type, classDeclaration, NodeBuilderFlags.None),
+		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
 		context
 	);
 
 	return [
 		ts.visitEachChild(
-			classDeclaration,
+			declaration,
 			(node: ts.Node) => visitClassDeclaration(node, context),
 			context.transformationContext
 		),
@@ -25,7 +25,7 @@ export function classVisitor(classDeclaration: ts.ClassDeclaration, context: Con
 			ts.factory.createBinaryExpression(
 				ts.factory.createElementAccessExpression(
 					ts.factory.createPropertyAccessExpression(
-						classDeclaration.name as ts.Expression,
+						declaration.name as ts.Expression,
 						"prototype"
 					),
 					ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
@@ -39,6 +39,27 @@ export function classVisitor(classDeclaration: ts.ClassDeclaration, context: Con
 
 function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
+	if (ts.isPropertyDeclaration(node))
+	{
+		
+	}
+
+	if (ts.isGetAccessorDeclaration(node))
+	{
+
+	}
+
+	if (ts.isSetAccessorDeclaration(node))
+	{
+
+	}
+	
+	// Index signature has no implementation to alter.
+	// if (ts.isIndexSignatureDeclaration(node))
+	// {
+	//	
+	// }
+	
 	if (ts.isMethodDeclaration(node))
 	{
 		

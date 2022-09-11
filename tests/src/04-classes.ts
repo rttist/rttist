@@ -4,7 +4,7 @@ import {
 	getType,
 	Type,
 	TypeKind
-}                from "tst-reflect";
+}                from "@rttist/abstract"
 import * as path from "path";
 
 export class Something

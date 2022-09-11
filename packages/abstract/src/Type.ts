@@ -25,9 +25,9 @@ import type { Module } from "./Module";
 import {
 	ModuleIds,
 	NativeTypeIdPrefix
-}                        from "./const-type-identifiers";
-import { LazyModule }    from "./LazyModule";
-import { LazyTypeArray } from "./LazyTypeArray";
+}                        from "@rttist/core";
+import { LazyModule }    from "./utils/LazyModule";
+import { LazyTypeArray } from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,

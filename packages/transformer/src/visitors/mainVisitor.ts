@@ -1,17 +1,11 @@
-import * as ts                          from "typescript";
-import { Context }                      from "../contexts/Context";
-import {
-	getType,
-	hasReflectJsDoc,
-	isNodeIgnored
-}                                       from "../helpers";
-import { log }                          from "../log";
-import { processDecorator }             from "../transformers/processDecorator";
-import { processGenericCallExpression } from "../transformers/processGenericCallExpression";
-import { processGetTypeCallExpression } from "../transformers/processGetTypeCallExpression";
-import { classVisitor }                 from "./classVisitor";
-import DeclarationVisitor               from "./declarationVisitor";
-import { PROTOTYPE_TYPE_PROPERTY }      from "@rttist/core";
+import * as ts                    from "typescript";
+import { Context }                from "../contexts/Context";
+import { isInterestingStatement } from "../utils/isInterestingStatement";
+import { classVisitor }           from "./classVisitor";
+import { functionVisitor }        from "./functionVisitor";
+import { interfaceVisitor }       from "./interfaceVisitor";
+import { statementVisitor }       from "./statementVisitor";
+import { typeAliasVisitor }       from "./typeAliasVisitor";
 
 /**
  * Main visitor, splitting visitation into specific parts
@@ -20,14 +14,34 @@ import { PROTOTYPE_TYPE_PROPERTY }      from "@rttist/core";
  */
 export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
-	if (ts.isClassDeclaration(nodeToVisit)) 
+	if (ts.isClassDeclaration(nodeToVisit))
 	{
 		return classVisitor(nodeToVisit, context);
 	}
 
+	if (ts.isInterfaceDeclaration(nodeToVisit))
+	{
+		return interfaceVisitor(nodeToVisit, context);
+	}
+
+	if (ts.isTypeAliasDeclaration(nodeToVisit))
+	{
+		return typeAliasVisitor(nodeToVisit, context);
+	}
+
+	if (ts.isFunctionDeclaration(nodeToVisit))
+	{
+		return functionVisitor(nodeToVisit, context);
+	}
+
+	if (isInterestingStatement(nodeToVisit))
+	{
+		return statementVisitor(nodeToVisit, context);
+	}
+
 	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
-	
-	
+
+
 	/*
 	
 	if ((ts.isMethodDeclaration(nodeToVisit) || ts.isFunctionDeclaration(nodeToVisit)))

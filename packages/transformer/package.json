@@ -37,7 +37,6 @@
 		"base32768": "^3.0.1",
 		"deasync": "^0.1.28",
 		"minimatch": "^5.0.1",
-		"tst-reflect": "workspace:*",
 		"typescript": "^4.8.0"
 	},
 	"repository": {

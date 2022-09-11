@@ -1,13 +1,7 @@
-import {
-	ModuleIdentifier,
-	TypeIdentifier
-}                               from "@rttist/abstract";
-import path                     from "path";
-import * as ts                  from "typescript";
-import {
-	NativeTypeIdPrefix,
-	UnknownTypeIdentifier
-}                                     from "../consts";
+import * as ts                        from "typescript";
+import path                           from "path";
+import { ModuleIdentifier }           from "@rttist/abstract";
+import { TypeIds }                    from "@rttist/core";
 import { TransformerContext }         from "../contexts/TransformerContext";
 import {
 	ReflectedType,
@@ -17,6 +11,15 @@ import { PATH_SEPARATOR_REGEX }       from "../helpers";
 import { log }                        from "../log";
 import { getPrimitiveTypeProperties } from "../properties/getPrimitiveTypeProperties";
 import { getDeclaration }             from "./symbolHelpers";
+
+/**
+ * If the given type is some kind of alias or something which we don't want to reflect, find the right type.
+ * @param type
+ */
+export function resolveType(type: ts.Type): ts.Type {
+	// TODO: Implement; maybe the logic replacing true | false union for boolean etc.
+	return type;
+}
 
 export function getSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Symbol | undefined
 {
@@ -76,7 +79,7 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 		log.warn("Unable to generate Id for type without declaration.", getTypeDebugLogInfo(type, typeChecker));
 
-		return UnknownTypeIdentifier;
+		return TypeIds.Unknown;
 	}
 
 	const sourceFileId = getSourceFileId(declaration.getSourceFile());
@@ -136,7 +139,7 @@ export function getOutPathForSourceFile(sourceFileName: string): string
 	// {
 	// 	context.config.parsedCommandLine.fileNames.push(sourceFileName);
 	// }
-	
+
 	const config = TransformerContext.instance.config;
 
 	return ts.getOutputFileNames({

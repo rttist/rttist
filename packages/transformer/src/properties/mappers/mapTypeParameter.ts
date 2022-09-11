@@ -1,4 +1,7 @@
-import { TypeKind }                  from "@rttist/abstract";
+import {
+	TypeIdentifier,
+	TypeKind
+} from "@rttist/abstract";
 import * as ts                       from "typescript";
 import { UnknownTypeProperties }     from "../../consts";
 import { Context }                   from "../../contexts/Context";
@@ -16,7 +19,7 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		if (ts.isTypeParameterDeclaration(declaration))
 		{
 			return {
-				id: getTypeRef(type, context.typeChecker),
+				id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
 				constraint: declaration.constraint && context.metadata.addTypeAndOrGetId(context.typeChecker.getTypeAtLocation(declaration.constraint), undefined, context) || undefined,

@@ -1,7 +1,7 @@
 [![tst-reflect](https://img.shields.io/npm/v/tst-reflect.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect)](https://www.npmjs.com/package/tst-reflect)
 [![tst-reflect-transformer](https://img.shields.io/npm/v/tst-reflect-transformer.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect-transformer)](https://www.npmjs.com/package/tst-reflect-transformer)
 [![License MIT](https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square)](https://opensource.org/licenses/MIT)
-![Code coverage](../coverage/badge.svg)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+![Code coverage](docs/_images/coverage-badge.svg)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -13,7 +13,7 @@
 
 <center style="float:left">
 
-![Reflect](_images/logo_256_flat.png)
+![Reflect](docs/_images/logo_256_flat.png)
 </center>
 
 
@@ -41,10 +41,10 @@ and modify your code slightly so you can reflect your types, even type parameter
 - reflection inside custom decorators,
 - check if one type is assignable to another without instances of those type,
 - static metadata library to lookup types and modules,
-- [PLUGINS](https://github.com/Hookyns/tst-reflect/wiki/Plugins): You can write custom transformer plugin which will be executed in our context so you will have access to all the types. You can change them or just use them for something,
+- Plugins! You can write custom transformer plugin which will be executed in our context so you will have access to all the types. You can change them or just use them for something,
 - browser usage,
 - CJS & ESM,
-- but no pre-implemented features like validators or type-guards!
+- but no pre-implemented features like validators or automatic type-guards!
 
 ## Showcase
 [//]: # (TODO: List of StackBlitz examples)

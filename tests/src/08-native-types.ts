@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 test("All native types are correct", () => {
 	expect(Type.Unknown.name).toBe("unknown");

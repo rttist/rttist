@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 test("Method decorator reflects generic type", () => {
 	/**

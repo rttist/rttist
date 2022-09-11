@@ -1,6 +1,6 @@
 // keep order of imports & exports - there are circular dependencies
-import { LazyType }   from "./LazyType";
-import { LazyModule } from "./LazyModule";
+import { LazyType }   from "./utils/LazyType";
+import { LazyModule } from "./utils/LazyModule";
 import { Type }       from "./Type";
 import { Module }     from "./Module";
 import { Metadata }   from "./Metadata";
@@ -17,7 +17,12 @@ export {
 }                   from "./Type";
 export *            from "./types";
 export { Metadata } from "./Metadata";
-export *            from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
+// export *            from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
+
+export { getType }               from "./functions/getType";
+export { getClassTypeParameter } from "./functions/getClassTypeParameter";
+export { constructGeneric }      from "./functions/constructGeneric";
+export { getGenericClass }       from "./functions/getGenericClass";
 
 LazyType.resolver = Metadata.resolveType;
 LazyModule.resolver = Metadata.resolveModule;

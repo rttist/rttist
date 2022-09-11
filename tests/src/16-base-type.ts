@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 test("getType(val) called with runtime value and it is not Type.Unknown", () => {
 	const type = getType({});

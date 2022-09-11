@@ -1,4 +1,7 @@
-import { TypeKind }         from "@rttist/abstract";
+import {
+	TypeIdentifier,
+	TypeKind
+} from "@rttist/abstract";
 import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import {
@@ -47,7 +50,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		let props = type.getProperties();
 
 		const properties: TypeProperties = {
-			id: getTypeRef(type, context.typeChecker),
+			id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol.getEscapedName().toString(),
 			// fullName: getTypeFullName(type, context),

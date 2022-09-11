@@ -39,11 +39,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Hookyns/tst-reflect.git",
+		"url": "git+https://github.com/rttist/rttist.git",
 		"directory": "packages/abstract"
 	},
 	"bugs": {
-		"url": "https://github.com/Hookyns/tst-reflect/issues"
+		"url": "https://github.com/rttist/rttist/issues"
 	},
-	"homepage": "https://github.com/Hookyns/tst-reflect#readme"
+	"homepage": "https://rttist.org"
 }

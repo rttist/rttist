@@ -1,6 +1,5 @@
 ﻿packages:
     - 'packages/core'
     - 'packages/abstract'
-    - 'packages/runtime'
     - 'packages/transformer'
-    - 'dev'
+    - 'dev/hookyns/1'

@@ -4,7 +4,7 @@ import {
 	getType,
 	Type,
 	TypeKind
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 interface ISomething
 {

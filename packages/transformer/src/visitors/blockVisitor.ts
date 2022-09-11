@@ -9,10 +9,9 @@
 // import { log }                          from "../log";
 // import { processDecorator }             from "../transformers/processDecorator";
 // import { processGenericCallExpression } from "../transformers/processGenericCallExpression";
-// import { processGetTypeCallExpression } from "../transformers/processGetTypeCallExpression";
-// import DeclarationVisitor               from "./declarationVisitor";
+// import { updateGetTypeCallExpression }  from "../transformers/updateGetTypeCallExpression";
 //
-// export function callExpressionVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitResult<ts.Node>
+// export function blockVisitor(node: ts.Block | ts.Expression, context: Context): ts.VisitResult<ts.Block| ts.Expression>
 // {
 // 	// Is it call expression? But not decorator! Decorators are handled in separated block.
 // 	if (ts.isCallExpression(node) && (!node.parent || !ts.isDecorator(node.parent)))
@@ -34,7 +33,7 @@
 // 			// // Check if it's our getType<T>() by checking it has our special static property.
 // 			// if (fncType.getProperty(TYPE_ID_PROPERTY_NAME))
 // 			// {
-// 			const res = processGetTypeCallExpression(context, node);
+// 			const res = updateGetTypeCallExpression(context, node);
 //
 // 			if (res)
 // 			{
@@ -149,6 +148,8 @@
 // 			];
 // 		}
 // 	}
+//	
+// 	return node;
 //
 // 	// return ts.visitEachChild(node, context.visitor, context.transformationContext);
 // }

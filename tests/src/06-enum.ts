@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "tst-reflect";
+} from "@rttist/abstract"
 
 test("getType<T>() is transformed and it is not Type.Unknown", () => {
 	enum Foo

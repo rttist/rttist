@@ -6,8 +6,8 @@ import { getTypeRef }            from "../utils/typeHelpers";
 
 export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
 {
-	const props: LiteralTypeProperties = {
-		id: getTypeRef(type, context.typeChecker),
+	const props = {
+		id: getTypeRef(type, context.typeChecker), // TODO: Should be ID here?
 		kind: TypeKind.Unknown,
 		value: type.value
 	};
@@ -16,16 +16,16 @@ export function getLiteralProperties(type: ts.LiteralType, context: Context): Li
 	{
 		case ts.TypeFlags.NumberLiteral:
 			props.kind = TypeKind.NumberLiteral;
-			return props;
+			return props as LiteralTypeProperties;
 		case ts.TypeFlags.StringLiteral:
 			props.kind = TypeKind.StringLiteral;
-			return props;
+			return props as LiteralTypeProperties;
 		case ts.TypeFlags.BooleanLiteral:
 			props.kind = TypeKind.BooleanLiteral;
-			return props;
+			return props as LiteralTypeProperties;
 		case ts.TypeFlags.BigIntLiteral:
 			props.kind = TypeKind.BigIntLiteral;
-			return props;
+			return props as LiteralTypeProperties;
 	}
 
 	// if (typeNode) // TODO: Try to solve using type, not typeNode

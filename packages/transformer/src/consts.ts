@@ -26,7 +26,7 @@ export const AnyTypeReference: TransformerTypeReference = { kind: TypeKind.Any }
 /**
  * Name of parameter for method/function declarations containing generic getType() calls
  */
-export const GENERIC_PARAMS = "__genericParams__";
+export const TYPE_PARAMS_VAR_NAME = "__typeParams__";
 
 /**
  * Package name/identifier
@@ -37,7 +37,3 @@ export const PACKAGE_ID = "tst-reflect-transformer";
 //  * Name of decorator or JSDoc comment marking method for tracing
 //  */
 // export const TRACE_DECORATOR = "trace";
-
-// TODO: Move this from here and from /abstract to core
-export const NativeTypeIdPrefix = "native::";
-export const UnknownTypeIdentifier = NativeTypeIdPrefix + "unknown";

@@ -3,9 +3,6 @@ import {
 	AccessModifier,
 	Accessor,
 }                         from "@rttist/abstract";
-import {
-	REFLECT_DECORATOR
-}                         from "tst-reflect";
 import * as ts            from "typescript";
 import { Context }        from "./contexts/Context";
 import { getDeclaration } from "./utils/symbolHelpers";
@@ -104,20 +101,20 @@ export function isExpression(value: any)
 	return value.hasOwnProperty("kind") && (value.constructor.name === "NodeObject" || value.constructor.name === "IdentifierObject" || value.constructor.name === "TokenObject");
 }
 
-/**
- * Check that function-like declaration has JSDoc with @reflect tag.
- * @param symbol
- */
-export function hasReflectJsDoc(symbol: ts.Symbol | undefined): boolean
-{
-	if (!symbol)
-	{
-		return false;
-	}
-
-	// If declaration contains @reflect in JSDoc comment, pass all generic arguments
-	return symbol.getJsDocTags().some(tag => tag.name === REFLECT_DECORATOR);
-}
+// /**
+//  * Check that function-like declaration has JSDoc with @reflect tag.
+//  * @param symbol
+//  */
+// export function hasReflectJsDoc(symbol: ts.Symbol | undefined): boolean
+// {
+// 	if (!symbol)
+// 	{
+// 		return false;
+// 	}
+//
+// 	// If declaration contains @reflect in JSDoc comment, pass all generic arguments
+// 	return symbol.getJsDocTags().some(tag => tag.name === REFLECT_DECORATOR);
+// }
 
 // /**
 //  * Check that function-like declaration has JSDoc with @trace tag.
