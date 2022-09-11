@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"module": "CommonJS",
+		"target": "ESNext",
+		"removeComments": false,
+		"declaration": true,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"rootDir": "..",
+		"outDir": "dist",
+		//		"typeRoots": [
+		//			"../../node_modules/@types",
+		//			"../../node_modules/@rttist/abstract/node_modules/@types"
+		//		],
+		"plugins": [
+			{
+				"transform": "tst-reflect-transformer",
+				"reflection": {
+					"debugMode": true,
+					"metadata": {
+						"encode": true
+					}
+				}
+			}
+		]
+	},
+	"include": [
+		"index.ts"
+	]
+}

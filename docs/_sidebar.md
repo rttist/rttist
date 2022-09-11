@@ -1,0 +1,16 @@
+- [Home](/)
+  - [About](/README.md?id=about)
+  - [Features](/README.md?id=features)
+  - [Contributors](/README.md?id=contributors-✨)
+  - [License](/README.md?id=license)
+- [Usage](/en/usage.md)
+  - [How to get a Type](/en/usage.md?id=how-to-get-a-type)
+- How to Start
+  - [Usage With Vanilla TypeScript](/en/usage/vanilla-ts.md)
+  - [Usage With Webpack](/en/usage/webpack.md)
+  - [Usage With Angular](/en/usage/angular.md)
+  - [Usage With Parcel](/en/usage/parcel.md)
+  - [Usage With Rollup](/en/usage/rollup.md)
+  - [Usage With ts-node](/en/usage/ts-node.md)
+- Configuration
+- Examples

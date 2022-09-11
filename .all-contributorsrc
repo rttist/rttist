@@ -1,0 +1,89 @@
+{
+  "projectName": "tst-reflect",
+  "projectOwner": "hookyns",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "Hookyns",
+      "name": "Roman Jámbor",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2551259?v=4",
+      "profile": "https://bitbucket.org/HookCZ/",
+      "contributions": [
+        "code",
+        "maintenance",
+        "doc",
+        "review",
+        "example",
+        "ideas",
+        "infra",
+        "question",
+        "test"
+      ]
+    },
+    {
+      "login": "iDevelopThings",
+      "name": "Sam Parton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4105581?v=4",
+      "profile": "https://github.com/iDevelopThings",
+      "contributions": [
+        "code",
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "Filmos",
+      "name": "Filmos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/78136833?v=4",
+      "profile": "http://filmos.net/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "dunglas",
+      "name": "Kévin Dunglas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57224?v=4",
+      "profile": "https://dunglas.fr/",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "usaccounts",
+      "name": "usaccounts",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12177064?v=4",
+      "profile": "https://github.com/usaccounts",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "caiodallecio",
+      "name": "caiodallecio",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20131875?v=4",
+      "profile": "https://github.com/caiodallecio",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "hugebdu",
+      "name": "Daniel Shmuglin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1109601?v=4",
+      "profile": "https://github.com/hugebdu",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}

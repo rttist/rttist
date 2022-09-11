@@ -1,0 +1,1 @@
+export const PROTOTYPE_TYPE_PROPERTY = "[[type]]";

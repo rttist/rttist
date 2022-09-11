@@ -1,0 +1,28 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ES2020",
+		"removeComments": true,
+		"sourceMap": true,
+		"stripInternal": true,
+		"strictNullChecks": true,
+		"strict": true,
+		"rootDir": "./src",
+		"baseUrl": "./src",
+		"outDir": "./dist",
+		"composite": true,
+		"esModuleInterop": true,
+		"typeRoots": [
+			"../../node_modules/@types",
+			"node_modules/@types",
+			"./src/globals.d.ts"
+		]
+	},
+	"include": [
+		"./src/**/*.ts"
+	],
+	"exclude": [
+		"node_modules/**/*",
+		"./dist/**/*"
+	]
+}

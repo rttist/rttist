@@ -1,0 +1,49 @@
+{
+	"name": "@rttist/abstract",
+	"version": "0.1.0",
+	"description": "Abstract declarations for TypeScript runtime reflection",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "tsc"
+	},
+	"files": [
+		"ts-lib-rttist.d.ts",
+		"dist/**/*.js",
+		"dist/**/*.d.ts"
+	],
+	"typescript": {
+		"definition": "ts-lib-rttist.d.ts"
+	},
+	"keywords": [
+		"abstract",
+		"declaration",
+		"type",
+		"types",
+		"runtime",
+		"reflection",
+		"reflective",
+		"reflect",
+		"typescript",
+		"gettype",
+		"typeof"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"dependencies": {
+		"@rttist/core": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "4.8.x"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Hookyns/tst-reflect.git",
+		"directory": "packages/abstract"
+	},
+	"bugs": {
+		"url": "https://github.com/Hookyns/tst-reflect/issues"
+	},
+	"homepage": "https://github.com/Hookyns/tst-reflect#readme"
+}

@@ -1,0 +1,44 @@
+{
+	"name": "@rttist/core",
+	"version": "1.0.0-dev20220901",
+	"description": "Core for transformers and runtimes of @rttist TypeScript reflection.",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "tsc"
+	},
+	"files": [
+		"dist/**/*.js",
+		"dist/**/*.d.ts"
+	],
+	"keywords": [
+		"@rttist",
+		"abstract",
+		"declaration",
+		"type",
+		"types",
+		"runtime",
+		"reflection",
+		"reflective",
+		"reflect",
+		"typescript",
+		"gettype",
+		"typeof",
+		"transformer"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"devDependencies": {
+		"typescript": "^4.8.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Hookyns/tst-reflect.git",
+		"directory": "packages/core"
+	},
+	"bugs": {
+		"url": "https://github.com/Hookyns/tst-reflect/issues"
+	},
+	"homepage": "https://github.com/Hookyns/tst-reflect#readme"
+}

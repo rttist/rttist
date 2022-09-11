@@ -1,0 +1,20 @@
+{
+	"files": [],
+	"references": [
+		{
+			"path": "./packages/core/tsconfig.json"
+		},
+		{
+			"path": "./packages/abstract/tsconfig.json"
+		},
+		{
+			"path": "./packages/runtime/tsconfig.json"
+		},
+		{
+			"path": "./packages/transformer/tsconfig.json"
+		}
+	],
+	"compilerOptions": {
+		"composite": true
+	}
+}
