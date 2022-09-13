@@ -16,7 +16,8 @@ import { getDeclaration }             from "./symbolHelpers";
  * If the given type is some kind of alias or something which we don't want to reflect, find the right type.
  * @param type
  */
-export function resolveType(type: ts.Type): ts.Type {
+export function resolveType(type: ts.Type): ts.Type
+{
 	// TODO: Implement; maybe the logic replacing true | false union for boolean etc.
 	return type;
 }
@@ -110,10 +111,20 @@ const nodeModulesPattern = "/node_modules/";
 // TODO: Move somewhere, with getTypeId
 export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 {
-	const { packageName, projectDir } = TransformerContext.instance.config;
+	const { packageInfo, projectDir } = TransformerContext.instance.config;
 
 	// TODO: Solve externals; Will we even get here?
-	// TransformerContext.instance.program.isSourceFileFromExternalLibrary()
+	const isExternal = TransformerContext.instance.program.isSourceFileFromExternalLibrary(sourceFile);
+
+	if (isExternal)
+	{
+		const dependencyInfo = TransformerContext.instance.dependencyManager.getDependencyInfo(sourceFile.fileName);
+
+		if (dependencyInfo !== undefined)
+		{
+			return "@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length);
+		}
+	}
 
 	let filePath = getOutPathForSourceFile(sourceFile.fileName);
 
@@ -126,7 +137,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	}
 	else if (projectDir)
 	{
-		filePath = "@" + packageName + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
+		filePath = "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
 	}
 
 	return filePath;

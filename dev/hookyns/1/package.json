@@ -4,5 +4,11 @@
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"
+	},
+	"dependencies": {
+		"@rttist/abstract": "workspace:*"
+	},
+	"devDependencies": {
+		"tst-reflect-transformer": "workspace:*"
 	}
 }

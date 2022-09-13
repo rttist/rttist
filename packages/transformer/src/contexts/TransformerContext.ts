@@ -1,5 +1,6 @@
 import * as ts               from "typescript";
 import { Config }            from "../config/Config";
+import { DependencyManager } from "../dependencies/DependencyManager";
 import {
 	color,
 	log,
@@ -62,6 +63,11 @@ export class TransformerContext
 	 */
 	public readonly rootFileNames: ReadonlySet<string>;
 
+	/**
+	 * Manager of package dependencies.
+	 */
+	public readonly dependencyManager: DependencyManager;
+
 	private _numberOfVisitedRootFileNames = 0;
 
 	/**
@@ -120,6 +126,7 @@ export class TransformerContext
 
 		this.metadataManager = new MetadataManager(this);
 		this.metadata = MetadataLibrary.init(this);
+		this.dependencyManager = new DependencyManager(this);
 	}
 
 	/**

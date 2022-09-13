@@ -2,12 +2,19 @@
 import * as ts           from "typescript";
 import { Context }       from "../contexts/Context";
 
+export type PackageJson = {
+	name?: string;
+	dependencies?: string[];
+	devDependencies?: string[];
+};
+
 /**
  * @internal
  */
 export type PackageInfo = {
 	packageRoot: string;
 	name: string;
+	packageJson: PackageJson
 }
 
 /**

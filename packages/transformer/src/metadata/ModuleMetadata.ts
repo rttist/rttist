@@ -55,8 +55,7 @@ export class ModuleMetadata
 				context,
 				ts.factory.createSourceFile(
 					[],
-					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken
-					),
+					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
 					ts.NodeFlags.None
 				)
 			);

@@ -48,6 +48,11 @@ export type ConfigReflectionSection = {
 	};
 
 	/**
+	 * How to resolve dependencies.
+	 */
+	dependencyResolution: "direct-dependencies" | "all";
+
+	/**
 	 * List of SourceFile visiting plugins with possible transformations.
 	 * @description It is an array of paths and/or package names.
 	 */

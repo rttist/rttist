@@ -10,7 +10,10 @@ import fs                               from "fs";
 import path                             from "path";
 import * as ts                          from "typescript";
 import { makeRe }                       from "minimatch";
-import { PackageInfo }                  from "../declarations/general";
+import {
+	PackageInfo,
+	PackageJson
+}                                       from "../declarations/general";
 import { log }                          from "../log";
 import {
 	ConfigReflectionSection,
@@ -21,6 +24,7 @@ const UNKNOWN_PACKAGE_NAME = "@@this";
 
 const DefaultConfiguration: ConfigReflectionSection = {
 	debugMode: false,
+	dependencyResolution: "direct-dependencies",
 	plugins: [],
 	metadata: {
 		encode: true,
@@ -39,6 +43,7 @@ export class Config
 
 	public readonly include: RegExp[];
 	public readonly exclude: RegExp[];
+	public readonly dependencyResolution: ConfigReflectionSection["dependencyResolution"];
 
 	public readonly plugins: SourceFileVisitorPlugin[];
 	public readonly metadataMiddlewares: MetadataMiddleware[];
@@ -46,7 +51,7 @@ export class Config
 	public readonly projectDir: string;
 	public readonly rootDir: string;
 	public readonly outDir: string;
-	public readonly packageName: string;
+	public readonly packageInfo: PackageInfo;
 	public readonly typeFactory: string;
 	public readonly encode: boolean;
 
@@ -75,6 +80,8 @@ export class Config
 		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
 
 		this.debugMode = ["true", true].includes(reflectionConfig.get("debugMode")!);
+		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
+
 		this.compilerOptions = compilerOptions;
 		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(tsConfigPath, undefined, ts.sys as any);
 
@@ -90,7 +97,7 @@ export class Config
 		this.projectDir = projectRoot;
 		this.rootDir = compilerOptions.rootDir || projectRoot;
 		this.outDir = compilerOptions.outDir || projectRoot;
-		this.packageName = packageInfo.name;
+		this.packageInfo = packageInfo;
 		this.typeFactory = metadataConfig.get("typeFactory")!;
 		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
 
@@ -130,14 +137,23 @@ export class Config
 		try
 		{
 			const packageJson = fs.readFileSync(path.join(root, "package.json"), "utf-8");
-			return { packageRoot: root, name: JSON.parse(packageJson).name || UNKNOWN_PACKAGE_NAME };
+			const parsed: PackageJson = JSON.parse(packageJson);
+			return {
+				packageRoot: root,
+				name: parsed.name || UNKNOWN_PACKAGE_NAME,
+				packageJson: parsed
+			};
 		}
 		catch (e)
 		{
 			if (path.parse(root).root === root)
 			{
 				// as any -> internal
-				return { packageRoot: undefined as any, name: UNKNOWN_PACKAGE_NAME };
+				return {
+					packageRoot: undefined as any,
+					name: UNKNOWN_PACKAGE_NAME,
+					packageJson: {}
+				};
 			}
 
 			// Try to get parent folder package
@@ -152,7 +168,7 @@ export class Config
 				}
 
 				// This is top level check; return original root passed as argument
-				return { packageRoot: root, name: packageInfo.name };
+				return { packageRoot: root, name: packageInfo.name, packageJson: packageInfo.packageJson };
 			}
 
 			return packageInfo;

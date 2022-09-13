@@ -5,7 +5,8 @@
 	"workspaces": [
 		"packages/core",
 		"packages/abstract",
-		"packages/transformer"
+		"packages/transformer",
+		"dev/hookyns/1"
 	],
 	"scripts": {
 		"tsc": "tsc --build",
