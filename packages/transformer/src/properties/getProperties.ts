@@ -60,7 +60,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 
 			return {
 				name: memberSymbol.escapedName.toString(),
-				type: type === undefined ? UnknownTypeReference : context.metadata.addTypeAndOrGetId(type, /*declaration.type!*/undefined, context),
+				type: type === undefined ? UnknownTypeReference : context.metadata.referenceType(type, /*declaration.type!*/undefined, context),
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
 						isReadonly(declaration?.modifiers) || accessor === Accessor.Getter

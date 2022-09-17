@@ -3,7 +3,7 @@ import { Context }             from "../contexts/Context";
 import { DecoratorProperties } from "../declarations/TypeProperties";
 import {
 	getSymbol,
-	getTypeRef
+	getTypeId
 }                              from "../utils/typeHelpers";
 import { getConstantValue }    from "./getConstantValue";
 
@@ -18,8 +18,8 @@ export function getDecoratorProperties(decorator: ts.Decorator, context: Context
 	const symbol = getSymbol(type, context.typeChecker);
 
 	return {
+		id: getTypeId(type, context),
 		name: symbol!.escapedName,
-		id: getTypeRef(type, context.typeChecker),
 		args: callExpression
 			? (decorator.expression as ts.CallExpression).arguments.map(argument => getConstantValue(argument, context))
 			: undefined

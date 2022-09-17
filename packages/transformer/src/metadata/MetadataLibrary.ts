@@ -1,23 +1,26 @@
-import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
-import { TransformerContext }       from "../contexts/TransformerContext";
-import { TransformerTypeReference } from "../declarations/general";
-import {
-	getSourceFile
-}                                   from "../utils/symbolHelpers";
+import { TypeIdentifier }            from "@rttist/abstract";
+import * as ts                       from "typescript";
+import { Context }                   from "../contexts/Context";
+import { TransformerContext }        from "../contexts/TransformerContext";
+import { TransformerTypeReference }  from "../declarations/general";
+import { TypeProperties }            from "../declarations/TypeProperties";
+import { getSourceFile }             from "../utils/symbolHelpers";
+import { getTypeSourceLocationText } from "../utils/traceHelpers";
 import {
 	getSymbol,
 	getTypeRef
-}                                   from "../utils/typeHelpers";
-import { MetadataNodeFactory }      from "./MetadataNodeFactory";
-import { ModuleMetadata }           from "./ModuleMetadata";
-import { PackageMetadata }          from "./PackageMetadata";
+}                                    from "../utils/typeHelpers";
+import { MetadataNodeFactory }       from "./MetadataNodeFactory";
+import { ModuleMetadata }            from "./ModuleMetadata";
+import { PackageMetadata }           from "./PackageMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
 
 // TODO: Maybe remove this and just use PackageMetadata instead.
-type PackageInfo = { name: string, metadata: PackageMetadata  };
+type PackageInfo = { name: string, metadata: PackageMetadata };
+
+type TypeInfo = { properties?: TypeProperties };
 
 export class MetadataLibrary
 {
@@ -37,12 +40,17 @@ export class MetadataLibrary
 	 */
 	private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
 
+	// /**
+	//  * Map of packages from project dependencies.
+	//  * @desc Key is package name.
+	//  * @private
+	//  */
+	// private readonly packagesMetadata = new Map<string, PackageInfo>();
+
 	/**
-	 * Map of packages from project dependencies.
-	 * @desc Key is package name.
-	 * @private
+	 * Set of already processed types.
 	 */
-	private readonly packagesMetadata = new Map<string, PackageInfo>();
+	private readonly processedTypes = new Map<TypeIdentifier, TypeInfo>();
 
 	// /**
 	//  * Metadata writer.
@@ -104,16 +112,19 @@ export class MetadataLibrary
 	 * @param typeNode
 	 * @param context
 	 */
-	addTypeAndOrGetId(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
+	referenceType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
 		const typeRef = getTypeRef(type, context.typeChecker);
 
-		// Native/primitive
-		if (typeof typeRef !== "string")
+		// Native type or already processed type
+		if (typeof typeRef !== "string" || this.processedTypes.has(typeRef))
 		{
 			return typeRef;
 		}
-		
+
+		const typeInfo: TypeInfo = {};
+		this.processedTypes.set(typeRef, typeInfo);
+
 		// ts.isExternalModule()
 		// context.program.isSourceFileFromExternalLibrary()
 
@@ -121,32 +132,44 @@ export class MetadataLibrary
 		const symbol = getSymbol(type, context.typeChecker);
 		const sourceFile = symbol && getSourceFile(symbol);//typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
 
-		let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownModule(this.context);
+		if (!sourceFile)
+		{
+			context.log.warn("Unable to access SourceFile of type." + getTypeSourceLocationText(type, context));
+			return typeRef;
+		}
+
+		let existingModule = this.modules.get(sourceFile);
+		// let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownModule(this.context);
 
 		if (!existingModule)
 		{
-			existingModule = new ModuleMetadata(this.context, sourceFile!);
+			existingModule = ModuleMetadata.createFromSourceFile(sourceFile, context);
 			this.modules.set(sourceFile!, existingModule);
 		}
 
 		// Add type to Module
-		existingModule.addType(type);
+		const properties = existingModule.addType(type);
 
-
-		const sourceFileContext = this.context.currentSourceFileContext;
-
-		if (typeof typeRef === "string" && sourceFileContext)
+		if (properties !== false)
 		{
-			let typeRefs = this.sourceFileContextTypes.get(sourceFileContext.sourceFile);
-
-			if (!typeRefs)
-			{
-				typeRefs = [];
-				this.sourceFileContextTypes.set(sourceFileContext.sourceFile, typeRefs);
-			}
-
-			typeRefs.push(typeRef);
+			typeInfo.properties = properties;
 		}
+
+
+		// const sourceFileContext = this.context.currentSourceFileContext;
+		//
+		// if (typeof typeRef === "string" && sourceFileContext)
+		// {
+		// 	let typeRefs = this.sourceFileContextTypes.get(sourceFileContext.sourceFile);
+		//
+		// 	if (!typeRefs)
+		// 	{
+		// 		typeRefs = [];
+		// 		this.sourceFileContextTypes.set(sourceFileContext.sourceFile, typeRefs);
+		// 	}
+		//
+		// 	typeRefs.push(typeRef);
+		// }
 
 		return typeRef;
 	}

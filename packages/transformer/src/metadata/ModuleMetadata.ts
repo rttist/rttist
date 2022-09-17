@@ -1,18 +1,17 @@
-import * as ts                      from "typescript";
-import { ModuleReference }          from "@rttist/abstract";
-import { TransformerContext }       from "../contexts/TransformerContext";
-import { TransformerTypeReference } from "../declarations/general";
+import { ModuleReference }     from "@rttist/abstract";
+import * as ts                 from "typescript";
+import { Context }             from "../contexts/Context";
+import { TransformerContext }  from "../contexts/TransformerContext";
+import { TypeInfo }            from "../declarations/general";
 import {
 	ModuleMetadataProperties,
 	ModuleProperties,
 	TypeProperties
-}                                   from "../declarations/TypeProperties";
-import { getTypeProperties }        from "../properties/getTypeProperties";
-import { getSourceFile }            from "../utils/findSourceFile";
-import { getNodeLocationText }      from "../utils/traceHelpers";
-import { getSourceFileId }          from "../utils/typeHelpers";
-
-type TypeInfo = { properties: TypeProperties | undefined };
+}                              from "../declarations/TypeProperties";
+import { getTypeProperties }   from "../properties/getTypeProperties";
+import { getSourceFile }       from "../utils/findSourceFile";
+import { getNodeLocationText } from "../utils/traceHelpers";
+import { getSourceFileId }     from "../utils/typeHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -35,56 +34,75 @@ export class ModuleMetadata
 	private readonly types = new Map<ts.Type, TypeInfo>();
 
 	/**
+	 * @param properties
 	 * @param context
+	 */
+	private constructor(properties: ModuleMetadataProperties, private context: Context)
+	{
+		this.moduleProperties = properties;
+	}
+
+	/**
+	 * Create ModuleMetadata object from SourceFile.
 	 * @param sourceFile
-	 */
-	constructor(private readonly context: TransformerContext, private readonly sourceFile: ts.SourceFile)
-	{
-		this.moduleProperties = this.gatherModuleProperties();
-	}
-
-	/**
-	 * Returns module for unknown types.
 	 * @param context
 	 */
-	public static getUnknownModule(context: TransformerContext): ModuleMetadata
+	public static createFromSourceFile(sourceFile: ts.SourceFile, context: Context): ModuleMetadata
 	{
-		if (!ModuleMetadata.unknownModule)
-		{
-			ModuleMetadata.unknownModule = new ModuleMetadata(
-				context,
-				ts.factory.createSourceFile(
-					[],
-					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
-					ts.NodeFlags.None
-				)
-			);
-		}
+		const name = sourceFile.moduleName === undefined ? "" : sourceFile.moduleName;
 
-		return ModuleMetadata.unknownModule;
+		return new ModuleMetadata(
+			{
+				name,
+				id: getSourceFileId(sourceFile),
+				path: sourceFile.fileName,
+				children: this.getChildrenReferences(sourceFile)
+			},
+			context
+		);
 	}
 
-	/**
-	 * Returns module for unknown types.
-	 * @param context
-	 */
-	public static getNativeModule(context: TransformerContext): ModuleMetadata
-	{
-		if (!ModuleMetadata.nativeModule)
-		{
-			ModuleMetadata.nativeModule = new ModuleMetadata(
-				context,
-				ts.factory.createSourceFile(
-					[],
-					ts.factory.createToken(ts.SyntaxKind.EndOfFileToken
-					),
-					ts.NodeFlags.None
-				)
-			);
-		}
-
-		return ModuleMetadata.nativeModule;
-	}
+	// /**
+	//  * Returns module for unknown types.
+	//  * @param context
+	//  */
+	// public static getUnknownModule(context: TransformerContext): ModuleMetadata
+	// {
+	// 	if (!ModuleMetadata.unknownModule)
+	// 	{
+	// 		ModuleMetadata.unknownModule = new ModuleMetadata(
+	// 			{
+	// 				name: "native",
+	// 				path: "",
+	// 				id: ModuleIds.Unknown
+	// 			},
+	// 			undefined
+	// 		);
+	// 	}
+	//
+	// 	return ModuleMetadata.unknownModule;
+	// }
+	//
+	// /**
+	//  * Returns module for unknown types.
+	//  * @param context
+	//  */
+	// public static getNativeModule(context: TransformerContext): ModuleMetadata
+	// {
+	// 	if (!ModuleMetadata.nativeModule)
+	// 	{
+	// 		ModuleMetadata.nativeModule = new ModuleMetadata(
+	// 			{
+	// 				name: "native",
+	// 				path: "",
+	// 				id: ModuleIds.Native
+	// 			},
+	// 			undefined
+	// 		);
+	// 	}
+	//
+	// 	return ModuleMetadata.nativeModule;
+	// }
 
 	/**
 	 * Returns properties of this module.
@@ -101,7 +119,7 @@ export class ModuleMetadata
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
 	 * @param type
 	 */
-	addType(type: ts.Type): boolean
+	addType(type: ts.Type): false | TypeProperties
 	{
 		let existingProperties = this.types.get(type);
 
@@ -110,29 +128,15 @@ export class ModuleMetadata
 			return false;
 		}
 
-		const typeInfo: TypeInfo = {
-			properties: undefined
-		};
-
+		const typeInfo: TypeInfo = {};
 		this.types.set(type, typeInfo);
-		typeInfo.properties = getTypeProperties(type, this.context.currentSourceFileContext!.context);
 
-		return true;
+		typeInfo.properties = getTypeProperties(type, this.context);
+
+		return typeInfo.properties;
 	}
 
-	private gatherModuleProperties(): ModuleMetadataProperties
-	{
-		const name = this.sourceFile.moduleName === undefined ? "" : this.sourceFile.moduleName;
-
-		return {
-			name,
-			id: getSourceFileId(this.sourceFile),
-			path: this.sourceFile.fileName,
-			children: this.getChildrenReferences(this.sourceFile)
-		};
-	}
-
-	private getChildrenReferences(sourceFile: ts.SourceFile)
+	private static getChildrenReferences(sourceFile: ts.SourceFile)
 	{
 		const index = sourceFile.statements.findIndex(s => !ts.isImportDeclaration(s));
 		const references: Array<ModuleReference> = [];
@@ -147,8 +151,7 @@ export class ModuleMetadata
 				continue;
 			}
 
-			const sourceFileContext = this.context.currentSourceFileContext!;
-			const childSourceFile = getSourceFile(importDeclaration, this.context);
+			const childSourceFile = getSourceFile(importDeclaration);
 
 			if (childSourceFile)
 			{
@@ -156,6 +159,7 @@ export class ModuleMetadata
 			}
 			else
 			{
+				const sourceFileContext = TransformerContext.instance.currentSourceFileContext!;
 				sourceFileContext.log.error(`SourceFile of module '${importDeclaration.moduleSpecifier.getText()}' `
 					+ `not found.\r\n\tAt ${getNodeLocationText(importDeclaration)}`);
 			}

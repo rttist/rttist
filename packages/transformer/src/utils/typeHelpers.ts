@@ -1,10 +1,16 @@
 import * as ts                        from "typescript";
 import path                           from "path";
-import { ModuleIdentifier }           from "@rttist/abstract";
-import { TypeIds }                    from "@rttist/core";
-import { TransformerContext }         from "../contexts/TransformerContext";
 import {
-	ReflectedType,
+	ModuleIdentifier,
+	TypeIdentifier
+} from "@rttist/abstract";
+import { TypeIds }                    from "@rttist/core";
+import { Context }                    from "../contexts/Context";
+import { TransformerContext }         from "../contexts/TransformerContext";
+import { printTypeDebugInfo }         from "../debugs/printTypeDebugInfo";
+import {
+	ReflectedSourceFile,
+	ReflectedTypeWithIdentifier,
 	TransformerTypeReference
 }                                     from "../declarations/general";
 import { PATH_SEPARATOR_REGEX }       from "../helpers";
@@ -47,6 +53,19 @@ export function isArrayType(type: ts.Type): boolean
 	return !!(type.flags & ts.TypeFlags.Object) && type.symbol?.escapedName === "Array"; // TODO: Check ObjectFlags && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.ArrayLiteral && ??
 }
 
+export function getTypeId(type: ts.Type, context: Context): TypeIdentifier
+{
+	const ref = getTypeRef(type, context.typeChecker);
+
+	if (typeof ref === "string")
+	{
+		return ref;
+	}
+
+	context.log.error("getTypeId called for type which cannot have ID. TransformerReference of the type:", ref);
+	return TypeIds.Invalid;
+}
+
 /**
  * Returns id of given type
  * @param type
@@ -54,7 +73,7 @@ export function isArrayType(type: ts.Type): boolean
  */
 export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): TransformerTypeReference
 {
-	if (isReflectedType(type))
+	if (hasReflectId(type))
 	{
 		return type._reflectId;
 	}
@@ -67,9 +86,10 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 		debugger;
 	}
 
-	const declaration = getDeclaration(type.symbol);
+	const symbol = getSymbol(type, typeChecker);
+	const declaration = getDeclaration(symbol);
 
-	if (!declaration)
+	if (!declaration || !symbol)
 	{
 		const primitiveTypeProperties = getPrimitiveTypeProperties(type);
 
@@ -78,7 +98,7 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 			return primitiveTypeProperties;
 		}
 
-		log.warn("Unable to generate Id for type without declaration.", getTypeDebugLogInfo(type, typeChecker));
+		log.warn("Unable to generate Id for type without declaration.", printTypeDebugInfo(type, typeChecker));
 
 		return TypeIds.Unknown;
 	}
@@ -86,9 +106,9 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 	const sourceFileId = getSourceFileId(declaration.getSourceFile());
 
 	// TODO: Is it ok?
-	const typeId = sourceFileId + "::" + type.symbol.escapedName;
+	const typeId = sourceFileId + "::" + symbol.escapedName;
 
-	setReflectId(type, typeId);
+	setTypeReflectId(type, typeId);
 
 	return typeId;
 
@@ -99,21 +119,17 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 	// return filePath + ":" + symbol.getName();
 }
 
-export function getTypeDebugLogInfo(type: ts.Type, typeChecker: ts.TypeChecker): string
-{
-	const symbol = getSymbol(type, typeChecker);
-	const symbolInfo = symbol ? `flags: ${symbol.flags}, name: '${symbol.escapedName}'.` : "is undefined.";
-	return `Type flags: ${type.flags}; symbol ${symbolInfo}`;
-}
-
 const nodeModulesPattern = "/node_modules/";
 
 // TODO: Move somewhere, with getTypeId
 export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 {
-	const { packageInfo, projectDir } = TransformerContext.instance.config;
+	if (isReflectedSourceFile(sourceFile))
+	{
+		return sourceFile._reflectId;
+	}
 
-	// TODO: Solve externals; Will we even get here?
+	const { packageInfo, projectDir } = TransformerContext.instance.config;
 	const isExternal = TransformerContext.instance.program.isSourceFileFromExternalLibrary(sourceFile);
 
 	if (isExternal)
@@ -122,25 +138,22 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 
 		if (dependencyInfo !== undefined)
 		{
-			return "@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length);
+			const sourceFileId = "@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length);
+			setSourceFileReflectId(sourceFile, sourceFileId);
+			return sourceFileId;
 		}
 	}
 
-	let filePath = getOutPathForSourceFile(sourceFile.fileName);
+	const filePath = getOutPathForSourceFile(sourceFile.fileName);
+	const nodeModulesIndex = filePath.lastIndexOf(nodeModulesPattern);
+	
+	const sourceFileId = nodeModulesIndex != -1
+		? "@" + filePath.slice(nodeModulesIndex + nodeModulesPattern.length)
+		: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
 
-	const nodeModulesIndex = sourceFile.fileName.lastIndexOf(nodeModulesPattern);
+	setSourceFileReflectId(sourceFile, sourceFileId);
 
-	if (nodeModulesIndex != -1)
-	{
-		// TODO: Load all dependencies from package.json and store info there in TransformerContext at init. Then we should just try to match 
-		filePath = "@" + filePath.slice(nodeModulesIndex + nodeModulesPattern.length);
-	}
-	else if (projectDir)
-	{
-		filePath = "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
-	}
-
-	return filePath;
+	return sourceFileId;
 }
 
 export function getOutPathForSourceFile(sourceFileName: string): string
@@ -182,15 +195,26 @@ export function getOutPathForSourceFile(sourceFileName: string): string
 	// return replaceExtension(outPath, ".js");
 }
 
-export function isReflectedType(type: ts.Type): type is ReflectedType
+export function hasReflectId(type: ts.Type): type is ReflectedTypeWithIdentifier
 {
-	return (type as ReflectedType)._reflectId !== undefined;
+	return (type as ReflectedTypeWithIdentifier)._reflectId !== undefined;
 }
 
-function setReflectId(type: ts.Type, reflectId: string): ReflectedType
+function setTypeReflectId(type: ts.Type, reflectId: string): ReflectedTypeWithIdentifier
 {
-	(type as ReflectedType)._reflectId = reflectId;
-	return type as ReflectedType;
+	(type as ReflectedTypeWithIdentifier)._reflectId = reflectId;
+	return type as ReflectedTypeWithIdentifier;
+}
+
+export function isReflectedSourceFile(type: ts.SourceFile): type is ReflectedSourceFile
+{
+	return (type as ReflectedSourceFile)._reflectId !== undefined;
+}
+
+function setSourceFileReflectId(sourceFile: ts.SourceFile, reflectId: string): ReflectedSourceFile
+{
+	(sourceFile as ReflectedSourceFile)._reflectId = reflectId;
+	return sourceFile as ReflectedSourceFile;
 }
 
 

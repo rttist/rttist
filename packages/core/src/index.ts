@@ -6,13 +6,12 @@ export const ModuleIds = {
 	Unknown: "::unknown::",
 };
 
-export const NativeTypeIdPrefix = "native::";
-
 export const TypeIds = {
-	Any: NativeTypeIdPrefix + "any",
-	Unknown: NativeTypeIdPrefix + "unknown",
-	Void: NativeTypeIdPrefix + "void",
-	Never: NativeTypeIdPrefix + "never",
-	Null: NativeTypeIdPrefix + "null",
-	Undefined: NativeTypeIdPrefix + "undefined",
+	Invalid: "::invalid::id",
+	Any: ModuleIds.Native + "any",
+	Unknown: ModuleIds.Native + "unknown",
+	Void: ModuleIds.Native + "void",
+	Never: ModuleIds.Native + "never",
+	Null: ModuleIds.Native + "null",
+	Undefined: ModuleIds.Native + "undefined",
 };

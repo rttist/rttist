@@ -9,7 +9,15 @@ import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
  */
 export function getPrimitiveTypeProperties(type: ts.Type/*, context: Context*/): NativeBaseTypeProperties | undefined
 {
-	return PrimitiveTypesMap[type.flags];
+	let flags = type.flags;
+
+	// Boolean is Boolean | (true | false)
+	if ((flags & ts.TypeFlags.Boolean) !== 0)
+	{
+		flags = ts.TypeFlags.Boolean;
+	}
+
+	return PrimitiveTypesMap[flags];
 
 	// if (mappedTypeProperties !== undefined)
 	// {

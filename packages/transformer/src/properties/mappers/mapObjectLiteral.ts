@@ -1,11 +1,8 @@
-import {
-	TypeIdentifier,
-	TypeKind
-} from "@rttist/abstract";
+import { TypeKind }         from "@rttist/abstract";
 import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
-import { getTypeRef }       from "../../utils/typeHelpers";
+import { getTypeId }        from "../../utils/typeHelpers";
 import { getProperties }    from "../getProperties";
 
 export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMapperResult
@@ -13,7 +10,7 @@ export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMap
 	// const symbol = type.aliasSymbol || type.symbol;
 
 	return {
-		id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
+		id: getTypeId(type, context),
 		kind: TypeKind.Object,
 		properties: getProperties(type, context)
 	};

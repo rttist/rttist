@@ -7,7 +7,7 @@ export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: 
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
 	// Add interface's type to the metadata.
-	context.metadata.addTypeAndOrGetId(
+	context.metadata.referenceType(
 		type,
 		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
 		context

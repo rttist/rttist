@@ -1,13 +1,8 @@
-import {
-	TypeIdentifier,
-	TypeKind
-} from "@rttist/abstract";
+import { TypeKind }         from "@rttist/abstract";
 import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
-import {
-	getTypeRef
-}                           from "../../utils/typeHelpers";
+import { getTypeId }        from "../../utils/typeHelpers";
 
 export function mapTuple(type: ts.TupleType, context: Context): TypeMapperResult
 {
@@ -24,7 +19,7 @@ export function mapTuple(type: ts.TupleType, context: Context): TypeMapperResult
 	}
 
 	return {
-		id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
+		id: getTypeId(type, context),
 		kind: TypeKind.Tuple,
 		name: symbol?.name,
 		// fullName: getTypeFullName(type, context),

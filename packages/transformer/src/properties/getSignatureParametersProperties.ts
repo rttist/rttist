@@ -34,7 +34,7 @@ export function getSignatureParametersProperties(signature: ts.Signature, contex
 				name: parameterSymbol.getName(),
 				type: type === undefined
 					? AnyTypeReference
-					: context.metadata.addTypeAndOrGetId(type, undefined, context),
+					: context.metadata.referenceType(type, undefined, context),
 				optional: (parameterSymbol.flags & ts.SymbolFlags.Optional) !== 0,// declaration.questionToken !== undefined || declaration.initializer !== undefined, // TODO: Check if the flag is OK with initializers
 				rest: declaration.dotDotDotToken !== undefined,
 				initializer: getConstantValue(declaration, context),

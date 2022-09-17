@@ -1,6 +1,7 @@
-﻿import { TypeReference } from "@rttist/abstract";
-import * as ts           from "typescript";
-import { Context }       from "../contexts/Context";
+﻿import { TypeReference }  from "@rttist/abstract";
+import * as ts            from "typescript";
+import { Context }        from "../contexts/Context";
+import { TypeProperties } from "./TypeProperties";
 
 export type PackageJson = {
 	name?: string;
@@ -35,6 +36,14 @@ export type Match<K extends keyof T, T> = {
 export type TransformerTypeReference = TypeReference;
 
 /**
- * Extended Type with our reflection info.
+ * Extended Type with our reflection type id.
  */
-export type ReflectedType = ts.Type & { _reflectId: string };
+export type ReflectedTypeWithIdentifier = ts.Type & { _reflectId: string };
+
+/**
+ * Extended SourceFile with our reflection info.
+ */
+export type ReflectedSourceFile = ts.SourceFile & { _reflectId: string }; // TODO: rename
+
+
+export type TypeInfo = { properties?: TypeProperties };

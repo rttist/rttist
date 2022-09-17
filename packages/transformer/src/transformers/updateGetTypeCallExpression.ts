@@ -5,6 +5,7 @@ import type { Context }                   from "../contexts/Context";
 import { getNodeLocationText }            from "../utils/traceHelpers";
 import { resolveType }                    from "../utils/typeHelpers";
 
+// TODO: Rename and move. This should not be Update yet. Type parameters from getType<T>() should be reflected.
 export function updateGetTypeCallExpression(context: Context, node: ts.CallExpression): ts.VisitResult<ts.Node>
 {
 	// First type argument.
@@ -36,7 +37,7 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 	else
 	{
 		return context.metadata.nodeFactory.createTypeResolver(
-			context.metadata.addTypeAndOrGetId(typeArgumentType/*, genericTypeNode*/, undefined, context)
+			context.metadata.referenceType(typeArgumentType/*, genericTypeNode*/, undefined, context)
 		);
 	}
 }

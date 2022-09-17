@@ -1,14 +1,11 @@
-import {
-	TypeIdentifier,
-	TypeKind
-} from "@rttist/abstract";
+import { TypeKind }                  from "@rttist/abstract";
 import * as ts                       from "typescript";
 import { UnknownTypeProperties }     from "../../consts";
 import { Context }                   from "../../contexts/Context";
 import { TypeMapperResult }          from "../../declarations/mappers";
 import { getDeclaration }            from "../../utils/symbolHelpers";
 import { getTypeSourceLocationText } from "../../utils/traceHelpers";
-import { getTypeRef }                from "../../utils/typeHelpers";
+import { getTypeId }                 from "../../utils/typeHelpers";
 
 export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperResult
 {
@@ -19,11 +16,15 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		if (ts.isTypeParameterDeclaration(declaration))
 		{
 			return {
-				id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
+				id: getTypeId(type, context),
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
-				constraint: declaration.constraint && context.metadata.addTypeAndOrGetId(context.typeChecker.getTypeAtLocation(declaration.constraint), undefined, context) || undefined,
-				default: declaration.default && context.metadata.addTypeAndOrGetId(context.typeChecker.getTypeAtLocation(declaration.default), undefined, context) || undefined
+				constraint: declaration.constraint && context.metadata.referenceType(
+					context.typeChecker.getTypeAtLocation(declaration.constraint),
+					undefined,
+					context
+				) || undefined,
+				default: declaration.default && context.metadata.referenceType(context.typeChecker.getTypeAtLocation(declaration.default), undefined, context) || undefined
 			};
 		}
 	}

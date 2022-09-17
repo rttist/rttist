@@ -1,7 +1,4 @@
-import {
-	TypeIdentifier,
-	TypeKind
-} from "@rttist/abstract";
+import { TypeKind }         from "@rttist/abstract";
 import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import {
@@ -10,9 +7,7 @@ import {
 }                           from "../../declarations/mappers";
 import { TypeProperties }   from "../../declarations/TypeProperties";
 import { getDeclaration }   from "../../utils/symbolHelpers";
-import {
-	getTypeRef
-}                           from "../../utils/typeHelpers";
+import { getTypeId }        from "../../utils/typeHelpers";
 import { getMethods }       from "../getMethods";
 import { getProperties }    from "../getProperties";
 import { mapObjectLiteral } from "./mapObjectLiteral";
@@ -50,7 +45,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		let props = type.getProperties();
 
 		const properties: TypeProperties = {
-			id: getTypeRef(type, context.typeChecker) as TypeIdentifier,
+			id: getTypeId(type, context),
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol.getEscapedName().toString(),
 			// fullName: getTypeFullName(type, context),

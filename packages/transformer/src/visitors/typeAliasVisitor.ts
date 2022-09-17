@@ -9,7 +9,7 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
 	// Add type alias to the metadata.
-	context.metadata.addTypeAndOrGetId(
+	context.metadata.referenceType(
 		type,
 		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
 		context

@@ -7,7 +7,7 @@ import { createValueExpression }   from "../utils/createValueExpression";
 export function classVisitor(declaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
-	const typeReference = context.metadata.addTypeAndOrGetId(
+	const typeReference = context.metadata.referenceType(
 		type,
 		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
 		context
