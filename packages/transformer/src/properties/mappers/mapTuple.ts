@@ -19,7 +19,7 @@ export function mapTuple(type: ts.TupleType, context: Context): TypeMapperResult
 	}
 
 	return {
-		id: getTypeId(type, context),
+		id: getTypeId(type, context.typeChecker),
 		kind: TypeKind.Tuple,
 		name: symbol?.name,
 		// fullName: getTypeFullName(type, context),

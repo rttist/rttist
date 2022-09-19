@@ -62,8 +62,32 @@ export enum TypeKind
 	Atomics,
 	DataView,
 	Generator,
+	AsyncGenerator,
+	Iterator,
+	Iterable,
+	IterableIterator,
+	AsyncIterator,
+	AsyncIterable,
+	AsyncIterableIterator,
 	Proxy,
-	Jsx
+	Jsx,
+	
+	ArrayDefinition,
+	// TupleDefinition,
+	MapDefinition,
+	WeakMapDefinition,
+	SetDefinition,
+	WeakSetDefinition,
+	PromiseDefinition,
+	GeneratorDefinition,
+	AsyncGeneratorDefinition,
+	IteratorDefinition,
+	IterableDefinition,
+	IterableIteratorDefinition,
+	AsyncIteratorDefinition,
+	AsyncIterableDefinition,
+	AsyncIterableIteratorDefinition,
+	
 }
 
 export type NativeTypeKind =
@@ -79,6 +103,7 @@ export type NativeTypeKind =
 	| TypeKind.BigInt
 	| TypeKind.Boolean
 	| TypeKind.Date
+	| TypeKind.Error
 	| TypeKind.Symbol
 	| TypeKind.RegExp
 	| TypeKind.Int8Array
@@ -91,4 +116,26 @@ export type NativeTypeKind =
 	| TypeKind.Float32Array
 	| TypeKind.Float64Array
 	| TypeKind.BigInt64Array
-	| TypeKind.BigUint64Array;
+	| TypeKind.BigUint64Array
+	| TypeKind.ArrayBuffer
+	| TypeKind.SharedArrayBuffer
+	| TypeKind.Atomics
+	| TypeKind.DataView
+	| TypeKind.ArrayDefinition
+	| TypeKind.MapDefinition
+	| TypeKind.WeakMapDefinition
+	| TypeKind.SetDefinition
+	| TypeKind.WeakSetDefinition
+	| TypeKind.PromiseDefinition
+	| TypeKind.GeneratorDefinition
+	| TypeKind.AsyncGeneratorDefinition
+	| TypeKind.IteratorDefinition
+	| TypeKind.IterableDefinition
+	| TypeKind.IterableIteratorDefinition
+	| TypeKind.AsyncIteratorDefinition
+	| TypeKind.AsyncIterableDefinition
+	| TypeKind.AsyncIterableIteratorDefinition
+	;
+
+// TODO: Add generic type definitions Array, Set, Map, WeakSet, WeakMap etc. 
+//  all the generic types must have base generic type definition so it will be possible to compare them.

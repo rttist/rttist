@@ -161,7 +161,7 @@ export class ModuleMetadata
 			{
 				const sourceFileContext = TransformerContext.instance.currentSourceFileContext!;
 				sourceFileContext.log.error(`SourceFile of module '${importDeclaration.moduleSpecifier.getText()}' `
-					+ `not found.\r\n\tAt ${getNodeLocationText(importDeclaration)}`);
+					+ `not found.\n\tAt ${getNodeLocationText(importDeclaration)}`);
 			}
 		}
 

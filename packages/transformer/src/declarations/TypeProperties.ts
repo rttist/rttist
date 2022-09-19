@@ -1,9 +1,13 @@
 ﻿import {
 	AccessModifier,
+	ClassTypeMetadata,
 	DecoratorInfoInitializer,
+	ExtendableObjectLikeBaseTypeMetadata,
 	IndexInfoInitializer,
+	InterfaceTypeMetadata,
 	ModuleIdentifier,
 	ModuleReference,
+	ObjectLikeBaseTypeMetadata,
 	ParameterInfo,
 	PropertyFlags,
 	PropertyInfoInitializer,
@@ -145,11 +149,35 @@ export type IntersectionTypeProperties = NonNativeBaseTypeProperties & {
 	types: TransformerTypeReference[];
 }
 
-export type ObjectProperties = NonNativeBaseTypeProperties & {
+export type ObjectProperties = Match<keyof ObjectLikeBaseTypeMetadata,
+	NonNativeBaseTypeProperties & {
 	properties?: PropertyProperties[];
 	indexes?: IndexProperties[];
 	methods?: MethodProperties[];
-}
+}>;
+
+export type ExtendableObjectProperties = Match<keyof ExtendableObjectLikeBaseTypeMetadata,
+	ObjectProperties &
+	{
+		baseType?: TransformerTypeReference;
+	}>;
+
+export type ImportDetails = {
+	module: string,
+	exportName: string
+};
+
+export type ClassProperties = Match<keyof ClassTypeMetadata,
+	ExtendableObjectProperties & {
+	ctor: ImportDetails;
+	ctorSync?: ImportDetails;
+	constructors: ReadonlyArray<SignatureProperties>;
+	interface?: TransformerTypeReference;
+	decorators: ReadonlyArray<DecoratorProperties>;
+}>;
+
+export type InterfaceProperties = Match<keyof InterfaceTypeMetadata,
+	ExtendableObjectProperties & {}>;
 
 /**
  * Properties of a Type.
@@ -160,4 +188,6 @@ export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypePropert
 	| IntersectionTypeProperties
 	| ObjectProperties
 	| TypeParameterProperties
+	| ClassProperties
+	| InterfaceProperties
 	;

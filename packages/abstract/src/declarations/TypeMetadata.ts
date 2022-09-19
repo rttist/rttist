@@ -61,6 +61,11 @@ export interface InterfaceTypeMetadata extends ExtendableObjectLikeBaseTypeMetad
 {
 }
 
+export interface TypeAliasTypeMetadata extends TypeMetadata
+{
+	target: TypeReference;
+}
+
 export interface UnionOrIntersectionTypeMetadata extends TypeMetadata
 {
 	types?: Array<TypeReference>;

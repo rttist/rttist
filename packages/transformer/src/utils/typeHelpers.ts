@@ -1,22 +1,26 @@
-import * as ts                        from "typescript";
-import path                           from "path";
+import * as ts                            from "typescript";
+import path                               from "path";
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-} from "@rttist/abstract";
-import { TypeIds }                    from "@rttist/core";
-import { Context }                    from "../contexts/Context";
-import { TransformerContext }         from "../contexts/TransformerContext";
-import { printTypeDebugInfo }         from "../debugs/printTypeDebugInfo";
+}                                         from "@rttist/abstract";
+import {
+	ModuleIds,
+	TypeIds
+}                                         from "@rttist/core";
+import { TransformerContext }             from "../contexts/TransformerContext";
+import { printTypeDebugInfo }             from "../debugs/printTypeDebugInfo";
 import {
 	ReflectedSourceFile,
 	ReflectedTypeWithIdentifier,
 	TransformerTypeReference
-}                                     from "../declarations/general";
-import { PATH_SEPARATOR_REGEX }       from "../helpers";
-import { log }                        from "../log";
-import { getPrimitiveTypeProperties } from "../properties/getPrimitiveTypeProperties";
-import { getDeclaration }             from "./symbolHelpers";
+}                                         from "../declarations/general";
+import { PATH_SEPARATOR_REGEX }           from "../helpers";
+import { log }                            from "../log";
+import { getComplexNativeTypeProperties } from "../properties/getComplexNativeTypeProperties";
+import { getPrimitiveTypeProperties }     from "../properties/getPrimitiveTypeProperties";
+import { getIdOfPrimitiveTypeKind }       from "./getIdOfPrimitiveTypeKind";
+import { getDeclaration }                 from "./symbolHelpers";
 
 /**
  * If the given type is some kind of alias or something which we don't want to reflect, find the right type.
@@ -43,6 +47,18 @@ export function getSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Symbol
 	return type.symbol;
 }
 
+export function getMajorTypeFlag(type: ts.Type)
+{
+	let flags = type.flags;
+
+	// Boolean is Boolean | (true | false)
+	if ((flags & ts.TypeFlags.Boolean) !== 0)
+	{
+		flags = ts.TypeFlags.Boolean;
+	}
+	return flags;
+}
+
 /**
  * Check if the type is an Array
  * @param type
@@ -53,17 +69,16 @@ export function isArrayType(type: ts.Type): boolean
 	return !!(type.flags & ts.TypeFlags.Object) && type.symbol?.escapedName === "Array"; // TODO: Check ObjectFlags && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.ArrayLiteral && ??
 }
 
-export function getTypeId(type: ts.Type, context: Context): TypeIdentifier
+export function getTypeId(type: ts.Type, typeChecker: ts.TypeChecker): TypeIdentifier
 {
-	const ref = getTypeRef(type, context.typeChecker);
+	const ref = getTypeRef(type, typeChecker);
 
 	if (typeof ref === "string")
 	{
 		return ref;
 	}
 
-	context.log.error("getTypeId called for type which cannot have ID. TransformerReference of the type:", ref);
-	return TypeIds.Invalid;
+	return getIdOfPrimitiveTypeKind(ref.kind) || TypeIds.Invalid;
 }
 
 /**
@@ -105,8 +120,34 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 	const sourceFileId = getSourceFileId(declaration.getSourceFile());
 
-	// TODO: Is it ok?
-	const typeId = sourceFileId + "::" + symbol.escapedName;
+	// TODO: It is important to distinguish Generic type definition and generic type
+	const typeArguments = (type as ts.GenericType).typeArguments
+		?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
+		.map(typeArg => getTypeId(typeArg, typeChecker)) || [];
+
+	let typeId = "";
+
+	// It has type arguments
+	if (typeArguments.length !== 0)
+	{
+		typeId = "{" + typeArguments.join(",") + "}";
+	}
+	// It has no type arguments and it is native type
+	else if (sourceFileId === ModuleIds.Native)
+	{
+		const nativeRef = getComplexNativeTypeProperties(symbol);
+
+		if (nativeRef !== undefined)
+		{
+			return nativeRef;
+		}
+
+		log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
+
+		return TypeIds.Unknown;
+	}
+
+	typeId = sourceFileId + "::" + symbol.escapedName + typeId;
 
 	setTypeReflectId(type, typeId);
 
@@ -117,6 +158,11 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 	// context.typeChecker.getDeclaredTypeOfSymbol(declaration)
 
 	// return filePath + ":" + symbol.getName();
+}
+
+export function isNativeTypeRef(ref: TransformerTypeReference)
+{
+	return typeof ref === "string" && ref.slice(0, ModuleIds.Native.length) === ModuleIds.Native;
 }
 
 const nodeModulesPattern = "/node_modules/";
@@ -144,9 +190,14 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 		}
 	}
 
+	if (sourceFile.fileName.includes("/node_modules/typescript/lib/lib."))
+	{
+		return ModuleIds.Native;
+	}
+
 	const filePath = getOutPathForSourceFile(sourceFile.fileName);
 	const nodeModulesIndex = filePath.lastIndexOf(nodeModulesPattern);
-	
+
 	const sourceFileId = nodeModulesIndex != -1
 		? "@" + filePath.slice(nodeModulesIndex + nodeModulesPattern.length)
 		: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
@@ -206,7 +257,7 @@ function setTypeReflectId(type: ts.Type, reflectId: string): ReflectedTypeWithId
 	return type as ReflectedTypeWithIdentifier;
 }
 
-export function isReflectedSourceFile(type: ts.SourceFile): type is ReflectedSourceFile
+export function isReflectedSourceFile(type: ts.SourceFile): type is ReflectedSourceFile // TODO: Rename as the Type equiv.
 {
 	return (type as ReflectedSourceFile)._reflectId !== undefined;
 }

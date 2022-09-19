@@ -37,6 +37,8 @@ Reflect.getType<Symbol>();
 Reflect.getType<Promise<boolean>>();
 Reflect.getType<Error>();
 Reflect.getType<RegExp>();
+const regex = /\s\S/;
+Reflect.getType<typeof regex>();
 
 Reflect.getType<ArrayBuffer>();
 Reflect.getType<SharedArrayBuffer>();
@@ -59,17 +61,45 @@ Reflect.getType<SomeType>();
 
 class Foo<T>
 {
-	constructor(bar: T, ...rest: any[]) {
+	promise: Promise<boolean>;
+	regex = /sss/;
+	date = new Date();
+	symbol = Symbol();
+	array: number[];
+	array2: Array<string>;
+	array3 = [];
+	array4 = Array;
+	array5: typeof Array<string>;
+	readonlyArray: ReadonlyArray<string>;
+	iterableIterator = [].values();
+	map = new Map<string, undefined>();
+	set = new Set<string>();
+
+	private* generator()
+	{
+		return 0;
+	}
+
+	private async* asyncGenerator()
+	{
+		return 0;
+	}
+
+	function: Function;
+
+	constructor(bar: T, ...rest: any[])
+	{
 		Reflect.getType<T>();
 	}
 
-	doSomething<U>() {
+	doSomething<U>()
+	{
 		Reflect.getType<T>();
 		Reflect.getType<U>();
 	}
 }
 
-Reflect.construct(Foo, [])
+Reflect.construct(Foo, []);
 
 // new,
 new Foo<string>("bar").doSomething();
@@ -81,7 +111,8 @@ Reflect.construct<Foo<string>>(Foo, ["some", "args"]).doSomething();
 Reflect.constructGeneric(Foo, [Reflect.getType<string>()], ["some", "args"]).doSomething();
 
 // or this too.
-function baz<T>(Ctor: Function, ...args: any[]): any {
+function baz<T>(Ctor: Function, ...args: any[]): any
+{
 	return Reflect.constructGeneric(Ctor, [Reflect.getType<T>()], args);
 }
 

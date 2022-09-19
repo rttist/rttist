@@ -10,7 +10,7 @@ export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMap
 	// const symbol = type.aliasSymbol || type.symbol;
 
 	return {
-		id: getTypeId(type, context),
+		id: getTypeId(type, context.typeChecker),
 		kind: TypeKind.Object,
 		properties: getProperties(type, context)
 	};

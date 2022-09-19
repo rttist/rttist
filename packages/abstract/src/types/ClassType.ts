@@ -2,19 +2,20 @@ import type {
 	AsyncCtorReference,
 	ClassTypeMetadata,
 	DecoratorInfo,
-	TypeReference,
 	Signature
 }                                       from "../declarations";
 import type { GenericType }             from "./GenericType";
-import { Metadata }                     from "../Metadata";
+import type { InterfaceType }           from "./InterfaceType";
+import type { TypeAliasType }           from "./TypeAliasType";
+import { LazyType }                     from "../utils/LazyType";
 import { Type }                         from "../Type";
 import { ExtendableObjectLikeTypeBase } from "./ExtendableObjectLikeTypeBase";
 
 export class ClassType extends ExtendableObjectLikeTypeBase
 {
-	private readonly _interfaceReference?: TypeReference;
+	// private readonly _interfaceReference?: TypeReference;
 
-	private _interface?: Type;
+	private readonly _interface?: LazyType<InterfaceType | TypeAliasType>;
 	private readonly _ctor: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
 	private readonly _constructors: ReadonlyArray<Signature>;
@@ -23,14 +24,9 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	/**
 	 * Interface which this type implements
 	 */
-	get interface(): Type | undefined
+	get interface(): InterfaceType | TypeAliasType | undefined
 	{
-		if (!this._interfaceReference)
-		{
-			return undefined;
-		}
-
-		return this._interface ?? (this._interface = Metadata.resolveType(this._interfaceReference));
+		return this._interface?.type;
 	}
 
 	constructor(initializer: ClassTypeMetadata)
@@ -38,7 +34,9 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 		super(initializer);
 
 		this._ctor = initializer.ctor;
-		this._interfaceReference = initializer.interface;
+		this._interface = initializer.interface !== undefined
+			? new LazyType<InterfaceType | TypeAliasType>(initializer.interface)
+			: undefined;
 		this._constructors = Object.freeze(initializer.constructors ?? []);
 		this._decorators = Object.freeze(initializer.decorators ?? []);
 	}
@@ -97,8 +95,19 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	 */
 	isDerivedFrom(targetType: Type): boolean
 	{
-		return super.isDerivedFrom(targetType)
-			// || this.interface?.isAssignableTo(targetType) // TODO: Solve.
-			|| false;
+		if (super.isDerivedFrom(targetType))
+		{
+			return true;
+		}
+		
+		if (this.interface !== undefined) {
+			const ifce = this.interface.isTypeAlias() 
+				? this.interface.target as InterfaceType 
+				: this.interface;
+			
+			return ifce.isDerivedFrom(targetType);
+		}
+		
+		return false;
 	}
 }

@@ -3,6 +3,7 @@
 import type {
 	TypeIdentifier,
 	TypeMetadata,
+	TypesConfiguration,
 }                      from "./declarations";
 import type {
 	ClassType,
@@ -22,10 +23,8 @@ import type {
 }                      from "./types";
 import type { Module } from "./Module";
 
-import {
-	ModuleIds,
-	NativeTypeIdPrefix
-}                        from "@rttist/core";
+import { ModuleIds }     from "@rttist/core";
+import { TypeAliasType } from "./types/TypeAliasType";
 import { LazyModule }    from "./utils/LazyModule";
 import { LazyTypeArray } from "./utils/LazyTypeArray";
 import {
@@ -44,7 +43,7 @@ function cn(name: string, kind: TypeKind): Type
 	const type = new Type({
 		kind,
 		name,
-		id: NativeTypeIdPrefix + name,
+		id: ModuleIds.Native + name,
 		module: ModuleIds.Native
 	});
 
@@ -86,12 +85,18 @@ export class Type
 
 	// private _flattened?: { properties: { [p: string]: PropertyInfo }; methods: { [p: string]: MethodInfo } };
 
+	/**
+	 * Configuration - global nullabilityof all the types (StrictNullChecks TS option).
+	 * @internal
+	 */
+	private static _nullability: boolean;
 
 	private readonly _id: TypeIdentifier;
 	private readonly _kind: TypeKind;
 	// private readonly _fullName: string;
 	private readonly _name: string;
 	private readonly _exported: boolean;
+	private readonly _nullable?: boolean;
 	private readonly _moduleRef: LazyModule;
 	private readonly _typeParametersRef: LazyTypeArray;
 
@@ -145,6 +150,14 @@ export class Type
 	}
 
 	/**
+	 * Type is nullable so null and undefined are valid values for the type.
+	 */
+	get nullable(): boolean
+	{
+		return this._nullable || Type._nullability;
+	}
+
+	/**
 	 * @param initializer
 	 */
 	constructor(initializer: TypeMetadata)
@@ -160,8 +173,23 @@ export class Type
 		// this._fullName = initializer.fullName || "";
 		this._exported = initializer.exported || false;
 
+		// Set to _nullable only when defined in initializer. If not specified, it must be lazily taken from TypesConfiguration.
+		if (initializer.nullable === true)
+		{
+			this._nullable = true;
+		}
+
 		this._moduleRef = new LazyModule(initializer.module);
 		this._typeParametersRef = new LazyTypeArray(initializer.typeParameters || []);
+	}
+
+	/**
+	 * Configure behavior of types.
+	 * @param nullability
+	 */
+	static configure({ nullability }: TypesConfiguration)
+	{
+		this._nullability = nullability ?? false;
 	}
 
 	/**
@@ -252,6 +280,14 @@ export class Type
 	isInterface(): this is InterfaceType
 	{
 		return this._kind === TypeKind.Interface;
+	}
+
+	/**
+	 * Returns a value indicating whether the Type is a interface or not.
+	 */
+	isTypeAlias(): this is TypeAliasType
+	{
+		return this._kind === TypeKind.Alias;
 	}
 
 	/**

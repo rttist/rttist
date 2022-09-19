@@ -1,7 +1,7 @@
 import { TypeKind }                 from "@rttist/abstract";
 import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
 import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
+import { getMajorTypeFlag }         from "../utils/typeHelpers";
 
 /**
  * Return TypeProperties whether the type is a primitive native type.
@@ -9,105 +9,10 @@ import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
  */
 export function getPrimitiveTypeProperties(type: ts.Type/*, context: Context*/): NativeBaseTypeProperties | undefined
 {
-	let flags = type.flags;
-
-	// Boolean is Boolean | (true | false)
-	if ((flags & ts.TypeFlags.Boolean) !== 0)
-	{
-		flags = ts.TypeFlags.Boolean;
-	}
-
-	return PrimitiveTypesMap[flags];
-
-	// if (mappedTypeProperties !== undefined)
-	// {
-	// 	return mappedTypeProperties;
-	// }
-
-	// if (isArrayType(type))
-	// {
-	// 	const typeArguments = context.typeChecker.getTypeArguments(type as ts.TypeReference);
-	//
-	// 	if (typeArguments.length == 1)
-	// 	{
-	// 		return {
-	// 			n: "Array",
-	// 			k: TypeKind.Array, // TODO: Review array
-	// 			ctor: getNativeTypeCtor("Array"), // TODO: Assign ctor in runtime by TypeKind
-	// 			args: [getTypeCall(typeArguments[0], undefined, context)]
-	// 		};
-	// 	}
-	// }
-	//
-	// return undefined;
+	return PrimitiveTypesRefMap[getMajorTypeFlag(type)];
 }
 
-// /**
-//  * Questioning if this could be better/is pointless
-//  *
-//  * @param {string} name
-//  * @returns {string}
-//  */
-// function getNativeTypeCtorName(name: string): string | undefined
-// {
-// 	if (!name)
-// 	{
-// 		return undefined;
-// 	}
-//
-// 	switch (name.toLowerCase())
-// 	{
-// 		case "bigint":
-// 			return "BigInt";
-// 		case "symbol":
-// 			return "Symbol";
-// 		case "string":
-// 			return "String";
-// 		case "number":
-// 			return "Number";
-// 		case "boolean":
-// 			return "Boolean";
-// 		case "array":
-// 			return "Array";
-// 	}
-//
-// 	return undefined;
-// }
-//
-// function getNativeTypeCtor(name: string): ts.FunctionExpression | undefined
-// {
-// 	const nativeCtorType = getNativeTypeCtorName(name);
-// 	if (nativeCtorType === undefined)
-// 	{
-// 		return undefined;
-// 	}
-//
-// 	// EMIT: function() { return Promise.resolve($nativeCtorType) }
-// 	return ts.factory.createFunctionExpression(
-// 		undefined,
-// 		undefined,
-// 		undefined,
-// 		undefined,
-// 		[],
-// 		undefined,
-// 		ts.factory.createBlock([
-// 			ts.factory.createReturnStatement(
-// 				ts.factory.createCallExpression(
-// 					ts.factory.createPropertyAccessExpression(
-// 						ts.factory.createIdentifier("Promise"),
-// 						ts.factory.createIdentifier("resolve")
-// 					),
-// 					undefined,
-// 					[
-// 						ts.factory.createIdentifier(nativeCtorType)
-// 					]
-// 				)
-// 			)
-// 		], true)
-// 	);
-// }
-
-const PrimitiveTypesMap: { [flag: number]: NativeBaseTypeProperties } = {
+const PrimitiveTypesRefMap: { [flag: number]: NativeBaseTypeProperties } = {
 	[ts.TypeFlags.String]: { kind: TypeKind.String },
 	[ts.TypeFlags.Number]: { kind: TypeKind.Number },
 	[ts.TypeFlags.Boolean]: { kind: TypeKind.Boolean },

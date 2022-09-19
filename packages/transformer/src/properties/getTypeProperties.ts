@@ -1,6 +1,7 @@
 import * as ts                        from "typescript";
 import { UnknownTypeProperties }      from "../consts";
 import { Context }                    from "../contexts/Context";
+import { printTypeDebugInfo }         from "../debugs/printTypeDebugInfo";
 import { TypeMapper }                 from "../declarations/mappers";
 import { TypeProperties }             from "../declarations/TypeProperties";
 import { log }                        from "../log";
@@ -15,6 +16,7 @@ import { mapIndex }                   from "./mappers/mapIndex";
 import { mapIndexedAccessType }       from "./mappers/mapIndexedAccessType";
 import { mapIntersection }            from "./mappers/mapIntersection";
 import { mapObject }                  from "./mappers/mapObject";
+import { mapStringMapping }           from "./mappers/mapStringMapping";
 import { mapTemplateLiteral }         from "./mappers/mapTemplateLiteral";
 import { mapTypeParameter }           from "./mappers/mapTypeParameter";
 import { mapUnion }                   from "./mappers/mapUnion";
@@ -23,8 +25,8 @@ import { mapUniqueEESymbol }          from "./mappers/mapUniqueEESymbol";
 const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.TypeFlags.Enum]: mapEnum,
 	[ts.TypeFlags.EnumLiteral]: mapEnumLiteral as TypeMapper,
-	[ts.TypeFlags.ESSymbol]: mapESSymbol,
-	[ts.TypeFlags.UniqueESSymbol]: mapUniqueEESymbol as TypeMapper,
+	[ts.TypeFlags.ESSymbol]: mapESSymbol, // TODO: Isn't it native?
+	[ts.TypeFlags.UniqueESSymbol]: mapUniqueEESymbol as TypeMapper, // TODO: Isn't it native?
 	[ts.TypeFlags.TypeParameter]: mapTypeParameter,
 	[ts.TypeFlags.Object]: mapObject as TypeMapper,
 	[ts.TypeFlags.Union]: mapUnion as TypeMapper,
@@ -33,6 +35,7 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.TypeFlags.IndexedAccess]: mapIndexedAccessType as TypeMapper,
 	[ts.TypeFlags.Conditional]: mapConditional as TypeMapper,
 	[ts.TypeFlags.TemplateLiteral]: mapTemplateLiteral as TypeMapper,
+	[ts.TypeFlags.StringMapping]: mapStringMapping as TypeMapper,
 };
 
 
@@ -47,7 +50,7 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 	// {
 	// 	log.trace(getTypeSourceLocationText(type, context));
 	// }	
-	
+
 	// It's gonna never be primitive type, cuz they are handled by getTypeRef()
 	// const primitiveTypeProperties = getPrimitiveTypeProperties(type, context);
 	//
@@ -65,7 +68,7 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 			return literalDescriptionResult;
 		}
 
-		context.log.warn("Unhandled Literal type (flags: " + type.flags + ").\r\n\t" + getTypeSourceLocationText(type, context));
+		context.log.warn("Unhandled Literal type (flags: " + type.flags + ").\n\t" + getTypeSourceLocationText(type, context));
 		return UnknownTypeProperties;
 	}
 
@@ -73,7 +76,7 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 
 	if (mapper === undefined)
 	{
-		context.log.warn("No mapper found for the types with flags " + type.flags + ".\r\n\t" + getTypeSourceLocationText(type, context));
+		context.log.warn("No mapper found for the types with flags " + type.flags + ".\n\t" + getTypeSourceLocationText(type, context));
 		return UnknownTypeProperties;
 	}
 
@@ -84,7 +87,10 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 		return mapperResult;
 	}
 
-	context.log.debug(`Mapper '${mapper.name}' returned invalid result for type with flags ${type.flags}.\r\n\t` + getTypeSourceLocationText(type, context));
+	if (context.config.debugMode)
+	{
+		context.log.debug(`Mapper '${mapper.name}' returned invalid result.\n\t` + printTypeDebugInfo(type, context.typeChecker));
+	}
 
 	return UnknownTypeProperties;
 }

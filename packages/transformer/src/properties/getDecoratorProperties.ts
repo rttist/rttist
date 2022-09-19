@@ -18,7 +18,7 @@ export function getDecoratorProperties(decorator: ts.Decorator, context: Context
 	const symbol = getSymbol(type, context.typeChecker);
 
 	return {
-		id: getTypeId(type, context),
+		id: getTypeId(type, context.typeChecker),
 		name: symbol!.escapedName,
 		args: callExpression
 			? (decorator.expression as ts.CallExpression).arguments.map(argument => getConstantValue(argument, context))

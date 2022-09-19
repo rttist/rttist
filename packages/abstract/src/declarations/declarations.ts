@@ -7,6 +7,7 @@ export type ModuleReference = ModuleIdentifier;
 export type NativeTypeReference = { kind: NativeTypeKind };
 export type TypeIdentifier = string;// number | symbol;
 export type TypeReference = TypeIdentifier | NativeTypeReference;
+export type TypesConfiguration = { nullability?: boolean };
 // export type FlattenedObject = {
 // 	properties: { [propertyName: string]: PropertyInfo },
 // 	methods: { [methodName: string]: MethodInfo }

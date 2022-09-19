@@ -1,7 +1,10 @@
 import * as ts                 from "typescript";
 import { printSymbolFlags }    from "../debugs/printSymbolFlags";
 import { log }                 from "../log";
-import { getNodeLocationText } from "./traceHelpers";
+import {
+	getNodeLocationText,
+	getNodeStartLocationText
+} from "./traceHelpers";
 
 /**
  * Returns declaration of symbol. ValueDeclaration is preferred.
@@ -24,12 +27,12 @@ export function getDeclaration<TDeclaration extends ts.Declaration = ts.Declarat
 	
 	const declaration = symbol.declarations?.[0] as TDeclaration | undefined;
 
-	log.warn(
-		"Symbol has no valueDeclaration.",
-		symbol.escapedName,
-		printSymbolFlags(symbol),
-		declaration ? getNodeLocationText(declaration) : undefined
-	);
+	// log.warn(
+	// 	"Symbol has no valueDeclaration.",
+	// 	symbol.escapedName,
+	// 	printSymbolFlags(symbol),
+	// 	declaration ? getNodeStartLocationText(declaration) : undefined
+	// );
 
 	return declaration;
 }

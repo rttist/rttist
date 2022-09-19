@@ -1,17 +1,28 @@
-import { TypeKind }         from "@rttist/abstract";
-import * as ts              from "typescript";
-import { Context }          from "../../contexts/Context";
+import { TypeKind }                from "@rttist/abstract";
+import * as ts                     from "typescript";
+import { Context }                 from "../../contexts/Context";
+import { printTypeDebugInfo }      from "../../debugs/printTypeDebugInfo";
 import {
 	TypeMapper,
 	TypeMapperResult
-}                           from "../../declarations/mappers";
-import { TypeProperties }   from "../../declarations/TypeProperties";
-import { getDeclaration }   from "../../utils/symbolHelpers";
-import { getTypeId }        from "../../utils/typeHelpers";
-import { getMethods }       from "../getMethods";
-import { getProperties }    from "../getProperties";
-import { mapObjectLiteral } from "./mapObjectLiteral";
-import { mapTuple }         from "./mapTuple";
+}                                  from "../../declarations/mappers";
+import {
+	ClassProperties,
+	TypeProperties
+}                                  from "../../declarations/TypeProperties";
+import { getDecorators }           from "../../utils/getDecorators";
+import { isExported }              from "../../utils/isExported";
+import { getDeclaration }          from "../../utils/symbolHelpers";
+import {
+	getSymbol,
+	getTypeId
+}                                  from "../../utils/typeHelpers";
+import { getConstructors }         from "../getConstructors";
+import { getDecoratorsProperties } from "../getDecoratorsProperties";
+import { getMethods }              from "../getMethods";
+import { getProperties }           from "../getProperties";
+import { mapObjectLiteral }        from "./mapObjectLiteral";
+import { mapTuple }                from "./mapTuple";
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
@@ -32,31 +43,68 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			return mapperResult;
 		}
 
-		context.log.warn("Unhandled object type kind with object flag " + type.objectFlags);
+		// context.log.warn("Unhandled type. " + printTypeDebugInfo(type, context.typeChecker));
 	}
 
-	const symbol = type.aliasSymbol || type.symbol;
+	const symbol = getSymbol(type, context.typeChecker);
 
-	if ((type.objectFlags & ts.ObjectFlags.Class) || (type.objectFlags & ts.ObjectFlags.Interface))
+	if ((type.objectFlags & ts.ObjectFlags.Class) !== 0 || (type.objectFlags & ts.ObjectFlags.Interface) !== 0)
 	{
 		// const decorators = getDecorators(symbol, context);
-		let localType = false;
+		// let localType = false;
+		// let props = type.getProperties();
 
-		let props = type.getProperties();
+		const declaration = getDeclaration(symbol);
 
 		const properties: TypeProperties = {
-			id: getTypeId(type, context),
+			id: getTypeId(type, context.typeChecker),
 			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
-			name: symbol.getEscapedName().toString(),
+			name: symbol?.getEscapedName().toString() ?? "",
 			// fullName: getTypeFullName(type, context),
 			properties: getProperties(type, context),
 			methods: getMethods(type, context),
 			// decorators: decorators,
+			exported: declaration && isExported(declaration) ? true : undefined
 		};
 
-		if (type.objectFlags === ts.ObjectFlags.Class)
+		if ((type.objectFlags & ts.ObjectFlags.Class) !== 0)
 		{
-			// properties.constructors = getConstructors(type, context);
+			if (declaration !== undefined && ts.isClassDeclaration(declaration))
+			{
+				(properties as ClassProperties).decorators = getDecoratorsProperties(declaration, context);
+
+				if (declaration.heritageClauses)
+				{
+					const ext = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ExtendsKeyword)[0];
+
+					if (ext)
+					{
+						(properties as ClassProperties).baseType = context.metadata.referenceType(
+							context.typeChecker.getTypeFromTypeNode(ext.types[0]),
+							undefined,
+							context
+						);
+					}
+
+					const impl = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ImplementsKeyword)[0];
+
+					if (impl)
+					{
+						(properties as ClassProperties).interface = context.metadata.referenceType(
+							context.typeChecker.getTypeFromTypeNode(impl.types[0]),
+							undefined,
+							context
+						);
+					}
+				}
+			}
+
+			return {
+				...properties,
+				constructors: getConstructors(type, context),
+				ctor: undefined, // TODO: Create ImportDetails and let middlewares to generate imports or generate import right here??
+				ctorSync: undefined,
+			};
 
 			const constructorExport = undefined;//getExportOfConstructor(symbol, context); // TODO: Implement
 
@@ -136,8 +184,6 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			}
 		}
 
-		const declaration = getDeclaration(symbol);
-
 		// if (declaration && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)))
 		// {
 		// 	// extends & implements
@@ -211,7 +257,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			break;
 	}
 
-	context.log.warn("Unhandled object type kind with object flag " + type.objectFlags);
+	context.log.warn("Unhandled type. " + printTypeDebugInfo(type, context.typeChecker));
 
 	return undefined;
 

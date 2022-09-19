@@ -16,7 +16,7 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		if (ts.isTypeParameterDeclaration(declaration))
 		{
 			return {
-				id: getTypeId(type, context),
+				id: getTypeId(type, context.typeChecker),
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
 				constraint: declaration.constraint && context.metadata.referenceType(
@@ -29,6 +29,6 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		}
 	}
 
-	context.log.warn("Unhandled TypeParameter.\r\n\t" + getTypeSourceLocationText(type, context));
+	context.log.warn("Unhandled TypeParameter.\n\t" + getTypeSourceLocationText(type, context));
 	return UnknownTypeProperties;
 }
