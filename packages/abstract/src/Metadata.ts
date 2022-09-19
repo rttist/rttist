@@ -115,7 +115,7 @@ class MetadataLibrary
 	{
 		if (typeof (reference) === "object")
 		{
-			const nativeType: Type | undefined = NativeTypes[reference.kind];
+			const nativeType: Type | undefined = NativeTypes[reference[0]];
 
 			if (nativeType)
 			{

@@ -1,6 +1,4 @@
 import { TransformerContext } from "../contexts/TransformerContext";
-import { log }                from "../log";
-import { writeFile }          from "fs/promises";
 import {
 	writeFileSync,
 	readFileSync
@@ -23,51 +21,10 @@ export class LibraryFileEmitter
 
 	emit(metadataExpression: ts.Expression): Promise<void>
 	{
-
-		// // TYPELIB - add import of metadata library
-		// if (config.metadataType == MetadataTypeValues.typeLib)
-		// {
-		// log.debug("Generating metadata file.");
-
-		// 		const propertiesStatements: Array<[number, ts.ObjectLiteralExpression]> = [];
-		// 		const typeIdUniqueObj: { [key: number]: boolean } = {};
-		//
-		// 		for (let [typeId, properties] of sourceFileContext.typesMetadata)
-		// 		{
-		// 			if (typeIdUniqueObj[typeId])
-		// 			{
-		// 				continue;
-		// 			}
-		//
-		// 			typeIdUniqueObj[typeId] = true;
-		// 			propertiesStatements.push([typeId, properties]);
-		// 		}
-		//
-		// 		const typeCtor = new Set<ts.PropertyAccessExpression>();
-		// 		for (let ctor of sourceFileContext.typesCtors)
-		// 		{
-		// 			typeCtor.add(ctor);
-		// 		}
-		//
-
 		return this.write(metadataExpression);
-		// }
-		// else if (config.metadataType == MetadataTypeValues.inline)
-		// {
-		// 	console.warn("Mode 'inline' is not implemented yet.");
-		//
-		// 	//const types = sourceFileContext.metadata.getInFileTypes(sourceFileContext.sourceFile);
-		//
-		// 	// for (let moduleMetadata of modules)
-		// 	// {
-		// 	// 	statements.push(ts.factory.createExpressionStatement(
-		// 	// 		sourceFileContext.metaWriter.factory.addDescriptionToStore(typeId, properties)
-		// 	// 	));
-		// 	// }
-		// }
 	}
 
-	private async write(metadataExpression: ts.Expression): Promise<void>
+	private write(metadataExpression: ts.Expression): Promise<void>
 	{
 		const typelibOutputPath = this.transformerContext.config.metadataTypelibPath;
 		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);

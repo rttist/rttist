@@ -1,50 +1,51 @@
 import { TypeKind }                 from "@rttist/abstract";
+import { ModuleIds }                from "@rttist/core";
 import * as ts                      from "typescript";
-import { NativeBaseTypeProperties } from "../declarations/TypeProperties";
+import { TransformerTypeReference } from "../declarations/general";
 
 /**
  * Return TypeProperties whether the type is a complex native type, such as Uint8Array etc.
  * @param symbol
  */
-export function getComplexNativeTypeProperties(symbol: ts.Symbol): NativeBaseTypeProperties | undefined
+export function getComplexNativeTypeProperties(symbol: ts.Symbol): TransformerTypeReference | undefined
 {
 	return NameMap[symbol.escapedName!];
 }
 
-const NameMap: { [name: string]: NativeBaseTypeProperties } = {
-	Date: { kind: TypeKind.Date },
-	Int8Array: { kind: TypeKind.Int8Array },
-	Uint8Array: { kind: TypeKind.Uint8Array },
-	Uint8ClampedArray: { kind: TypeKind.Uint8ClampedArray },
-	Int16Array: { kind: TypeKind.Int16Array },
-	Uint16Array: { kind: TypeKind.Uint16Array },
-	Int32Array: { kind: TypeKind.Int32Array },
-	Uint32Array: { kind: TypeKind.Uint32Array },
-	Float32Array: { kind: TypeKind.Float32Array },
-	Float64Array: { kind: TypeKind.Float64Array },
-	BigInt64Array: { kind: TypeKind.BigInt64Array },
-	BigUint64Array: { kind: TypeKind.BigUint64Array },
-	Symbol: { kind: TypeKind.Symbol },
-	// UniqueSymbol: { kind: TypeKind.UniqueSymbol }, // TODO: Find out what unique symbol is
-	Promise: { kind: TypeKind.PromiseDefinition },
-	Error: { kind: TypeKind.Error },
-	RegExp: { kind: TypeKind.RegExp },
-	ArrayBuffer: { kind: TypeKind.ArrayBuffer },
-	SharedArrayBuffer: { kind: TypeKind.SharedArrayBuffer },
-	Atomics: { kind: TypeKind.Atomics },
-	DataView: { kind: TypeKind.DataView },
-	Array: { kind: TypeKind.ArrayDefinition },
-	Map: { kind: TypeKind.MapDefinition },
-	WeakMap: { kind: TypeKind.WeakMapDefinition },
-	Set: { kind: TypeKind.SetDefinition },
-	WeakSet: { kind: TypeKind.WeakSetDefinition },
-	Generator: { kind: TypeKind.GeneratorDefinition },
-	AsyncGenerator: { kind: TypeKind.AsyncGeneratorDefinition },
-	Iterator: { kind: TypeKind.IteratorDefinition },
-	Iterable: { kind: TypeKind.IterableDefinition },
-	IterableIterator: { kind: TypeKind.IterableIteratorDefinition },
-	AsyncIterator: { kind: TypeKind.AsyncIteratorDefinition },
-	AsyncIterable: { kind: TypeKind.AsyncIterableDefinition },
-	AsyncIterableIterator: { kind: TypeKind.AsyncIterableIteratorDefinition },
-	// Proxy: { kind: TypeKind.Proxy }, // Proxy is only Ctor
+const NameMap: { [name: string]: TransformerTypeReference } = {
+	Date: new TransformerTypeReference(ModuleIds.Native, "Date", TypeKind.Date),
+	Int8Array: new TransformerTypeReference(ModuleIds.Native, "Int8Array", TypeKind.Int8Array),
+	Uint8Array: new TransformerTypeReference(ModuleIds.Native, "Uint8Array", TypeKind.Uint8Array),
+	Uint8ClampedArray: new TransformerTypeReference(ModuleIds.Native, "Uint8ClampedArray", TypeKind.Uint8ClampedArray),
+	Int16Array: new TransformerTypeReference(ModuleIds.Native, "Int16Array", TypeKind.Int16Array),
+	Uint16Array: new TransformerTypeReference(ModuleIds.Native, "Uint16Array", TypeKind.Uint16Array),
+	Int32Array: new TransformerTypeReference(ModuleIds.Native, "Int32Array", TypeKind.Int32Array),
+	Uint32Array: new TransformerTypeReference(ModuleIds.Native, "Uint32Array", TypeKind.Uint32Array),
+	Float32Array: new TransformerTypeReference(ModuleIds.Native, "Float32Array", TypeKind.Float32Array),
+	Float64Array: new TransformerTypeReference(ModuleIds.Native, "Float64Array", TypeKind.Float64Array),
+	BigInt64Array: new TransformerTypeReference(ModuleIds.Native, "Float64Array", TypeKind.BigInt64Array),
+	BigUint64Array: new TransformerTypeReference(ModuleIds.Native, "BigUint64Array", TypeKind.BigUint64Array),
+	Symbol: new TransformerTypeReference(ModuleIds.Native, "Symbol", TypeKind.Symbol),
+	// UniqueSymbol: new TransformerTypeReference(ModuleIds.Native, "name", TypeKind.UniqueSymbol), // TODO: Find out what unique symbol is
+	Promise: new TransformerTypeReference(ModuleIds.Native, "Promise", TypeKind.PromiseDefinition),
+	Error: new TransformerTypeReference(ModuleIds.Native, "Error", TypeKind.Error),
+	RegExp: new TransformerTypeReference(ModuleIds.Native, "RegExp", TypeKind.RegExp),
+	ArrayBuffer: new TransformerTypeReference(ModuleIds.Native, "ArrayBuffer", TypeKind.ArrayBuffer),
+	SharedArrayBuffer: new TransformerTypeReference(ModuleIds.Native, "SharedArrayBuffer", TypeKind.SharedArrayBuffer),
+	Atomics: new TransformerTypeReference(ModuleIds.Native, "Atomics", TypeKind.Atomics),
+	DataView: new TransformerTypeReference(ModuleIds.Native, "DataView", TypeKind.DataView),
+	Array: new TransformerTypeReference(ModuleIds.Native, "Array", TypeKind.ArrayDefinition),
+	Map: new TransformerTypeReference(ModuleIds.Native, "Map", TypeKind.MapDefinition),
+	WeakMap: new TransformerTypeReference(ModuleIds.Native, "WeakMap", TypeKind.WeakMapDefinition),
+	Set: new TransformerTypeReference(ModuleIds.Native, "Set", TypeKind.SetDefinition),
+	WeakSet: new TransformerTypeReference(ModuleIds.Native, "WeakSet", TypeKind.WeakSetDefinition),
+	Generator: new TransformerTypeReference(ModuleIds.Native, "Generator", TypeKind.GeneratorDefinition),
+	AsyncGenerator: new TransformerTypeReference(ModuleIds.Native, "AsyncGenerator", TypeKind.AsyncGeneratorDefinition),
+	Iterator: new TransformerTypeReference(ModuleIds.Native, "Iterator", TypeKind.IteratorDefinition),
+	Iterable: new TransformerTypeReference(ModuleIds.Native, "Iterable", TypeKind.IterableDefinition),
+	IterableIterator: new TransformerTypeReference(ModuleIds.Native, "IterableIterator", TypeKind.IterableIteratorDefinition),
+	AsyncIterator: new TransformerTypeReference(ModuleIds.Native, "AsyncIterator", TypeKind.AsyncIteratorDefinition),
+	AsyncIterable: new TransformerTypeReference(ModuleIds.Native, "AsyncIterable", TypeKind.AsyncIterableDefinition),
+	AsyncIterableIterator: new TransformerTypeReference(ModuleIds.Native, "AsyncIterableIterator", TypeKind.AsyncIterableIteratorDefinition),
+	// Proxy: new TransformerTypeReference(ModuleIds.Native, "name", TypeKind.Proxy), // Proxy is only Ctor
 };

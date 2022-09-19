@@ -2,20 +2,19 @@ import {
 	AccessModifier,
 	Accessor,
 	PropertyFlags
-}                               from "@rttist/abstract";
-import * as ts                  from "typescript";
-import { UnknownTypeReference }    from "../consts";
-import { Context }                 from "../contexts/Context";
-import { PropertyProperties }      from "../declarations/TypeProperties";
+}                                   from "@rttist/abstract";
+import * as ts                      from "typescript";
+import { Context }                  from "../contexts/Context";
+import { TransformerTypeReference } from "../declarations/general";
+import { PropertyProperties }       from "../declarations/TypeProperties";
 import {
 	getAccessModifier,
 	getAccessor,
 	getType,
 	isReadonly
-}                                  from "../helpers";
-import { getDecorators }           from "../utils/getDecorators";
-import { getDeclaration }          from "../utils/symbolHelpers";
-import { getDecoratorsProperties } from "./getDecoratorsProperties";
+}                                   from "../helpers";
+import { getDeclaration }           from "../utils/symbolHelpers";
+import { getDecoratorsProperties }  from "./getDecoratorsProperties";
 
 /**
  * Return properties of type
@@ -60,7 +59,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 
 			return {
 				name: memberSymbol.escapedName.toString(),
-				type: type === undefined ? UnknownTypeReference : context.metadata.referenceType(type, /*declaration.type!*/undefined, context),
+				type: type === undefined ? TransformerTypeReference.Unknown : context.metadata.referenceType(type, /*declaration.type!*/undefined, context),
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
 						isReadonly(declaration?.modifiers) || accessor === Accessor.Getter

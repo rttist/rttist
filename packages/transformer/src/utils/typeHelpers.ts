@@ -11,15 +11,15 @@ import {
 import { TransformerContext }             from "../contexts/TransformerContext";
 import { printTypeDebugInfo }             from "../debugs/printTypeDebugInfo";
 import {
-	ReflectedSourceFile,
-	ReflectedTypeWithIdentifier,
+	ReflectedSourceFileWithIdentifier,
+	ReflectedTypeWithReference,
 	TransformerTypeReference
 }                                         from "../declarations/general";
 import { PATH_SEPARATOR_REGEX }           from "../helpers";
 import { log }                            from "../log";
 import { getComplexNativeTypeProperties } from "../properties/getComplexNativeTypeProperties";
-import { getPrimitiveTypeProperties }     from "../properties/getPrimitiveTypeProperties";
-import { getIdOfPrimitiveTypeKind }       from "./getIdOfPrimitiveTypeKind";
+import { getPrimitiveTypeReference }      from "../properties/getPrimitiveTypeReference";
+// import { getIdOfPrimitiveTypeKind }       from "./getIdOfPrimitiveTypeKind";
 import { getDeclaration }                 from "./symbolHelpers";
 
 /**
@@ -71,14 +71,7 @@ export function isArrayType(type: ts.Type): boolean
 
 export function getTypeId(type: ts.Type, typeChecker: ts.TypeChecker): TypeIdentifier
 {
-	const ref = getTypeRef(type, typeChecker);
-
-	if (typeof ref === "string")
-	{
-		return ref;
-	}
-
-	return getIdOfPrimitiveTypeKind(ref.kind) || TypeIds.Invalid;
+	return getTypeRef(type, typeChecker).id || TypeIds.Invalid;
 }
 
 /**
@@ -88,17 +81,9 @@ export function getTypeId(type: ts.Type, typeChecker: ts.TypeChecker): TypeIdent
  */
 export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): TransformerTypeReference
 {
-	if (hasReflectId(type))
+	if (hasReflectedTypeReference(type))
 	{
-		return type._reflectId;
-	}
-
-	// TODO: Remove after tests
-	const x = type.symbol && typeChecker.getRootSymbols(type.symbol);
-	// const y = type.symbol && typeChecker.getFullyQualifiedName(type.symbol); // It's eg.: `"D:/packages/tst-reflect/dev/quick-tests/SomeType".SomeType`
-	if (x?.length && x[0] != type.symbol)
-	{
-		debugger;
+		return type._typeReference;
 	}
 
 	const symbol = getSymbol(type, typeChecker);
@@ -106,16 +91,16 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 	if (!declaration || !symbol)
 	{
-		const primitiveTypeProperties = getPrimitiveTypeProperties(type);
+		const primitiveTypeReference = getPrimitiveTypeReference(type);
 
-		if (primitiveTypeProperties !== undefined)
+		if (primitiveTypeReference !== undefined)
 		{
-			return primitiveTypeProperties;
+			return primitiveTypeReference;
 		}
 
 		log.warn("Unable to generate Id for type without declaration.", printTypeDebugInfo(type, typeChecker));
 
-		return TypeIds.Unknown;
+		return TransformerTypeReference.Unknown;
 	}
 
 	const sourceFileId = getSourceFileId(declaration.getSourceFile());
@@ -125,15 +110,8 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 		?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
 		.map(typeArg => getTypeId(typeArg, typeChecker)) || [];
 
-	let typeId = "";
-
-	// It has type arguments
-	if (typeArguments.length !== 0)
-	{
-		typeId = "{" + typeArguments.join(",") + "}";
-	}
 	// It has no type arguments and it is native type
-	else if (sourceFileId === ModuleIds.Native)
+	if (typeArguments.length === 0 && sourceFileId === ModuleIds.Native)
 	{
 		const nativeRef = getComplexNativeTypeProperties(symbol);
 
@@ -144,25 +122,18 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 		log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
 
-		return TypeIds.Unknown;
+		return TransformerTypeReference.Unknown;
 	}
 
-	typeId = sourceFileId + "::" + symbol.escapedName + typeId;
-
-	setTypeReflectId(type, typeId);
-
-	return typeId;
+	const ref = new TransformerTypeReference(sourceFileId, symbol.escapedName.toString(), undefined, typeArguments);
+	setReflectedTypeReference(type, ref);
+	return ref;
 
 	// ts.getNameOfDeclaration()
 	// context.typeChecker.getSymbolAtLocation()
 	// context.typeChecker.getDeclaredTypeOfSymbol(declaration)
 
 	// return filePath + ":" + symbol.getName();
-}
-
-export function isNativeTypeRef(ref: TransformerTypeReference)
-{
-	return typeof ref === "string" && ref.slice(0, ModuleIds.Native.length) === ModuleIds.Native;
 }
 
 const nodeModulesPattern = "/node_modules/";
@@ -246,67 +217,24 @@ export function getOutPathForSourceFile(sourceFileName: string): string
 	// return replaceExtension(outPath, ".js");
 }
 
-export function hasReflectId(type: ts.Type): type is ReflectedTypeWithIdentifier
+export function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference
 {
-	return (type as ReflectedTypeWithIdentifier)._reflectId !== undefined;
+	return (type as ReflectedTypeWithReference)._typeReference !== undefined;
 }
 
-function setTypeReflectId(type: ts.Type, reflectId: string): ReflectedTypeWithIdentifier
+function setReflectedTypeReference(type: ts.Type, ref: TransformerTypeReference): ReflectedTypeWithReference
 {
-	(type as ReflectedTypeWithIdentifier)._reflectId = reflectId;
-	return type as ReflectedTypeWithIdentifier;
+	(type as ReflectedTypeWithReference)._typeReference = ref;
+	return type as ReflectedTypeWithReference;
 }
 
-export function isReflectedSourceFile(type: ts.SourceFile): type is ReflectedSourceFile // TODO: Rename as the Type equiv.
+export function isReflectedSourceFile(type: ts.SourceFile): type is ReflectedSourceFileWithIdentifier // TODO: Rename as the Type equiv.
 {
-	return (type as ReflectedSourceFile)._reflectId !== undefined;
+	return (type as ReflectedSourceFileWithIdentifier)._reflectId !== undefined;
 }
 
-function setSourceFileReflectId(sourceFile: ts.SourceFile, reflectId: string): ReflectedSourceFile
+function setSourceFileReflectId(sourceFile: ts.SourceFile, reflectId: string): ReflectedSourceFileWithIdentifier
 {
-	(sourceFile as ReflectedSourceFile)._reflectId = reflectId;
-	return sourceFile as ReflectedSourceFile;
+	(sourceFile as ReflectedSourceFileWithIdentifier)._reflectId = reflectId;
+	return sourceFile as ReflectedSourceFileWithIdentifier;
 }
-
-
-// /**
-//  * Get full name of the type
-//  * @param type
-//  * @param context
-//  */
-// export function getTypeFullName(type: ts.Type, context: Context)
-// {
-// 	let { packageName, projectDir } = TransformerContext.instance.config;
-// 	const symbol = getSymbol(type, context);
-//
-// 	if (symbol === undefined)
-// 	{
-// 		context.log.error("Symbol of type not found. Unable to generate 'fullName'.");
-// 		return "{{invalid}}";
-// 	}
-//
-// 	let filePath = getSourceFile(symbol)?.fileName;
-//
-// 	if (filePath === undefined)
-// 	{
-// 		context.log.error(`SourceFile of symbol '${symbol.escapedName}' not found. Unable to generate 'fullName'.`);
-// 		return "{{invalid}}";
-// 	}
-//
-// 	const nodeModulesIndex = filePath.lastIndexOf(nodeModulesPattern);
-//
-// 	if (nodeModulesIndex != -1)
-// 	{
-// 		filePath = filePath.slice(nodeModulesIndex + nodeModulesPattern.length);
-// 	}
-// 	else if (projectDir)
-// 	{
-// 		filePath = packageName + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
-// 	}
-//
-// 	// ts.getNameOfDeclaration()
-// 	// context.typeChecker.getSymbolAtLocation()
-// 	// context.typeChecker.getDeclaredTypeOfSymbol(declaration)
-//
-// 	return filePath + ":" + symbol.getName();
-// }

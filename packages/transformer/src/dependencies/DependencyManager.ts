@@ -4,7 +4,6 @@ import { TransformerContext } from "../contexts/TransformerContext";
 import { PackageInfo }        from "../declarations/general";
 import { log }                from "../log";
 import { DependencyInfo }     from "./DependencyInfo";
-import * as ts                from "typescript";
 
 export class DependencyManager
 {

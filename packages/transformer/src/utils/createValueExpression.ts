@@ -1,5 +1,6 @@
-import * as ts          from "typescript";
-import { isExpression } from "../helpers";
+import * as ts                      from "typescript";
+import { TransformerTypeReference } from "../declarations/general";
+import { isExpression }             from "../helpers";
 
 export function createValueExpression(value: any): ts.Expression
 {
@@ -17,14 +18,23 @@ export function createValueExpression(value: any): ts.Expression
 
 		if (typeof value === "boolean")
 		{
-			return value 
-				? ts.factory.createTrue() 
+			return value
+				? ts.factory.createTrue()
 				: ts.factory.createFalse();
 		}
 
 		if (value instanceof Array)
 		{
 			return ts.factory.createArrayLiteralExpression(value.map(val => createValueExpression(val)));
+		}
+
+		if (value instanceof TransformerTypeReference)
+		{
+			return value.isNative()
+				? ts.factory.createArrayLiteralExpression([
+					ts.factory.createNumericLiteral(value.nativeReference.kind)
+				])
+				: ts.factory.createStringLiteral(value.id);
 		}
 
 		if (value.constructor === Object)

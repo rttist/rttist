@@ -8,14 +8,12 @@
 	ModuleIdentifier,
 	ModuleReference,
 	ObjectLikeBaseTypeMetadata,
-	ParameterInfo,
 	PropertyFlags,
 	PropertyInfoInitializer,
 	SignatureInitializerBase,
 	TypeIdentifier,
 	TypeKind,
-	TypeMetadata,
-	TypeReference
+	TypeMetadata
 }                         from "@rttist/abstract";
 import { NativeTypeKind } from "@rttist/abstract/dist/enums/TypeKind";
 import {

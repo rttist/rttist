@@ -1,6 +1,6 @@
 import * as ts                              from "typescript";
-import { VoidTypeReference }                from "../consts";
 import { Context }                          from "../contexts/Context";
+import { TransformerTypeReference }         from "../declarations/general";
 import { SignatureProperties }              from "../declarations/TypeProperties";
 import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
 
@@ -12,7 +12,7 @@ export function getConstructors(type: ts.Type, context: Context): SignaturePrope
 	for (let ctorSignature of ctors)
 	{
 		constructors.push({
-			returnType: VoidTypeReference,
+			returnType: TransformerTypeReference.Void,
 			parameters: getSignatureParametersProperties(ctorSignature, context),
 			//typeParameters: [] // TODO: Remove. Constructors have no type parameters ctorSignature.typeParameters?.map(typeParameter => getTypeParameterProperties(typeParameter, context))
 		});

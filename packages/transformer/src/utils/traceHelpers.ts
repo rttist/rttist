@@ -3,13 +3,6 @@ import { Context }        from "../contexts/Context";
 import { getDeclaration } from "./symbolHelpers";
 import { getSymbol }      from "./typeHelpers";
 
-export function getNodeStartLocationText(atNode: ts.Node)
-{
-	const sourceFile = atNode.getSourceFile();
-	const filePos = sourceFile.getLineAndCharacterOfPosition(atNode.pos);
-	return `${sourceFile.fileName}:${filePos.line}:${filePos.character}`;
-}
-
 export function getNodeLocationText(atNode: ts.Node)
 {
 	const sourceFile = atNode.getSourceFile();
@@ -37,12 +30,6 @@ export function getTypeSourceLocationText(type: ts.Type, context: Context): stri
 		context.log.error("Cannot find Declaration of Symbol. Source location info cannot be created.\n\tSymbol:", symbol.escapedName ?? symbol);
 		return "Unknown type location.";
 	}
-	
-	return getNodeLocationText(declaration);
 
-	// const sourceFile = declaration.getSourceFile();
-	// const statementText = sourceFile.text.slice(declaration.pos, declaration.end);
-	// const filePos = sourceFile.getLineAndCharacterOfPosition(declaration.pos);
-	//
-	// return `${statementText.trim()} (${sourceFile.fileName}:${filePos.line}:${filePos.character})`;
+	return getNodeLocationText(declaration);
 }

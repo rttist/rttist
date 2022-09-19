@@ -1,10 +1,10 @@
-import * as ts                     from "typescript";
-import { AnyTypeReference }        from "../consts";
-import { Context }                 from "../contexts/Context";
-import { ParameterProperties }     from "../declarations/TypeProperties";
-import { getDeclaration }          from "../utils/symbolHelpers";
-import { getConstantValue }        from "./getConstantValue";
-import { getDecoratorsProperties } from "./getDecoratorsProperties";
+import * as ts                      from "typescript";
+import { Context }                  from "../contexts/Context";
+import { TransformerTypeReference } from "../declarations/general";
+import { ParameterProperties }      from "../declarations/TypeProperties";
+import { getDeclaration }           from "../utils/symbolHelpers";
+import { getConstantValue }         from "./getConstantValue";
+import { getDecoratorsProperties }  from "./getDecoratorsProperties";
 
 /**
  * Process the signature of the method and create a parameter description for each parameter
@@ -33,7 +33,7 @@ export function getSignatureParametersProperties(signature: ts.Signature, contex
 			parameters.push({
 				name: parameterSymbol.getName(),
 				type: type === undefined
-					? AnyTypeReference
+					? TransformerTypeReference.Any
 					: context.metadata.referenceType(type, undefined, context),
 				optional: (parameterSymbol.flags & ts.SymbolFlags.Optional) !== 0,// declaration.questionToken !== undefined || declaration.initializer !== undefined, // TODO: Check if the flag is OK with initializers
 				rest: declaration.dotDotDotToken !== undefined,

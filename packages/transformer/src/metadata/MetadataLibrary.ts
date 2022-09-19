@@ -1,4 +1,7 @@
-import { TypeIdentifier }            from "@rttist/abstract";
+import {
+	ModuleIdentifier,
+	TypeIdentifier
+}                                    from "@rttist/abstract";
 import * as ts                       from "typescript";
 import { Context }                   from "../contexts/Context";
 import { TransformerContext }        from "../contexts/TransformerContext";
@@ -27,7 +30,7 @@ export class MetadataLibrary
 	/**
 	 * Map of "touched" SourceFiles/Modules.
 	 */
-	private readonly modules = new Map<ts.SourceFile, ModuleMetadata>();
+	private readonly modules = new Map<ModuleIdentifier, ModuleMetadata>();
 
 	/**
 	 * Metadata factory.
@@ -52,11 +55,6 @@ export class MetadataLibrary
 	 */
 	private readonly processedTypes = new Map<TypeIdentifier, TypeInfo>();
 
-	// /**
-	//  * Metadata writer.
-	//  */
-	// public readonly writer: IMetadataWriter;
-
 	/**
 	 * @protected
 	 */
@@ -68,21 +66,7 @@ export class MetadataLibrary
 		}
 
 		this.nodeFactory = new MetadataNodeFactory();
-		// this.writer = MetadataWriterFactory.create(context);
 	}
-
-	// /**
-	//  * Get singleton instance of MetadataLibrary.
-	//  */
-	// static get instance(): MetadataLibrary
-	// {
-	// 	if (!instance)
-	// 	{
-	// 		throw new Error("tst-reflect: MetadataLibrary hasn't been initiated yet!");
-	// 	}
-	//
-	// 	return instance;
-	// }
 
 	/**
 	 * Init Metadata library.
@@ -114,21 +98,17 @@ export class MetadataLibrary
 	 */
 	referenceType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
-		const typeRef = getTypeRef(type, context.typeChecker);
+		const typeRef: TransformerTypeReference = getTypeRef(type, context.typeChecker);
 
 		// Native type or already processed type
-		if (typeof typeRef !== "string" || this.processedTypes.has(typeRef))
+		if (typeRef.isNative() || this.processedTypes.has(typeRef.id))
 		{
 			return typeRef;
 		}
 
 		const typeInfo: TypeInfo = {};
-		this.processedTypes.set(typeRef, typeInfo);
+		this.processedTypes.set(typeRef.id, typeInfo);
 
-		// ts.isExternalModule()
-		// context.program.isSourceFileFromExternalLibrary()
-
-		// type ??= this.context.checker.getTypeAtLocation(typeNode);
 		const symbol = getSymbol(type, context.typeChecker);
 		const sourceFile = symbol && getSourceFile(symbol);//typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
 
@@ -138,13 +118,12 @@ export class MetadataLibrary
 			return typeRef;
 		}
 
-		let existingModule = this.modules.get(sourceFile);
-		// let existingModule = sourceFile ? this.modules.get(sourceFile) : ModuleMetadata.getUnknownModule(this.context);
+		let existingModule = this.modules.get(typeRef.moduleIdentifier);
 
 		if (!existingModule)
 		{
 			existingModule = ModuleMetadata.createFromSourceFile(sourceFile, context);
-			this.modules.set(sourceFile!, existingModule);
+			this.modules.set(typeRef.moduleIdentifier, existingModule);
 		}
 
 		// Add type to Module
@@ -155,32 +134,7 @@ export class MetadataLibrary
 			typeInfo.properties = properties;
 		}
 
-
-		// const sourceFileContext = this.context.currentSourceFileContext;
-		//
-		// if (typeof typeRef === "string" && sourceFileContext)
-		// {
-		// 	let typeRefs = this.sourceFileContextTypes.get(sourceFileContext.sourceFile);
-		//
-		// 	if (!typeRefs)
-		// 	{
-		// 		typeRefs = [];
-		// 		this.sourceFileContextTypes.set(sourceFileContext.sourceFile, typeRefs);
-		// 	}
-		//
-		// 	typeRefs.push(typeRef);
-		// }
-
 		return typeRef;
-	}
-
-	/**
-	 * Returns list of type references used inside given SourceFile.
-	 * @param sourceFile
-	 */
-	getInFileTypes(sourceFile: ts.SourceFile): TransformerTypeReference[]
-	{
-		return this.sourceFileContextTypes.get(sourceFile) || [];
 	}
 }
 

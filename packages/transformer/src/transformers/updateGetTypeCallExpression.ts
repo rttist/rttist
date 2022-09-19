@@ -1,5 +1,5 @@
 import * as ts                            from "typescript";
-import { UnknownTypeReference }           from "../consts";
+import { TransformerTypeReference }       from "../declarations/general";
 import { createAccessToGenericParameter } from "../expression-utils/createAccessToGenericParameter";
 import type { Context }                   from "../contexts/Context";
 import { getNodeLocationText }            from "../utils/traceHelpers";
@@ -22,7 +22,7 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 			if (ts.isIdentifier(typeArgumentNode.typeName))
 			{
 				// TODO: When visiting class declaration, set some info on ts.Type of TypeParameters so we can access it here.
-				
+
 				const s = typeArgumentType.symbol;
 				const typeParameterSymbol = context.typeChecker.getSymbolAtLocation(typeArgumentNode);
 
@@ -31,7 +31,7 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 		}
 
 		context.log.warn("Unhandled case of access to type parameter.\n\t" + getNodeLocationText(typeArgumentNode));
-		return context.metadata.nodeFactory.createTypeResolver(UnknownTypeReference);
+		return context.metadata.nodeFactory.createTypeResolver(TransformerTypeReference.Unknown);
 	}
 	// Parameter is specific type
 	else

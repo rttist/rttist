@@ -4,8 +4,8 @@ export type AsyncCtorReference = () => Promise<{ new(...args: any[]): any } | un
 export type SyncCtorReference = () => { new(...args: any[]): any };
 export type ModuleIdentifier = string; //number | symbol;
 export type ModuleReference = ModuleIdentifier;
-export type NativeTypeReference = { kind: NativeTypeKind };
-export type TypeIdentifier = string;// number | symbol;
+export type NativeTypeReference = [NativeTypeKind];
+export type TypeIdentifier = string;
 export type TypeReference = TypeIdentifier | NativeTypeReference;
 export type TypesConfiguration = { nullability?: boolean };
 // export type FlattenedObject = {

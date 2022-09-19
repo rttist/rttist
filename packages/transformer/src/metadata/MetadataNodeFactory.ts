@@ -29,9 +29,9 @@ export class MetadataNodeFactory
 				ts.factory.createIdentifier("resolveType")
 			),
 			undefined,
-			[typeof reference === "object"
-				? createValueExpression(reference)
-				: ts.factory.createStringLiteral(reference)]
+			[
+				createValueExpression(reference)
+			]
 		);
 	}
 

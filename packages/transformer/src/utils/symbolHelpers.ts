@@ -1,10 +1,4 @@
-import * as ts                 from "typescript";
-import { printSymbolFlags }    from "../debugs/printSymbolFlags";
-import { log }                 from "../log";
-import {
-	getNodeLocationText,
-	getNodeStartLocationText
-} from "./traceHelpers";
+import * as ts from "typescript";
 
 /**
  * Returns declaration of symbol. ValueDeclaration is preferred.
@@ -24,7 +18,7 @@ export function getDeclaration<TDeclaration extends ts.Declaration = ts.Declarat
 
 	// TODO: Check valueDeclaration vs declaration. TypeAlias has no valueDeclaration, interface has or not? When are there multiple declarations?
 	// TypeAliases has no valueDeclaration.
-	
+
 	const declaration = symbol.declarations?.[0] as TDeclaration | undefined;
 
 	// log.warn(
