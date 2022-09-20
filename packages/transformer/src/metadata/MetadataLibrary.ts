@@ -1,21 +1,20 @@
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-}                                    from "@rttist/abstract";
-import * as ts                       from "typescript";
-import { Context }                   from "../contexts/Context";
-import { TransformerContext }        from "../contexts/TransformerContext";
-import { TransformerTypeReference }  from "../declarations/general";
-import { TypeProperties }            from "../declarations/TypeProperties";
-import { getSourceFile }             from "../utils/symbolHelpers";
-import { getTypeSourceLocationText } from "../utils/traceHelpers";
+}                                   from "@rttist/abstract";
+import * as ts                      from "typescript";
+import { Context }                  from "../contexts/Context";
+import { TransformerContext }       from "../contexts/TransformerContext";
+import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
+import { TransformerTypeReference } from "../declarations/general";
+import { TypeProperties }           from "../declarations/TypeProperties";
 import {
-	getSymbol,
-	getTypeRef
-}                                    from "../utils/typeHelpers";
-import { MetadataNodeFactory }       from "./MetadataNodeFactory";
-import { ModuleMetadata }            from "./ModuleMetadata";
-import { PackageMetadata }           from "./PackageMetadata";
+	getTypeRef,
+	resolveType
+}                                   from "../utils/typeHelpers";
+import { MetadataNodeFactory }      from "./MetadataNodeFactory";
+import { ModuleMetadata }           from "./ModuleMetadata";
+import { PackageMetadata }          from "./PackageMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -30,7 +29,9 @@ export class MetadataLibrary
 	/**
 	 * Map of "touched" SourceFiles/Modules.
 	 */
-	private readonly modules = new Map<ModuleIdentifier, ModuleMetadata>();
+	private readonly modules = new Map<ModuleIdentifier, ModuleMetadata>([
+		[ModuleMetadata.Native.id, ModuleMetadata.Native]
+	]);
 
 	/**
 	 * Metadata factory.
@@ -98,6 +99,10 @@ export class MetadataLibrary
 	 */
 	referenceType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
+		// Resolve correct type.
+		type = resolveType(type);
+
+		// Get the type reference before further processing.
 		const typeRef: TransformerTypeReference = getTypeRef(type, context.typeChecker);
 
 		// Native type or already processed type
@@ -106,28 +111,30 @@ export class MetadataLibrary
 			return typeRef;
 		}
 
+		// Create TypeInfo and store it before adding to MetadataLibrary which gather types, 
+		// so this will prevent recursive issues.
 		const typeInfo: TypeInfo = {};
 		this.processedTypes.set(typeRef.id, typeInfo);
-
-		const symbol = getSymbol(type, context.typeChecker);
-		const sourceFile = symbol && getSourceFile(symbol);//typeNode?.getSourceFile() ?? getDeclaration(type.symbol)?.getSourceFile();
-
-		if (!sourceFile)
-		{
-			context.log.warn("Unable to access SourceFile of type." + getTypeSourceLocationText(type, context));
-			return typeRef;
-		}
 
 		let existingModule = this.modules.get(typeRef.moduleIdentifier);
 
 		if (!existingModule)
 		{
-			existingModule = ModuleMetadata.createFromSourceFile(sourceFile, context);
+			if (!typeRef.sourceFile)
+			{
+				context.log.warn(
+					"Unable to access SourceFile of type."
+					+ printTypeDebugInfo(type, context.typeChecker)
+				);
+				return typeRef;
+			}
+
+			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
 			this.modules.set(typeRef.moduleIdentifier, existingModule);
 		}
 
 		// Add type to Module
-		const properties = existingModule.addType(type);
+		const properties = existingModule.addType(type, context);
 
 		if (properties !== false)
 		{

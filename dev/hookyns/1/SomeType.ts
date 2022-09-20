@@ -1,6 +1,8 @@
 export const SomeString = "SomeTypeString";
 
-export class A<T> {}
+export class A<T> {
+	foo: boolean;
+}
 
 export class B<T = string>
 {

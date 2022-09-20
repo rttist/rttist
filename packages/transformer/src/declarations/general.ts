@@ -72,6 +72,8 @@ export class TransformerTypeReference
 	private readonly _id: TypeIdentifier;
 	private readonly _nativeReference?: TransformerNativeTypeReference;
 
+	public readonly sourceFile?: ts.SourceFile;
+
 	get nativeReference(): TransformerNativeTypeReference | undefined
 	{
 		return this._nativeReference;
@@ -93,16 +95,24 @@ export class TransformerTypeReference
 	}
 
 	/**
+	 * @param sourceFile
 	 * @param module
 	 * @param typeName
 	 * @param nativeTypeKnd
 	 * @param typeArguments
 	 */
-	constructor(module: ModuleIdentifier, typeName: string, nativeTypeKnd?: NativeTypeKind, typeArguments?: string[])
+	constructor(
+		module: ModuleIdentifier,
+		typeName: string,
+		nativeTypeKnd?: NativeTypeKind,
+		typeArguments?: string[],
+		sourceFile?: ts.SourceFile
+	)
 	{
 		this._module = module;
 		this._name = typeName;
 		this._id = this.createTypeId(module, typeName, typeArguments);
+		this.sourceFile = sourceFile;
 
 		if ((this._native = (nativeTypeKnd !== undefined)))
 		{

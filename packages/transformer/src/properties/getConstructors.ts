@@ -4,7 +4,7 @@ import { TransformerTypeReference }         from "../declarations/general";
 import { SignatureProperties }              from "../declarations/TypeProperties";
 import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
 
-export function getConstructors(type: ts.Type, context: Context): SignatureProperties[]// | undefined // TODO: Optimize by returning undefined when no ctors exists?
+export function getConstructors(type: ts.Type, context: Context): SignatureProperties[] | undefined
 {
 	const constructors: Array<SignatureProperties> = [];
 	const ctors = type.getConstructSignatures();
@@ -18,5 +18,5 @@ export function getConstructors(type: ts.Type, context: Context): SignaturePrope
 		});
 	}
 
-	return constructors;//.length ? constructors : undefined;
+	return constructors.length === 0 ? undefined : constructors;
 }

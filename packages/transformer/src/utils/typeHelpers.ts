@@ -19,7 +19,6 @@ import { PATH_SEPARATOR_REGEX }           from "../helpers";
 import { log }                            from "../log";
 import { getComplexNativeTypeProperties } from "../properties/getComplexNativeTypeProperties";
 import { getPrimitiveTypeReference }      from "../properties/getPrimitiveTypeReference";
-// import { getIdOfPrimitiveTypeKind }       from "./getIdOfPrimitiveTypeKind";
 import { getDeclaration }                 from "./symbolHelpers";
 
 /**
@@ -28,8 +27,23 @@ import { getDeclaration }                 from "./symbolHelpers";
  */
 export function resolveType(type: ts.Type): ts.Type
 {
+	if (isReference(type))
+	{
+		return type.target;
+	}
+
 	// TODO: Implement; maybe the logic replacing true | false union for boolean etc.
 	return type;
+}
+
+function isReference(type: ts.Type): type is ts.TypeReference
+{
+	return isObject(type) && (type.objectFlags & ts.ObjectFlags.Reference) !== 0;
+}
+
+export function isObject(type: ts.Type): type is ts.ObjectType
+{
+	return (type.flags & ts.TypeFlags.Object) !== 0;
 }
 
 export function getSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Symbol | undefined
@@ -103,7 +117,8 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 		return TransformerTypeReference.Unknown;
 	}
 
-	const sourceFileId = getSourceFileId(declaration.getSourceFile());
+	const sourceFile = declaration.getSourceFile();
+	const sourceFileId = getSourceFileId(sourceFile);
 
 	// TODO: It is important to distinguish Generic type definition and generic type
 	const typeArguments = (type as ts.GenericType).typeArguments
@@ -125,7 +140,7 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 		return TransformerTypeReference.Unknown;
 	}
 
-	const ref = new TransformerTypeReference(sourceFileId, symbol.escapedName.toString(), undefined, typeArguments);
+	const ref = new TransformerTypeReference(sourceFileId, symbol.escapedName.toString(), undefined, typeArguments, sourceFile);
 	setReflectedTypeReference(type, ref);
 	return ref;
 
@@ -180,12 +195,6 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 
 export function getOutPathForSourceFile(sourceFileName: string): string
 {
-	// TransformerContext.instance.config.compilerOptions.
-	// if (!context.config.parsedCommandLine.fileNames.includes(sourceFileName))
-	// {
-	// 	context.config.parsedCommandLine.fileNames.push(sourceFileName);
-	// }
-
 	const config = TransformerContext.instance.config;
 
 	return ts.getOutputFileNames({
@@ -193,28 +202,6 @@ export function getOutPathForSourceFile(sourceFileName: string): string
 		options: config.compilerOptions,
 		errors: []
 	}, sourceFileName, false)[0];
-	//.filter(fn => fn.slice(-3) == ".js" || fn.slice(-4) == ".jsx" || fn.slice(-5) == ".d.ts")[0];
-	// }
-
-	// // Get the actual file location, regardless of dist/source dir
-	// // This should leave us with:
-	// // /ctor-reflection/SomeServiceClass.ts
-	// let outPath = sourceFileName.replace(context.config.rootDir, "");
-	//
-	// // If we have a slash at the start, it has to go
-	// // Now we have:
-	// // ctor-reflection/SomeServiceClass.ts
-	// if (outPath.startsWith("/"))
-	// {
-	// 	outPath = outPath.slice(1);
-	// }
-	//
-	// // Now we can take the build path, from the tsconfig file and combine it
-	// // This should give us:
-	// // /Users/sam/Code/Packages/ts-reflection/dev/testing/dist/method-reflection/index.ts
-	// outPath = path.join(context.config.outDir, outPath);
-	//
-	// return replaceExtension(outPath, ".js");
 }
 
 export function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference

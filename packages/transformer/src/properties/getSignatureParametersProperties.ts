@@ -11,13 +11,13 @@ import { getDecoratorsProperties }  from "./getDecoratorsProperties";
  * @param signature
  * @param context
  */
-export function getSignatureParametersProperties(signature: ts.Signature, context: Context): Array<ParameterProperties>
+export function getSignatureParametersProperties(signature: ts.Signature, context: Context): Array<ParameterProperties> | undefined
 {
 	const signatureParameters = signature.getParameters();
 
 	if (!signature || !signatureParameters?.length)
 	{
-		return [];
+		return undefined;
 	}
 
 	const parameters: Array<ParameterProperties> = [];
@@ -47,5 +47,5 @@ export function getSignatureParametersProperties(signature: ts.Signature, contex
 		}
 	}
 
-	return parameters;
+	return parameters.length === 0 ? undefined : parameters;
 }

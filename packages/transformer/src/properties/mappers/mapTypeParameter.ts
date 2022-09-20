@@ -1,11 +1,11 @@
-import { TypeKind }                  from "@rttist/abstract";
-import * as ts                       from "typescript";
-import { UnknownTypeProperties }     from "../../consts";
-import { Context }                   from "../../contexts/Context";
-import { TypeMapperResult }          from "../../declarations/mappers";
-import { getDeclaration }            from "../../utils/symbolHelpers";
-import { getTypeSourceLocationText } from "../../utils/traceHelpers";
-import { getTypeId }                 from "../../utils/typeHelpers";
+import { TypeKind }              from "@rttist/abstract";
+import * as ts                   from "typescript";
+import { UnknownTypeProperties } from "../../consts";
+import { Context }               from "../../contexts/Context";
+import { printTypeDebugInfo }    from "../../debugs/printTypeDebugInfo";
+import { TypeMapperResult }      from "../../declarations/mappers";
+import { getDeclaration }        from "../../utils/symbolHelpers";
+import { getTypeId }             from "../../utils/typeHelpers";
 
 export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperResult
 {
@@ -29,6 +29,6 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		}
 	}
 
-	context.log.warn("Unhandled TypeParameter.\n\t" + getTypeSourceLocationText(type, context));
+	context.log.warn("Unhandled TypeParameter.\n\t" + printTypeDebugInfo(type, context.typeChecker));
 	return UnknownTypeProperties;
 }

@@ -81,7 +81,7 @@ export interface ParameterProperties
 
 export interface MethodBaseProperties
 {
-	parameters: Array<ParameterProperties>;
+	parameters?: Array<ParameterProperties>;
 }
 
 export type SignatureProperties = Match<keyof SignatureInitializerBase,
@@ -169,9 +169,9 @@ export type ClassProperties = Match<keyof ClassTypeMetadata,
 	ExtendableObjectProperties & {
 	ctor: ImportDetails;
 	ctorSync?: ImportDetails;
-	constructors: ReadonlyArray<SignatureProperties>;
+	constructors?: ReadonlyArray<SignatureProperties>;
 	interface?: TransformerTypeReference;
-	decorators: ReadonlyArray<DecoratorProperties>;
+	decorators?: ReadonlyArray<DecoratorProperties>;
 }>;
 
 export type InterfaceProperties = Match<keyof InterfaceTypeMetadata,

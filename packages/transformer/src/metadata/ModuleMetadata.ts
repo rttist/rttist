@@ -1,4 +1,8 @@
-import { ModuleReference }     from "@rttist/abstract";
+import {
+	ModuleIdentifier,
+	ModuleReference
+}                              from "@rttist/abstract";
+import { ModuleIds }           from "@rttist/core";
 import * as ts                 from "typescript";
 import { Context }             from "../contexts/Context";
 import { TransformerContext }  from "../contexts/TransformerContext";
@@ -19,25 +23,27 @@ import { getSourceFileId }     from "../utils/typeHelpers";
 export class ModuleMetadata
 {
 	/**
-	 * Module for unknown types.
-	 * @private
-	 */
-	private static unknownModule?: ModuleMetadata;
-
-	/**
 	 * Module for native types.
 	 * @private
 	 */
-	private static nativeModule?: ModuleMetadata;
+	public static Native = new ModuleMetadata({
+		id: ModuleIds.Native,
+		name: "",
+		path: "typescript",
+	});
 
 	private readonly moduleProperties: ModuleMetadataProperties;
 	private readonly types = new Map<ts.Type, TypeInfo>();
 
+	get id(): ModuleIdentifier
+	{
+		return this.moduleProperties.id;
+	}
+
 	/**
 	 * @param properties
-	 * @param context
 	 */
-	private constructor(properties: ModuleMetadataProperties, private context: Context)
+	constructor(properties: ModuleMetadataProperties)
 	{
 		this.moduleProperties = properties;
 	}
@@ -45,9 +51,8 @@ export class ModuleMetadata
 	/**
 	 * Create ModuleMetadata object from SourceFile.
 	 * @param sourceFile
-	 * @param context
 	 */
-	public static createFromSourceFile(sourceFile: ts.SourceFile, context: Context): ModuleMetadata
+	public static createFromSourceFile(sourceFile: ts.SourceFile): ModuleMetadata
 	{
 		const name = sourceFile.moduleName === undefined ? "" : sourceFile.moduleName;
 
@@ -57,52 +62,9 @@ export class ModuleMetadata
 				id: getSourceFileId(sourceFile),
 				path: sourceFile.fileName,
 				children: this.getChildrenReferences(sourceFile)
-			},
-			context
+			}
 		);
 	}
-
-	// /**
-	//  * Returns module for unknown types.
-	//  * @param context
-	//  */
-	// public static getUnknownModule(context: TransformerContext): ModuleMetadata
-	// {
-	// 	if (!ModuleMetadata.unknownModule)
-	// 	{
-	// 		ModuleMetadata.unknownModule = new ModuleMetadata(
-	// 			{
-	// 				name: "native",
-	// 				path: "",
-	// 				id: ModuleIds.Unknown
-	// 			},
-	// 			undefined
-	// 		);
-	// 	}
-	//
-	// 	return ModuleMetadata.unknownModule;
-	// }
-	//
-	// /**
-	//  * Returns module for unknown types.
-	//  * @param context
-	//  */
-	// public static getNativeModule(context: TransformerContext): ModuleMetadata
-	// {
-	// 	if (!ModuleMetadata.nativeModule)
-	// 	{
-	// 		ModuleMetadata.nativeModule = new ModuleMetadata(
-	// 			{
-	// 				name: "native",
-	// 				path: "",
-	// 				id: ModuleIds.Native
-	// 			},
-	// 			undefined
-	// 		);
-	// 	}
-	//
-	// 	return ModuleMetadata.nativeModule;
-	// }
 
 	/**
 	 * Returns properties of this module.
@@ -118,8 +80,9 @@ export class ModuleMetadata
 	/**
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
 	 * @param type
+	 * @param context
 	 */
-	addType(type: ts.Type): false | TypeProperties
+	addType(type: ts.Type, context: Context): false | TypeProperties
 	{
 		let existingProperties = this.types.get(type);
 
@@ -131,7 +94,7 @@ export class ModuleMetadata
 		const typeInfo: TypeInfo = {};
 		this.types.set(type, typeInfo);
 
-		typeInfo.properties = getTypeProperties(type, this.context);
+		typeInfo.properties = getTypeProperties(type, context);
 
 		return typeInfo.properties;
 	}

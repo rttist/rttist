@@ -11,6 +11,8 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 	// First type argument.
 	let typeArgumentNode = node.typeArguments![0];
 
+	// TODO: Try to remove it from here, 
+	//  cuz MetadataLibrary.referenceType do this later. So it is done twice in some cases
 	// Type of the Type parameter node.
 	let typeArgumentType = resolveType(context.typeChecker.getTypeAtLocation(typeArgumentNode));
 
