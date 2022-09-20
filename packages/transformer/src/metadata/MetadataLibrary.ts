@@ -8,10 +8,7 @@ import { TransformerContext }       from "../contexts/TransformerContext";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
 import { TransformerTypeReference } from "../declarations/general";
 import { TypeProperties }           from "../declarations/TypeProperties";
-import {
-	getTypeRef,
-	resolveType
-}                                   from "../utils/typeHelpers";
+import { getTypeRef }               from "../utils/typeHelpers";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
 import { PackageMetadata }          from "./PackageMetadata";
@@ -99,9 +96,6 @@ export class MetadataLibrary
 	 */
 	referenceType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
 	{
-		// Resolve correct type.
-		type = resolveType(type);
-
 		// Get the type reference before further processing.
 		const typeRef: TransformerTypeReference = getTypeRef(type, context.typeChecker);
 

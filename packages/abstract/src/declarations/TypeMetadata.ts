@@ -20,8 +20,10 @@ export interface TypeMetadata
 	name: string;
 	// fullName?: string;
 	exported?: boolean;
-	typeParameters?: TypeReference[];
-	nullable?: true;
+	typeArguments?: TypeReference[];
+	nullable?: boolean;
+	genericTypeDefinition?: TypeReference;
+	isGenericTypeDefinition?: boolean;
 }
 
 export interface ObjectLikeBaseTypeMetadata extends TypeMetadata
@@ -43,7 +45,6 @@ export interface LiteralTypeMetadata extends TypeMetadata
 
 export interface TypeParameterTypeMetadata extends TypeMetadata
 {
-	genericTypeDefinition: TypeReference;
 	constraint?: TypeReference;
 	default?: TypeReference;
 }
@@ -76,8 +77,9 @@ export interface UnionTypeMetadata extends UnionOrIntersectionTypeMetadata
 	types?: Array<TypeReference>;
 }
 
-export interface EnumTypeMetadata extends UnionTypeMetadata
+export interface EnumTypeMetadata extends TypeMetadata
 {
+	entries: { [key: string]: number | string };
 }
 
 export interface TemplateTypeMetadata extends TypeMetadata

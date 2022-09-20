@@ -7,21 +7,11 @@ import { Type }     from "../Type";
 
 export class TypeParameterType extends Type
 {
-	private readonly _definitionReference: TypeReference;
 	private readonly _constraintReference?: TypeReference;
 	private readonly _defaultReference?: TypeReference;
 
-	private _definition?: Type;
 	private _constraint?: Type;
 	private _default?: Type;
-
-	/**
-	 * Definition of the generic type.
-	 */
-	get definition(): Type
-	{
-		return this._definition ?? (this._definition = Metadata.resolveType(this._definitionReference));
-	}
 
 	/**
 	 * Defined type constraint.
@@ -53,16 +43,7 @@ export class TypeParameterType extends Type
 	{
 		super(initializer);
 
-		this._definitionReference = initializer.genericTypeDefinition;
 		this._constraintReference = initializer.constraint;
 		this._defaultReference = initializer.default;
-	}
-
-	/**
-	 * Check whether the type is generic.
-	 */
-	isTypeParameter(): this is TypeParameterType
-	{
-		return true;
 	}
 }

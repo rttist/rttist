@@ -24,7 +24,7 @@ export class GenericTypeFactory
 			id: (genericTypeCounter++) + "#" + genericTypeFullName,
 			name: genericTypeDefinition.name,
 			// fullName: genericTypeFullName,
-			typeParameters: typeParameters.map(tp => tp.id),
+			typeArguments: typeParameters.map(tp => tp.id),
 			module: genericTypeDefinition.module.id,
 			properties: genericTypeDefinition.getProperties(),
 			indexes: genericTypeDefinition.getIndexes(),
@@ -34,11 +34,14 @@ export class GenericTypeFactory
 			ctor: genericTypeDefinition.getCtor,
 			baseType: genericTypeDefinition.baseType?.id,
 			exported: genericTypeDefinition.exported,
-			interface: genericTypeDefinition.interface?.id
+			interface: genericTypeDefinition.interface?.id,
+			nullable: genericTypeDefinition.nullable,
+			isGenericTypeDefinition: false,
+			genericTypeDefinition: genericTypeDefinition.id
 		});
 
 		Metadata.addType(type);
 
-		return type;
+		return type as GenericType<ClassType>;
 	}
 }

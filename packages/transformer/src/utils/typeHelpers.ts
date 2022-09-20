@@ -36,7 +36,7 @@ export function resolveType(type: ts.Type): ts.Type
 	return type;
 }
 
-function isReference(type: ts.Type): type is ts.TypeReference
+export function isReference(type: ts.Type): type is ts.TypeReference
 {
 	return isObject(type) && (type.objectFlags & ts.ObjectFlags.Reference) !== 0;
 }

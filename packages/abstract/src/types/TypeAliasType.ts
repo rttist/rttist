@@ -1,10 +1,10 @@
 ﻿import { TypeAliasTypeMetadata } from "../declarations";
 import { Type }                  from "../Type";
 import { LazyType }              from "../utils/LazyType";
-import { GenericType }           from "./GenericType";
 
 export class TypeAliasType extends Type
 {
+	/** @internal */
 	private readonly _target: LazyType;
 
 	get target(): Type
@@ -16,13 +16,5 @@ export class TypeAliasType extends Type
 	{
 		super(initializer);
 		this._target = new LazyType(initializer.target);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	isGenericType(): this is GenericType<TypeAliasType>
-	{
-		return super.isGenericType();
 	}
 }

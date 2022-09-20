@@ -15,10 +15,14 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 {
 	// private readonly _interfaceReference?: TypeReference;
 
+	/** @internal */
 	private readonly _interface?: LazyType<InterfaceType | TypeAliasType>;
+	/** @internal */
 	private readonly _ctor: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
+	/** @internal */
 	private readonly _constructors: ReadonlyArray<Signature>;
+	/** @internal */
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 
 	/**
@@ -39,14 +43,6 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 			: undefined;
 		this._constructors = Object.freeze(initializer.constructors ?? []);
 		this._decorators = Object.freeze(initializer.decorators ?? []);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	isGenericType(): this is GenericType<ClassType>
-	{
-		return super.isGenericType();
 	}
 
 	/**
@@ -79,14 +75,27 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	 */
 	isSubclassOf(classType: Type): boolean
 	{
-		return classType.isClass() && this.baseType !== undefined
-			&& (
+		return classType.isClass() && (
+			(this.baseType !== undefined && (
 				this.baseType.is(classType)
 				|| (
 					this.baseType.isClass()
 					&& this.baseType.isSubclassOf(classType)
 				)
-			);
+				|| (
+					this.baseType.isGenericType()
+					&& this.baseType.genericTypeDefinition.isClass()
+					&& this.baseType.genericTypeDefinition.isSubclassOf(classType)
+				)
+			))
+			|| (this.isGenericType() && (
+				this.genericTypeDefinition.is(classType)
+				|| (
+					this.genericTypeDefinition?.isClass()
+					&& this.genericTypeDefinition.isSubclassOf(classType)
+				)
+			))
+		);
 	}
 
 	/**
@@ -99,15 +108,16 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 		{
 			return true;
 		}
-		
-		if (this.interface !== undefined) {
-			const ifce = this.interface.isTypeAlias() 
-				? this.interface.target as InterfaceType 
+
+		if (this.interface !== undefined)
+		{
+			const ifce = this.interface.isTypeAlias()
+				? this.interface.target as InterfaceType
 				: this.interface;
-			
+
 			return ifce.isDerivedFrom(targetType);
 		}
-		
+
 		return false;
 	}
 }

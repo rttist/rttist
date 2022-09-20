@@ -4,7 +4,7 @@ import type {
 	TypeIdentifier,
 	TypeMetadata,
 	TypesConfiguration,
-}                      from "./declarations";
+}                        from "./declarations";
 import type {
 	ClassType,
 	ConditionalType,
@@ -20,12 +20,12 @@ import type {
 	TemplateType,
 	TypeParameterType,
 	UnionType
-}                      from "./types";
-import type { Module } from "./Module";
-
+}                        from "./types";
+import type { Module }   from "./Module";
 import { ModuleIds }     from "@rttist/core";
 import { TypeAliasType } from "./types/TypeAliasType";
 import { LazyModule }    from "./utils/LazyModule";
+import { LazyType }      from "./utils/LazyType";
 import { LazyTypeArray } from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
@@ -86,19 +86,29 @@ export class Type
 	// private _flattened?: { properties: { [p: string]: PropertyInfo }; methods: { [p: string]: MethodInfo } };
 
 	/**
-	 * Configuration - global nullabilityof all the types (StrictNullChecks TS option).
+	 * Configuration - global nullability of all the types (StrictNullChecks TS option).
 	 * @internal
 	 */
 	private static _nullability: boolean;
 
-	private readonly _id: TypeIdentifier;
-	private readonly _kind: TypeKind;
-	// private readonly _fullName: string;
-	private readonly _name: string;
-	private readonly _exported: boolean;
-	private readonly _nullable?: boolean;
-	private readonly _moduleRef: LazyModule;
-	private readonly _typeParametersRef: LazyTypeArray;
+	/** @internal */
+	protected readonly _id: TypeIdentifier;
+	/** @internal */
+	protected readonly _kind: TypeKind;
+	/** @internal */
+	protected readonly _name: string;
+	/** @internal */
+	protected readonly _exported: boolean;
+	/** @internal */
+	protected readonly _nullable?: boolean;
+	/** @internal */
+	protected readonly _moduleRef: LazyModule;
+	/** @internal */
+	protected readonly _typeArgumentsRef: LazyTypeArray;
+	/** @internal */
+	protected readonly _definitionRef?: LazyType<GenericType<Type>>;
+	/** @internal */
+	protected readonly _isGenericTypeDefinition: boolean;
 
 	/**
 	 * Type identifier.
@@ -158,6 +168,17 @@ export class Type
 	}
 
 	/**
+	 * Definition of the generic type.
+	 * @internal Hidden in Type; Should be visible only by GenericTypeDefinition<>.
+	 */
+	get genericTypeDefinition(): GenericType<Type> | undefined
+	{
+		return this._isGenericTypeDefinition
+			? this as GenericType<typeof this>
+			: this._definitionRef?.type;
+	}
+
+	/**
 	 * @param initializer
 	 */
 	constructor(initializer: TypeMetadata)
@@ -180,7 +201,13 @@ export class Type
 		}
 
 		this._moduleRef = new LazyModule(initializer.module);
-		this._typeParametersRef = new LazyTypeArray(initializer.typeParameters || []);
+
+		// Generics
+		this._definitionRef = initializer.genericTypeDefinition
+			? new LazyType<GenericType<Type>>(initializer.genericTypeDefinition)
+			: undefined;
+		this._isGenericTypeDefinition = initializer.isGenericTypeDefinition || false;
+		this._typeArgumentsRef = new LazyTypeArray(initializer.typeArguments || []);
 	}
 
 	/**
@@ -215,12 +242,12 @@ export class Type
 	}
 
 	/**
-	 * Returns array of generic type parameters.
+	 * Returns array of generic type arguments.
 	 * @internal Exposed by {@link GenericType}.
 	 */
-	getTypeParameters(): ReadonlyArray<Type>
+	getTypeArguments(): ReadonlyArray<Type>
 	{
-		return this._typeParametersRef.types;
+		return this._typeArgumentsRef.types;
 	}
 
 	//////////////////////////////////////////////////////////////////// GUARDS /////////////////////////////////////////////////////////////////
@@ -228,17 +255,25 @@ export class Type
 	/**
 	 * Check whether the type is generic.
 	 */
-	isGenericType(): this is GenericType<Type>
+	isGenericType(): this is GenericType<typeof this>
 	{
-		return this._typeParametersRef.length > 0;
+		return this._typeArgumentsRef.length > 0;
 	}
 
 	/**
-	 * Check whether the type is generic.
+	 * Check whether the type is definition of the generic type.
+	 */
+	isGenericTypeDefinition(): this is GenericType<typeof this>
+	{
+		return this._isGenericTypeDefinition;
+	}
+
+	/**
+	 * Check whether the type is generic type parameter.
 	 */
 	isTypeParameter(): this is TypeParameterType
 	{
-		return false;
+		return this._kind === TypeKind.TypeParameter;
 	}
 
 	/**
@@ -342,6 +377,14 @@ export class Type
 	}
 
 	/**
+	 * Determines whether the object represented by the current Type is an object-like type.
+	 */
+	isObjectLike(): this is ObjectLikeTypeBase
+	{
+		return this.isObject() || this.isClass() || this.isInterface();
+	}
+
+	/**
 	 * Determines whether the object represented by the current Type is an Object type.
 	 */
 	isObject(): this is ObjectType
@@ -358,7 +401,7 @@ export class Type
 	}
 
 	/**
-	 * Determines whether the object represented by the current Type is an Function type.
+	 * Determines whether the object represented by the current Type is a Function type.
 	 */
 	isFunction(): this is FunctionType
 	{
@@ -372,7 +415,7 @@ export class Type
 	 */
 	isInstantiable(): boolean
 	{
-		return this.isClass(); // TODO: Array, Date etc...
+		return this.isClass() || this.isFunction(); // TODO: Array, Date etc...
 	}
 
 	/**
@@ -387,94 +430,86 @@ export class Type
 	//  Those are generic types so there should be something like .is(getType<Promise<any>>). 
 	//  C# allows to write SomeGenericType<,> without specifying generic parameters. 
 	//  We can use "any" but it will be strange for types with many generic parameters. .is(getType<SomeGenericType<any, any, any, any, any>)
-	// /**
-	//  * Returns true whether the Type is a Promise.
-	//  */
-	// isPromise(): boolean
-	// {
-	// 	return this._kind === TypeKind.Promise;
-	// }
-
-	// TODO: Remove. The Type.is() should be used; eg. .is(Type.String), .is(Type.Never) 
-	// /**
-	//  * Check if this type is a string.
-	//  */
-	// isString(): boolean
-	// {
-	// 	return this._kind === TypeKind.String || this._kind === TypeKind.StringLiteral || this._kind === TypeKind.TemplateLiteral;
-	// }
-	//
-	// /**
-	//  * Check if this type is a number.
-	//  */
-	// isNumber(): boolean
-	// {
-	// 	return this._kind === TypeKind.Number || this._kind === TypeKind.NumberLiteral;
-	// }
-	//
-	// /**
-	//  * Check if this type is a bigint.
-	//  */
-	// isBigInt(): boolean
-	// {
-	// 	return this._kind === TypeKind.BigInt || this._kind === TypeKind.BigIntLiteral;
-	// }
-	//
-	// /**
-	//  * Check if this type is a boolean.
-	//  */
-	// isBoolean(): boolean
-	// {
-	// 	return this._kind === TypeKind.Boolean || this._kind === TypeKind.BooleanLiteral;
-	// 	// return (this.isNative() || this._kind == TypeKind.LiteralType) && this.name == "boolean";
-	// }
-	//
-	// /**
-	//  * Check if this type is an "any".
-	//  */
-	// isAny(): boolean
-	// {
-	// 	return this._kind === TypeKind.Any;
-	// }
-	//
-	// /**
-	//  * Check if this type is an "never".
-	//  */
-	// isNever(): boolean
-	// {
-	// 	return this._kind === TypeKind.Never;
-	// }
-	//
-	// /**
-	//  * Check if this type is an "void".
-	//  */
-	// isVoid(): boolean
-	// {
-	// 	return this._kind === TypeKind.Void;
-	// }
-	//
-	// /**
-	//  * Check if this type is an "undefined".
-	//  */
-	// isUndefined(): boolean
-	// {
-	// 	return this._kind === TypeKind.Undefined;
-	// }
-	//
-	// /**
-	//  * Check if this type is an "null".
-	//  */
-	// isNull(): boolean
-	// {
-	// 	return this._kind === TypeKind.Null;
-	// }
 
 	/**
-	 * @return {boolean}
+	 * Check if this type is a string.
 	 */
-	isObjectLike(): this is ObjectLikeTypeBase
+	isString(): boolean
 	{
-		return this.isObject() || this.isClass() || this.isInterface();
+		return this._kind === TypeKind.String || this._kind === TypeKind.StringLiteral || this._kind === TypeKind.TemplateLiteral;
+	}
+
+	/**
+	 * Check if this type is a number.
+	 */
+	isNumber(): boolean
+	{
+		return this._kind === TypeKind.Number || this._kind === TypeKind.NumberLiteral;
+	}
+
+	/**
+	 * Check if this type is a bigint.
+	 */
+	isBigInt(): boolean
+	{
+		return this._kind === TypeKind.BigInt || this._kind === TypeKind.BigIntLiteral;
+	}
+
+	/**
+	 * Check if this type is a boolean.
+	 */
+	isBoolean(): boolean
+	{
+		return this._kind === TypeKind.Boolean || this._kind === TypeKind.BooleanLiteral;
+		// return (this.isNative() || this._kind == TypeKind.LiteralType) && this.name == "boolean";
+	}
+
+	/**
+	 * Check if this type is an "any".
+	 */
+	isAny(): boolean
+	{
+		return this._kind === TypeKind.Any;
+	}
+
+	/**
+	 * Check if this type is an "never".
+	 */
+	isNever(): boolean
+	{
+		return this._kind === TypeKind.Never;
+	}
+
+	/**
+	 * Check if this type is an "void".
+	 */
+	isVoid(): boolean
+	{
+		return this._kind === TypeKind.Void;
+	}
+
+	/**
+	 * Check if this type is an "undefined".
+	 */
+	isUndefined(): boolean
+	{
+		return this._kind === TypeKind.Undefined;
+	}
+
+	/**
+	 * Check if this type is an "null".
+	 */
+	isNull(): boolean
+	{
+		return this._kind === TypeKind.Null;
+	}
+
+	/**
+	 * Returns true whether the Type is a Promise.
+	 */
+	isPromise(): boolean
+	{
+		return this._kind === TypeKind.Promise;
 	}
 
 	// TODO: isTemplate vs isTemplateLiteral.

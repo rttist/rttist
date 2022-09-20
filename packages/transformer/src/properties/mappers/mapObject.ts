@@ -10,12 +10,12 @@ import {
 	ClassProperties,
 	TypeProperties
 }                                  from "../../declarations/TypeProperties";
-import { getDecorators }           from "../../utils/getDecorators";
 import { isExported }              from "../../utils/isExported";
 import { getDeclaration }          from "../../utils/symbolHelpers";
 import {
 	getSymbol,
-	getTypeId
+	getTypeId,
+	isReference
 }                                  from "../../utils/typeHelpers";
 import { getConstructors }         from "../getConstructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
@@ -48,7 +48,10 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 	const symbol = getSymbol(type, context.typeChecker);
 
-	if ((type.objectFlags & ts.ObjectFlags.Class) !== 0 || (type.objectFlags & ts.ObjectFlags.Interface) !== 0)
+	// Resolve correct type in case of reference. But the reference holds the type arguments.
+	const resolvedType = isReference(type) ? type.target : type;
+
+	if ((resolvedType.objectFlags & ts.ObjectFlags.Class) !== 0 || (resolvedType.objectFlags & ts.ObjectFlags.Interface) !== 0)
 	{
 		// const decorators = getDecorators(symbol, context);
 		// let localType = false;
@@ -58,16 +61,24 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 		const properties: TypeProperties = {
 			id: getTypeId(type, context.typeChecker),
-			kind: type.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
+			kind: resolvedType.objectFlags === ts.ObjectFlags.Class ? TypeKind.Class : TypeKind.Interface,
 			name: symbol?.getEscapedName().toString() ?? "",
 			// fullName: getTypeFullName(type, context),
 			properties: getProperties(type, context),
 			methods: getMethods(type, context),
 			// decorators: decorators,
-			exported: declaration && isExported(declaration) ? true : undefined
+			exported: declaration && isExported(declaration) ? true : undefined,
 		};
 
-		if ((type.objectFlags & ts.ObjectFlags.Class) !== 0)
+		if (type !== resolvedType)
+		{
+			properties.genericTypeDefinition = context.metadata.referenceType(resolvedType, undefined, context);
+			properties.isGenericTypeDefinition = true;
+			properties.typeArguments = (type as ts.TypeReference).typeArguments
+				?.map(typeArg => context.metadata.referenceType(typeArg, undefined, context));
+		}
+
+		if ((resolvedType.objectFlags & ts.ObjectFlags.Class) !== 0)
 		{
 			if (declaration !== undefined && ts.isClassDeclaration(declaration))
 			{
@@ -247,8 +258,8 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 	switch (type.objectFlags)
 	{
-		case ts.ObjectFlags.Reference:
-			break;
+		// case ts.ObjectFlags.Reference:
+		// 	break;
 
 		case ts.ObjectFlags.JsxAttributes:
 			break;
@@ -257,7 +268,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			break;
 	}
 
-	context.log.warn("Unhandled type. " + printTypeDebugInfo(type, context.typeChecker));
+	context.log.warn("Unhandled type. " + printTypeDebugInfo(resolvedType, context.typeChecker));
 
 	return undefined;
 

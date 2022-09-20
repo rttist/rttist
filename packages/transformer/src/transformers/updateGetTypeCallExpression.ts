@@ -3,7 +3,6 @@ import { TransformerTypeReference }       from "../declarations/general";
 import { createAccessToGenericParameter } from "../expression-utils/createAccessToGenericParameter";
 import type { Context }                   from "../contexts/Context";
 import { getNodeLocationText }            from "../utils/traceHelpers";
-import { resolveType }                    from "../utils/typeHelpers";
 
 // TODO: Rename and move. This should not be Update yet. Type parameters from getType<T>() should be reflected.
 export function updateGetTypeCallExpression(context: Context, node: ts.CallExpression): ts.VisitResult<ts.Node>
@@ -11,10 +10,8 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 	// First type argument.
 	let typeArgumentNode = node.typeArguments![0];
 
-	// TODO: Try to remove it from here, 
-	//  cuz MetadataLibrary.referenceType do this later. So it is done twice in some cases
 	// Type of the Type parameter node.
-	let typeArgumentType = resolveType(context.typeChecker.getTypeAtLocation(typeArgumentNode));
+	let typeArgumentType = context.typeChecker.getTypeAtLocation(typeArgumentNode);
 
 	// If the type parameter is another type parameter; replace by "__typeParam__.X", where X is name of generic parameter
 	if (typeArgumentType.flags === ts.TypeFlags.TypeParameter) // TODO: If it is declared on class, replace by Reflect.getType(this).getTypeParameters()[index of required generic type]

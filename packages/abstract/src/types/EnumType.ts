@@ -1,20 +1,20 @@
-import type {
-	EnumTypeMetadata,
-	TypeReference
-}                           from "../declarations";
-import type { LiteralType } from "./LiteralType";
-import { Metadata }         from "../Metadata";
-import { Type }             from "../Type";
+import type { EnumTypeMetadata } from "../declarations";
+import { Type }                  from "../Type";
 
 export class EnumType extends Type
 {
-	private readonly _unionTypes: TypeReference[];
-	private _entries?: Array<readonly [enumeratorName: string, value: any]>;
+	private readonly _entries: Array<readonly [enumeratorName: string, value: any]>;
 
 	constructor(initializer: EnumTypeMetadata)
 	{
 		super(initializer);
-		this._unionTypes = initializer.types || [];
+
+		this._entries = Object.entries(initializer.entries || {})
+			.map(([name, value]) =>
+				Object.freeze<readonly [enumeratorName: string, value: any]>(
+					[name, value]
+				)
+			);
 	}
 
 	/**
@@ -38,11 +38,6 @@ export class EnumType extends Type
 	 */
 	getEntries(): Array<readonly [enumeratorName: string, value: any]>
 	{
-		return (
-			this._entries ?? (this._entries = this._unionTypes.map(typeRef => {
-				const type = Metadata.resolveType(typeRef) as LiteralType;
-				return Object.freeze<readonly [enumeratorName: string, value: any]>([type.name, type.value]);
-			}))
-		).slice();
+		return this._entries.slice();
 	}
 }

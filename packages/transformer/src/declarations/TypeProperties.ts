@@ -31,8 +31,10 @@ type BaseTypeProperties = Match<keyof TypeMetadata, {
 	// fullName?: string;
 	module?: ModuleReference;
 	exported?: true;
-	typeParameters?: TypeParameterProperties[];
+	typeArguments?: TransformerTypeReference[];
 	nullable?: true;
+	genericTypeDefinition?: TransformerTypeReference;
+	isGenericTypeDefinition?: true;
 }>;
 
 export type NativeBaseTypeProperties =
@@ -107,7 +109,6 @@ export interface MethodProperties extends MethodBaseProperties
 
 export interface TypeParameterProperties extends NonNativeBaseTypeProperties
 {
-	genericTypeDefinition?: TransformerTypeReference;
 	constraint?: TransformerTypeReference;
 	default?: TransformerTypeReference;
 }

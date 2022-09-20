@@ -37,7 +37,7 @@ export class ArrayTypeBuilder extends TypeBuilderBase
 			kind: TypeKind.Array,
 			name: this.typeName,
 			// fullName: this.fullName,
-			typeParameters: [this.type?.id ?? Type.Any.id],
+			typeArguments: [this.type?.id ?? Type.Any.id],
 			ctor: () => Promise.resolve(Array),
 			ctorSync: () => Array,
 			module: this.moduleReference,
@@ -50,6 +50,6 @@ export class ArrayTypeBuilder extends TypeBuilderBase
 
 		Metadata.addType(type);
 
-		return type;
+		return type as GenericType<ClassType>;
 	}
 }
