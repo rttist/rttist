@@ -58,6 +58,13 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		// let props = type.getProperties();
 
 		const declaration = getDeclaration(symbol);
+		let typeArguments = (type as ts.TypeReference).typeArguments
+			?.map(typeArg => context.metadata.referenceType(typeArg, undefined, context));
+
+		if (typeArguments === undefined || typeArguments.length === 0)
+		{
+			typeArguments = undefined;
+		}
 
 		const properties: TypeProperties = {
 			id: getTypeId(type, context.typeChecker),
@@ -68,14 +75,13 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			methods: getMethods(type, context),
 			// decorators: decorators,
 			exported: declaration && isExported(declaration) ? true : undefined,
+			typeArguments: typeArguments,
+			isGenericTypeDefinition: typeArguments !== undefined && resolvedType == type ? true : undefined
 		};
 
 		if (type !== resolvedType)
 		{
 			properties.genericTypeDefinition = context.metadata.referenceType(resolvedType, undefined, context);
-			properties.isGenericTypeDefinition = true;
-			properties.typeArguments = (type as ts.TypeReference).typeArguments
-				?.map(typeArg => context.metadata.referenceType(typeArg, undefined, context));
 		}
 
 		if ((resolvedType.objectFlags & ts.ObjectFlags.Class) !== 0)
