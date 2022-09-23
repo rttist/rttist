@@ -1,7 +1,7 @@
-import type { Type }     from "../Type";
 import { Metadata }      from "../Metadata";
+import type { Type }     from "../Type";
 import { TypeReference } from "./declarations";
-import { PropertyFlags } from "./PropertyInfo";
+import { DecoratorInfo } from "./DecoratorInfo";
 
 export enum ParameterFlags
 {
@@ -16,6 +16,8 @@ export interface ParameterInfoInitializer
 	flags: ParameterFlags;
 	name: string;
 	type: TypeReference;
+	decorators?: DecoratorInfo[];
+	initializer?: any;
 }
 
 /**
@@ -32,6 +34,11 @@ export class ParameterInfo
 	 * @internal
 	 */
 	private _type?: Type;
+
+	/**
+	 * @internal
+	 */
+	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 
 	/**
 	 * Name of the parameter.
@@ -65,5 +72,14 @@ export class ParameterInfo
 		this._typeReference = initializer.type;
 		this.optional = (initializer.flags & ParameterFlags.Optional) !== 0;
 		this.rest = (initializer.flags & ParameterFlags.Rest) !== 0;
+		this._decorators = Object.freeze(initializer.decorators || []);
+	}
+
+	/**
+	 * Returns array of decorators.
+	 */
+	getDecorators(): ReadonlyArray<DecoratorInfo>
+	{
+		return this._decorators;
 	}
 }

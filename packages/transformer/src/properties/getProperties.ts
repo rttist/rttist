@@ -33,7 +33,13 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 		{
 			const declaration = getDeclaration(memberSymbol);
 			const accessor = getAccessor(declaration);
-			const accessModifier = getAccessModifier(declaration?.modifiers);
+			let accessModifier = getAccessModifier(declaration?.modifiers);
+
+			if (memberSymbol.name.charAt(0) === "#")
+			{
+				accessModifier = AccessModifier.Private;
+			}
+
 			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional
 				|| (
 					declaration
@@ -59,7 +65,11 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 
 			return {
 				name: memberSymbol.escapedName.toString(),
-				type: type === undefined ? TransformerTypeReference.Unknown : context.metadata.referenceType(type, /*declaration.type!*/undefined, context),
+				type: type === undefined ? TransformerTypeReference.Unknown : context.metadata.referenceType(
+					type, /*declaration.type!*/
+					undefined,
+					context
+				),
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
 						isReadonly(declaration?.modifiers) || accessor === Accessor.Getter

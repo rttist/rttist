@@ -109,10 +109,16 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 		if (primitiveTypeReference !== undefined)
 		{
+			// Store the Reference on the type. Performance optimization.
+			setReflectedTypeReference(type, primitiveTypeReference);
+
 			return primitiveTypeReference;
 		}
 
 		log.warn("Unable to generate Id for type without declaration.", printTypeDebugInfo(type, typeChecker));
+
+		// Store the unknown reference on the type. Otherwise it can cause issue because of native recursive types.
+		setReflectedTypeReference(type, TransformerTypeReference.Unknown);
 
 		return TransformerTypeReference.Unknown;
 	}
@@ -132,23 +138,32 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 
 		if (nativeRef !== undefined)
 		{
+			// Store the Reference on the type. Performance optimization.
+			setReflectedTypeReference(type, nativeRef);
+
 			return nativeRef;
 		}
 
 		log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
 
+		// Store the Unknown reference on the type. Otherwise it can cause issue because of native recursive types.
+		setReflectedTypeReference(type, TransformerTypeReference.Unknown);
+
 		return TransformerTypeReference.Unknown;
 	}
 
-	const ref = new TransformerTypeReference(sourceFileId, symbol.escapedName.toString(), undefined, typeArguments, sourceFile);
+	const ref = new TransformerTypeReference(
+		sourceFileId,
+		symbol.escapedName.toString(),
+		undefined,
+		typeArguments,
+		sourceFile
+	);
+
+	// Store the Reference on the type.
 	setReflectedTypeReference(type, ref);
+
 	return ref;
-
-	// ts.getNameOfDeclaration()
-	// context.typeChecker.getSymbolAtLocation()
-	// context.typeChecker.getDeclaredTypeOfSymbol(declaration)
-
-	// return filePath + ":" + symbol.getName();
 }
 
 const nodeModulesPattern = "/node_modules/";

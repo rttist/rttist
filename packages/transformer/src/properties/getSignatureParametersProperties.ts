@@ -1,3 +1,7 @@
+import {
+	ParameterFlags,
+	PropertyFlags
+}                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
 import { TransformerTypeReference } from "../declarations/general";
@@ -11,7 +15,10 @@ import { getDecoratorsProperties }  from "./getDecoratorsProperties";
  * @param signature
  * @param context
  */
-export function getSignatureParametersProperties(signature: ts.Signature, context: Context): Array<ParameterProperties> | undefined
+export function getSignatureParametersProperties(
+	signature: ts.Signature,
+	context: Context
+): Array<ParameterProperties> | undefined
 {
 	const signatureParameters = signature.getParameters();
 
@@ -25,26 +32,30 @@ export function getSignatureParametersProperties(signature: ts.Signature, contex
 	for (let parameterSymbol of signatureParameters)
 	{
 		const declaration = getDeclaration<ts.ParameterDeclaration>(parameterSymbol);
+		const type = declaration
+			? context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration)
+			: context.typeChecker.getDeclaredTypeOfSymbol(parameterSymbol);
+		
+		const optional = (parameterSymbol.flags & ts.SymbolFlags.Optional) !== 0;
 
-		if (declaration)
-		{
-			const type = context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration);
-
-			parameters.push({
-				name: parameterSymbol.getName(),
-				type: type === undefined
-					? TransformerTypeReference.Any
-					: context.metadata.referenceType(type, undefined, context),
-				optional: (parameterSymbol.flags & ts.SymbolFlags.Optional) !== 0,// declaration.questionToken !== undefined || declaration.initializer !== undefined, // TODO: Check if the flag is OK with initializers
-				rest: declaration.dotDotDotToken !== undefined,
-				initializer: getConstantValue(declaration, context),
-				decorators: getDecoratorsProperties(declaration, context)
-			});
-		}
-		else
-		{
-			// TODO: Implement some ELSE logic
-		}
+		parameters.push({
+			name: parameterSymbol.getName(),
+			type: type === undefined
+				? TransformerTypeReference.Any
+				: context.metadata.referenceType(type, undefined, context),
+			flags: (
+					optional
+						? ParameterFlags.Optional
+						: ParameterFlags.None
+				)
+				| (
+					declaration?.dotDotDotToken !== undefined
+						? ParameterFlags.Rest
+						: ParameterFlags.None
+				),
+			initializer: declaration ? getConstantValue(declaration, context) : undefined,
+			decorators: declaration ? getDecoratorsProperties(declaration, context) : undefined
+		});
 	}
 
 	return parameters.length === 0 ? undefined : parameters;

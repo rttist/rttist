@@ -1,7 +1,8 @@
 import type { Type }          from "../Type";
-import type { ParameterInfo } from "./ParameterInfo";
+import { LazyType }           from "../utils/LazyType";
+import { LazyTypeArray }      from "../utils/LazyTypeArray";
 import type { TypeReference } from "./declarations";
-import { Metadata }           from "../Metadata";
+import type { ParameterInfo } from "./ParameterInfo";
 
 export interface SignatureInitializerBase
 {
@@ -20,29 +21,19 @@ export class Signature
 	/**
 	 * @internal
 	 */
-	private readonly _returnTypeReference: TypeReference;
+	private readonly _returnTypeRef: LazyType;
 
 	/**
 	 * @internal
 	 */
-	private readonly _typeParametersReference: ReadonlyArray<TypeReference>;
-
-	/**
-	 * @internal
-	 */
-	private _returnType?: Type;
-
-	/**
-	 * @internal
-	 */
-	private _typeParameters?: ReadonlyArray<Type>;
+	private readonly _typeParametersRef: LazyTypeArray;
 
 	/**
 	 * Return type of the method.
 	 */
 	get returnType(): Type
 	{
-		return this._returnType ?? (this._returnType = Metadata.resolveType(this._returnTypeReference));
+		return this._returnTypeRef.type;
 	}
 
 	/**
@@ -51,8 +42,8 @@ export class Signature
 	constructor(initializer: SignatureInitializerBase)
 	{
 		this._parameters = Object.freeze(initializer.parameters || []);
-		this._typeParametersReference = initializer.typeParameters || [];
-		this._returnTypeReference = initializer.returnType;
+		this._typeParametersRef = new LazyTypeArray(initializer.typeParameters || []);
+		this._returnTypeRef = new LazyType(initializer.returnType);
 	}
 
 	/**
@@ -68,7 +59,6 @@ export class Signature
 	 */
 	getTypeParameters(): ReadonlyArray<Type>
 	{
-		return this._typeParameters?.slice() 
-			?? (this._typeParameters = this._typeParametersReference.map(type => Metadata.resolveType(type)));
+		return this._typeParametersRef.types;
 	}
 }

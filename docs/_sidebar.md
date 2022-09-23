@@ -5,12 +5,13 @@
   - [License](/README.md?id=license)
 - [Usage](/en/usage.md)
   - [How to get a Type](/en/usage.md?id=how-to-get-a-type)
-- How to Start
-  - [Usage With Vanilla TypeScript](/en/usage/vanilla-ts.md)
-  - [Usage With Webpack](/en/usage/webpack.md)
-  - [Usage With Angular](/en/usage/angular.md)
-  - [Usage With Parcel](/en/usage/parcel.md)
-  - [Usage With Rollup](/en/usage/rollup.md)
-  - [Usage With ts-node](/en/usage/ts-node.md)
+- [Getting started](/en/getting-started.md)
+  - Installation
+    - [Using Vanilla TypeScript](/en/usage/vanilla-ts.md)
+    - [Using Webpack](/en/usage/webpack.md)
+    - [Using Angular](/en/usage/angular.md)
+    - [Using Parcel](/en/usage/parcel.md)
+    - [Using Rollup](/en/usage/rollup.md)
+    - [Using ts-node](/en/usage/ts-node.md)
 - Configuration
 - Examples

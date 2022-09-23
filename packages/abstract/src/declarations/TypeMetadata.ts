@@ -1,16 +1,16 @@
+import type { TypeKind } from "../enums";
 import type {
 	AsyncCtorReference,
 	DecoratorInfo,
+	IndexInfo,
 	MethodInfo,
 	ModuleIdentifier,
 	PropertyInfo,
+	Signature,
 	SyncCtorReference,
 	TypeIdentifier,
-	TypeReference,
-	IndexInfo,
-	Signature
+	TypeReference
 }                        from "./index";
-import type { TypeKind } from "../enums";
 
 export interface TypeMetadata
 {
@@ -18,7 +18,6 @@ export interface TypeMetadata
 	kind: TypeKind;
 	module: ModuleIdentifier;
 	name: string;
-	// fullName?: string;
 	exported?: boolean;
 	typeArguments?: TypeReference[];
 	nullable?: boolean;
@@ -51,11 +50,12 @@ export interface TypeParameterTypeMetadata extends TypeMetadata
 
 export interface ClassTypeMetadata extends ExtendableObjectLikeBaseTypeMetadata
 {
-	ctor: AsyncCtorReference;
+	ctor?: AsyncCtorReference;
 	ctorSync?: SyncCtorReference;
 	constructors: ReadonlyArray<Signature>;
 	interface?: TypeReference;
 	decorators: ReadonlyArray<DecoratorInfo>;
+	abstract?: boolean;
 }
 
 export interface InterfaceTypeMetadata extends ExtendableObjectLikeBaseTypeMetadata

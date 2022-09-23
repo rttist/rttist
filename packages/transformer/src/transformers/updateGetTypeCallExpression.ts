@@ -36,7 +36,7 @@ export function updateGetTypeCallExpression(context: Context, node: ts.CallExpre
 	else
 	{
 		return context.metadata.nodeFactory.createTypeResolver(
-			context.metadata.referenceType(typeArgumentType/*, genericTypeNode*/, undefined, context)
+			context.metadata.referenceType(typeArgumentType, undefined, context)
 		);
 	}
 }

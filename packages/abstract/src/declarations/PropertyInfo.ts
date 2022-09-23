@@ -1,17 +1,17 @@
-import type { DecoratorInfo } from "./DecoratorInfo";
-import type { TypeReference } from "./declarations";
-import type { Type }          from "../Type";
 import {
 	AccessModifier,
 	Accessor
 }                             from "../enums";
-import { Metadata }           from "../Metadata";
+import type { Type }          from "../Type";
 import {
 	AccessModifierFlagsOffset,
 	AccessorFlagsOffset,
 	getAccessModifier,
 	getAccessor
 }                             from "../utils/flags";
+import { LazyType }           from "../utils/LazyType";
+import type { TypeReference } from "./declarations";
+import type { DecoratorInfo } from "./DecoratorInfo";
 
 export enum PropertyFlags
 {
@@ -49,12 +49,7 @@ export class PropertyInfo
 	/**
 	 * @internal
 	 */
-	private readonly _typeReference: TypeReference;
-
-	/**
-	 * @internal
-	 */
-	private _type?: Type;
+	private readonly _typeRef: LazyType;
 
 	/**
 	 * Property name
@@ -66,7 +61,7 @@ export class PropertyInfo
 	 */
 	get type(): Type
 	{
-		return this._type ?? (this._type = Metadata.resolveType(this._typeReference));
+		return this._typeRef.type;
 	}
 
 	/**
@@ -95,7 +90,7 @@ export class PropertyInfo
 	constructor(initializer: PropertyInfoInitializer)
 	{
 		this.name = initializer.name;
-		this._typeReference = initializer.type;
+		this._typeRef = new LazyType<Type>(initializer.type);
 		this._decorators = Object.freeze(initializer.decorators || []);
 		this.accessModifier = getAccessModifier(initializer.flags);
 		this.accessor = getAccessor(initializer.flags);

@@ -9,6 +9,7 @@
 		"dev/hookyns/1"
 	],
 	"scripts": {
+		"startdocs": "docsify serve docs",
 		"tsc": "tsc --build",
 		"watch": "tsc --build --watch",
 		"test": "ttsc -p ./tests/tsconfig.json && jest",

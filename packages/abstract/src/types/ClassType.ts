@@ -18,12 +18,14 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	/** @internal */
 	private readonly _interface?: LazyType<InterfaceType | TypeAliasType>;
 	/** @internal */
-	private readonly _ctor: AsyncCtorReference;
+	private readonly _ctor?: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
 	/** @internal */
 	private readonly _constructors: ReadonlyArray<Signature>;
 	/** @internal */
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
+	/** @internal */
+	private readonly _abstract: boolean;
 
 	/**
 	 * Interface which this type implements
@@ -31,6 +33,14 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	get interface(): InterfaceType | TypeAliasType | undefined
 	{
 		return this._interface?.type;
+	}
+	
+	/**
+	 * Interface which this type implements
+	 */
+	get abstract(): boolean
+	{
+		return this._abstract;
 	}
 
 	constructor(initializer: ClassTypeMetadata)
@@ -43,6 +53,7 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 			: undefined;
 		this._constructors = Object.freeze(initializer.constructors ?? []);
 		this._decorators = Object.freeze(initializer.decorators ?? []);
+		this._abstract = initializer.abstract ?? false;
 	}
 
 	/**

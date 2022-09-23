@@ -1,6 +1,6 @@
 import type { Type }          from "../Type";
+import { LazyType }           from "../utils/LazyType";
 import type { TypeReference } from "./declarations";
-import { Metadata }           from "../Metadata";
 
 export enum IndexFlags
 {
@@ -24,29 +24,19 @@ export class IndexInfo
 	/**
 	 * @internal
 	 */
-	private readonly _keyTypeReference: TypeReference;
+	private readonly _keyTypeRef: LazyType;
 
 	/**
 	 * @internal
 	 */
-	private readonly _typeReference: TypeReference;
-
-	/**
-	 * @internal
-	 */
-	private _keyType?: Type;
-
-	/**
-	 * @internal
-	 */
-	private _type?: Type;
+	private readonly _typeRef: LazyType;
 
 	/**
 	 * Index key type.
 	 */
 	get keyType(): Type
 	{
-		return this._keyType ?? (this._keyType = Metadata.resolveType(this._keyTypeReference));
+		return this._keyTypeRef.type;
 	}
 
 	/**
@@ -54,7 +44,7 @@ export class IndexInfo
 	 */
 	get type(): Type
 	{
-		return this._type ?? (this._type = Metadata.resolveType(this._typeReference));
+		return this._typeRef.type;
 	}
 
 	/**
@@ -68,8 +58,8 @@ export class IndexInfo
 	 */
 	constructor(initializer: IndexInfoInitializer)
 	{
-		this._keyTypeReference = initializer.key;
-		this._typeReference = initializer.type;
+		this._keyTypeRef = new LazyType<Type>(initializer.key);
+		this._typeRef = new LazyType<Type>(initializer.type);
 		this.readonly = (initializer.flags & IndexFlags.Readonly) !== 0;
 	}
 }

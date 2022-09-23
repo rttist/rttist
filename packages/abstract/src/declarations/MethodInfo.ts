@@ -1,9 +1,9 @@
+import { AccessModifier }     from "../enums";
 import {
 	AccessModifierFlagsOffset,
 	getAccessModifier
 }                             from "../utils/flags";
 import type { DecoratorInfo } from "./DecoratorInfo";
-import { AccessModifier }     from "../enums";
 import { PropertyFlags }      from "./PropertyInfo";
 import { Signature }          from "./Signature";
 
