@@ -19,6 +19,10 @@ function ct(name: string, kind: NativeTypeKind)
 }
 
 const NameMap: { [name: string]: TransformerTypeReference } = {
+	String: TransformerTypeReference.String,
+	Number: TransformerTypeReference.Number,
+	Boolean: TransformerTypeReference.Boolean,
+	BigInt: TransformerTypeReference.BigInt,
 	Date: ct("Date", TypeKind.Date),
 	Int8Array: ct("Int8Array", TypeKind.Int8Array),
 	Uint8Array: ct("Uint8Array", TypeKind.Uint8Array),
@@ -41,6 +45,7 @@ const NameMap: { [name: string]: TransformerTypeReference } = {
 	Atomics: ct("Atomics", TypeKind.Atomics),
 	DataView: ct("DataView", TypeKind.DataView),
 	Array: ct("Array", TypeKind.ArrayDefinition),
+	ReadonlyArray: ct("ReadonlyArray", TypeKind.ReadonlyArrayDefinition),
 	Map: ct("Map", TypeKind.MapDefinition),
 	WeakMap: ct("WeakMap", TypeKind.WeakMapDefinition),
 	Set: ct("Set", TypeKind.SetDefinition),

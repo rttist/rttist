@@ -1,9 +1,13 @@
 import { TransformerContext } from "../contexts/TransformerContext";
 import {
 	writeFileSync,
-	readFileSync
+	readFileSync,
+	mkdirSync
 }                             from "fs";
-import { join }               from "path";
+import {
+	join,
+	dirname
+}                             from "path";
 import * as ts                from "typescript";
 
 /**
@@ -30,10 +34,12 @@ export class LibraryFileEmitter
 		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
 
 		// Write typelib
+		mkdirSync(dirname(typelibOutputPath), { recursive: true });
 		writeFileSync(typelibOutputPath, transpiledTypelib, { encoding: "utf8", flag: "w" });
 
 		// Write index
 		const indexOutputPath = this.transformerContext.config.metadataIndexPath;
+		mkdirSync(dirname(indexOutputPath), { recursive: true });
 		writeFileSync(indexOutputPath, this.getIndex(), { encoding: "utf8", flag: "w" });
 
 		return Promise.resolve();
@@ -60,12 +66,12 @@ export class LibraryFileEmitter
 	{
 		return ts.factory.createSourceFile(
 			[
-				// TODO: Add import `import from "@rttist/abstract";` or `require("@rttist/abstract")` based on ESM
 				ts.factory.createImportDeclaration(
 					undefined,
 					undefined,
 					ts.factory.createStringLiteral("@rttist/abstract")
 				),
+				...this.createDependantTypeLibsImports(),
 				ts.factory.createExpressionStatement(metadataExpression)
 			],
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
@@ -114,5 +120,20 @@ export class LibraryFileEmitter
 			return `{"module": "${props.id}","types":[\n\t${types.join(",\n\t")}\n ]}`;
 		});
 		return "[\n " + modules.join(",\n ") + "]";
+	}
+
+	/**
+	 * Generate import declarations for all the dependencies with typelibs.
+	 * @private
+	 */
+	private createDependantTypeLibsImports()
+	{
+		return this.transformerContext.dependencyManager.dependencies
+			.filter(d => d.typelibPath)
+			.map(d => ts.factory.createImportDeclaration(
+				undefined,
+				undefined,
+				ts.factory.createStringLiteral(d.typelibPath!)
+			));
 	}
 }

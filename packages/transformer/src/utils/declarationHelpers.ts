@@ -28,8 +28,8 @@ export function getClassModifiers(declaration: ts.ClassLikeDeclaration): ClassFl
 }
 
 export type DeclarationHeritageClauses = {
-	extends?: TransformerTypeReference;
-	implements?: TransformerTypeReference;
+	extends?: TransformerTypeReference[];
+	implements?: TransformerTypeReference[];
 };
 
 export function getHeritageClauses(
@@ -45,22 +45,22 @@ export function getHeritageClauses(
 
 		if (ext)
 		{
-			result.extends = context.metadata.referenceType(
-				context.typeChecker.getTypeFromTypeNode(ext.types[0]),
+			result.extends = ext.types.map(t => context.metadata.referenceType(
+				context.typeChecker.getTypeFromTypeNode(t),
 				undefined,
 				context
-			);
+			));
 		}
 
 		const impl = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ImplementsKeyword)[0];
 
 		if (impl)
 		{
-			result.implements = context.metadata.referenceType(
-				context.typeChecker.getTypeFromTypeNode(impl.types[0]),
+			result.implements = impl.types.map(t => context.metadata.referenceType(
+				context.typeChecker.getTypeFromTypeNode(t),
 				undefined,
 				context
-			);
+			));
 		}
 	}
 

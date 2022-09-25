@@ -66,6 +66,7 @@ export class Config
 
 	public readonly compilerOptions: ts.CompilerOptions;
 	public readonly parsedCommandLine?: ts.ParsedCommandLine;
+	public readonly moduleResolution: ts.ModuleResolutionKind;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
 	{
@@ -83,7 +84,12 @@ export class Config
 		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
 
 		this.compilerOptions = compilerOptions;
-		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(tsConfigPath, undefined, ts.sys as any);
+		this.moduleResolution = this.getModuleResolutionKind(compilerOptions);
+		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(
+			tsConfigPath,
+			undefined,
+			ts.sys as any
+		);
 
 		this.include = metadataConfig.get("include")!.map(pattern => this.toRegex(pattern));
 		this.exclude = metadataConfig.get("exclude")!.map(pattern => this.toRegex(pattern));
@@ -234,5 +240,12 @@ export class Config
 			.addObject(transformerConfigSection)
 			.addJsonFile("reflect.config.json", { optional: true })
 			.addJsFile("reflect.config.js", { optional: true });
+	}
+
+	private getModuleResolutionKind(options: ts.CompilerOptions)
+	{
+		return (ts as any).getEmitModuleResolutionKind?.(options)
+			?? options.moduleResolution
+			?? ts.ModuleResolutionKind.Classic;
 	}
 }

@@ -1,4 +1,5 @@
 import "@rttist/abstract";
+import { NativeTypes } from "@rttist/dev-pkg1/dist/native";
 import { SomeType } from "./SomeType";
 
 Reflect.getType<any>();
@@ -9,8 +10,11 @@ Reflect.getType<void>();
 
 Reflect.getType<string>();
 Reflect.getType<number>();
-Reflect.getType<BigInt>();
+Reflect.getType<boolean>();
+Reflect.getType<String>();
+Reflect.getType<Number>();
 Reflect.getType<Boolean>();
+Reflect.getType<BigInt>();
 Reflect.getType<Date>();
 
 Reflect.getType<Array<number>>();
@@ -57,10 +61,16 @@ Reflect.getType<Obj>();
 Reflect.getType<Obj>();
 Reflect.getType<ObjAlias>();
 Reflect.getType<{ foo: string, bar: number }>();
+
 Reflect.getType<SomeType>();
+
+function genericFunction<T, U>(x: T, y: U) {
+	
+}
 
 class Foo<T>
 {
+	native: NativeTypes;
 	promise: Promise<boolean>;
 	regex = /sss/;
 	date = new Date();

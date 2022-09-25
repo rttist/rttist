@@ -8,6 +8,7 @@ import { TransformerContext }       from "../contexts/TransformerContext";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
 import { TransformerTypeReference } from "../declarations/general";
 import { TypeProperties }           from "../declarations/TypeProperties";
+import { DependencyManager }        from "../dependencies/DependencyManager";
 import { getTypeRef }               from "../utils/typeHelpers";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
@@ -34,6 +35,11 @@ export class MetadataLibrary
 	 * Metadata factory.
 	 */
 	public readonly nodeFactory: MetadataNodeFactory;
+
+	/**
+	 * Manager of package dependencies.
+	 */
+	public readonly dependencyManager: DependencyManager;
 
 	/**
 	 * Map of types used in which SourceFile.
@@ -64,6 +70,7 @@ export class MetadataLibrary
 		}
 
 		this.nodeFactory = new MetadataNodeFactory();
+		this.dependencyManager = context.dependencyManager;
 	}
 
 	/**
@@ -100,7 +107,14 @@ export class MetadataLibrary
 		const typeRef: TransformerTypeReference = getTypeRef(type, context.typeChecker);
 
 		// Native type or already processed type
-		if (typeRef.isNative() || this.processedTypes.has(typeRef.id))
+		if (
+			typeRef.isNative()
+			|| this.processedTypes.has(typeRef.id)
+			// or it has custom typelib
+			|| (
+				typeRef.sourceFile
+				&& this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.typelibPath
+			))
 		{
 			return typeRef;
 		}

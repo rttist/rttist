@@ -18,7 +18,7 @@ import { getNodeLocationText } from "../utils/traceHelpers";
 import {
 	getSourceFileId,
 	getTypeId
-} from "../utils/typeHelpers";
+}                              from "../utils/typeHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -93,7 +93,12 @@ export class ModuleMetadata
 		{
 			return false;
 		}
-		context.log.trace("Adding type", getTypeId(type, context.typeChecker));
+
+		if (context.config.debugMode)
+		{
+			context.log.trace("Adding type", getTypeId(type, context.typeChecker));
+		}
+
 		const typeInfo: TypeInfo = {};
 		this.types.set(type, typeInfo);
 

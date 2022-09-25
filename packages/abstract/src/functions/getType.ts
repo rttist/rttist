@@ -1,4 +1,3 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import {
 	getGlobalThis,
 	getTypeOfRuntimeValue

@@ -1,7 +1,6 @@
 ﻿export * from "./ClassType";
 export * from "./ConditionalType";
 export * from "./EnumType";
-export * from "./ExtendableObjectLikeTypeBase";
 export * from "./FunctionType";
 export * from "./GenericType";
 export * from "./InterfaceType";

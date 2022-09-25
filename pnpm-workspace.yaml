@@ -3,3 +3,5 @@
     - 'packages/abstract'
     - 'packages/transformer'
     - 'dev/hookyns/1'
+    - 'dev-packages/pkg1'
+    - 'dev-packages/pkg2-mjs'

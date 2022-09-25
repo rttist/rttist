@@ -8,7 +8,7 @@ import {
 }                                  from "../../declarations/mappers";
 import {
 	ClassProperties,
-	TypeProperties
+	InterfaceProperties
 }                                  from "../../declarations/TypeProperties";
 import {
 	getClassModifiers,
@@ -78,12 +78,10 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		const declaration = getDeclaration(symbol);
 		const typeArguments = getTypeArgumentsReference(type, context);
 
-		const properties: TypeProperties = {
+		const properties: ClassProperties & InterfaceProperties = {
 			id: getTypeId(type, context.typeChecker),
 			kind: kind,
 			name: symbol?.getEscapedName().toString() ?? "",
-			properties: getProperties(type, context),
-			methods: getMethods(type, context),
 			typeArguments: typeArguments,
 			isGenericTypeDefinition: typeArguments !== undefined && resolvedType == type ? true : undefined
 		};
@@ -91,13 +89,22 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		if (type !== resolvedType)
 		{
 			properties.genericTypeDefinition = context.metadata.referenceType(resolvedType, undefined, context);
+
+			// If it is generic type with generic type definition, 
+			// we will not serialize whole type again an again for all the variants. 
+			// All the types will be the same, just generic parameters will differ.
+			// This can be handled in runtime part.
+			return properties;
 		}
+
+		properties.properties = getProperties(type, context);
+		properties.methods = getMethods(type, context);
 
 		if (kind === TypeKind.Class)
 		{
-			(properties as ClassProperties).constructors = getConstructors(type, context);
-			(properties as ClassProperties).ctor = undefined; // TODO: Create ImportDetails and let middlewares to generate imports or generate import right here?? But Imports must be generated somewhere to support lazy loadings of webpack etc.
-			(properties as ClassProperties).ctorSync = undefined;
+			properties.constructors = getConstructors(type, context);
+			properties.ctor = undefined; // TODO: Create ImportDetails and let middlewares to generate imports or generate import right here?? But Imports must be generated somewhere to support lazy loadings of webpack etc.
+			properties.ctorSync = undefined;
 		}
 
 		if (declaration)
@@ -106,15 +113,19 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 				declaration as ts.ClassLikeDeclarationBase | ts.InterfaceDeclaration,
 				context
 			);
-			(properties as ClassProperties).baseType = heritageClauses.extends;
-			(properties as ClassProperties).interface = heritageClauses.implements;
 
 			if (kind === TypeKind.Class)
 			{
+				(properties as ClassProperties).extends = heritageClauses.extends?.[0];
+				(properties as ClassProperties).implements = heritageClauses.implements;
 				(properties as ClassProperties).decorators = getDecoratorsProperties(declaration, context);
 
 				const modifiers = getClassModifiers(declaration as ts.ClassLikeDeclaration);
 				(properties as ClassProperties).abstract = modifiers.abstract;
+			}
+			else
+			{
+				(properties as InterfaceProperties).extends = heritageClauses.extends;
 			}
 
 			if (isExported(declaration))

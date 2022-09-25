@@ -32,11 +32,6 @@ export interface ObjectLikeBaseTypeMetadata extends TypeMetadata
 	indexes: ReadonlyArray<IndexInfo>;
 }
 
-export interface ExtendableObjectLikeBaseTypeMetadata extends ObjectLikeBaseTypeMetadata
-{
-	baseType?: TypeReference;
-}
-
 export interface LiteralTypeMetadata extends TypeMetadata
 {
 	value?: any;
@@ -48,18 +43,20 @@ export interface TypeParameterTypeMetadata extends TypeMetadata
 	default?: TypeReference;
 }
 
-export interface ClassTypeMetadata extends ExtendableObjectLikeBaseTypeMetadata
+export interface ClassTypeMetadata extends ObjectLikeBaseTypeMetadata
 {
 	ctor?: AsyncCtorReference;
 	ctorSync?: SyncCtorReference;
 	constructors: ReadonlyArray<Signature>;
-	interface?: TypeReference;
+	implements?: TypeReference[];
 	decorators: ReadonlyArray<DecoratorInfo>;
 	abstract?: boolean;
+	extends?: TypeReference;
 }
 
-export interface InterfaceTypeMetadata extends ExtendableObjectLikeBaseTypeMetadata
+export interface InterfaceTypeMetadata extends ObjectLikeBaseTypeMetadata
 {
+	extends?: TypeReference[];
 }
 
 export interface TypeAliasTypeMetadata extends TypeMetadata

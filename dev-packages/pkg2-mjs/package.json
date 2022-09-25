@@ -1,8 +1,8 @@
 {
-	"name": "@rttist/dev-pkg1",
+	"name": "@rttist/dev-pkg2-mjs",
 	"license": "MIT",
 	"version": "1.0.0-dev20220901",
-	"description": "@rttist/dev-pkg1",
+	"description": "@rttist/pkg2-mjs",
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"
@@ -10,7 +10,7 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "ttsc",
+		"prepare": "tsc",
 		"watch": "tsc --watch"
 	},
 	"files": [
@@ -23,7 +23,6 @@
 	},
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*",
-		"typescript": "^4.8.3",
-		"ttypescript": "^1.5.13"
+		"typescript": "^4.8.3"
 	}
 }

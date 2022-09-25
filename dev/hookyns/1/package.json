@@ -6,7 +6,8 @@
 		"typelib": "dist/metadata.typelib.js"
 	},
 	"dependencies": {
-		"@rttist/abstract": "workspace:*"
+		"@rttist/abstract": "workspace:*",
+		"@rttist/dev-pkg1": "workspace:*"
 	},
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*"

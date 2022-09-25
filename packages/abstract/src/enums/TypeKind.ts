@@ -73,6 +73,7 @@ export enum TypeKind
 	Jsx,
 	
 	ArrayDefinition,
+	ReadonlyArrayDefinition,
 	// TupleDefinition,
 	MapDefinition,
 	WeakMapDefinition,
@@ -122,6 +123,7 @@ export type NativeTypeKind =
 	| TypeKind.Atomics
 	| TypeKind.DataView
 	| TypeKind.ArrayDefinition
+	| TypeKind.ReadonlyArrayDefinition
 	| TypeKind.MapDefinition
 	| TypeKind.WeakMapDefinition
 	| TypeKind.SetDefinition

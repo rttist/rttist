@@ -22,7 +22,7 @@ export function getConstantValue(
 	if (context.config.debugMode)
 	{
 		context.log.warn(
-			"Unexpected decorator argument. Only constant values are allowed.\n\t"
+			"Unexpected value. Only constant values are allowed.\n\t"
 			+ getNodeLocationText(node)
 		);
 	}

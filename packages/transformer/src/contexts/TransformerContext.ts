@@ -125,8 +125,8 @@ export class TransformerContext
 		this.rootFileNames = new Set(program.getRootFileNames());
 
 		this.metadataManager = new MetadataManager(this);
-		this.metadata = MetadataLibrary.init(this);
 		this.dependencyManager = new DependencyManager(this);
+		this.metadata = MetadataLibrary.init(this);
 	}
 
 	/**

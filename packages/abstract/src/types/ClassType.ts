@@ -3,20 +3,18 @@ import type {
 	ClassTypeMetadata,
 	DecoratorInfo,
 	Signature
-}                                       from "../declarations";
-import type { GenericType }             from "./GenericType";
-import type { InterfaceType }           from "./InterfaceType";
-import type { TypeAliasType }           from "./TypeAliasType";
-import { LazyType }                     from "../utils/LazyType";
-import { Type }                         from "../Type";
-import { ExtendableObjectLikeTypeBase } from "./ExtendableObjectLikeTypeBase";
+}                             from "../declarations";
+import type { TypeAliasType } from "./TypeAliasType";
+import type { InterfaceType } from "./InterfaceType";
+import type { Type }          from "../Type";
+import { LazyType }           from "../utils/LazyType";
+import { LazyTypeArray }      from "../utils/LazyTypeArray";
+import { ObjectLikeTypeBase } from "./ObjectLikeTypeBase";
 
-export class ClassType extends ExtendableObjectLikeTypeBase
+export class ClassType extends ObjectLikeTypeBase
 {
-	// private readonly _interfaceReference?: TypeReference;
-
 	/** @internal */
-	private readonly _interface?: LazyType<InterfaceType | TypeAliasType>;
+	private readonly _implementsRef: LazyTypeArray<InterfaceType | TypeAliasType>;
 	/** @internal */
 	private readonly _ctor?: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
@@ -26,15 +24,26 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 	/** @internal */
 	private readonly _abstract: boolean;
+	/** @internal */
+	private readonly _extendsRef?: LazyType<ClassType>;
+
+	/**
+	 * Base type
+	 * @description Base type from which this type extends from or undefined if type is Object.
+	 */
+	get extends(): ClassType | undefined
+	{
+		return this._extendsRef?.type;
+	}
 
 	/**
 	 * Interface which this type implements
 	 */
-	get interface(): InterfaceType | TypeAliasType | undefined
+	get implements(): ReadonlyArray<InterfaceType | TypeAliasType>
 	{
-		return this._interface?.type;
+		return this._implementsRef.types;
 	}
-	
+
 	/**
 	 * Interface which this type implements
 	 */
@@ -48,9 +57,10 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 		super(initializer);
 
 		this._ctor = initializer.ctor;
-		this._interface = initializer.interface !== undefined
-			? new LazyType<InterfaceType | TypeAliasType>(initializer.interface)
-			: undefined;
+		this._implementsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(initializer.implements || []);
+		this._extendsRef = initializer.extends === undefined
+			? undefined
+			: new LazyType<ClassType>(initializer.extends);
 		this._constructors = Object.freeze(initializer.constructors ?? []);
 		this._decorators = Object.freeze(initializer.decorators ?? []);
 		this._abstract = initializer.abstract ?? false;
@@ -87,16 +97,16 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	isSubclassOf(classType: Type): boolean
 	{
 		return classType.isClass() && (
-			(this.baseType !== undefined && (
-				this.baseType.is(classType)
+			(this.extends !== undefined && (
+				this.extends.is(classType)
 				|| (
-					this.baseType.isClass()
-					&& this.baseType.isSubclassOf(classType)
+					this.extends.isClass()
+					&& this.extends.isSubclassOf(classType)
 				)
 				|| (
-					this.baseType.isGenericType()
-					&& this.baseType.genericTypeDefinition.isClass()
-					&& this.baseType.genericTypeDefinition.isSubclassOf(classType)
+					this.extends.isGenericType()
+					&& this.extends.genericTypeDefinition.isClass()
+					&& this.extends.genericTypeDefinition.isSubclassOf(classType)
 				)
 			))
 			|| (this.isGenericType() && (
@@ -110,25 +120,16 @@ export class ClassType extends ExtendableObjectLikeTypeBase
 	}
 
 	/**
-	 * Determines whether the current Type derives from the specified Type.
+	 * Determines whether the current Type is derived from the specified targetType.
 	 * @param {Type} targetType
 	 */
 	isDerivedFrom(targetType: Type): boolean
 	{
-		if (super.isDerivedFrom(targetType))
-		{
-			return true;
-		}
-
-		if (this.interface !== undefined)
-		{
-			const ifce = this.interface.isTypeAlias()
-				? this.interface.target as InterfaceType
-				: this.interface;
-
-			return ifce.isDerivedFrom(targetType);
-		}
-
-		return false;
+		return this.is(targetType)
+			|| this.extends?.isDerivedFrom(targetType)
+			|| this.implements.some(
+				t => t.isInterface() ? t.isDerivedFrom(targetType) : t.is(targetType)
+			)
+			|| false;
 	}
 }

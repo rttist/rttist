@@ -48,17 +48,22 @@ export function isObject(type: ts.Type): type is ts.ObjectType
 
 export function getSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Symbol | undefined
 {
-	if (type.symbol === undefined)
+	const symbol = ((type.aliasSymbol?.flags || 0) & ts.SymbolFlags.TypeAlias) !== 0
+		? type.aliasSymbol
+		: type.symbol;
+
+	if (symbol === undefined)
 	{
 		return undefined;
 	}
 
-	if ((type.symbol.flags & ts.SymbolFlags.Alias) !== 0)
+	// TODO: What is alias? It's not TypeAlias. Do we want to follow aliases?
+	if ((symbol.flags & ts.SymbolFlags.Alias) !== 0)
 	{
-		return typeChecker.getAliasedSymbol(type.symbol);
+		return typeChecker.getAliasedSymbol(symbol);
 	}
 
-	return type.symbol;
+	return symbol;
 }
 
 export function getMajorTypeFlag(type: ts.Type)
@@ -95,9 +100,59 @@ export function getTypeId(type: ts.Type, typeChecker: ts.TypeChecker): TypeIdent
  */
 export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): TransformerTypeReference
 {
+	// TODO: Maybe pass context instead of just typeChecker. Create context for each type visited 
+	//  and if we generate ref for nested type, we will concat base type name and current type name, as path
+	//  Otherwise we'll get duplicit ID's for eg. dynamic classes inside class declaration.
+	/*
+	Example: 
+	export class Main {
+		public static readonly Child = class {
+		
+		}
+	}
+	export class Main2 {
+		public static readonly Child = class {
+		
+		}
+	}
+	
+	So both classes will have the same name with current implementation.
+	 */
+
 	if (hasReflectedTypeReference(type))
 	{
 		return type._typeReference;
+	}
+
+	// TODO: Refactor all this new TransformerTypeReference(), setReflectedTypeReference ref, return ref;
+
+	if (type.isUnion())
+	{
+		const ref = new TransformerTypeReference(
+			ModuleIds.Native,
+			"|",
+			undefined,
+			type.types.map(t => getTypeId(t, typeChecker))
+		);
+
+		// Store the Reference on the type.
+		setReflectedTypeReference(type, ref);
+
+		return ref;
+	}
+	else if (type.isIntersection())
+	{
+		const ref = new TransformerTypeReference(
+			ModuleIds.Native,
+			"&",
+			undefined,
+			type.types.map(t => getTypeId(t, typeChecker))
+		);
+
+		// Store the Reference on the type.
+		setReflectedTypeReference(type, ref);
+
+		return ref;
 	}
 
 	const symbol = getSymbol(type, typeChecker);
@@ -123,6 +178,31 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 		return TransformerTypeReference.Unknown;
 	}
 
+	// If it's type parameter
+	if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
+	{
+		const parentSymbol = (type.symbol as any)?.parent;
+		const parentType = parentSymbol && typeChecker.getDeclaredTypeOfSymbol(parentSymbol);
+
+		if (parentType)
+		{
+			const parentRef = getTypeRef(parentType, typeChecker);
+
+			const ref = new TransformerTypeReference(
+				parentRef.moduleIdentifier,
+				parentRef.name + ":" + symbol.escapedName,
+				undefined,
+				undefined,
+				parentRef.sourceFile
+			);
+
+			// Store the Reference on the type.
+			setReflectedTypeReference(type, ref);
+
+			return ref;
+		}
+	}
+
 	const sourceFile = declaration.getSourceFile();
 	const sourceFileId = getSourceFileId(sourceFile);
 
@@ -144,7 +224,10 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 			return nativeRef;
 		}
 
-		log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
+		if (TransformerContext.instance.config.debugMode)
+		{
+			log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
+		}
 
 		// Store the Unknown reference on the type. Otherwise it can cause issue because of native recursive types.
 		setReflectedTypeReference(type, TransformerTypeReference.Unknown);
@@ -185,7 +268,9 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 
 		if (dependencyInfo !== undefined)
 		{
-			const sourceFileId = "@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length);
+			const sourceFileId = removeExtensions(
+				"@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length)
+			);
 			setSourceFileReflectId(sourceFile, sourceFileId);
 			return sourceFileId;
 		}
@@ -199,11 +284,40 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	const filePath = getOutPathForSourceFile(sourceFile.fileName);
 	const nodeModulesIndex = filePath.lastIndexOf(nodeModulesPattern);
 
-	const sourceFileId = nodeModulesIndex != -1
-		? "@" + filePath.slice(nodeModulesIndex + nodeModulesPattern.length)
-		: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/");
+	const sourceFileId = removeExtensions(
+		nodeModulesIndex != -1
+			? "@" + filePath.slice(nodeModulesIndex + nodeModulesPattern.length)
+			: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/")
+	);
 
 	setSourceFileReflectId(sourceFile, sourceFileId);
+
+	return sourceFileId;
+}
+
+function removeExtensions(sourceFileId: string)
+{
+	if (sourceFileId.slice(-5) === ".d.ts")
+	{
+		return sourceFileId.slice(0, -5);
+	}
+
+	const last3 = sourceFileId.slice(-3);
+
+	if (last3 === ".js" || last3 === ".ts")
+	{
+		return sourceFileId.slice(0, -3);
+	}
+
+	const last4 = sourceFileId.slice(-4);
+
+	if (last4 === ".jsx" || last4 === ".tsx"
+		|| last4 === ".cjs" || last4 === ".cts"
+		|| last4 === ".mjs" || last4 === ".mts"
+	)
+	{
+		return sourceFileId.slice(0, -4);
+	}
 
 	return sourceFileId;
 }

@@ -9,7 +9,6 @@ import type {
 	ClassType,
 	ConditionalType,
 	EnumType,
-	ExtendableObjectLikeTypeBase,
 	FunctionType,
 	GenericType,
 	InterfaceType,
@@ -125,15 +124,6 @@ export class Type
 	{
 		return this._kind;
 	}
-
-	// /**
-	//  * Full qualified name of the type.
-	//  * @description Contains file path based to project root.
-	//  */
-	// get fullName(): string
-	// {
-	// 	return this._fullName;
-	// }
 
 	/**
 	 * Module which declare type represented by the this Type instance.
@@ -296,15 +286,6 @@ export class Type
 	 * Returns a value indicating whether the Type is a class or not.
 	 */
 	isClass(): this is ClassType
-	{
-		return this._kind === TypeKind.Class;
-	}
-
-	/**
-	 * Returns a value indicating whether the Type can extend other type or not.
-	 * @description True for classes and interfaces.
-	 */
-	isExtendable(): this is ExtendableObjectLikeTypeBase
 	{
 		return this._kind === TypeKind.Class;
 	}

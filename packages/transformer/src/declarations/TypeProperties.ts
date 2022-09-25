@@ -3,7 +3,6 @@
 	ClassTypeMetadata,
 	DecoratorInfo,
 	DecoratorInfoInitializer,
-	ExtendableObjectLikeBaseTypeMetadata,
 	IndexInfoInitializer,
 	InterfaceTypeMetadata,
 	MethodFlags,
@@ -20,7 +19,7 @@
 	TypeIdentifier,
 	TypeKind,
 	TypeMetadata
-} from "@rttist/abstract";
+}                         from "@rttist/abstract";
 import { NativeTypeKind } from "@rttist/abstract/dist/enums/TypeKind";
 import {
 	Match,
@@ -78,13 +77,13 @@ export interface ImportInfo
 }
 
 export type ParameterProperties = Match<keyof ParameterInfoInitializer,
-{
-	name: string;
-	type: TransformerTypeReference;
-	flags: ParameterFlags;
-	initializer?: any;
-	decorators?: DecoratorProperties[];
-}>;
+	{
+		name: string;
+		type: TransformerTypeReference;
+		flags: ParameterFlags;
+		initializer?: any;
+		decorators?: DecoratorProperties[];
+	}>;
 
 export type SignatureProperties = Match<keyof SignatureInitializerBase,
 	{
@@ -93,12 +92,13 @@ export type SignatureProperties = Match<keyof SignatureInitializerBase,
 		returnType: TransformerTypeReference;
 	}>;
 
-export type MethodProperties = Match<keyof MethodInfoInitializer, {
-	flags: MethodFlags;
-	name: string;
-	signatures: SignatureProperties[];
-	decorators?: DecoratorProperties[];
-}>;
+export type MethodProperties = Match<keyof MethodInfoInitializer,
+	{
+		flags: MethodFlags;
+		name: string;
+		signatures: SignatureProperties[];
+		decorators?: DecoratorProperties[];
+	}>;
 
 // export interface TemplateProperties extends TemplateInfoInitializer
 // {
@@ -152,29 +152,26 @@ export type ObjectProperties = Match<keyof ObjectLikeBaseTypeMetadata,
 	methods?: MethodProperties[];
 }>;
 
-export type ExtendableObjectProperties = Match<keyof ExtendableObjectLikeBaseTypeMetadata,
-	ObjectProperties &
-	{
-		baseType?: TransformerTypeReference;
-	}>;
-
 export type ImportDetails = {
 	module: string,
 	exportName: string
 };
 
 export type ClassProperties = Match<keyof ClassTypeMetadata,
-	ExtendableObjectProperties & {
+	ObjectProperties & {
 	ctor?: ImportDetails;
 	ctorSync?: ImportDetails;
 	constructors?: ReadonlyArray<SignatureProperties>;
-	interface?: TransformerTypeReference;
+	extends?: TransformerTypeReference;
+	implements?: TransformerTypeReference[];
 	decorators?: ReadonlyArray<DecoratorProperties>;
 	abstract?: true;
 }>;
 
 export type InterfaceProperties = Match<keyof InterfaceTypeMetadata,
-	ExtendableObjectProperties & {}>;
+	ObjectProperties & {
+	extends?: TransformerTypeReference[];
+}>;
 
 /**
  * Properties of a Type.

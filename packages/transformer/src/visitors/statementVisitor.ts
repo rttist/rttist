@@ -5,6 +5,19 @@ import { updateGetTypeCallExpression } from "../transformers/updateGetTypeCallEx
 
 export function statementVisitor<TNode extends ts.Statement>(node: TNode, context: Context): ts.VisitResult<ts.Node>
 {
+	return context.createNestedContext(
+		visit,
+		nestedContext => ts.visitEachChild(
+			node,
+			// visit(node, context), 
+			nestedContext.visitor,
+			context.transformationContext
+		)
+	);
+}
+
+function visit(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
+{
 	if (ts.isCallExpression(node) && node.typeArguments?.length)
 	{
 		// TODO: Support direct call of getType() imported from the package.

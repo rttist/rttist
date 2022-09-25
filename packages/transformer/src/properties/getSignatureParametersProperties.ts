@@ -53,7 +53,7 @@ export function getSignatureParametersProperties(
 						? ParameterFlags.Rest
 						: ParameterFlags.None
 				),
-			initializer: declaration ? getConstantValue(declaration, context) : undefined,
+			initializer: declaration?.initializer ? getConstantValue(declaration.initializer, context) : undefined,
 			decorators: declaration ? getDecoratorsProperties(declaration, context) : undefined
 		});
 	}
