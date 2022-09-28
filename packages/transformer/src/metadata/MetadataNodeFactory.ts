@@ -1,17 +1,11 @@
 import * as ts                      from "typescript";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 import { createValueExpression }    from "../utils/createValueExpression";
 
 export class MetadataNodeFactory
 {
-	// private readonly typeFactoryIdentifier: ts.Identifier;
-	// private readonly metadataIdentifier: ts.Identifier;
-
-	constructor(/*private readonly metadata: MetadataLibrary, private readonly context: TransformerContext*/)
+	constructor()
 	{
-		// this.typeFactoryIdentifier = ts.factory.createIdentifier("__τ"); // TODO: Load from config! reflection.typeFactory
-		// this.metadataIdentifier = ts.factory.createIdentifier("__Ω");
-		// // TODO: Create `import { Metadata } from "@rttist/abstract";` (import or require based on tsconfig) in each file and generate `Metadata.resolveType(id)` in place of getType<T>() calls.
 	}
 
 	/**

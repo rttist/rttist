@@ -1,17 +1,17 @@
-import * as ts                     from "typescript";
-import type { TransformerContext } from "../contexts/TransformerContext";
-import type { MetadataSource }     from "../declarations/TypeProperties";
+import * as ts                  from "typescript";
+import type { MetadataSource }  from "../declarations/TypeProperties";
 import type {
 	MetadataMiddleware,
 	MiddlewareContext,
 	MiddlewareResult,
 	NextMetadataMiddleware
-}                                  from "./index";
-import { shortArraySerializer }    from "./shortArraySerializer";
+}                               from "./index";
+import { TransformerContext }   from "../contexts/TransformerContext";
+import { shortArraySerializer } from "./shortArraySerializer";
 
-export function processMiddlewares(transformerContext: TransformerContext, source: MetadataSource): MiddlewareResult
+export function processMiddlewares(source: MetadataSource): MiddlewareResult
 {
-	const middlewares: MetadataMiddleware[] = transformerContext.config.metadataMiddlewares;
+	const middlewares: MetadataMiddleware[] = TransformerContext.instance.config.metadataMiddlewares;
 
 	// Add our default middleware
 	middlewares.push(shortArraySerializer);
@@ -21,7 +21,7 @@ export function processMiddlewares(transformerContext: TransformerContext, sourc
 	let middlewareResult: MiddlewareResult | undefined = undefined;
 
 	const middlewareContext: MiddlewareContext = {
-		transformerContext,
+		transformerContext: TransformerContext.instance,
 		metadata: source,
 		get result(): MiddlewareResult | undefined
 		{

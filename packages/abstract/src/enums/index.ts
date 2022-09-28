@@ -1,4 +1,7 @@
-export { TypeKind }       from "./TypeKind";
+export {
+	TypeKind,
+	NativeTypeKind
+}                         from "./TypeKind";
 export { Accessor }       from "./Accessor";
 export { AccessModifier } from "./AccessModifier";
 export {

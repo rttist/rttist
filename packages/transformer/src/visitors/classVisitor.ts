@@ -14,11 +14,13 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 	);
 
 	return [
-		ts.visitEachChild(
-			declaration,
-			(node: ts.Node) => visitClassDeclaration(node, context),
-			context.transformationContext
-		),
+		context.createNestedContext(visitClassDeclaration, nestContext => {
+			return ts.visitEachChild(
+				declaration,
+				nestContext.visitor,
+				context.transformationContext
+			);
+		}),
 
 		// EMIT: ClassIdentifier.prototype[REFLECTED_TYPE_ID] = typeId;
 		ts.factory.createExpressionStatement(

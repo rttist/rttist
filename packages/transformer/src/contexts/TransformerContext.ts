@@ -1,11 +1,12 @@
 import * as ts               from "typescript";
 import { Config }            from "../config/Config";
+import { PACKAGE_ID }        from "../consts";
 import { DependencyManager } from "../dependencies/DependencyManager";
 import {
-	color,
 	log,
+	LogColor,
 	LogLevel
-}                            from "../log";
+}                            from "../logging";
 import { MetadataLibrary }   from "../metadata/MetadataLibrary";
 import { MetadataManager }   from "../metadata/MetadataManager";
 import { SourceFileContext } from "./SourceFileContext";
@@ -30,24 +31,33 @@ export class TransformerContext
 	private sourceFileContext?: SourceFileContext;
 
 	/**
+	 * List of root filenames.
+	 * @description Paths of all TS files matched by "include" (not in "exclude") from tsconfig.
+	 * It is preferred to include only one root file and let other files be included by imports.
+	 * Root files are transformer as last.
+	 * If no include is defied in tsconfig, default rule is applied which are all files in directory.
+	 */
+	private readonly rootFileNames: ReadonlySet<string>;
+
+	/**
+	 * @private
+	 */
+	private _numberOfVisitedRootFileNames = 0;
+
+	/**
 	 * TypeScript Program.
 	 */
-	public program: ts.Program;
+	public readonly program: ts.Program;
 
 	/**
 	 * Configuration object.
 	 */
-	public config: Config;
-
-	/**
-	 * TypeScript CompilerOptions.
-	 */
-	public tsConfig: ts.CompilerOptions;
+	public readonly config: Config;
 
 	/**
 	 * TypeScript type checker.
 	 */
-	public readonly checker: ts.TypeChecker;
+	public readonly typeChecker: ts.TypeChecker;
 
 	/**
 	 * Metadata library.
@@ -55,20 +65,9 @@ export class TransformerContext
 	public readonly metadata: MetadataLibrary;
 
 	/**
-	 * List of root filenames.
-	 * @description Paths of all TS files matched by "include" (not in "exclude") from tsconfig.
-	 * It is preferred to include only one root file and let other files be included by imports.
-	 * Root files are transformer as last.
-	 * If no include is defied in tsconfig, default rule is applied which are all files in directory.
-	 */
-	public readonly rootFileNames: ReadonlySet<string>;
-
-	/**
 	 * Manager of package dependencies.
 	 */
 	public readonly dependencyManager: DependencyManager;
-
-	private _numberOfVisitedRootFileNames = 0;
 
 	/**
 	 * Get singleton instance of TransformerContext.
@@ -77,34 +76,19 @@ export class TransformerContext
 	{
 		if (!instance)
 		{
-			throw new Error("tst-reflect: TransformerContext hasn't been initiated yet!");
+			throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
 		}
 
 		return instance;
 	}
 
 	/**
-	 * SourceFile context set for each visiting SourceFile.
+	 * Accessor to currently visiting SourceFile.
 	 */
 	get currentSourceFileContext(): SourceFileContext | undefined
 	{
 		return this.sourceFileContext;
 	}
-
-	// /**
-	//  * Get the metadata library writer handler
-	//  *
-	//  * @returns {IMetadataWriter}
-	//  */
-	// get metaWriter(): IMetadataWriter
-	// {
-	// 	if (!this._metaWriter)
-	// 	{
-	// 		throw new Error("TransformerContext has not been initiated yet.");
-	// 	}
-	//
-	// 	return this._metaWriter;
-	// }
 
 	/**
 	 * Protected constructor.
@@ -117,16 +101,17 @@ export class TransformerContext
 			throw new Error("This constructor is protected.");
 		}
 
-		this.program = program;
 		this.config = config;
-		this.tsConfig = config.compilerOptions;
-		this.checker = program.getTypeChecker();
-
+		this.program = program;
+		this.typeChecker = program.getTypeChecker();
 		this.rootFileNames = new Set(program.getRootFileNames());
 
-		this.metadataManager = new MetadataManager(this);
-		this.dependencyManager = new DependencyManager(this);
-		this.metadata = MetadataLibrary.init(this);
+		this.dependencyManager = new DependencyManager(config);
+		this.metadata = MetadataLibrary.init(this.dependencyManager);
+		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
+
+		// This will allow deconstruction of the context.
+		this.visitSourceFile = this.visitSourceFile.bind(this);
 	}
 
 	/**
@@ -146,30 +131,31 @@ export class TransformerContext
 			config
 		], Activator);
 
-		log.log(LogLevel.Info, color.blue, "Detected project root: " + config.projectDir);
+		log.log(LogLevel.Info, LogColor.blue, "Detected project root: " + config.projectDir);
 	}
 
 	/**
-	 * @internal
-	 * @param context
+	 * Visit SourceFile by given visitor.
+	 * @description This method handle all the system stuff around contexts and metadata generation.
+	 * @param sourceFileNode
+	 * @param transformationContext
+	 * @param visitor
 	 */
-	private setSourceFileContext(context: SourceFileContext)
-	{
-		this.sourceFileContext = context;
-	}
-
 	visitSourceFile(
 		sourceFileNode: ts.SourceFile,
 		transformationContext: ts.TransformationContext,
-		visitor: (sourceFileContext: SourceFileContext) => ts.SourceFile
+		visitor: (sourceFileNode: ts.SourceFile, sourceFileContext: SourceFileContext) => ts.SourceFile
 	): ts.SourceFile
 	{
 		// Create SourceFile context and register it.
-		const sourceFileContext = new SourceFileContext(sourceFileNode, this, transformationContext);
-		this.setSourceFileContext(sourceFileContext);
+		const sourceFileContext = this.sourceFileContext = new SourceFileContext(
+			sourceFileNode,
+			this,
+			transformationContext
+		);
 
 		// Callback
-		const visitedSourceFile = this.metadataManager.updateSourceFile(visitor(sourceFileContext));
+		const visitedSourceFile = this.metadataManager.updateSourceFile(visitor(sourceFileNode, sourceFileContext));
 
 		// If given SourceFile is one of the root files.
 		if (this.rootFileNames.has(sourceFileNode.fileName))

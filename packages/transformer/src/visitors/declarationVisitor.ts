@@ -36,10 +36,7 @@
 // 		// If it has no body, there is nothing to do
 // 		if (node.body === undefined)
 // 		{
-// 			if (context.config.debugMode)
-// 			{
-// 				log.info("Visiting declaration without body.");
-// 			}
+// 			log.info("Visiting declaration without body.");
 //
 // 			return undefined;
 // 		}

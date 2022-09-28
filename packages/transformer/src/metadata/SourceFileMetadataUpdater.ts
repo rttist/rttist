@@ -1,15 +1,14 @@
-import * as ts from "typescript";
-import path from "path";
-import { TransformerContext } from "../contexts/TransformerContext";
+import type { Config }      from "../config/Config";
+import * as ts              from "typescript";
+import path                 from "path";
 import { updateSourceFile } from "../transformers/updateSourceFile";
 
 export class SourceFileMetadataUpdater
 {
-	private readonly transformerContext: TransformerContext;
-
-	constructor(transformerContext: TransformerContext)
+	constructor(
+		private readonly config: Config
+	)
 	{
-		this.transformerContext = transformerContext;
 	}
 
 	addMetadataToSourceFile(sourceFile: ts.SourceFile): ts.SourceFile
@@ -45,7 +44,10 @@ export class SourceFileMetadataUpdater
 				ts.factory.createImportDeclaration(
 					undefined,
 					undefined,
-					ts.factory.createStringLiteral(path.relative(path.dirname(sourceFile.fileName), this.transformerContext.config.metadataTypelibVirtualPath))
+					ts.factory.createStringLiteral(path.relative(
+						path.dirname(sourceFile.fileName),
+						this.config.metadataTypelibVirtualPath
+					))
 				)
 				// ts.factory.createExpressionStatement(expression)
 			]

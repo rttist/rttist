@@ -14,7 +14,10 @@ import {
 	PackageInfo,
 	PackageJson
 }                                       from "../declarations/general";
-import { log }                          from "../log";
+import {
+	log,
+	LogLevel
+}                                       from "../logging";
 import {
 	ConfigReflectionSection,
 	OptionalConfigReflectionSection
@@ -23,7 +26,8 @@ import {
 const UNKNOWN_PACKAGE_NAME = "@@this";
 
 const DefaultConfiguration: ConfigReflectionSection = {
-	debugMode: false,
+	devMode: false,
+	logLevel: undefined!,
 	dependencyResolution: "direct-dependencies",
 	plugins: [],
 	metadata: {
@@ -39,7 +43,8 @@ const DefaultConfiguration: ConfigReflectionSection = {
 
 export class Config
 {
-	public readonly debugMode: boolean;
+	public readonly devMode: boolean;
+	public readonly logLevel: LogLevel;
 
 	public readonly include: RegExp[];
 	public readonly exclude: RegExp[];
@@ -80,7 +85,8 @@ export class Config
 		const metadataConfig = reflectionConfig.getSection("metadata");
 		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
 
-		this.debugMode = ["true", true].includes(reflectionConfig.get("debugMode")!);
+		this.devMode = ["true", true].includes(reflectionConfig.get("devMode")!);
+		this.logLevel = LogLevel[reflectionConfig.get("logLevel")! ?? (this.devMode ? "Debug" : "Warning")];
 		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
 
 		this.compilerOptions = compilerOptions;

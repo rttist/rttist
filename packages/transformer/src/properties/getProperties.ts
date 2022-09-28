@@ -5,15 +5,13 @@ import {
 }                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 import { PropertyProperties }       from "../declarations/TypeProperties";
+import { getModifiers }             from "../utils/modifierHelpers";
 import {
-	getAccessModifier,
-	getAccessor,
-	getType,
-	isReadonly
-}                                   from "../helpers";
-import { getDeclaration }           from "../utils/symbolHelpers";
+	getDeclaration,
+	getType
+}                                   from "../utils/symbolHelpers";
 import { getDecoratorsProperties }  from "./getDecoratorsProperties";
 
 /**
@@ -33,12 +31,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 		{
 			const declaration = getDeclaration(memberSymbol);
 			const accessor = getAccessor(declaration);
-			let accessModifier = getAccessModifier(declaration?.modifiers);
-
-			if (memberSymbol.name.charAt(0) === "#")
-			{
-				accessModifier = AccessModifier.Private;
-			}
+			const modifiers = getModifiers(declaration, memberSymbol);
 
 			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional
 				|| (
@@ -49,7 +42,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 					&& !!declaration.questionToken
 				);
 
-			let type = getType(memberSymbol, context);
+			const type = getType(memberSymbol, declaration, context.typeChecker);
 
 			// NOTE: Removing undefined from types of optional properties. This is not a good idea.
 			// if (type && optional && context.config.parsedCommandLine?.options.strictNullChecks === true)
@@ -72,7 +65,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 				),
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
-						isReadonly(declaration?.modifiers) || accessor === Accessor.Getter
+						modifiers.readonly || accessor === Accessor.Getter
 							? PropertyFlags.Readonly
 							: PropertyFlags.None
 					)
@@ -85,12 +78,30 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 								: PropertyFlags.None
 					)
 					| (
-						accessModifier === AccessModifier.Private
+						modifiers.access === AccessModifier.Private
 							? PropertyFlags.Private
-							: accessModifier === AccessModifier.Protected
+							: modifiers.access === AccessModifier.Protected
 								? PropertyFlags.Protected
 								: PropertyFlags.None
 					)
 			};
 		});
+}
+
+function getAccessor(node?: ts.Declaration): Accessor
+{
+	if (node != undefined)
+	{
+		if (node.kind === ts.SyntaxKind.GetAccessor)
+		{
+			return Accessor.Getter;
+		}
+
+		if (node.kind === ts.SyntaxKind.SetAccessor)
+		{
+			return Accessor.Setter;
+		}
+	}
+
+	return Accessor.None;
 }

@@ -1,26 +1,28 @@
-import { TransformerContext } from "../contexts/TransformerContext";
+import { Config }            from "../config/Config";
 import {
 	writeFileSync,
 	readFileSync,
 	mkdirSync
-}                             from "fs";
+}                            from "fs";
 import {
 	join,
 	dirname
-}                             from "path";
-import * as ts                from "typescript";
+}                            from "path";
+import * as ts               from "typescript";
+import { DependencyManager } from "../dependencies/DependencyManager";
+import { MetadataLibrary }   from "./MetadataLibrary";
 
 /**
  * Emitter use to write metadata into library file.
  */
 export class LibraryFileEmitter
 {
-	private readonly transformerContext: TransformerContext;
-
-
-	constructor(transformerContext: TransformerContext)
+	constructor(
+		private readonly config: Config,
+		private readonly dependencyManager: DependencyManager,
+		private readonly metadataLibrary: MetadataLibrary
+	)
 	{
-		this.transformerContext = transformerContext;
 	}
 
 	emit(metadataExpression: ts.Expression): Promise<void>
@@ -30,7 +32,7 @@ export class LibraryFileEmitter
 
 	private write(metadataExpression: ts.Expression): Promise<void>
 	{
-		const typelibOutputPath = this.transformerContext.config.metadataTypelibPath;
+		const typelibOutputPath = this.config.metadataTypelibPath;
 		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
 
 		// Write typelib
@@ -38,7 +40,7 @@ export class LibraryFileEmitter
 		writeFileSync(typelibOutputPath, transpiledTypelib, { encoding: "utf8", flag: "w" });
 
 		// Write index
-		const indexOutputPath = this.transformerContext.config.metadataIndexPath;
+		const indexOutputPath = this.config.metadataIndexPath;
 		mkdirSync(dirname(indexOutputPath), { recursive: true });
 		writeFileSync(indexOutputPath, this.getIndex(), { encoding: "utf8", flag: "w" });
 
@@ -87,7 +89,7 @@ export class LibraryFileEmitter
 		let transpiledTypelib = ts.transpileModule(source, {
 			fileName: fileName,
 			compilerOptions: {
-				...this.transformerContext.config.compilerOptions,
+				...this.config.compilerOptions,
 				declaration: false,
 				strict: false,
 				sourceMap: false,
@@ -97,7 +99,7 @@ export class LibraryFileEmitter
 			}
 		}).outputText;
 
-		if (this.transformerContext.config.encode)
+		if (this.config.encode)
 		{
 			const stub = readFileSync(
 				join(__dirname, "..", "..", "templates", "typelib.template.ts"),
@@ -111,7 +113,7 @@ export class LibraryFileEmitter
 
 	private getIndex()
 	{
-		const modules = Array.from(this.transformerContext.metadata.getModules()).map(module => {
+		const modules = Array.from(this.metadataLibrary.getModules()).map(module => {
 			const props = module.getModuleProperties();
 			const types = (props.types || [])
 				?.filter(type => type.id !== undefined)
@@ -128,7 +130,7 @@ export class LibraryFileEmitter
 	 */
 	private createDependantTypeLibsImports()
 	{
-		return this.transformerContext.dependencyManager.dependencies
+		return this.dependencyManager.dependencies
 			.filter(d => d.typelibPath)
 			.map(d => ts.factory.createImportDeclaration(
 				undefined,

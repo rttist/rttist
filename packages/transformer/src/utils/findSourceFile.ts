@@ -3,5 +3,5 @@ import { TransformerContext } from "../contexts/TransformerContext";
 
 export function getSourceFile(importDeclaration: ts.ImportDeclaration): ts.SourceFile | undefined
 {
-	return TransformerContext.instance.checker.getSymbolAtLocation(importDeclaration.moduleSpecifier)?.valueDeclaration as ts.SourceFile;
+	return TransformerContext.instance.typeChecker.getSymbolAtLocation(importDeclaration.moduleSpecifier)?.valueDeclaration as ts.SourceFile;
 }

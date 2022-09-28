@@ -2,7 +2,7 @@ import * as ts                     from "typescript";
 import type { TransformerContext } from "./TransformerContext";
 import type { MetadataLibrary }    from "../metadata/MetadataLibrary";
 import { Context }                 from "./Context";
-import { Logger }                  from "../log";
+import { Logger }                  from "../logging";
 import { mainVisitor }             from "../visitors/mainVisitor";
 
 export class SourceFileContext
@@ -54,20 +54,12 @@ export class SourceFileContext
 		this.transformerContext = transformerContext;
 		this.transformationContext = transformationContext;
 		this.program = transformerContext.program;
-		this.checker = transformerContext.checker;
+		this.checker = transformerContext.typeChecker;
 		this._metadata = transformerContext.metadata;
 		this._sourceFile = sourceFile;
 
 		this._context = new Context(this, mainVisitor);
 	}
-
-	// /**
-	//  * Get the metadata library writer handler
-	//  */
-	// get metaWriter(): IMetadataWriter
-	// {
-	// 	return this.transformerContext.metaWriter;
-	// }
 
 	visit(): ts.SourceFile
 	{

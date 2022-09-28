@@ -12,7 +12,7 @@
 			{
 				"transform": "tst-reflect-transformer",
 				"reflection": {
-					"debugMode": true
+					"devMode": true
 				}
 			}
 		]

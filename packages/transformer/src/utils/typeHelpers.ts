@@ -12,14 +12,15 @@ import { TransformerContext }             from "../contexts/TransformerContext";
 import { printTypeDebugInfo }             from "../debugs/printTypeDebugInfo";
 import {
 	ReflectedSourceFileWithIdentifier,
-	ReflectedTypeWithReference,
-	TransformerTypeReference
+	ReflectedTypeWithReference
 }                                         from "../declarations/general";
-import { PATH_SEPARATOR_REGEX }           from "../helpers";
-import { log }                            from "../log";
+import { TransformerTypeReference }       from "../declarations/transformerTypeReference";
+import { log }                            from "../logging/Logger";
 import { getComplexNativeTypeProperties } from "../properties/getComplexNativeTypeProperties";
 import { getPrimitiveTypeReference }      from "../properties/getPrimitiveTypeReference";
 import { getDeclaration }                 from "./symbolHelpers";
+
+const PATH_SEPARATOR_REGEX = /\\/g;
 
 /**
  * If the given type is some kind of alias or something which we don't want to reflect, find the right type.
@@ -224,7 +225,7 @@ export function getTypeRef(type: ts.Type, typeChecker: ts.TypeChecker): Transfor
 			return nativeRef;
 		}
 
-		if (TransformerContext.instance.config.debugMode)
+		if (TransformerContext.instance.config.devMode)
 		{
 			log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
 		}

@@ -1,6 +1,5 @@
-import * as ts                      from "typescript";
-import { TransformerTypeReference } from "../declarations/general";
-import { isExpression }             from "../helpers";
+import * as ts from "typescript";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 
 export function createValueExpression(value: any): ts.Expression
 {
@@ -46,7 +45,10 @@ export function createValueExpression(value: any): ts.Expression
 				// Ignoring properties assigned to undefined
 				if (value.hasOwnProperty(prop) && value[prop] !== undefined)
 				{
-					propertyAssignments.push(ts.factory.createPropertyAssignment(prop, createValueExpression(value[prop])));
+					propertyAssignments.push(ts.factory.createPropertyAssignment(
+						prop,
+						createValueExpression(value[prop])
+					));
 				}
 			}
 
@@ -60,4 +62,9 @@ export function createValueExpression(value: any): ts.Expression
 	}
 
 	return ts.factory.createNull();
+}
+
+function isExpression(value: any)
+{
+	return value.hasOwnProperty("kind") && (value.constructor.name === "NodeObject" || value.constructor.name === "IdentifierObject" || value.constructor.name === "TokenObject");
 }

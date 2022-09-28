@@ -1,6 +1,6 @@
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 
 export type ClassFlags = {
 	abstract?: true;

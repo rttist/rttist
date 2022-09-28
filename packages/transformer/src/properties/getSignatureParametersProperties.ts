@@ -4,7 +4,7 @@ import {
 }                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 import { ParameterProperties }      from "../declarations/TypeProperties";
 import { getDeclaration }           from "../utils/symbolHelpers";
 import { getConstantValue }         from "./getConstantValue";
@@ -35,7 +35,7 @@ export function getSignatureParametersProperties(
 		const type = declaration
 			? context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration)
 			: context.typeChecker.getDeclaredTypeOfSymbol(parameterSymbol);
-		
+
 		const optional = (parameterSymbol.flags & ts.SymbolFlags.Optional) !== 0;
 
 		parameters.push({

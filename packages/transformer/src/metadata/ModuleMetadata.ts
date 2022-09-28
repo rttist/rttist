@@ -94,10 +94,7 @@ export class ModuleMetadata
 			return false;
 		}
 
-		if (context.config.debugMode)
-		{
-			context.log.trace("Adding type", getTypeId(type, context.typeChecker));
-		}
+		context.log.trace("Adding type", getTypeId(type, context.typeChecker));
 
 		const typeInfo: TypeInfo = {};
 		this.types.set(type, typeInfo);

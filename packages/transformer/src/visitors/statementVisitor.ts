@@ -1,6 +1,5 @@
 import * as ts                         from "typescript";
 import { Context }                     from "../contexts/Context";
-import { getType }                     from "../helpers";
 import { updateGetTypeCallExpression } from "../transformers/updateGetTypeCallExpression";
 
 export function statementVisitor<TNode extends ts.Statement>(node: TNode, context: Context): ts.VisitResult<ts.Node>
@@ -65,7 +64,7 @@ function visit(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
 		// 				return ts.visitEachChild(res, context.visitor, context.transformationContext);
 		// 			}
 		// 		}
-		// 		else if (context.config.debugMode)
+		// 		else
 		// 		{
 		// 			log.info(`There is an callExpression '${identifier.escapedText}' but no declaration has been found.`);
 		// 		}

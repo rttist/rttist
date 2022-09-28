@@ -4,6 +4,7 @@ import { UnknownTypeProperties } from "../../consts";
 import { Context }               from "../../contexts/Context";
 import { printTypeDebugInfo }    from "../../debugs/printTypeDebugInfo";
 import { TypeMapperResult }      from "../../declarations/mappers";
+import { log }                   from "../../logging";
 import { getDeclaration }        from "../../utils/symbolHelpers";
 import { getTypeId }             from "../../utils/typeHelpers";
 
@@ -24,11 +25,12 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 					undefined,
 					context
 				) || undefined,
-				default: declaration.default && context.metadata.referenceType(context.typeChecker.getTypeAtLocation(declaration.default), undefined, context) || undefined
+				default: declaration.default && context.metadata.referenceType(context.typeChecker.getTypeAtLocation(
+					declaration.default), undefined, context) || undefined
 			};
 		}
 	}
 
-	context.log.warn("Unhandled TypeParameter.\n\t" + printTypeDebugInfo(type, context.typeChecker));
+	log.warn("Unhandled TypeParameter.\n\t" + printTypeDebugInfo(type, context.typeChecker));
 	return UnknownTypeProperties;
 }

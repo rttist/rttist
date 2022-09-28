@@ -1,5 +1,5 @@
 import * as ts                            from "typescript";
-import { TransformerTypeReference }       from "../declarations/general";
+import { TransformerTypeReference }       from "../declarations/transformerTypeReference";
 import { createAccessToGenericParameter } from "../expression-utils/createAccessToGenericParameter";
 import type { Context }                   from "../contexts/Context";
 import { getNodeLocationText }            from "../utils/traceHelpers";

@@ -2,7 +2,7 @@ import { TypeKind }                 from "@rttist/abstract";
 import { NativeTypeKind }           from "@rttist/abstract/dist/enums/TypeKind";
 import { ModuleIds }                from "@rttist/core";
 import * as ts                      from "typescript";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 
 /**
  * Return TypeProperties whether the type is a complex native type, such as Uint8Array etc.

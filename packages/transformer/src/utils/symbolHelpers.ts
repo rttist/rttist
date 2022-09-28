@@ -16,22 +16,23 @@ export function getDeclaration<TDeclaration extends ts.Declaration = ts.Declarat
 		return symbol.valueDeclaration as TDeclaration;
 	}
 
-	// TODO: Check valueDeclaration vs declaration. TypeAlias has no valueDeclaration, interface has or not? When are there multiple declarations?
-	// TypeAliases has no valueDeclaration.
-
-	const declaration = symbol.declarations?.[0] as TDeclaration | undefined;
-
-	// log.warn(
-	// 	"Symbol has no valueDeclaration.",
-	// 	symbol.escapedName,
-	// 	printSymbolFlags(symbol),
-	// 	declaration ? getNodeStartLocationText(declaration) : undefined
-	// );
-
-	return declaration;
+	// There are multiple declarations eg. for interfaces which are redeclared in multiple places. 
+	// We'll just take the first one.
+	return symbol.declarations?.[0] as TDeclaration | undefined;
 }
 
 export function getSourceFile(symbol: ts.Symbol): ts.SourceFile | undefined
 {
 	return getDeclaration(symbol)?.getSourceFile();
+}
+
+export function getType(
+	symbol: ts.Symbol,
+	declaration: ts.Declaration | undefined,
+	typeChecker: ts.TypeChecker
+): ts.Type
+{
+	return declaration
+		? typeChecker.getTypeOfSymbolAtLocation(symbol, declaration)
+		: typeChecker.getDeclaredTypeOfSymbol(symbol);
 }

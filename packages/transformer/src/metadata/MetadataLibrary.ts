@@ -4,9 +4,8 @@ import {
 }                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerContext }       from "../contexts/TransformerContext";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
-import { TransformerTypeReference } from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/transformerTypeReference";
 import { TypeProperties }           from "../declarations/TypeProperties";
 import { DependencyManager }        from "../dependencies/DependencyManager";
 import { getTypeRef }               from "../utils/typeHelpers";
@@ -41,11 +40,11 @@ export class MetadataLibrary
 	 */
 	public readonly dependencyManager: DependencyManager;
 
-	/**
-	 * Map of types used in which SourceFile.
-	 * @private
-	 */
-	private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
+	// /**
+	//  * Map of types used in which SourceFile.
+	//  * @private
+	//  */
+	// private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
 
 	// /**
 	//  * Map of packages from project dependencies.
@@ -62,26 +61,26 @@ export class MetadataLibrary
 	/**
 	 * @protected
 	 */
-	protected constructor(private readonly context: TransformerContext)
+	protected constructor(dependencyManager: DependencyManager)
 	{
 		if (new.target != Activator)
 		{
 			throw new Error("This constructor is protected.");
 		}
 
+		this.dependencyManager = dependencyManager;
 		this.nodeFactory = new MetadataNodeFactory();
-		this.dependencyManager = context.dependencyManager;
 	}
 
 	/**
 	 * Init Metadata library.
-	 * @param context
+	 * @param dependencyManager
 	 */
-	static init(context: TransformerContext)
+	static init(dependencyManager: DependencyManager): MetadataLibrary
 	{
 		if (!instance)
 		{
-			instance = Reflect.construct(MetadataLibrary, [context], Activator) as MetadataLibrary;
+			instance = Reflect.construct(MetadataLibrary, [dependencyManager], Activator) as MetadataLibrary;
 		}
 
 		return instance;

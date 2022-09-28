@@ -19,12 +19,12 @@
 	TypeIdentifier,
 	TypeKind,
 	TypeMetadata
-}                         from "@rttist/abstract";
-import { NativeTypeKind } from "@rttist/abstract/dist/enums/TypeKind";
+}                                   from "@rttist/abstract";
+import { NativeTypeKind }           from "@rttist/abstract/dist/enums/TypeKind";
 import {
-	Match,
-	TransformerTypeReference
-}                         from "./general";
+	Match
+}                                   from "./general";
+import { TransformerTypeReference } from "./transformerTypeReference";
 
 /**
  * Properties of general Type.

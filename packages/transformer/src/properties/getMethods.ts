@@ -9,7 +9,7 @@ import type {
 	MethodProperties,
 	SignatureProperties
 }                                           from "../declarations/TypeProperties";
-import { getAccessModifier }                from "../helpers";
+import { getModifiers }                     from "../utils/modifierHelpers";
 import { getDeclaration }                   from "../utils/symbolHelpers";
 import { getDecoratorsProperties }          from "./getDecoratorsProperties";
 import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
@@ -41,15 +41,10 @@ export function getMethods(type: ts.Type, context: Context): Array<MethodPropert
 				// }
 
 				const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) !== 0;
-				let accessModifier = getAccessModifier(memberSymbol.valueDeclaration?.modifiers);
-
-				if (memberSymbol.name.charAt(0) === "#")
-				{
-					accessModifier = AccessModifier.Private;
-				}
+				let modifiers = getModifiers(declaration, memberSymbol);
 
 				return {
-					accessModifier,
+					accessModifier: modifiers.access,
 					name: memberSymbol.escapedName.toString(),
 					signatures: getMethodSignatures(type, context),
 					decorators: declaration ? getDecoratorsProperties(declaration, context) : [],
@@ -59,9 +54,9 @@ export function getMethods(type: ts.Type, context: Context): Array<MethodPropert
 								: ParameterFlags.None
 						)
 						| (
-							accessModifier === AccessModifier.Private
+							modifiers.access === AccessModifier.Private
 								? PropertyFlags.Private
-								: accessModifier === AccessModifier.Protected
+								: modifiers.access === AccessModifier.Protected
 									? PropertyFlags.Protected
 									: PropertyFlags.None
 						),

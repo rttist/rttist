@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0-dev.0] - 2022-10-02
 ### Breaking Changes
+- `inline` metadata mode removed because of big amount of issues.
 - `Type.fullName` removed, instead id is now string containing unique name of the type,
 - `Type.baseType` removed in favor of `ClassType.extends`,
 - `Type.interface` removed in favor of `ClassType.implements` collection, 

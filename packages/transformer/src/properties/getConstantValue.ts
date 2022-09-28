@@ -19,7 +19,7 @@ export function getConstantValue(
 		return (type as any).intrinsicName === "true";
 	}
 
-	if (context.config.debugMode)
+	if (context.config.devMode)
 	{
 		context.log.warn(
 			"Unexpected value. Only constant values are allowed.\n\t"

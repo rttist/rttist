@@ -1,20 +1,20 @@
-﻿import * as path              from "path";
-import * as fs                from "fs";
-import { TransformerContext } from "../contexts/TransformerContext";
+﻿import * as path          from "path";
+import * as fs            from "fs";
+import { Config }         from "../config/Config";
 import {
 	PackageInfo,
 	PackageJson
-}                             from "../declarations/general";
-import { log }                from "../log";
-import { DependencyInfo }     from "./DependencyInfo";
+}                         from "../declarations/general";
+import { log }            from "../logging";
+import { DependencyInfo } from "./DependencyInfo";
 
 export class DependencyManager
 {
 	public readonly dependencies: DependencyInfo[];
 
-	constructor(transformerContext: TransformerContext)
+	constructor(config: Config)
 	{
-		this.dependencies = this.loadDependencies(transformerContext.config.packageInfo);
+		this.dependencies = this.loadDependencies(config.packageInfo);
 	}
 
 	public getDependencyInfo(fileName: string): DependencyInfo | undefined

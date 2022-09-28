@@ -1,3 +1,5 @@
+import { LogLevel } from "../logging";
+
 /**
  * @internal
  */
@@ -62,7 +64,12 @@ export type ConfigReflectionSection = {
 	 * Enable or disable DEBUG mode (progress logging and extra warnings).
 	 * @default false
 	 */
-	debugMode: "true" | "false"| boolean;
+	devMode: "true" | "false"| boolean;
+
+	/**
+	 * Level of logging.
+	 */
+	logLevel: keyof typeof LogLevel,
 }
 
 export type OptionalConfigReflectionSection = Partial<Omit<ConfigReflectionSection, "metadata">> & { metadata?: Partial<ConfigReflectionSection["metadata"]> };
