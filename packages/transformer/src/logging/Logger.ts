@@ -3,11 +3,12 @@ import { LogColor }   from "./LogColor";
 import { LogLevel }   from "./logLevel";
 
 const LEVEL_MAP = {
-	[LogLevel.Trace]: 0,
-	[LogLevel.Debug]: 1,
-	[LogLevel.Info]: 2,
-	[LogLevel.Warning]: 3,
-	[LogLevel.Error]: 4,
+	[LogLevel.None]: 0,
+	[LogLevel.Trace]: 1,
+	[LogLevel.Debug]: 2,
+	[LogLevel.Info]: 3,
+	[LogLevel.Warning]: 4,
+	[LogLevel.Error]: 5,
 };
 
 export class Logger

@@ -1,5 +1,5 @@
-import * as ts from "typescript";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import * as ts                      from "typescript";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 
 export function createValueExpression(value: any): ts.Expression
 {

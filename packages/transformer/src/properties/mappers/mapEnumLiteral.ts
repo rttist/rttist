@@ -4,12 +4,12 @@ import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 import { getTypeId }        from "../../utils/typeHelpers";
 
-export function mapEnumLiteral(type: ts.UnionType, context: Context): TypeMapperResult
+export function mapEnumLiteral(type: ts.UnionType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	return {
-		id: getTypeId(type, context.typeChecker),
+		id: getTypeId(type, symbol, context.typeChecker),
 		kind: TypeKind.EnumLiteral,
 		name: type.symbol.escapedName.toString(),
-		types: type.types.map(type => context.metadata.referenceType(type, undefined, context))
+		types: type.types.map(type => context.metadata.referenceType(type, undefined, undefined, context))
 	};
 }

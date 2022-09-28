@@ -1,24 +1,23 @@
 import {
 	ModuleIdentifier,
-	ModuleReference
-}                              from "@rttist/abstract";
-import { ModuleIds }           from "@rttist/core";
-import * as ts                 from "typescript";
-import { Context }             from "../contexts/Context";
-import { TransformerContext }  from "../contexts/TransformerContext";
-import { TypeInfo }            from "../declarations/general";
+	ModuleReference,
+	TypeIdentifier
+}                                   from "@rttist/abstract";
+import { ModuleIds }                from "@rttist/core";
+import * as ts                      from "typescript";
+import { Context }                  from "../contexts/Context";
+import { TransformerContext }       from "../contexts/TransformerContext";
+import { TypeInfo }                 from "../declarations/general";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import {
 	ModuleMetadataProperties,
 	ModuleProperties,
 	TypeProperties
-}                              from "../declarations/TypeProperties";
-import { getTypeProperties }   from "../properties/getTypeProperties";
-import { getSourceFile }       from "../utils/findSourceFile";
-import { getNodeLocationText } from "../utils/traceHelpers";
-import {
-	getSourceFileId,
-	getTypeId
-}                              from "../utils/typeHelpers";
+}                                   from "../declarations/TypeProperties";
+import { getTypeProperties }        from "../properties/getTypeProperties";
+import { getSourceFile }            from "../utils/findSourceFile";
+import { getSourceFileId }          from "../utils/getSourceFileId";
+import { getNodeLocationText }      from "../utils/traceHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -35,8 +34,18 @@ export class ModuleMetadata
 		path: "typescript",
 	});
 
+	/**
+	 * Module for native types.
+	 * @private
+	 */
+	public static Unknown = new ModuleMetadata({
+		id: ModuleIds.Unknown,
+		name: "",
+		path: "",
+	});
+
 	private readonly moduleProperties: ModuleMetadataProperties;
-	private readonly types = new Map<ts.Type, TypeInfo>();
+	private readonly types = new Map<TypeIdentifier, TypeInfo>();
 
 	get id(): ModuleIdentifier
 	{
@@ -82,24 +91,34 @@ export class ModuleMetadata
 
 	/**
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
+	 * @param typeReference
 	 * @param type
+	 * @param symbol
 	 * @param context
 	 */
-	addType(type: ts.Type, context: Context): false | TypeProperties
+	addType(
+		typeReference: TransformerTypeReference,
+		type: ts.Type,
+		symbol: ts.Symbol | undefined,
+		context: Context
+	): false | TypeProperties
 	{
-		let existingProperties = this.types.get(type);
+		let existingProperties = this.types.get(typeReference.id);
 
 		if (existingProperties !== undefined)
 		{
 			return false;
 		}
 
-		context.log.trace("Adding type", getTypeId(type, context.typeChecker));
+		context.log.trace("Adding type", typeReference.id);
 
-		const typeInfo: TypeInfo = {};
-		this.types.set(type, typeInfo);
+		const typeInfo: TypeInfo = {
+			typeReference,
+			type
+		};
+		this.types.set(typeReference.id, typeInfo);
 
-		typeInfo.properties = getTypeProperties(type, context);
+		typeInfo.properties = getTypeProperties(type, symbol, context);
 
 		return typeInfo.properties;
 	}

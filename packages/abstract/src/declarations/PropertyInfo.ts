@@ -19,6 +19,7 @@ export enum PropertyFlags
 
 	Optional = 1,
 	Readonly = 1 << 1,
+	Static = 1 << 2,
 
 	Private = AccessModifier.Private << (AccessModifierFlagsOffset),
 	Protected = AccessModifier.Protected << (AccessModifierFlagsOffset),

@@ -3,15 +3,15 @@ import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 import { getTypeId }        from "../../utils/typeHelpers";
-import { getProperties }    from "../getProperties";
+import { mapProperties }    from "../mapProperties";
 
-export function mapObjectLiteral(type: ts.ObjectType, context: Context): TypeMapperResult
+export function mapObjectLiteral(type: ts.ObjectType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	// const symbol = type.aliasSymbol || type.symbol;
 
 	return {
-		id: getTypeId(type, context.typeChecker),
+		id: getTypeId(type, symbol, context.typeChecker),
 		kind: TypeKind.Object,
-		properties: getProperties(type, context)
+		properties: mapProperties(type.getProperties(), context)
 	};
 }

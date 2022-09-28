@@ -10,6 +10,7 @@ import { Signature }          from "./Signature";
 export enum MethodFlags
 {
 	Optional = 1,
+	Static = 1 << 1,
 
 	Private = AccessModifier.Private << (AccessModifierFlagsOffset),
 	Protected = AccessModifier.Protected << (AccessModifierFlagsOffset),

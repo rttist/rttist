@@ -7,7 +7,7 @@ import { getTypeId }             from "../utils/typeHelpers";
 export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
 {
 	const props = {
-		id: getTypeId(type, context.typeChecker), // TODO: Should be ID here?
+		id: getTypeId(type, undefined, context.typeChecker), // TODO: Should be ID here?
 		kind: TypeKind.Unknown,
 		value: type.value
 	};

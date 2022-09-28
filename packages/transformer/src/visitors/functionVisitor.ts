@@ -9,7 +9,8 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeReference = context.metadata.referenceType(
 		type,
-		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
+		context.typeChecker.getSymbolAtLocation(declaration),
+		undefined,
 		context
 	);
 

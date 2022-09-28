@@ -2,7 +2,7 @@ import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 
-export function mapConditional(type: ts.ConditionalType, context: Context): TypeMapperResult
+export function mapConditional(type: ts.ConditionalType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	const ct = type.root.node;
 	const extendsType = context.typeChecker.getTypeAtLocation(ct.extendsType);

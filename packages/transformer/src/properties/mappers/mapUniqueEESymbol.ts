@@ -4,10 +4,10 @@ import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 import { getTypeId }        from "../../utils/typeHelpers";
 
-export function mapUniqueEESymbol(type: ts.UniqueESSymbolType, context: Context): TypeMapperResult
+export function mapUniqueEESymbol(type: ts.UniqueESSymbolType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	return {
-		id: getTypeId(type, context.typeChecker),
+		id: getTypeId(type, symbol, context.typeChecker),
 		kind: TypeKind.UniqueSymbol,
 		name: type.escapedName?.toString()
 	};

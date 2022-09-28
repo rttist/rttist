@@ -8,7 +8,7 @@ import { log }                   from "../../logging";
 import { getDeclaration }        from "../../utils/symbolHelpers";
 import { getTypeId }             from "../../utils/typeHelpers";
 
-export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperResult
+export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	const declaration = getDeclaration(type.symbol);
 
@@ -17,16 +17,21 @@ export function mapTypeParameter(type: ts.Type, context: Context): TypeMapperRes
 		if (ts.isTypeParameterDeclaration(declaration))
 		{
 			return {
-				id: getTypeId(type, context.typeChecker),
+				id: getTypeId(type, symbol, context.typeChecker),
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
 				constraint: declaration.constraint && context.metadata.referenceType(
 					context.typeChecker.getTypeAtLocation(declaration.constraint),
 					undefined,
+					undefined,
 					context
 				) || undefined,
-				default: declaration.default && context.metadata.referenceType(context.typeChecker.getTypeAtLocation(
-					declaration.default), undefined, context) || undefined
+				default: declaration.default && context.metadata.referenceType(
+					context.typeChecker.getTypeAtLocation(declaration.default),
+					undefined,
+					undefined,
+					context
+				) || undefined
 			};
 		}
 	}

@@ -1,6 +1,6 @@
 import * as ts                              from "typescript";
 import { Context }                          from "../contexts/Context";
-import { TransformerTypeReference }         from "../declarations/transformerTypeReference";
+import { TransformerTypeReference }         from "../declarations/TransformerTypeReference";
 import { SignatureProperties }              from "../declarations/TypeProperties";
 import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
 

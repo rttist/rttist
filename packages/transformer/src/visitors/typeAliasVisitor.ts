@@ -1,6 +1,5 @@
-import * as ts              from "typescript";
-import { NodeBuilderFlags } from "typescript";
-import { Context }          from "../contexts/Context";
+import * as ts     from "typescript";
+import { Context } from "../contexts/Context";
 
 // TODO: Check out ts.TypeOnlyAliasDeclaration and ts.TypeOnlyCompatibleAliasDeclaration
 
@@ -15,7 +14,8 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 	// Add type alias to the metadata.
 	context.metadata.referenceType(
 		type,
-		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
+		(declaration as any).symbol || context.typeChecker.getSymbolAtLocation(declaration.name),
+		undefined,
 		context
 	);
 

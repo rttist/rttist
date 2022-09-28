@@ -1,7 +1,5 @@
 ﻿import {
-	AccessModifier,
 	ClassTypeMetadata,
-	DecoratorInfo,
 	DecoratorInfoInitializer,
 	IndexInfoInitializer,
 	InterfaceTypeMetadata,
@@ -14,17 +12,16 @@
 	ParameterInfoInitializer,
 	PropertyFlags,
 	PropertyInfoInitializer,
-	Signature,
 	SignatureInitializerBase,
 	TypeIdentifier,
 	TypeKind,
-	TypeMetadata
+	TypeMetadata,
+	NativeTypeKind
 }                                   from "@rttist/abstract";
-import { NativeTypeKind }           from "@rttist/abstract/dist/enums/TypeKind";
 import {
 	Match
 }                                   from "./general";
-import { TransformerTypeReference } from "./transformerTypeReference";
+import { TransformerTypeReference } from "./TransformerTypeReference";
 
 /**
  * Properties of general Type.

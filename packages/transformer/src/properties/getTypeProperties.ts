@@ -39,9 +39,10 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 /**
  * Return TypeProperties object describing given type.
  * @param type
+ * @param symbol
  * @param context
  */
-export function getTypeProperties(type: ts.Type, context: Context): TypeProperties
+export function getTypeProperties(type: ts.Type, symbol: ts.Symbol | undefined, context: Context): TypeProperties
 {
 	// 	log.trace(getTypeSourceLocationText(type, context));
 
@@ -74,7 +75,7 @@ export function getTypeProperties(type: ts.Type, context: Context): TypeProperti
 		return UnknownTypeProperties;
 	}
 
-	const mapperResult = mapper(type, context);
+	const mapperResult = mapper(type, symbol, context);
 
 	if (mapperResult)
 	{

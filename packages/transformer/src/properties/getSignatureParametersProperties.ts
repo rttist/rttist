@@ -1,10 +1,7 @@
-import {
-	ParameterFlags,
-	PropertyFlags
-}                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
+import { ParameterFlags }           from "@rttist/abstract";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { ParameterProperties }      from "../declarations/TypeProperties";
 import { getDeclaration }           from "../utils/symbolHelpers";
 import { getConstantValue }         from "./getConstantValue";
@@ -42,7 +39,7 @@ export function getSignatureParametersProperties(
 			name: parameterSymbol.getName(),
 			type: type === undefined
 				? TransformerTypeReference.Any
-				: context.metadata.referenceType(type, undefined, context),
+				: context.metadata.referenceType(type, parameterSymbol, undefined, context),
 			flags: (
 					optional
 						? ParameterFlags.Optional

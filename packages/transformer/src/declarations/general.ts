@@ -1,7 +1,7 @@
-﻿import { NativeTypeKind }           from "@rttist/abstract/dist/enums/TypeKind";
+﻿import { NativeTypeKind }           from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "./transformerTypeReference";
+import { TransformerTypeReference } from "./TransformerTypeReference";
 import { TypeProperties }           from "./TypeProperties";
 
 /**
@@ -31,7 +31,11 @@ export type PackageInfo = {
  * Type information.
  * @internal
  */
-export type TypeInfo = { properties?: TypeProperties };
+export type TypeInfo = {
+	typeReference: TransformerTypeReference;
+	type: ts.Type;
+	properties?: TypeProperties;
+};
 
 /**
  * @internal
@@ -55,11 +59,16 @@ export type NativeTransformerTypeReference = TransformerTypeReference & {
 };
 
 /**
- * TS Type by our type reference.
+ * TS Type with our type reference.
  */
 export type ReflectedTypeWithReference = ts.Type & { _typeReference: TransformerTypeReference };
 
 /**
+ * TS Symbol with our type reference.
+ */
+export type ReflectedSymbolWithReference = ts.Symbol & { _typeReference: TransformerTypeReference };
+
+/**
  * Extended SourceFile with our reflection info.
  */
-export type ReflectedSourceFileWithIdentifier = ts.SourceFile & { _reflectId: string };
+export type ReflectedSourceFileWithReference = ts.SourceFile & { _reflectId: string };

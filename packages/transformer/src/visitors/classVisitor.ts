@@ -1,6 +1,5 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import * as ts                     from "typescript";
-import { NodeBuilderFlags }        from "typescript";
 import { Context }                 from "../contexts/Context";
 import { createValueExpression }   from "../utils/createValueExpression";
 
@@ -9,7 +8,8 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeReference = context.metadata.referenceType(
 		type,
-		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
+		context.typeChecker.getSymbolAtLocation(declaration),
+		undefined, // context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None)
 		context
 	);
 
@@ -43,7 +43,7 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 {
 	if (ts.isPropertyDeclaration(node))
 	{
-		
+
 	}
 
 	if (ts.isGetAccessorDeclaration(node))
@@ -55,16 +55,16 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 	{
 
 	}
-	
+
 	// Index signature has no implementation to alter.
 	// if (ts.isIndexSignatureDeclaration(node))
 	// {
 	//	
 	// }
-	
+
 	if (ts.isMethodDeclaration(node))
 	{
-		
+
 	}
 
 	if (ts.isConstructorDeclaration(node))

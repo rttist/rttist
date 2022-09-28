@@ -2,7 +2,7 @@ import * as ts              from "typescript";
 import { Context }          from "../../contexts/Context";
 import { TypeMapperResult } from "../../declarations/mappers";
 
-export function mapUnion(type: ts.UnionType, context: Context): TypeMapperResult
+export function mapUnion(type: ts.UnionType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	// return {
 	// 		kind: TypeKind.Union,

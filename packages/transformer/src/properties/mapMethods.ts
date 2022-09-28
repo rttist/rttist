@@ -16,13 +16,11 @@ import { getSignatureParametersProperties } from "./getSignatureParametersProper
 
 /**
  * Return methods of Type.
+ * @param members
  * @param context
- * @param type
  */
-export function getMethods(type: ts.Type, context: Context): Array<MethodProperties> | undefined
+export function mapMethods(members: ts.Symbol[], context: Context): Array<MethodProperties>/* | undefined*/
 {
-	const members = type.getProperties();
-
 	const methods = members
 		.filter(m => (m.flags & ts.SymbolFlags.Method) === ts.SymbolFlags.Method || (m.flags & ts.SymbolFlags.Function) === ts.SymbolFlags.Function)
 		.map(
@@ -64,7 +62,8 @@ export function getMethods(type: ts.Type, context: Context): Array<MethodPropert
 			}
 		);
 
-	return methods.length ? methods : undefined;
+	return methods;
+	// return methods.length ? methods : undefined;
 }
 
 function getMethodSignatures(type: ts.Type, context: Context): SignatureProperties[]
@@ -75,12 +74,14 @@ function getMethodSignatures(type: ts.Type, context: Context): SignatureProperti
 			returnType: context.metadata.referenceType
 			(
 				signature.getReturnType(),
+				undefined, // TODO: This can be a problem and just just here. If we don't get symbol from declaration, the symbol from type will be received, which will be symbol of the simplified type. Image case: `type X = string; function x(): X {} getType<x>().returnType.is(getType<X>())` it will return false, because getType<X>() will return X and getType<x>().returnType return string. Maybe it's OK cuz getType<X>() returns TypeAliasType. So everybody should check if (type.isAlias()) type.target ==; And TypeAliasType.is can be overriden to do this.target.is(typeToCheck). 
 				undefined,
 				context
 			),
 			typeParameters: signature.typeParameters
 				?.map(typeParameter => context.metadata.referenceType(
 					typeParameter,
+					undefined,
 					undefined,
 					context
 				)),

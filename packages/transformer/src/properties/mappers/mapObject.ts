@@ -1,4 +1,8 @@
-import { TypeKind }                from "@rttist/abstract";
+import {
+	PropertyFlags,
+	TypeKind
+}                                  from "@rttist/abstract";
+import { ModuleIds }               from "@rttist/core";
 import * as ts                     from "typescript";
 import { Context }                 from "../../contexts/Context";
 import { printTypeDebugInfo }      from "../../debugs/printTypeDebugInfo";
@@ -14,17 +18,17 @@ import {
 	getClassModifiers,
 	getHeritageClauses
 }                                  from "../../utils/declarationHelpers";
+import { getTypeRef }              from "../../utils/getTypeRef";
 import { isExported }              from "../../utils/isExported";
 import { getDeclaration }          from "../../utils/symbolHelpers";
 import {
 	getSymbol,
-	getTypeId,
 	isReference
 }                                  from "../../utils/typeHelpers";
 import { getConstructors }         from "../getConstructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
-import { getMethods }              from "../getMethods";
-import { getProperties }           from "../getProperties";
+import { mapMethods }              from "../mapMethods";
+import { mapProperties }           from "../mapProperties";
 import { mapObjectLiteral }        from "./mapObjectLiteral";
 import { mapTuple }                from "./mapTuple";
 
@@ -38,7 +42,7 @@ const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 function getTypeArgumentsReference(type: ts.ObjectType, context: Context)
 {
 	let typeArguments = (type as ts.TypeReference).typeArguments
-		?.map(typeArg => context.metadata.referenceType(typeArg, undefined, context));
+		?.map(typeArg => context.metadata.referenceType(typeArg, undefined, undefined, context));
 
 	if (typeArguments === undefined || typeArguments.length === 0)
 	{
@@ -48,13 +52,13 @@ function getTypeArgumentsReference(type: ts.ObjectType, context: Context)
 	return typeArguments;
 }
 
-export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefined*/, context: Context): TypeMapperResult
+export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	const mapper = ObjectFlagsMappers[type.objectFlags];
 
 	if (mapper)
 	{
-		const mapperResult = mapper(type, context);
+		const mapperResult = mapper(type, symbol, context);
 
 		if (mapperResult)
 		{
@@ -64,7 +68,7 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 		// context.log.warn("Unhandled type. " + printTypeDebugInfo(type, context.typeChecker));
 	}
 
-	const symbol = getSymbol(type, context.typeChecker);
+	symbol = symbol ?? getSymbol(type, context.typeChecker);
 
 	// Resolve correct type in case of reference. But the reference holds the type arguments.
 	const resolvedType = isReference(type) ? type.target : type;
@@ -77,9 +81,10 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 		const declaration = getDeclaration(symbol);
 		const typeArguments = getTypeArgumentsReference(type, context);
+		const typeRef = getTypeRef(type, symbol, context.typeChecker);
 
 		const properties: ClassProperties & InterfaceProperties = {
-			id: getTypeId(type, context.typeChecker),
+			id: typeRef.id,
 			kind: kind,
 			name: symbol?.getEscapedName().toString() ?? "",
 			typeArguments: typeArguments,
@@ -88,7 +93,12 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 
 		if (type !== resolvedType)
 		{
-			properties.genericTypeDefinition = context.metadata.referenceType(resolvedType, undefined, context);
+			properties.genericTypeDefinition = context.metadata.referenceType(
+				resolvedType,
+				undefined,
+				undefined,
+				context
+			);
 
 			// If it is generic type with generic type definition, 
 			// we will not serialize whole type again an again for all the variants. 
@@ -97,14 +107,50 @@ export function mapObject(type: ts.ObjectType/*, typeNode: ts.TypeNode| undefine
 			return properties;
 		}
 
-		properties.properties = getProperties(type, context);
-		properties.methods = getMethods(type, context);
+		if (typeRef.moduleIdentifier === ModuleIds.Native)
+		{
+			return properties;
+		}
+
+		const members = type.getProperties();
+		properties.properties = mapProperties(members, context);
+		properties.methods = mapMethods(members, context);
 
 		if (kind === TypeKind.Class)
 		{
 			properties.constructors = getConstructors(type, context);
 			properties.ctor = undefined; // TODO: Create ImportDetails and let middlewares to generate imports or generate import right here?? But Imports must be generated somewhere to support lazy loadings of webpack etc.
 			properties.ctorSync = undefined;
+
+			const staticMembers = Array.from<ts.Symbol>(symbol?.exports?.values() || [] as any)
+				.filter(member => member.escapedName !== "prototype");
+
+			if (staticMembers !== undefined)
+			{
+				properties.properties = properties.properties.concat(
+					mapProperties(staticMembers, context).map(prop => {
+						prop.flags |= PropertyFlags.Static;
+						return prop;
+					})
+				);
+
+				properties.methods = properties.methods.concat(
+					mapMethods(staticMembers, context).map(prop => {
+						prop.flags |= PropertyFlags.Static;
+						return prop;
+					})
+				);
+			}
+
+			if (properties.properties.length === 0)
+			{
+				properties.properties = undefined;
+			}
+
+			if (properties.methods.length === 0)
+			{
+				properties.methods = undefined;
+			}
 		}
 
 		if (declaration)

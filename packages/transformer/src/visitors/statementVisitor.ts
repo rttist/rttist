@@ -30,7 +30,7 @@ function visit(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
 			// // Check if it's our getType<T>() by checking it has our special static property.
 			// if (fncType.getProperty(TYPE_ID_PROPERTY_NAME))
 			// {
-			return updateGetTypeCallExpression(context, node);
+			return updateGetTypeCallExpression(node, context);
 			// }
 		}
 

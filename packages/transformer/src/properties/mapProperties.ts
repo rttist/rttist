@@ -5,7 +5,7 @@ import {
 }                                   from "@rttist/abstract";
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { PropertyProperties }       from "../declarations/TypeProperties";
 import { getModifiers }             from "../utils/modifierHelpers";
 import {
@@ -15,13 +15,13 @@ import {
 import { getDecoratorsProperties }  from "./getDecoratorsProperties";
 
 /**
- * Return properties of type
- * @param type
+ * Return properties of type.
+ * @param members
  * @param context
  */
-export function getProperties(type: ts.Type, context: Context): Array<PropertyProperties> | undefined
+export function mapProperties(members: ts.Symbol[], context: Context): Array<PropertyProperties>/* | undefined*/
 {
-	return type.getProperties()
+	return members
 		.filter(m =>
 			(m.flags & ts.SymbolFlags.Property) === ts.SymbolFlags.Property
 			|| (m.flags & ts.SymbolFlags.GetAccessor) === ts.SymbolFlags.GetAccessor
@@ -60,6 +60,7 @@ export function getProperties(type: ts.Type, context: Context): Array<PropertyPr
 				name: memberSymbol.escapedName.toString(),
 				type: type === undefined ? TransformerTypeReference.Unknown : context.metadata.referenceType(
 					type, /*declaration.type!*/
+					memberSymbol,
 					undefined,
 					context
 				),

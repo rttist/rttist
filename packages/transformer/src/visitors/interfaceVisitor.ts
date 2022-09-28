@@ -9,7 +9,8 @@ export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: 
 	// Add interface's type to the metadata.
 	context.metadata.referenceType(
 		type,
-		context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None),
+		context.typeChecker.getSymbolAtLocation(declaration),
+		undefined,
 		context
 	);
 

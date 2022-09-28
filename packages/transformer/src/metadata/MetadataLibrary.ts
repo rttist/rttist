@@ -5,10 +5,10 @@ import {
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { TypeProperties }           from "../declarations/TypeProperties";
 import { DependencyManager }        from "../dependencies/DependencyManager";
-import { getTypeRef }               from "../utils/typeHelpers";
+import { getTypeRef }               from "../utils/getTypeRef";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
 import { PackageMetadata }          from "./PackageMetadata";
@@ -97,13 +97,19 @@ export class MetadataLibrary
 	/**
 	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
 	 * @param type
+	 * @param symbol
 	 * @param typeNode
 	 * @param context
 	 */
-	referenceType(type: ts.Type, typeNode: ts.TypeNode | undefined, context: Context): TransformerTypeReference
+	referenceType(
+		type: ts.Type,
+		symbol: ts.Symbol | undefined,
+		typeNode: ts.TypeNode | undefined,
+		context: Context
+	): TransformerTypeReference
 	{
 		// Get the type reference before further processing.
-		const typeRef: TransformerTypeReference = getTypeRef(type, context.typeChecker);
+		const typeRef: TransformerTypeReference = getTypeRef(type, symbol, context.typeChecker);
 
 		// Native type or already processed type
 		if (
@@ -133,15 +139,18 @@ export class MetadataLibrary
 					"Unable to access SourceFile of type."
 					+ printTypeDebugInfo(type, context.typeChecker)
 				);
-				return typeRef;
+				existingModule = ModuleMetadata.Unknown;
+				// return typeRef; // TODO: Test if we can do this -> do not return here but add it no Unknown module.
 			}
-
-			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
-			this.modules.set(typeRef.moduleIdentifier, existingModule);
+			else
+			{
+				existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
+				this.modules.set(typeRef.moduleIdentifier, existingModule);
+			}
 		}
 
 		// Add type to Module
-		const properties = existingModule.addType(type, context);
+		const properties = existingModule.addType(typeRef, type, symbol, context);
 
 		if (properties !== false)
 		{

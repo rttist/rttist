@@ -1,6 +1,6 @@
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 
 export type ClassFlags = {
 	abstract?: true;
@@ -47,6 +47,7 @@ export function getHeritageClauses(
 		{
 			result.extends = ext.types.map(t => context.metadata.referenceType(
 				context.typeChecker.getTypeFromTypeNode(t),
+				context.typeChecker.getSymbolAtLocation(ext),
 				undefined,
 				context
 			));
@@ -58,6 +59,7 @@ export function getHeritageClauses(
 		{
 			result.implements = impl.types.map(t => context.metadata.referenceType(
 				context.typeChecker.getTypeFromTypeNode(t),
+				context.typeChecker.getSymbolAtLocation(impl),
 				undefined,
 				context
 			));

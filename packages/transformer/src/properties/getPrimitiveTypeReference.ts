@@ -1,5 +1,5 @@
 import * as ts                      from "typescript";
-import { TransformerTypeReference } from "../declarations/transformerTypeReference";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { getMajorTypeFlag }         from "../utils/typeHelpers";
 
 /**
