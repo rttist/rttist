@@ -36,13 +36,14 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional
 				|| (
 					declaration
-					&& (
-						ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)
-					)
-					&& !!declaration.questionToken
+					// && (
+					// 	ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)
+					// )
+					&& (declaration as ts.PropertyDeclaration | ts.PropertySignature).questionToken !== undefined
 				);
 
-			const type = getType(memberSymbol, declaration, context.typeChecker);
+			const type = context.typeChecker.getDeclaredTypeOfSymbol(memberSymbol); // TODO: mnemo značky ctrl + 1 a ctrl + 2, bere se asi rozdílný symbol, takže se nevygenerují properties.
+			// const type = getType(memberSymbol, declaration, context.typeChecker);
 
 			// NOTE: Removing undefined from types of optional properties. This is not a good idea.
 			// if (type && optional && context.config.parsedCommandLine?.options.strictNullChecks === true)

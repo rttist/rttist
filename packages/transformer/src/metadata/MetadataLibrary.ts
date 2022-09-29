@@ -97,7 +97,8 @@ export class MetadataLibrary
 	/**
 	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
 	 * @param type
-	 * @param symbol
+	 * @param symbol Symbol which should be used to generate name of the type. 
+	 * Is used for TypeAliases and Anonymous types (variables and properties their assigned to gives them name).
 	 * @param typeNode
 	 * @param context
 	 */

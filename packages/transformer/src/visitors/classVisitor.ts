@@ -43,7 +43,52 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 {
 	if (ts.isPropertyDeclaration(node))
 	{
+		if (node.initializer && ts.isClassExpression(node.initializer))
+		{
+			const symbol = (node as any).symbol || context.typeChecker.getSymbolAtLocation(node.name);
+			const type = context.typeChecker.getDeclaredTypeOfSymbol(symbol);
+			const typeReference = context.metadata.referenceType(
+				type,
+				symbol,
+				undefined,
+				context
+			);
 
+			return ts.factory.updatePropertyDeclaration(
+				node,
+				node.modifiers,
+				node.name,
+				node.questionToken,
+				node.type,
+				ts.factory.updateClassExpression(
+					node.initializer,
+					node.initializer.modifiers,
+					node.initializer.name,
+					node.initializer.typeParameters,
+					node.initializer.heritageClauses,
+					node.initializer.members.concat(
+						ts.factory.createClassStaticBlockDeclaration(
+							ts.factory.createBlock([
+									ts.factory.createExpressionStatement(
+										ts.factory.createBinaryExpression(
+											ts.factory.createElementAccessExpression(
+												ts.factory.createPropertyAccessExpression(
+													ts.factory.createIdentifier("this"),
+													"prototype"
+												),
+												ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
+											),
+											ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+											createValueExpression(typeReference)
+										)
+									)
+								]
+							)
+						)
+					)
+				)
+			);
+		}
 	}
 
 	if (ts.isGetAccessorDeclaration(node))
