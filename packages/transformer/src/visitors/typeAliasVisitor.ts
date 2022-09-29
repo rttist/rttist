@@ -20,16 +20,4 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 	);
 
 	return declaration;
-
-	// We have nothing to ALTER in interface
-	// return ts.visitEachChild(
-	// 	declaration,
-	// 	(node: ts.Node) => visitInterfaceDeclaration(node, context),
-	// 	context.transformationContext
-	// );
 }
-
-// function visitInterfaceDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
-// {
-// 	return node;
-// }

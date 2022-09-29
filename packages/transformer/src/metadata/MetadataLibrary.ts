@@ -11,13 +11,9 @@ import { DependencyManager }        from "../dependencies/DependencyManager";
 import { getTypeRef }               from "../utils/getTypeRef";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
 import { ModuleMetadata }           from "./ModuleMetadata";
-import { PackageMetadata }          from "./PackageMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
-
-// TODO: Maybe remove this and just use PackageMetadata instead.
-type PackageInfo = { name: string, metadata: PackageMetadata };
 
 type TypeInfo = { properties?: TypeProperties };
 
@@ -39,19 +35,6 @@ export class MetadataLibrary
 	 * Manager of package dependencies.
 	 */
 	public readonly dependencyManager: DependencyManager;
-
-	// /**
-	//  * Map of types used in which SourceFile.
-	//  * @private
-	//  */
-	// private readonly sourceFileContextTypes = new Map<ts.SourceFile, TransformerTypeReference[]>();
-
-	// /**
-	//  * Map of packages from project dependencies.
-	//  * @desc Key is package name.
-	//  * @private
-	//  */
-	// private readonly packagesMetadata = new Map<string, PackageInfo>();
 
 	/**
 	 * Set of already processed types.
@@ -87,6 +70,22 @@ export class MetadataLibrary
 	}
 
 	/**
+	 * Returns total number of processed types.
+	 */
+	getNumberOfTypes(): number
+	{
+		return this.processedTypes.size;
+	}
+
+	/**
+	 * Returns total number of processed modules.
+	 */
+	getNumberOfModules(): number
+	{
+		return this.modules.size;
+	}
+
+	/**
 	 * Get all the modules generated to this time.
 	 */
 	getModules(): IterableIterator<ModuleMetadata>
@@ -97,7 +96,7 @@ export class MetadataLibrary
 	/**
 	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
 	 * @param type
-	 * @param symbol Symbol which should be used to generate name of the type. 
+	 * @param symbol Symbol which should be used to generate name of the type.
 	 * Is used for TypeAliases and Anonymous types (variables and properties their assigned to gives them name).
 	 * @param typeNode
 	 * @param context

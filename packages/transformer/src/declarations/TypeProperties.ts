@@ -16,7 +16,8 @@
 	TypeIdentifier,
 	TypeKind,
 	TypeMetadata,
-	NativeTypeKind
+	NativeTypeKind,
+	TypeAliasTypeMetadata
 }                                   from "@rttist/abstract";
 import {
 	Match
@@ -26,12 +27,11 @@ import { TransformerTypeReference } from "./TransformerTypeReference";
 /**
  * Properties of general Type.
  */
-type BaseTypeProperties = Match<keyof TypeMetadata, {
+export type BaseTypeProperties = Match<keyof TypeMetadata, {
 	id?: TypeIdentifier;
 	kind: TypeKind;
 	name?: string;
-	// fullName?: string;
-	module?: ModuleReference;
+	module?: ModuleIdentifier;
 	exported?: true;
 	typeArguments?: TransformerTypeReference[];
 	nullable?: true;
@@ -42,9 +42,18 @@ type BaseTypeProperties = Match<keyof TypeMetadata, {
 export type NativeBaseTypeProperties =
 	Omit<BaseTypeProperties, "id" | "kind">
 	& { kind: NativeTypeKind, id?: undefined };
-export type NonNativeBaseTypeProperties =
-	Omit<BaseTypeProperties, "id" | "kind">
-	& { id: TypeIdentifier, kind: TypeKind };
+
+export type NonNativeBaseTypeProperties = Match<keyof BaseTypeProperties, {
+	id: TypeIdentifier,
+	kind: TypeKind;
+	name: string;
+	module?: ModuleIdentifier;
+	exported?: boolean;
+	typeArguments?: TransformerTypeReference[];
+	nullable?: true;
+	genericTypeDefinition?: TransformerTypeReference;
+	isGenericTypeDefinition?: true;
+}>;
 
 /**
  * Properties of a Module.
@@ -168,6 +177,11 @@ export type ClassProperties = Match<keyof ClassTypeMetadata,
 export type InterfaceProperties = Match<keyof InterfaceTypeMetadata,
 	ObjectProperties & {
 	extends?: TransformerTypeReference[];
+}>;
+
+export type TypeAliasProperties = Match<keyof TypeAliasTypeMetadata,
+	NonNativeBaseTypeProperties & {
+	target: TransformerTypeReference;
 }>;
 
 /**

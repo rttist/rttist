@@ -89,7 +89,7 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 			name: symbol?.getEscapedName().toString() ?? "",
 			typeArguments: typeArguments,
 			isGenericTypeDefinition: typeArguments !== undefined && resolvedType == type ? true : undefined
-		};
+		} as any;
 
 		if (type !== resolvedType)
 		{

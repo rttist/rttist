@@ -47,7 +47,15 @@ export class Logger
 		{
 			console.log.apply(
 				undefined,
-				[`\x1b[${color}m[${level}] ${PACKAGE_ID}`, ...args, this.contextSuffix, "\x1b[0m"]
+				[
+					`\x1b[${color}m[${level}] ${PACKAGE_ID}`,
+					...args.flatMap(arg => typeof arg !== "string"
+						? ["\x1b[0m", arg, `\x1b[${color}m`]
+						: [arg]
+					),
+					this.contextSuffix,
+					"\x1b[0m"
+				]
 			);
 		}
 		else

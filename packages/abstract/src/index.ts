@@ -13,7 +13,8 @@ export {
 	ModuleMetadata
 }                   from "./Module";
 export {
-	Type
+	Type,
+	NativeTypes
 }                   from "./Type";
 export *            from "./types";
 export { Metadata } from "./Metadata";

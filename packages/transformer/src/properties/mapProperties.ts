@@ -2,48 +2,65 @@ import {
 	AccessModifier,
 	Accessor,
 	PropertyFlags
-}                                   from "@rttist/abstract";
-import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { PropertyProperties }       from "../declarations/TypeProperties";
-import { getModifiers }             from "../utils/modifierHelpers";
+}                                  from "@rttist/abstract";
+import * as ts                     from "typescript";
+import { Context }                 from "../contexts/Context";
+import { PropertyProperties }      from "../declarations/TypeProperties";
+import { getModifiers }            from "../utils/modifierHelpers";
 import {
 	getDeclaration,
 	getType
-}                                   from "../utils/symbolHelpers";
-import { getDecoratorsProperties }  from "./getDecoratorsProperties";
+}                                  from "../utils/symbolHelpers";
+import { getDecoratorsProperties } from "./getDecoratorsProperties";
+
+const PROP_SYMBOL_FLAGS = ts.SymbolFlags.Property | ts.SymbolFlags.GetAccessor | ts.SymbolFlags.SetAccessor;
 
 /**
  * Return properties of type.
  * @param members
  * @param context
  */
-export function mapProperties(members: ts.Symbol[], context: Context): Array<PropertyProperties>/* | undefined*/
+export function mapProperties(members: ts.Symbol[], context: Context): Array<PropertyProperties>
 {
 	return members
 		.filter(m =>
-			(m.flags & ts.SymbolFlags.Property) === ts.SymbolFlags.Property
-			|| (m.flags & ts.SymbolFlags.GetAccessor) === ts.SymbolFlags.GetAccessor
-			|| (m.flags & ts.SymbolFlags.SetAccessor) === ts.SymbolFlags.SetAccessor
+			(m.flags & ts.SymbolFlags.Prototype) === 0
+			&& (m.flags & PROP_SYMBOL_FLAGS) !== 0
 		)
 		.map<PropertyProperties>((memberSymbol: ts.Symbol) =>
 		{
-			const declaration = getDeclaration(memberSymbol);
+			const declaration = getDeclaration<ts.PropertyDeclaration | ts.PropertySignature>(memberSymbol);
 			const accessor = getAccessor(declaration);
 			const modifiers = getModifiers(declaration, memberSymbol);
-
-			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional
+			const optional = (memberSymbol.flags & ts.SymbolFlags.Optional) !== 0
 				|| (
-					declaration
-					// && (
-					// 	ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)
-					// )
-					&& (declaration as ts.PropertyDeclaration | ts.PropertySignature).questionToken !== undefined
+					declaration !== undefined
+					&& declaration.questionToken !== undefined
 				);
 
-			const type = context.typeChecker.getDeclaredTypeOfSymbol(memberSymbol); // TODO: mnemo značky ctrl + 1 a ctrl + 2, bere se asi rozdílný symbol, takže se nevygenerují properties.
-			// const type = getType(memberSymbol, declaration, context.typeChecker);
+			const initializerSymbol = (
+				declaration !== undefined
+				&& declaration.type === undefined
+				&& declaration.initializer !== undefined
+			)
+				? (declaration.initializer as any).symbol || context.typeChecker.getSymbolAtLocation(declaration.initializer)
+				: undefined;
+
+			const type = initializerSymbol !== undefined
+				? context.typeChecker.getDeclaredTypeOfSymbol(initializerSymbol)
+				: getType(memberSymbol, declaration, context.typeChecker);
+
+			// Provide symbol when there is an initializer and it is not reference/alias.
+			const provideSymbol = initializerSymbol !== undefined
+				&& ((context.typeChecker.getTypeAtLocation(declaration!.initializer!) as ts.ObjectType)
+					.objectFlags & ts.ObjectFlags.Anonymous) !== 0;
+
+			const ref = context.metadata.referenceType(
+				type,
+				provideSymbol ? memberSymbol : undefined,
+				undefined,
+				context
+			);
 
 			// NOTE: Removing undefined from types of optional properties. This is not a good idea.
 			// if (type && optional && context.config.parsedCommandLine?.options.strictNullChecks === true)
@@ -59,12 +76,7 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 
 			return {
 				name: memberSymbol.escapedName.toString(),
-				type: type === undefined ? TransformerTypeReference.Unknown : context.metadata.referenceType(
-					type, /*declaration.type!*/
-					memberSymbol,
-					undefined,
-					context
-				),
+				type: ref,
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (
 						modifiers.readonly || accessor === Accessor.Getter

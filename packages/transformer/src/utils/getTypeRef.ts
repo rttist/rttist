@@ -17,6 +17,7 @@ import { getDeclaration }                 from "./symbolHelpers";
 import {
 	getSymbol,
 	getTypeId,
+	isInvalidType,
 }                                         from "./typeHelpers";
 
 function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference
@@ -55,21 +56,26 @@ export function getTypeRef(
 	typeChecker: ts.TypeChecker
 ): TransformerTypeReference
 {
-	const isAnonymous = ((type as any).objectFlags & ts.ObjectFlags.Anonymous) !== 0;
-	const isTypeAlias = symbol && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0 || false;
-	const useProvidedSymbol = isAnonymous || isTypeAlias;
-
-	// In case of TypeAlias ignore the stored ref on type,
-	if (useProvidedSymbol)
+	if (isInvalidType(type))
 	{
-		// instead try to find ref from the symbol.
-		if (symbol && hasReflectedTypeReference(symbol))
-		{
-			console.log("!! Skipped thanks to stored type ref on symbol!", symbol._typeReference.id); // TODO: remove
-			return symbol._typeReference;
-		}
+		return TransformerTypeReference.Unknown;
 	}
-	else if (hasReflectedTypeReference(type))
+
+	// const isAnonymous = ((type as any).objectFlags & ts.ObjectFlags.Anonymous) !== 0;
+	// const isTypeAlias = symbol && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0 || false;
+	// const useProvidedSymbol = isAnonymous || isTypeAlias;
+
+	// Use symbol always when provided.
+	const useProvidedSymbol = symbol !== undefined;
+
+	// In case of TypeAlias ignore the stored ref on type, instead try to find the ref on the symbol.
+	if (symbol && hasReflectedTypeReference(symbol))
+	{
+		console.log("!! Skipped thanks to stored type ref on symbol!", symbol._typeReference.id); // TODO: remove
+		return symbol._typeReference;
+	}
+
+	if (!useProvidedSymbol && hasReflectedTypeReference(type))
 	{
 		console.log("!! Skipped thanks to stored type ref on type!", type._typeReference.id); // TODO: remove
 		return type._typeReference;

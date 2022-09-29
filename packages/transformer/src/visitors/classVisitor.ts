@@ -46,7 +46,9 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 		if (node.initializer && ts.isClassExpression(node.initializer))
 		{
 			const symbol = (node as any).symbol || context.typeChecker.getSymbolAtLocation(node.name);
-			const type = context.typeChecker.getDeclaredTypeOfSymbol(symbol);
+			const type = context.typeChecker.getDeclaredTypeOfSymbol(
+				(node.initializer as any).symbol || context.typeChecker.getSymbolAtLocation(node.initializer)
+			);
 			const typeReference = context.metadata.referenceType(
 				type,
 				symbol,

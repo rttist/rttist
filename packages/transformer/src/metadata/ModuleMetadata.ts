@@ -118,7 +118,7 @@ export class ModuleMetadata
 		};
 		this.types.set(typeReference.id, typeInfo);
 
-		typeInfo.properties = getTypeProperties(type, symbol, context);
+		typeInfo.properties = getTypeProperties(typeReference, type, symbol, context);
 
 		return typeInfo.properties;
 	}

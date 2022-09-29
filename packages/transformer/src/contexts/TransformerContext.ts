@@ -14,9 +14,11 @@ import { SourceFileContext } from "./SourceFileContext";
 const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
 let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
 
+const perfProgramStart = performance.now();
+
 export class TransformerContext
 {
-	// private _metaWriter?: IMetadataWriter;
+	private readonly perfEntries: [initialization: number, persistance: number, ...sourceFiles: number[]] = [0, 0];
 
 	/**
 	 * Metadata manager use to work with metadata.
@@ -132,6 +134,9 @@ export class TransformerContext
 		], Activator);
 
 		log.log(LogLevel.Info, LogColor.blue, "Detected project root: " + config.projectDir);
+
+		// Write INIT performance
+		instance.perfEntries[0] = performance.now() - perfProgramStart;
 	}
 
 	/**
@@ -147,6 +152,8 @@ export class TransformerContext
 		visitor: (sourceFileNode: ts.SourceFile, sourceFileContext: SourceFileContext) => ts.SourceFile
 	): ts.SourceFile
 	{
+		const sourceFileStart = performance.now();
+
 		// Create SourceFile context and register it.
 		const sourceFileContext = this.sourceFileContext = new SourceFileContext(
 			sourceFileNode,
@@ -155,7 +162,11 @@ export class TransformerContext
 		);
 
 		// Callback
-		const visitedSourceFile = this.metadataManager.updateSourceFile(visitor(sourceFileNode, sourceFileContext));
+		const visitedSourceFile = this.metadataManager.updateSourceFile(
+			visitor(sourceFileNode, sourceFileContext)
+		);
+
+		this.perfEntries.push(performance.now() - sourceFileStart);
 
 		// If given SourceFile is one of the root files.
 		if (this.rootFileNames.has(sourceFileNode.fileName))
@@ -165,7 +176,31 @@ export class TransformerContext
 			// If it is last root SourceFile.
 			if (this._numberOfVisitedRootFileNames === this.rootFileNames.size)
 			{
+				const persistStart = performance.now();
+
+				// Emit metadata
 				this.metadataManager.emitMetadataLibrary();
+
+				this.perfEntries[1] = performance.now() - persistStart;
+
+				const total = this.perfEntries.reduce((sum, num) => sum + num, 0);
+				log.debug(
+					"Completed!",
+					"\n\tInitialization:",
+					roundPerfTime(this.perfEntries[0]), "sec.",
+
+					"\n\tType discovery and transformations:",
+					roundPerfTime(total - this.perfEntries[0] - this.perfEntries[1]), "sec.",
+
+					"\n\tSerialization and emitting of metadata:",
+					roundPerfTime(this.perfEntries[1]), "sec.",
+
+					"\n\tTotal time:",
+					roundPerfTime(total), "sec.",
+
+					"\n\tProcessed", this.metadata.getNumberOfTypes(), "type(s) from",
+					this.metadata.getNumberOfModules(), "module(s).",
+				);
 			}
 		}
 
@@ -175,4 +210,9 @@ export class TransformerContext
 
 class Activator extends TransformerContext
 {
+}
+
+function roundPerfTime(time: number)
+{
+	return Math.round(time * 100) / 100000;
 }

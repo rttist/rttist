@@ -18,6 +18,10 @@ export function resolveType(type: ts.Type): ts.Type
 	return type;
 }
 
+/**
+ * @desc If the type is a reference, it is usually a sub type of generic type definition.
+ * @param type
+ */
 export function isReference(type: ts.Type): type is ts.TypeReference
 {
 	return isObject(type) && (type.objectFlags & ts.ObjectFlags.Reference) !== 0;
@@ -63,4 +67,9 @@ export function getMajorTypeFlag(type: ts.Type)
 export function getTypeId(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker): TypeIdentifier
 {
 	return getTypeRef(type, symbol, typeChecker).id || TypeIds.Invalid;
+}
+
+export function isInvalidType(type: ts.Type | undefined): boolean
+{
+	return type === undefined || (type as any).intrinsicName === "error";
 }

@@ -9,6 +9,6 @@ export function mapUniqueEESymbol(type: ts.UniqueESSymbolType, symbol: ts.Symbol
 	return {
 		id: getTypeId(type, symbol, context.typeChecker),
 		kind: TypeKind.UniqueSymbol,
-		name: type.escapedName?.toString()
+		name: type.escapedName?.toString() || ""
 	};
 }

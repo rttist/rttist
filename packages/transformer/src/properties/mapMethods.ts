@@ -14,15 +14,17 @@ import { getDeclaration }                   from "../utils/symbolHelpers";
 import { getDecoratorsProperties }          from "./getDecoratorsProperties";
 import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
 
+const METHOD_SYMBOL_PROPS = ts.SymbolFlags.Method | ts.SymbolFlags.Function;
+
 /**
  * Return methods of Type.
  * @param members
  * @param context
  */
-export function mapMethods(members: ts.Symbol[], context: Context): Array<MethodProperties>/* | undefined*/
+export function mapMethods(members: ts.Symbol[], context: Context): Array<MethodProperties>
 {
 	const methods = members
-		.filter(m => (m.flags & ts.SymbolFlags.Method) === ts.SymbolFlags.Method || (m.flags & ts.SymbolFlags.Function) === ts.SymbolFlags.Function)
+		.filter(m => (m.flags & METHOD_SYMBOL_PROPS) !== 0)
 		.map(
 			(memberSymbol: ts.Symbol) => {
 				const declaration = getDeclaration(memberSymbol) as ts.FunctionLikeDeclaration;
@@ -42,7 +44,6 @@ export function mapMethods(members: ts.Symbol[], context: Context): Array<Method
 				let modifiers = getModifiers(declaration, memberSymbol);
 
 				return {
-					accessModifier: modifiers.access,
 					name: memberSymbol.escapedName.toString(),
 					signatures: getMethodSignatures(type, context),
 					decorators: declaration ? getDecoratorsProperties(declaration, context) : [],
@@ -63,7 +64,6 @@ export function mapMethods(members: ts.Symbol[], context: Context): Array<Method
 		);
 
 	return methods;
-	// return methods.length ? methods : undefined;
 }
 
 function getMethodSignatures(type: ts.Type, context: Context): SignatureProperties[]
@@ -74,7 +74,7 @@ function getMethodSignatures(type: ts.Type, context: Context): SignatureProperti
 			returnType: context.metadata.referenceType
 			(
 				signature.getReturnType(),
-				undefined, // TODO: This can be a problem and just just here. If we don't get symbol from declaration, the symbol from type will be received, which will be symbol of the simplified type. Image case: `type X = string; function x(): X {} getType<x>().returnType.is(getType<X>())` it will return false, because getType<X>() will return X and getType<x>().returnType return string. Maybe it's OK cuz getType<X>() returns TypeAliasType. So everybody should check if (type.isAlias()) type.target ==; And TypeAliasType.is can be overriden to do this.target.is(typeToCheck). 
+				undefined, // TODO: This can be a problem and not just here. If we don't get symbol from declaration, the symbol from type will be received, which will be symbol of the simplified type. Image case: `type X = string; function x(): X {} getType<x>().returnType.is(getType<X>())` it will return false, because getType<X>() will return X and getType<x>().returnType return string. Maybe it's OK cuz getType<X>() should return TypeAliasType. So everybody should check if (type.isAlias()) type.target ==; And TypeAliasType.is can be overriden to do this.target.is(typeToCheck). 
 				undefined,
 				context
 			),
