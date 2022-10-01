@@ -1,35 +1,31 @@
-import { TypeKind }                 from "@rttist/abstract";
-import * as ts                      from "typescript";
-import { UnknownTypeProperties }    from "../consts";
-import { Context }                  from "../contexts/Context";
-import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
-import { TypeMapper }               from "../declarations/mappers";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { TypeKind }              from "@rttist/abstract";
+import * as ts                   from "typescript";
+import { UnknownTypeProperties } from "../consts";
+import { Context }               from "../contexts/Context";
+import { printTypeDebugInfo }    from "../debugs/printTypeDebugInfo";
+import { TypeMapper }            from "../declarations/mappers";
 import {
 	TypeAliasProperties,
 	TypeProperties
-}                                   from "../declarations/TypeProperties";
-import { getTypeId }                from "../utils/typeHelpers";
-import { getLiteralProperties }     from "./getLiteralProperties";
-import { mapConditional }           from "./mappers/mapConditional";
-import { mapEnum }                  from "./mappers/mapEnum";
-import { mapEnumLiteral }           from "./mappers/mapEnumLiteral";
-import { mapESSymbol }              from "./mappers/mapESSymbol";
-import { mapIndex }                 from "./mappers/mapIndex";
-import { mapIndexedAccessType }     from "./mappers/mapIndexedAccessType";
-import { mapIntersection }          from "./mappers/mapIntersection";
-import { mapObject }                from "./mappers/mapObject";
-import { mapStringMapping }         from "./mappers/mapStringMapping";
-import { mapTemplateLiteral }       from "./mappers/mapTemplateLiteral";
-import { mapTypeParameter }         from "./mappers/mapTypeParameter";
-import { mapUnion }                 from "./mappers/mapUnion";
-import { mapUniqueEESymbol }        from "./mappers/mapUniqueEESymbol";
+}                                from "../declarations/TypeProperties";
+import { getDeclaration }        from "../utils/symbolHelpers";
+import { getTypeId }             from "../utils/typeHelpers";
+import { getLiteralProperties }  from "./getLiteralProperties";
+import { mapConditional }        from "./mappers/mapConditional";
+import { mapEnum }               from "./mappers/mapEnum";
+import { mapEnumLiteral }        from "./mappers/mapEnumLiteral";
+import { mapIndex }              from "./mappers/mapIndex";
+import { mapIndexedAccessType }  from "./mappers/mapIndexedAccessType";
+import { mapIntersection }       from "./mappers/mapIntersection";
+import { mapObject }             from "./mappers/mapObject";
+import { mapStringMapping }      from "./mappers/mapStringMapping";
+import { mapTemplateLiteral }    from "./mappers/mapTemplateLiteral";
+import { mapTypeParameter }      from "./mappers/mapTypeParameter";
+import { mapUnion }              from "./mappers/mapUnion";
 
 const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.TypeFlags.Enum]: mapEnum,
 	[ts.TypeFlags.EnumLiteral]: mapEnumLiteral as TypeMapper,
-	[ts.TypeFlags.ESSymbol]: mapESSymbol, // TODO: Isn't it native?
-	[ts.TypeFlags.UniqueESSymbol]: mapUniqueEESymbol as TypeMapper, // TODO: Isn't it native?
 	[ts.TypeFlags.TypeParameter]: mapTypeParameter,
 	[ts.TypeFlags.Object]: mapObject as TypeMapper,
 	[ts.TypeFlags.Union]: mapUnion as TypeMapper,
@@ -44,13 +40,13 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 
 /**
  * Return TypeProperties object describing given type.
- * @param typeReference
+ // * @param typeReference
  * @param type
  * @param symbol
  * @param context
  */
 export function getTypeProperties(
-	typeReference: TransformerTypeReference,
+	// typeReference: TransformerTypeReference,
 	type: ts.Type,
 	symbol: ts.Symbol | undefined,
 	context: Context
@@ -79,17 +75,43 @@ export function getTypeProperties(
 		return UnknownTypeProperties;
 	}
 
+	// TODO: Separate to mapTypeAlias file
 	// TODO: Solve this. We don't want to generate properties for aliases
 	// It's a TypeAlias
 	// if (hasReflectedTypeReference(symbol) && symbol.__ref.id != typeReference.id)
-	if (symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0 && type.symbol != symbol)
+	if (symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0)
 	{
-		return {
-			id: getTypeId(type, symbol, context.typeChecker),
-			name: symbol.escapedName.toString(),
-			kind: TypeKind.Alias,
-			target: context.metadata.referenceType(type, undefined, undefined, context)
-		} as TypeAliasProperties;
+		const declaration = getDeclaration<ts.TypeAliasDeclaration>(symbol);
+		// const declaredSymbol = declaration && (
+		// 	(declaration.type as any).symbol
+		// 	|| context.typeChecker.getSymbolAtLocation(declaration.type)
+		// );
+
+		if (declaration)
+		{
+			if (declaration.type.kind === ts.SyntaxKind.TypeReference)
+				// if (declaredSymbol && declaredSymbol != type.symbol)
+			{
+				return {
+					id: getTypeId(type, symbol, context.typeChecker),
+					name: symbol.escapedName.toString(),
+					kind: TypeKind.Alias,
+					target: context.metadata.referenceType(type, undefined, undefined, context)
+				} as TypeAliasProperties;
+			}
+
+			if (declaration.type.kind === ts.SyntaxKind.UnionType)
+			{
+			}
+
+			if (declaration.type.kind === ts.SyntaxKind.IntersectionType)
+			{
+			}
+
+			if (declaration.type.kind === ts.SyntaxKind.LiteralType)
+			{
+			}
+		}
 	}
 
 	const mapper = TypeFlagsMappers[type.flags];

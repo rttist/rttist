@@ -26,6 +26,8 @@ export enum TypeKind
 	Number,
 	BigInt,
 	Boolean,
+	True,
+	False,
 	Enum,
 	StringLiteral,
 	NumberLiteral,
@@ -88,7 +90,9 @@ export enum TypeKind
 	AsyncIteratorDefinition,
 	AsyncIterableDefinition,
 	AsyncIterableIteratorDefinition,
-	
+
+	// Keep last
+	Invalid,
 }
 
 export type NativeTypeKind =
@@ -103,9 +107,12 @@ export type NativeTypeKind =
 	| TypeKind.Number
 	| TypeKind.BigInt
 	| TypeKind.Boolean
+	| TypeKind.True
+	| TypeKind.False
 	| TypeKind.Date
 	| TypeKind.Error
 	| TypeKind.Symbol
+	| TypeKind.UniqueSymbol
 	| TypeKind.RegExp
 	| TypeKind.Int8Array
 	| TypeKind.Uint8Array

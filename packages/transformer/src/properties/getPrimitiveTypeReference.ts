@@ -8,6 +8,13 @@ import { getMajorTypeFlag }         from "../utils/typeHelpers";
  */
 export function getPrimitiveTypeReference(type: ts.Type): TransformerTypeReference | undefined
 {
+	if ((type.flags & ts.TypeFlags.BooleanLiteral) !== 0)
+	{
+		return (type as any).intrinsicName === "true"
+			? TransformerTypeReference.True
+			: TransformerTypeReference.False;
+	}
+
 	return PrimitiveTypesRefMap[getMajorTypeFlag(type)];
 }
 
@@ -17,6 +24,7 @@ const PrimitiveTypesRefMap: { [flag: number]: TransformerTypeReference } = {
 	[ts.TypeFlags.Boolean]: TransformerTypeReference.Boolean,
 	[ts.TypeFlags.BigInt]: TransformerTypeReference.BigInt,
 	[ts.TypeFlags.ESSymbol]: TransformerTypeReference.Symbol,
+	[ts.TypeFlags.UniqueESSymbol]: TransformerTypeReference.UniqueSymbol,
 	[ts.TypeFlags.Any]: TransformerTypeReference.Any,
 	[ts.TypeFlags.Unknown]: TransformerTypeReference.Unknown,
 	[ts.TypeFlags.Never]: TransformerTypeReference.Never,

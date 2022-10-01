@@ -6,7 +6,6 @@ import { printTypeDebugInfo }    from "../../debugs/printTypeDebugInfo";
 import { TypeMapperResult }      from "../../declarations/mappers";
 import { log }                   from "../../logging";
 import { getDeclaration }        from "../../utils/symbolHelpers";
-import { getTypeId }             from "../../utils/typeHelpers";
 
 export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
@@ -17,7 +16,6 @@ export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, c
 		if (ts.isTypeParameterDeclaration(declaration))
 		{
 			return {
-				id: getTypeId(type, symbol, context.typeChecker),
 				kind: TypeKind.TypeParameter,
 				name: declaration.name.escapedText as string,
 				constraint: declaration.constraint && context.metadata.referenceType(

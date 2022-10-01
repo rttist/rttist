@@ -16,7 +16,7 @@ export class Module
 	/**
 	 * Module for all the native types.
 	 */
-	public static readonly Native: Module = new Module({ id: ModuleIds.Native, name: "native", path: "" });
+	public static readonly Native: Module = new Module({ id: ModuleIds.Native, name: "native", path: "typescript" });
 
 	/**
 	 * Module for dynamic types without specific module.
@@ -26,7 +26,7 @@ export class Module
 	/**
 	 * Unknown module.
 	 */
-	public static readonly Unknown: Module = new Module({ id: ModuleIds.Unknown, name: "unknown", path: "" });
+	public static readonly Invalid: Module = new Module({ id: ModuleIds.Invalid, name: "invalid", path: "" });
 
 	private readonly _children: Module[];
 	private readonly _types: Type[];
@@ -56,7 +56,7 @@ export class Module
 	 */
 	constructor(initializer: ModuleMetadata)
 	{
-		this._id = initializer.id;// || Symbol();
+		this._id = initializer.id;
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._children = initializer.children || [];

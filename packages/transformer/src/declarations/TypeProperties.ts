@@ -32,7 +32,7 @@ export type BaseTypeProperties = Match<keyof TypeMetadata, {
 	kind: TypeKind;
 	name?: string;
 	module?: ModuleIdentifier;
-	exported?: true;
+	exported?: boolean;
 	typeArguments?: TransformerTypeReference[];
 	nullable?: true;
 	genericTypeDefinition?: TransformerTypeReference;
@@ -43,8 +43,7 @@ export type NativeBaseTypeProperties =
 	Omit<BaseTypeProperties, "id" | "kind">
 	& { kind: NativeTypeKind, id?: undefined };
 
-export type NonNativeBaseTypeProperties = Match<keyof BaseTypeProperties, {
-	id: TypeIdentifier,
+export type NonNativeBaseTypeProperties = Match<keyof Omit<BaseTypeProperties, "id">, {
 	kind: TypeKind;
 	name: string;
 	module?: ModuleIdentifier;
@@ -63,7 +62,7 @@ export type ModuleProperties = {
 	name: string;
 	path: string;
 	children?: ModuleReference[];
-	types?: TypeProperties[];
+	types?: TypePropertiesWithId[];
 };
 
 export type ModuleMetadataProperties = Omit<ModuleProperties, "types">;
@@ -151,7 +150,7 @@ export type IntersectionTypeProperties = NonNativeBaseTypeProperties & {
 	types: TransformerTypeReference[];
 }
 
-export type ObjectProperties = Match<keyof ObjectLikeBaseTypeMetadata,
+export type ObjectProperties = Match<keyof Omit<ObjectLikeBaseTypeMetadata, "id">,
 	NonNativeBaseTypeProperties & {
 	properties?: PropertyProperties[];
 	indexes?: IndexProperties[];
@@ -163,7 +162,7 @@ export type ImportDetails = {
 	exportName: string
 };
 
-export type ClassProperties = Match<keyof ClassTypeMetadata,
+export type ClassProperties = Match<keyof Omit<ClassTypeMetadata, "id">,
 	ObjectProperties & {
 	ctor?: ImportDetails;
 	ctorSync?: ImportDetails;
@@ -174,12 +173,12 @@ export type ClassProperties = Match<keyof ClassTypeMetadata,
 	abstract?: true;
 }>;
 
-export type InterfaceProperties = Match<keyof InterfaceTypeMetadata,
+export type InterfaceProperties = Match<keyof Omit<InterfaceTypeMetadata, "id">,
 	ObjectProperties & {
 	extends?: TransformerTypeReference[];
 }>;
 
-export type TypeAliasProperties = Match<keyof TypeAliasTypeMetadata,
+export type TypeAliasProperties = Match<keyof Omit<TypeAliasTypeMetadata, "id">,
 	NonNativeBaseTypeProperties & {
 	target: TransformerTypeReference;
 }>;
@@ -196,3 +195,7 @@ export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypePropert
 	| ClassProperties
 	| InterfaceProperties
 	;
+
+export type TypePropertiesWithId = TypeProperties & {
+	id: TypeIdentifier;
+};

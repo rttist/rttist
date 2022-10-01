@@ -1,4 +1,6 @@
-import { TypeIdentifier } from "./declarations";
+import type { Type }           from "../Type";
+import type { FunctionType }   from "../types";
+import type { TypeIdentifier } from "./declarations";
 
 export interface DecoratorInfoInitializer
 {
@@ -43,5 +45,14 @@ export class DecoratorInfo
 	getArguments(): ReadonlyArray<any>
 	{
 		return this._args;
+	}
+
+	/**
+	 * Check if this decorator is given type.
+	 * @param decoratorType
+	 */
+	is(decoratorType: Type): decoratorType is FunctionType
+	{
+		return decoratorType.id === this.id;
 	}
 }

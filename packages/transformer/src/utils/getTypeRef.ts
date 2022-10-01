@@ -61,6 +61,13 @@ export function getTypeRef(
 		return TransformerTypeReference.Unknown;
 	}
 
+	const primitiveTypeReference = getPrimitiveTypeReference(type);
+
+	if (primitiveTypeReference !== undefined)
+	{
+		return primitiveTypeReference;
+	}
+
 	// const isAnonymous = ((type as any).objectFlags & ts.ObjectFlags.Anonymous) !== 0;
 	// const isTypeAlias = symbol && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0 || false;
 	// const useProvidedSymbol = isAnonymous || isTypeAlias;
@@ -71,13 +78,13 @@ export function getTypeRef(
 	// In case of TypeAlias ignore the stored ref on type, instead try to find the ref on the symbol.
 	if (symbol && hasReflectedTypeReference(symbol))
 	{
-		console.log("!! Skipped thanks to stored type ref on symbol!", symbol._typeReference.id); // TODO: remove
+		// console.log("!! Skipped thanks to stored type ref on symbol!", symbol._typeReference.id); // TODO: remove
 		return symbol._typeReference;
 	}
 
 	if (!useProvidedSymbol && hasReflectedTypeReference(type))
 	{
-		console.log("!! Skipped thanks to stored type ref on type!", type._typeReference.id); // TODO: remove
+		// console.log("!! Skipped thanks to stored type ref on type!", type._typeReference.id); // TODO: remove
 		return type._typeReference;
 	}
 
@@ -223,26 +230,32 @@ function getTypeRefOfTypeParameter(
 	);
 }
 
-function getTypeRefWithoutDeclaration(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker)
+function getTypeRefWithoutDeclaration(
+	type: ts.Type,
+	symbol: ts.Symbol | undefined,
+	typeChecker: ts.TypeChecker
+): TransformerTypeReference
 {
-	// try to check if it's primitive type
-	let typeReference = getPrimitiveTypeReference(type);
+	// // try to check if it's primitive type
+	// let typeReference = getPrimitiveTypeReference(type);
+	//
+	// if (typeReference === undefined)
+	// {
+	
+	// Some system union or intersection.
+	let typeReference = getUnionOrIntersectionTypeRef(type, symbol, typeChecker);
 
 	if (typeReference === undefined)
 	{
-		// or some system union or intersection.
-		typeReference = getUnionOrIntersectionTypeRef(type, symbol, typeChecker);
+		log.warn(
+			`Unable to generate Id for type without ${!symbol ? "symbol" : "declaration"}.`,
+			printTypeDebugInfo(type, typeChecker)
+		);
 
-		if (typeReference === undefined)
-		{
-			log.warn(
-				`Unable to generate Id for type without ${!symbol ? "symbol" : "declaration"}.`,
-				printTypeDebugInfo(type, typeChecker)
-			);
-
-			typeReference = TransformerTypeReference.Unknown;
-		}
+		typeReference = TransformerTypeReference.Unknown;
 	}
+	// }
+
 	// TODO: Solve this, this reference was stored on native string type: 
 	//  { module: "@quick-tests/dist/1/index", name: "__type.bar", id: "@quick-tests/dist/1/index::__type.bar" }
 	// // In case it is a native primitive type and given symbol is not the same as type's symbol,

@@ -56,6 +56,7 @@ function cn(name: string, kind: TypeKind): Type
  */
 export class Type
 {
+	public static readonly Invalid: Type = cn("Invalid", TypeKind.Invalid);
 	public static readonly Any: Type = cn("any", TypeKind.Any);
 	public static readonly Unknown: Type = cn("unknown", TypeKind.Unknown);
 	public static readonly Void: Type = cn("void", TypeKind.Void);
@@ -67,8 +68,11 @@ export class Type
 	public static readonly Number: Type = cn("Number", TypeKind.Number);
 	public static readonly BigInt: Type = cn("BigInt", TypeKind.BigInt);
 	public static readonly Boolean: Type = cn("Boolean", TypeKind.Boolean);
+	public static readonly True: Type = cn("true", TypeKind.True);
+	public static readonly False: Type = cn("false", TypeKind.False);
 	public static readonly Date: Type = cn("Date", TypeKind.Date);
 	public static readonly Symbol: Type = cn("Symbol", TypeKind.Symbol);
+	public static readonly UniqueSymbol: Type = cn("UniqueSymbol", TypeKind.UniqueSymbol);
 	public static readonly RegExp: Type = cn("RegExp", TypeKind.RegExp);
 	public static readonly Int8Array: Type = cn("Int8Array", TypeKind.Int8Array);
 	public static readonly Uint8Array: Type = cn("Uint8Array", TypeKind.Uint8Array);
@@ -485,13 +489,13 @@ export class Type
 		return this._kind === TypeKind.Null;
 	}
 
-	/**
-	 * Returns true whether the Type is a Promise.
-	 */
-	isPromise(): boolean
-	{
-		return this._kind === TypeKind.Promise;
-	}
+	// /**
+	//  * Returns true whether the Type is a Promise.
+	//  */
+	// isPromise(): boolean
+	// {
+	// 	return this._kind === TypeKind.Promise;
+	// }
 
 	// TODO: isTemplate vs isTemplateLiteral.
 	// /**
@@ -633,6 +637,7 @@ export class Type
 }
 
 export const NativeTypes: { [typeKind: number]: Type } = {
+	[TypeKind.Invalid]: Type.Invalid,
 	[TypeKind.Any]: Type.Any,
 	[TypeKind.Unknown]: Type.Unknown,
 	[TypeKind.Void]: Type.Void,
@@ -644,8 +649,11 @@ export const NativeTypes: { [typeKind: number]: Type } = {
 	[TypeKind.Number]: Type.Number,
 	[TypeKind.BigInt]: Type.BigInt,
 	[TypeKind.Boolean]: Type.Boolean,
+	[TypeKind.True]: Type.True,
+	[TypeKind.False]: Type.False,
 	[TypeKind.Date]: Type.Date,
 	[TypeKind.Symbol]: Type.Symbol,
+	[TypeKind.UniqueSymbol]: Type.UniqueSymbol,
 	[TypeKind.RegExp]: Type.RegExp,
 	[TypeKind.Int8Array]: Type.Int8Array,
 	[TypeKind.Uint8Array]: Type.Uint8Array,

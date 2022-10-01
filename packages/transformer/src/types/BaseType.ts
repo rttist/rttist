@@ -1,16 +1,15 @@
 import {
 	NativeTypeKind,
 	NativeTypes,
-	TypeKind
+	TypeIdentifier
 }                       from "@rttist/abstract";
 import { encode }       from "base32768";
+import { encodeString } from "./encodeString";
 import {
 	BaseTypeProperties,
 	NativeBaseTypeProperties,
-	NonNativeBaseTypeProperties,
-	TypeProperties
+	NonNativeBaseTypeProperties
 }                       from "../declarations/TypeProperties";
-import { encodeString } from "./encodeString";
 
 const NativeTypeKinds: Set<NativeTypeKind> = new Set(Object.keys(NativeTypes).map(key => Number(key)));
 
@@ -22,7 +21,7 @@ export class BaseType
 
 	serializer(): string
 	{
-		const prop: NonNativeBaseTypeProperties | NativeBaseTypeProperties = this.properties as any;
+		const prop: NonNativeBaseTypeProperties & { id: TypeIdentifier } | NativeBaseTypeProperties = this.properties as any;
 
 		if (isNative(prop))
 		{
@@ -30,7 +29,7 @@ export class BaseType
 				prop.kind
 			] as any);
 		}
-		
+
 		new Uint8Array();
 
 		return encode([
@@ -46,12 +45,12 @@ export class BaseType
 			0,
 			...encodeString(prop.module ?? ""),
 			0,
-			
+
 		] as any);
 	}
 }
 
-function isNative(properties: TypeProperties): properties is NativeBaseTypeProperties
+function isNative(properties: BaseTypeProperties): properties is NativeBaseTypeProperties
 {
 	return NativeTypeKinds.has(properties.kind as any);
 }

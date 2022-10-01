@@ -2,7 +2,7 @@
 import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
 import { TransformerTypeReference } from "./TransformerTypeReference";
-import { TypeProperties }           from "./TypeProperties";
+import { TypePropertiesWithId }     from "./TypeProperties";
 
 /**
  * Type for `package.json` structure.
@@ -34,7 +34,7 @@ export type PackageInfo = {
 export type TypeInfo = {
 	typeReference: TransformerTypeReference;
 	type: ts.Type;
-	properties?: TypeProperties;
+	properties?: TypePropertiesWithId;
 };
 
 /**

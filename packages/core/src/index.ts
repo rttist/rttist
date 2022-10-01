@@ -3,7 +3,7 @@ export const PROTOTYPE_TYPE_PROPERTY = "[[type]]";
 export const ModuleIds = {
 	Native: "::native",
 	Dynamic: "::dynamic",
-	Unknown: "::unknown",
+	Invalid: "::invalid",
 };
 
 export const TypeIds = {

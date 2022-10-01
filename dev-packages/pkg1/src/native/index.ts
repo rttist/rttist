@@ -25,6 +25,9 @@ export class NativeTypes {
 	prop7!: number;
 	prop8!: BigInt;
 	prop9!: Boolean;
+	prop57!: boolean;
+	prop58!: true;
+	prop59!: false;
 	prop10!: Date;
 	prop11!: Array<number>;
 	prop12!: Array<Array<number>>;
@@ -46,6 +49,8 @@ export class NativeTypes {
 	prop28!: BigInt64Array;
 	prop29!: BigUint64Array;
 	prop30!: Symbol;
+	prop55!: symbol;
+	static readonly prop56: unique symbol;
 	prop31!: Promise<boolean>;
 	prop32!: Error;
 	prop33!: RegExp;

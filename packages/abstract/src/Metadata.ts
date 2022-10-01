@@ -135,7 +135,7 @@ class MetadataLibrary
 	 */
 	resolveModule(reference: ModuleReference): Module
 	{
-		return this.modules.get(reference) ?? Module.Unknown;
+		return this.modules.get(reference) ?? Module.Invalid;
 	}
 }
 

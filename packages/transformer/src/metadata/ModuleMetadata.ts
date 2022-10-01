@@ -2,22 +2,21 @@ import {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier
-}                                   from "@rttist/abstract";
-import { ModuleIds }                from "@rttist/core";
-import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
-import { TransformerContext }       from "../contexts/TransformerContext";
-import { TypeInfo }                 from "../declarations/general";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+}                              from "@rttist/abstract";
+import { ModuleIds }           from "@rttist/core";
+import * as ts                 from "typescript";
+import { Context }             from "../contexts/Context";
+import { TransformerContext }  from "../contexts/TransformerContext";
+import { TypeInfo }            from "../declarations/general";
 import {
 	ModuleMetadataProperties,
 	ModuleProperties,
-	TypeProperties
-}                                   from "../declarations/TypeProperties";
-import { getTypeProperties }        from "../properties/getTypeProperties";
-import { getSourceFile }            from "../utils/findSourceFile";
-import { getSourceFileId }          from "../utils/getSourceFileId";
-import { getNodeLocationText }      from "../utils/traceHelpers";
+	TypePropertiesWithId
+}                              from "../declarations/TypeProperties";
+import { getTypeProperties }   from "../properties/getTypeProperties";
+import { getSourceFile }       from "../utils/findSourceFile";
+import { getSourceFileId }     from "../utils/getSourceFileId";
+import { getNodeLocationText } from "../utils/traceHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -35,11 +34,11 @@ export class ModuleMetadata
 	});
 
 	/**
-	 * Module for native types.
+	 * Module for invalid types.
 	 * @private
 	 */
-	public static Unknown = new ModuleMetadata({
-		id: ModuleIds.Unknown,
+	public static Invalid = new ModuleMetadata({
+		id: ModuleIds.Invalid,
 		name: "",
 		path: "",
 	});
@@ -91,36 +90,29 @@ export class ModuleMetadata
 
 	/**
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
-	 * @param typeReference
-	 * @param type
+	 * @param typeInfo
 	 * @param symbol
 	 * @param context
 	 */
 	addType(
-		typeReference: TransformerTypeReference,
-		type: ts.Type,
+		typeInfo: TypeInfo,
 		symbol: ts.Symbol | undefined,
 		context: Context
-	): false | TypeProperties
+	): void
 	{
-		let existingProperties = this.types.get(typeReference.id);
-
-		if (existingProperties !== undefined)
+		// TODO: Remove this check. It is checked in MetadataLibrary.
+		if (this.types.has(typeInfo.typeReference.id))
 		{
-			return false;
+			context.log.warn(`ModuleMetadata.addType(): The type '${typeInfo.typeReference.id}' is already in the module.`);
+			return;
 		}
 
-		context.log.trace("Adding type", typeReference.id);
+		context.log.trace("Adding type", typeInfo.typeReference.id, "to", this.moduleProperties.id);
 
-		const typeInfo: TypeInfo = {
-			typeReference,
-			type
-		};
-		this.types.set(typeReference.id, typeInfo);
+		this.types.set(typeInfo.typeReference.id, typeInfo);
 
-		typeInfo.properties = getTypeProperties(typeReference, type, symbol, context);
-
-		return typeInfo.properties;
+		typeInfo.properties = getTypeProperties(typeInfo.type, symbol, context) as TypePropertiesWithId;
+		typeInfo.properties!.id = typeInfo.typeReference.id;
 	}
 
 	private static getChildrenReferences(sourceFile: ts.SourceFile)

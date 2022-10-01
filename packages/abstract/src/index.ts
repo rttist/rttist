@@ -29,6 +29,7 @@ LazyType.resolver = Metadata.resolveType;
 LazyModule.resolver = Metadata.resolveModule;
 
 Metadata.addType(
+	Type.Invalid,
 	Type.Any,
 	Type.Unknown,
 	Type.Void,
@@ -40,12 +41,27 @@ Metadata.addType(
 	Type.Number,
 	Type.BigInt,
 	Type.Boolean,
+	Type.True,
+	Type.False,
 	Type.Date,
 	Type.Symbol,
+	Type.UniqueSymbol,
+	Type.RegExp,
+	Type.Int8Array,
+	Type.Uint8Array,
+	Type.Uint8ClampedArray,
+	Type.Int16Array,
+	Type.Uint16Array,
+	Type.Int32Array,
+	Type.Uint32Array,
+	Type.Float32Array,
+	Type.Float64Array,
+	Type.BigInt64Array,
+	Type.BigUint64Array,
 );
 
 Metadata.addModule(
 	Module.Native,
-	Module.Unknown,
+	Module.Invalid,
 	Module.Dynamic
 );

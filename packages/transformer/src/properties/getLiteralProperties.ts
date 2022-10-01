@@ -1,13 +1,11 @@
-import { TypeKind }              from "@rttist/abstract";
 import * as ts                   from "typescript";
+import { TypeKind }              from "@rttist/abstract";
 import { Context }               from "../contexts/Context";
 import { LiteralTypeProperties } from "../declarations/TypeProperties";
-import { getTypeId }             from "../utils/typeHelpers";
 
 export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
 {
 	const props = {
-		id: getTypeId(type, undefined, context.typeChecker), // TODO: Should be ID here?
 		kind: TypeKind.Unknown,
 		value: type.value
 	};
@@ -19,9 +17,6 @@ export function getLiteralProperties(type: ts.LiteralType, context: Context): Li
 			return props as LiteralTypeProperties;
 		case ts.TypeFlags.StringLiteral:
 			props.kind = TypeKind.StringLiteral;
-			return props as LiteralTypeProperties;
-		case ts.TypeFlags.BooleanLiteral:
-			props.kind = TypeKind.BooleanLiteral;
 			return props as LiteralTypeProperties;
 		case ts.TypeFlags.BigIntLiteral:
 			props.kind = TypeKind.BigIntLiteral;

@@ -1,12 +1,12 @@
+import * as ts                      from "typescript";
 import {
 	ModuleIdentifier,
 	TypeIdentifier
 }                                   from "@rttist/abstract";
-import * as ts                      from "typescript";
 import { Context }                  from "../contexts/Context";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
+import { TypeInfo }                 from "../declarations/general";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { TypeProperties }           from "../declarations/TypeProperties";
 import { DependencyManager }        from "../dependencies/DependencyManager";
 import { getTypeRef }               from "../utils/getTypeRef";
 import { MetadataNodeFactory }      from "./MetadataNodeFactory";
@@ -15,15 +15,14 @@ import { ModuleMetadata }           from "./ModuleMetadata";
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
 
-type TypeInfo = { properties?: TypeProperties };
-
 export class MetadataLibrary
 {
 	/**
 	 * Map of "touched" SourceFiles/Modules.
 	 */
 	private readonly modules = new Map<ModuleIdentifier, ModuleMetadata>([
-		[ModuleMetadata.Native.id, ModuleMetadata.Native]
+		[ModuleMetadata.Native.id, ModuleMetadata.Native],
+		[ModuleMetadata.Invalid.id, ModuleMetadata.Invalid]
 	]);
 
 	/**
@@ -111,11 +110,12 @@ export class MetadataLibrary
 		// Get the type reference before further processing.
 		const typeRef: TransformerTypeReference = getTypeRef(type, symbol, context.typeChecker);
 
-		// Native type or already processed type
+		// If it's native type 
 		if (
 			typeRef.isNative()
+			// or already processed type
 			|| this.processedTypes.has(typeRef.id)
-			// or it has custom typelib
+			// or it external SourceFile with custom typelib.
 			|| (
 				typeRef.sourceFile
 				&& this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.typelibPath
@@ -124,11 +124,30 @@ export class MetadataLibrary
 			return typeRef;
 		}
 
-		// Create TypeInfo and store it before adding to MetadataLibrary which gather types, 
-		// so this will prevent recursive issues.
-		const typeInfo: TypeInfo = {};
+		const typeInfo: TypeInfo = {
+			typeReference: typeRef,
+			type: type,
+			properties: undefined
+		};
+
+		// Store TypeInfo it before adding to MetadataLibrary which gather types, so this will prevent recursive issues.
 		this.processedTypes.set(typeRef.id, typeInfo);
 
+		// Add type to Module
+		this.getModule(typeRef, context, type)
+			.addType(typeInfo, symbol, context);
+
+		return typeRef;
+	}
+
+	/**
+	 * Get ModuleMetadata. Create if not exists yet.
+	 * @param typeRef
+	 * @param context
+	 * @param type
+	 */
+	private getModule(typeRef: TransformerTypeReference, context: Context, type: ts.Type): ModuleMetadata
+	{
 		let existingModule = this.modules.get(typeRef.moduleIdentifier);
 
 		if (!existingModule)
@@ -139,25 +158,16 @@ export class MetadataLibrary
 					"Unable to access SourceFile of type."
 					+ printTypeDebugInfo(type, context.typeChecker)
 				);
-				existingModule = ModuleMetadata.Unknown;
+
+				return ModuleMetadata.Invalid;
 				// return typeRef; // TODO: Test if we can do this -> do not return here but add it no Unknown module.
 			}
-			else
-			{
-				existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
-				this.modules.set(typeRef.moduleIdentifier, existingModule);
-			}
+
+			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
+			this.modules.set(typeRef.moduleIdentifier, existingModule);
 		}
 
-		// Add type to Module
-		const properties = existingModule.addType(typeRef, type, symbol, context);
-
-		if (properties !== false)
-		{
-			typeInfo.properties = properties;
-		}
-
-		return typeRef;
+		return existingModule;
 	}
 }
 
