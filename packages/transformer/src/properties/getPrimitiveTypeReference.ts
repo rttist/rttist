@@ -15,6 +15,11 @@ export function getPrimitiveTypeReference(type: ts.Type): TransformerTypeReferen
 			: TransformerTypeReference.False;
 	}
 
+	if ((type.flags & ts.TypeFlags.NonPrimitive) !== 0 && (type as any).intrinsicName === "object")
+	{
+		return TransformerTypeReference.NonPrimitiveObject;
+	}
+
 	return PrimitiveTypesRefMap[getMajorTypeFlag(type)];
 }
 
@@ -24,7 +29,6 @@ const PrimitiveTypesRefMap: { [flag: number]: TransformerTypeReference } = {
 	[ts.TypeFlags.Boolean]: TransformerTypeReference.Boolean,
 	[ts.TypeFlags.BigInt]: TransformerTypeReference.BigInt,
 	[ts.TypeFlags.ESSymbol]: TransformerTypeReference.Symbol,
-	[ts.TypeFlags.UniqueESSymbol]: TransformerTypeReference.UniqueSymbol,
 	[ts.TypeFlags.Any]: TransformerTypeReference.Any,
 	[ts.TypeFlags.Unknown]: TransformerTypeReference.Unknown,
 	[ts.TypeFlags.Never]: TransformerTypeReference.Never,

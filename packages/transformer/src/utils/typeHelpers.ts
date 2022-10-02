@@ -73,3 +73,34 @@ export function isInvalidType(type: ts.Type | undefined): boolean
 {
 	return type === undefined || (type as any).intrinsicName === "error";
 }
+
+const KindsWithInitializer = new Set([
+	ts.SyntaxKind.VariableDeclaration,
+	ts.SyntaxKind.Parameter,
+	ts.SyntaxKind.BindingElement,
+	ts.SyntaxKind.PropertyDeclaration,
+	ts.SyntaxKind.PropertyAssignment,
+	ts.SyntaxKind.PropertySignature,
+	ts.SyntaxKind.JsxAttribute,
+	ts.SyntaxKind.EnumMember,
+]);
+
+export function isVariableLikeDeclarationWithInitializer(declaration: ts.Node): declaration is ts.VariableDeclaration | ts.ParameterDeclaration | ts.BindingElement | ts.PropertyDeclaration | ts.PropertyAssignment | ts.PropertySignature | ts.JsxAttribute | ts.EnumMember
+{
+	return KindsWithInitializer.has(declaration.kind);
+}
+
+export function getUniqueSymbolName(type: ts.Type): string | undefined
+{
+	let name: string | undefined = (type as any).escapedName;
+
+	if (name)
+	{
+		name = name.toString();
+		let firstAt = name.indexOf("@");
+		let lastAt = name.lastIndexOf("@");
+		name = name.slice(firstAt + 1, lastAt);
+	}
+
+	return name;
+}

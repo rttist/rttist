@@ -1,27 +1,37 @@
 import { TypeKind } from "./TypeKind";
 
-export const LiteralTypeKinds = [
+export const LiteralTypeKinds = new Set([
 	TypeKind.StringLiteral,
 	TypeKind.NumberLiteral,
-	TypeKind.BooleanLiteral,
+	TypeKind.True,
+	TypeKind.False,
 	TypeKind.BigIntLiteral,
-	TypeKind.RegExpLiteral
-];
+	TypeKind.RegExpLiteral,
+	TypeKind.TemplateLiteral,
+	// TypeKind.EnumLiteral TODO: ?
+]);
 
-export const PrimitiveTypeKinds = [
+export const PrimitiveTypeKinds = new Set([
 	TypeKind.String,
+	TypeKind.Boolean,
 	TypeKind.Number,
 	TypeKind.BigInt,
-	TypeKind.Boolean,
 	TypeKind.Symbol,
+	TypeKind.UniqueSymbol,
 	TypeKind.Null,
-	TypeKind.Undefined,
+	TypeKind.Undefined
+]);
+
+export const NonPrimitiveKeywordTypeKinds = new Set([
 	TypeKind.Void,
 	TypeKind.Never,
-];
+	TypeKind.Unknown,
+	TypeKind.Any,
+	TypeKind.NonPrimitiveObject
+]);
 
 // export const ComparableByKind = new Set<TypeKind>([
-// 	...PrimitiveTypeKinds, // TODO: Verify if having Symbol here is Okay. Is every symbol a symbol? 
+// 	...PrimitiveTypeKinds, // TODO: UniqueSymbols are not comparable by kind
 // 	TypeKind.Any,
 // 	TypeKind.Unknown
 // ]);

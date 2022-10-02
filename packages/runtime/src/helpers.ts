@@ -1,67 +1,6 @@
-import {
-	ModuleIds,
-	PROTOTYPE_TYPE_PROPERTY,
-	TypeIds
-}                       from "@rttist/core";
-import {
-	ParameterFlags,
-	ParameterInfo,
-	Signature
-}                       from "./declarations";
-import { TypeKind }     from "./enums";
-import { Metadata }     from "./Metadata";
-import { Type }         from "./Type";
-import { FunctionType } from "./types";
+import { FunctionBuilder } from "./builders";
 
-export function getGlobalThis(): any
-{
-	return typeof globalThis === "object"
-		? globalThis
-		: typeof window === "object"
-			? window
-			: global;
-}
-
-export function resolveSingletonInstance<T>(key: string, Class: { new(): T }): T
-{
-	const go = getGlobalThis();
-	const s = Symbol.for(key);
-	return go[s] || (go[s] = new Class());
-}
-
-/**
- * @internal
- */
-export const AnyArray = new Type({
-	kind: TypeKind.Array,
-	name: "Array",
-	id: ModuleIds.Native + "::Array{" + TypeIds.Any + "}",
-	module: ModuleIds.Native,
-	genericTypeDefinition: [TypeKind.ArrayDefinition],
-	typeArguments: [TypeIds.Any]
-});
-
-/**
- * @internal
- */
-export const UnknownFunction = new FunctionType({
-	kind: TypeKind.Function,
-	name: "Function",
-	id: ModuleIds.Native + "::Function",
-	module: ModuleIds.Native,
-	signatures: [
-		new Signature({
-			parameters: [
-				new ParameterInfo({
-					name: "x",
-					flags: ParameterFlags.Rest,
-					type: AnyArray.id
-				})
-			],
-			returnType: TypeIds.Unknown
-		})
-	]
-});
+const ArrayItemsCountToCheckItsType = 10;
 
 export function getTypeOfRuntimeValue(value: any): Type
 {
@@ -85,14 +24,43 @@ export function getTypeOfRuntimeValue(value: any): Type
 	if (value instanceof Float64Array) return Type.Float64Array;
 	if (value instanceof BigInt64Array) return Type.BigInt64Array;
 	if (value instanceof BigUint64Array) return Type.BigUint64Array;
+	if (value.constructor === Object) return ObjectLiteralTypeBuilder.fromObject(value);
 
-	if (value.constructor === undefined)
+	if (!value.constructor)
 	{
 		return Type.Unknown;
 	}
 
-	if (value.constructor === Object) return Type.NonPrimitiveObject;
-	if (value.constructor === Array) return AnyArray;
+	if (value.constructor == Array)
+	{
+		const set = new Set<Type>();
+
+		// If it is an array, there can be anything; we'll check first X cuz of performance.
+		for (let item of value.slice(0, ArrayItemsCountToCheckItsType))
+		{
+			set.add(getTypeOfRuntimeValue(item));
+		}
+
+		const valuesTypes = Array.from(set);
+		const arrayBuilder = TypeBuilder.createArray();
+
+		if (value.length == 0)
+		{
+			return arrayBuilder
+				.setGenericType(Type.Any)
+				.build();
+		}
+
+		const unionBuilder = TypeBuilder.createUnion(valuesTypes);
+
+		// If there are more items than we checked, add Unknown type to the union.
+		if (value.length > ArrayItemsCountToCheckItsType)
+		{
+			unionBuilder.addTypes(Type.Unknown);
+		}
+
+		return arrayBuilder.setGenericType(unionBuilder.build()).build();
+	}
 
 	if (typeof value === "function"
 		&& (
@@ -101,7 +69,7 @@ export function getTypeOfRuntimeValue(value: any): Type
 		)
 	)
 	{
-		return UnknownFunction;
+		return FunctionBuilder.fromFunction(value);
 	}
 
 	return Metadata.resolveType(

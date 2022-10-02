@@ -29,7 +29,7 @@ export class LiteralType extends Type
 
 	isBooleanLiteral(): this is BooleanLiteralType
 	{
-		return this._kind === TypeKind.BooleanLiteral;
+		return this._kind === TypeKind.True || this._kind === TypeKind.False;
 	}
 
 	isBigIntLiteral(): this is BigIntLiteralType
@@ -42,7 +42,7 @@ export class LiteralType extends Type
 	 */
 	isTrue(): boolean
 	{
-		return this.kind === TypeKind.BooleanLiteral && this.value === "true";
+		return this.kind === TypeKind.True;
 	}
 
 	/**
@@ -50,7 +50,7 @@ export class LiteralType extends Type
 	 */
 	isFalse(): boolean
 	{
-		return this.kind === TypeKind.BooleanLiteral && this.value === "false";
+		return this.kind === TypeKind.False;
 	}
 
 	private parseValue(value: any): any
@@ -61,7 +61,8 @@ export class LiteralType extends Type
 				return value + "";
 			case TypeKind.NumberLiteral:
 				return Number(value);
-			case TypeKind.BooleanLiteral:
+			case TypeKind.False:
+			case TypeKind.True:
 				return value === "true" || value === true;
 			case TypeKind.BigIntLiteral:
 				return BigInt(value);

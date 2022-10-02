@@ -6,6 +6,12 @@ import { Module }     from "./Module";
 import { Metadata }   from "./Metadata";
 import "./Reflect";
 
+/** @internal*/
+import {
+	AnyArray,
+	UnknownFunction
+}                     from "./helpers";
+
 export *            from "./enums";
 export *            from "./declarations";
 export {
@@ -36,7 +42,7 @@ Metadata.addType(
 	Type.Never,
 	Type.Null,
 	Type.Undefined,
-	Type.Object,
+	Type.NonPrimitiveObject,
 	Type.String,
 	Type.Number,
 	Type.BigInt,
@@ -58,6 +64,8 @@ Metadata.addType(
 	Type.Float64Array,
 	Type.BigInt64Array,
 	Type.BigUint64Array,
+	AnyArray,
+	UnknownFunction
 );
 
 Metadata.addModule(

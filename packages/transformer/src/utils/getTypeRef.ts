@@ -1,24 +1,26 @@
-import * as ts                            from "typescript";
-import { ModuleIds }                      from "@rttist/core";
-import { SyntaxKind }                     from "typescript/lib/tsserverlibrary";
+import * as ts                       from "typescript";
+import { ModuleIds }                 from "@rttist/core";
+import { SyntaxKind }                from "typescript/lib/tsserverlibrary";
+import { ESSymbols }                 from "../consts";
 import type {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference
-}                                         from "../declarations/general";
-import { TransformerContext }             from "../contexts/TransformerContext";
-import { printTypeDebugInfo }             from "../debugs/printTypeDebugInfo";
-import { TransformerTypeReference }       from "../declarations/TransformerTypeReference";
-import { log }                            from "../logging";
-import { getComplexNativeTypeProperties } from "../properties/getComplexNativeTypeProperties";
-import { getPrimitiveTypeReference }      from "../properties/getPrimitiveTypeReference";
-import { getSourceFileId }                from "./getSourceFileId";
-import { isExported }                     from "./isExported";
-import { getDeclaration }                 from "./symbolHelpers";
+}                                    from "../declarations/general";
+import { TransformerContext }        from "../contexts/TransformerContext";
+import { printTypeDebugInfo }        from "../debugs/printTypeDebugInfo";
+import { TransformerTypeReference }  from "../declarations/TransformerTypeReference";
+import { log }                       from "../logging";
+import { getComplexNativeTypeRef }   from "../properties/getComplexNativeTypeRef";
+import { getPrimitiveTypeReference } from "../properties/getPrimitiveTypeReference";
+import { getSourceFileId }           from "./getSourceFileId";
+import { isExported }                from "./isExported";
+import { getDeclaration }            from "./symbolHelpers";
 import {
 	getSymbol,
 	getTypeId,
+	getUniqueSymbolName,
 	isInvalidType,
-}                                         from "./typeHelpers";
+}                                    from "./typeHelpers";
 
 function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference
 function hasReflectedTypeReference(symbol: ts.Symbol): symbol is ReflectedSymbolWithReference
@@ -76,7 +78,7 @@ export function getTypeRef(
 	const useProvidedSymbol = symbol !== undefined;
 
 	// In case of TypeAlias ignore the stored ref on type, instead try to find the ref on the symbol.
-	if (symbol && hasReflectedTypeReference(symbol))
+	if (useProvidedSymbol && hasReflectedTypeReference(symbol!))
 	{
 		// console.log("!! Skipped thanks to stored type ref on symbol!", symbol._typeReference.id); // TODO: remove
 		return symbol._typeReference;
@@ -128,12 +130,25 @@ export function getTypeRef(
 		// TODO: It is important to distinguish Generic type definition and generic type
 		const typeArguments = (type as ts.GenericType).typeArguments
 			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
-			.map(typeArg => getTypeId(typeArg, undefined, typeChecker)) || [];
+			.map(typeArg => getTypeRef(typeArg, undefined, typeChecker).id) || [];
 
 		// It has no type arguments and it is native type
 		if (typeArguments.length === 0 && sourceFileId === ModuleIds.Native)
 		{
-			typeReference = getComplexNativeTypeProperties(symbol);
+			if ((type.flags & ts.TypeFlags.UniqueESSymbol) !== 0)
+			{
+				const name = getUniqueSymbolName(type);
+
+				if (ESSymbols.has(name!))
+				{
+					return new TransformerTypeReference(
+						ModuleIds.Native,
+						"UniqueSymbol@" + name
+					);
+				}
+			}
+
+			typeReference = getComplexNativeTypeRef(type, symbol);
 
 			if (typeReference === undefined)
 			{
@@ -152,6 +167,12 @@ export function getTypeRef(
 			if (typeReference === undefined)
 			{
 				let typeName = symbol.escapedName.toString();
+
+				if ((type.flags & ts.TypeFlags.UniqueESSymbol) !== 0)
+				{
+					let name = getUniqueSymbolName(type);
+					typeName = name ? "UniqueSymbol@" + name : typeName;
+				}
 
 				// If it is not exported, the type name is not guaranteed to be unique.
 				// So we will generate the path to the root declaration statement
@@ -241,7 +262,7 @@ function getTypeRefWithoutDeclaration(
 	//
 	// if (typeReference === undefined)
 	// {
-	
+
 	// Some system union or intersection.
 	let typeReference = getUnionOrIntersectionTypeRef(type, symbol, typeChecker);
 

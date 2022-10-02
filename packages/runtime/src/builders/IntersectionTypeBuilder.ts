@@ -55,3 +55,9 @@ export class IntersectionTypeBuilder extends TypeBuilderBase
 		return type;
 	}
 }
+
+const PointsToNever = new Set([
+	...PrimitiveTypeKinds,
+	TypeKind.Never,
+	TypeKind.Void
+])

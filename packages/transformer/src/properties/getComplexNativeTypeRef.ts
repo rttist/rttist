@@ -8,9 +8,10 @@ import { TransformerTypeReference } from "../declarations/TransformerTypeReferen
 
 /**
  * Return TypeProperties whether the type is a complex native type, such as Uint8Array etc.
+ * @param type
  * @param symbol
  */
-export function getComplexNativeTypeProperties(symbol: ts.Symbol): TransformerTypeReference | undefined
+export function getComplexNativeTypeRef(type: ts.Type, symbol: ts.Symbol): TransformerTypeReference | undefined
 {
 	return NameMap[symbol.escapedName!];
 }
@@ -38,7 +39,6 @@ const NameMap: { [name: string]: TransformerTypeReference } = {
 	BigInt64Array: ct("Float64Array", TypeKind.BigInt64Array),
 	BigUint64Array: ct("BigUint64Array", TypeKind.BigUint64Array),
 	Symbol: ct("Symbol", TypeKind.Symbol),
-	// UniqueSymbol: ct("name", TypeKind.UniqueSymbol), // TODO: Find out what unique symbol is
 	Promise: ct("Promise", TypeKind.PromiseDefinition),
 	Error: ct("Error", TypeKind.Error),
 	RegExp: ct("RegExp", TypeKind.RegExp),

@@ -84,7 +84,6 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 		const typeRef = getTypeRef(type, symbol, context.typeChecker);
 
 		const properties: ClassProperties & InterfaceProperties = {
-			id: typeRef.id,
 			kind: kind,
 			name: symbol?.getEscapedName().toString() ?? "",
 			typeArguments: typeArguments,

@@ -17,8 +17,9 @@
 	TypeKind,
 	TypeMetadata,
 	NativeTypeKind,
-	TypeAliasTypeMetadata
-}                                   from "@rttist/abstract";
+	TypeAliasTypeMetadata,
+	UniqueSymbolTypeMetadata
+} from "@rttist/abstract";
 import {
 	Match
 }                                   from "./general";
@@ -183,6 +184,11 @@ export type TypeAliasProperties = Match<keyof Omit<TypeAliasTypeMetadata, "id">,
 	target: TransformerTypeReference;
 }>;
 
+export type UniqueSymbolProperties = Match<keyof Omit<UniqueSymbolTypeMetadata, "id">,
+	NonNativeBaseTypeProperties & {
+	key?: string;
+}>;
+
 /**
  * Properties of a Type.
  */
@@ -194,6 +200,7 @@ export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypePropert
 	| TypeParameterProperties
 	| ClassProperties
 	| InterfaceProperties
+	| UniqueSymbolProperties
 	;
 
 export type TypePropertiesWithId = TypeProperties & {

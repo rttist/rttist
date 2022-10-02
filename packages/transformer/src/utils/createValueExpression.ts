@@ -29,7 +29,7 @@ export function createValueExpression(value: any): ts.Expression
 
 		if (value instanceof TransformerTypeReference)
 		{
-			return value.isNative()
+			return value.isKindOnly()
 				? ts.factory.createArrayLiteralExpression([
 					ts.factory.createNumericLiteral(value.nativeReference.kind)
 				])

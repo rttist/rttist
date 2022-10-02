@@ -9,7 +9,6 @@ import {
 	TypeProperties
 }                                from "../declarations/TypeProperties";
 import { getDeclaration }        from "../utils/symbolHelpers";
-import { getTypeId }             from "../utils/typeHelpers";
 import { getLiteralProperties }  from "./getLiteralProperties";
 import { mapConditional }        from "./mappers/mapConditional";
 import { mapEnum }               from "./mappers/mapEnum";
@@ -22,9 +21,11 @@ import { mapStringMapping }      from "./mappers/mapStringMapping";
 import { mapTemplateLiteral }    from "./mappers/mapTemplateLiteral";
 import { mapTypeParameter }      from "./mappers/mapTypeParameter";
 import { mapUnion }              from "./mappers/mapUnion";
+import { mapUniqueSymbol }       from "./mappers/mapUniqueSymbol";
 
 const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
-	[ts.TypeFlags.Enum]: mapEnum,
+	[ts.TypeFlags.Enum]: mapEnum as TypeMapper,
+	[ts.TypeFlags.UniqueESSymbol]: mapUniqueSymbol as TypeMapper,
 	[ts.TypeFlags.EnumLiteral]: mapEnumLiteral as TypeMapper,
 	[ts.TypeFlags.TypeParameter]: mapTypeParameter,
 	[ts.TypeFlags.Object]: mapObject as TypeMapper,
@@ -93,7 +94,6 @@ export function getTypeProperties(
 				// if (declaredSymbol && declaredSymbol != type.symbol)
 			{
 				return {
-					id: getTypeId(type, symbol, context.typeChecker),
 					name: symbol.escapedName.toString(),
 					kind: TypeKind.Alias,
 					target: context.metadata.referenceType(type, undefined, undefined, context)

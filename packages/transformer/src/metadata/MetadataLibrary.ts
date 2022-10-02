@@ -112,7 +112,7 @@ export class MetadataLibrary
 
 		// If it's native type 
 		if (
-			typeRef.isNative()
+			typeRef.isKindOnly()
 			// or already processed type
 			|| this.processedTypes.has(typeRef.id)
 			// or it external SourceFile with custom typelib.

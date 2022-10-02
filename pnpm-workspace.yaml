@@ -2,6 +2,7 @@
     - 'packages/core'
     - 'packages/abstract'
     - 'packages/transformer'
+    - 'tests/'
     - 'dev/hookyns/1'
     - 'dev-packages/pkg1'
     - 'dev-packages/pkg2-mjs'

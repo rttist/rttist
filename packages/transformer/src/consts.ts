@@ -15,3 +15,19 @@ export const TYPE_PARAMS_VAR_NAME = "__typeParams__";
  * Package name/identifier
  */
 export const PACKAGE_ID = "tst-reflect-transformer";
+
+export const ESSymbols = new Set([
+	"iterator",
+	"asyncIterator",
+	"hasInstance",
+	"isConcatSpreadable",
+	"match",
+	"replace",
+	"search",
+	"species",
+	"split",
+	"toPrimitive",
+	"toStringTag",
+	"unscopables",
+	"matchAll",
+]);

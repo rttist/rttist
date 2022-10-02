@@ -19,6 +19,7 @@ export class TransformerTypeReference
 {
 	public static readonly Unknown = new TransformerTypeReference(ModuleIds.Native, "Unknown", TypeKind.Unknown);
 	public static readonly Any = new TransformerTypeReference(ModuleIds.Native, "Any", TypeKind.Any);
+	public static readonly NonPrimitiveObject = new TransformerTypeReference(ModuleIds.Native, "object", TypeKind.NonPrimitiveObject);
 	public static readonly Void = new TransformerTypeReference(ModuleIds.Native, "Void", TypeKind.Void);
 	public static readonly Undefined = new TransformerTypeReference(ModuleIds.Native, "Undefined", TypeKind.Undefined);
 	public static readonly Null = new TransformerTypeReference(ModuleIds.Native, "Null", TypeKind.Null);
@@ -30,11 +31,6 @@ export class TransformerTypeReference
 	public static readonly False = new TransformerTypeReference(ModuleIds.Native, "false", TypeKind.False);
 	public static readonly BigInt = new TransformerTypeReference(ModuleIds.Native, "BigInt", TypeKind.BigInt);
 	public static readonly Symbol = new TransformerTypeReference(ModuleIds.Native, "Symbol", TypeKind.Symbol);
-	public static readonly UniqueSymbol = new TransformerTypeReference(
-		ModuleIds.Native,
-		"UniqueSymbol",
-		TypeKind.UniqueSymbol
-	);
 	public static readonly Date = new TransformerTypeReference(ModuleIds.Native, "Date", TypeKind.Date);
 	public static readonly Error = new TransformerTypeReference(ModuleIds.Native, "Error", TypeKind.Error);
 	public static readonly RegExp = new TransformerTypeReference(ModuleIds.Native, "RegExp", TypeKind.RegExp);
@@ -93,7 +89,7 @@ export class TransformerTypeReference
 		}
 	}
 
-	isNative(): this is NativeTransformerTypeReference
+	isKindOnly(): this is NativeTransformerTypeReference
 	{
 		return this._native;
 	}

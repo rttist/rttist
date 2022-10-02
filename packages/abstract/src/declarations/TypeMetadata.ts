@@ -64,6 +64,16 @@ export interface TypeAliasTypeMetadata extends TypeMetadata
 	target: TypeReference;
 }
 
+export interface ESSymbolTypeMetadata extends TypeMetadata
+{
+	key: string;
+}
+
+export interface UniqueSymbolTypeMetadata extends TypeMetadata
+{
+	key?: string;
+}
+
 export interface UnionOrIntersectionTypeMetadata extends TypeMetadata
 {
 	types?: Array<TypeReference>;

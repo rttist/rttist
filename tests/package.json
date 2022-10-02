@@ -1,0 +1,12 @@
+{
+	"private": true,
+	"name": "rttist-tests",
+	"license": "MIT",
+	"scripts": {},
+	"devDependencies": {
+		"@types/jest": "^27.4.0",
+		"@types/node": "^16.0.0",
+		"jest": "^27.5.1",
+		"@rttist/abstract": "workspace:*"
+	}
+}
