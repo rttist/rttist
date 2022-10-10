@@ -1,13 +1,13 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
-		"target": "ES6",
+		"module": "NodeNext",
+		"target": "ES2020",
+		"moduleResolution": "NodeNext",
 		"sourceMap": true,
 		"strict": true,
-		"strictNullChecks": false,
 		"stripInternal": true,
 		"declaration": false,
-		"outDir": "dist",
+		"outDir": "dist-mjs",
 		"rootDir": "./src",
 		"baseUrl": "./src",
 		"experimentalDecorators": true,

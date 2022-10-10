@@ -6,7 +6,7 @@ export class TemplateType extends Type
 	public readonly head: string;
 	public readonly templateSpans: Array<{ expression: string, literal: string }>;
 
-	protected constructor(initializer: TemplateTypeMetadata)
+	constructor(initializer: TemplateTypeMetadata)
 	{
 		super(initializer);
 		this.head = initializer.head;

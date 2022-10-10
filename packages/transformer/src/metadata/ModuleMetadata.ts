@@ -139,7 +139,7 @@ export class ModuleMetadata
 			else
 			{
 				const sourceFileContext = TransformerContext.instance.currentSourceFileContext!;
-				sourceFileContext.log.error(`SourceFile of module '${importDeclaration.moduleSpecifier.getText()}' `
+				sourceFileContext.log.warn(`SourceFile of child module '${importDeclaration.moduleSpecifier.getText()}' `
 					+ `not found.\n\tAt ${getNodeLocationText(importDeclaration)}`);
 			}
 		}

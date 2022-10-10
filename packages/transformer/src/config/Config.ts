@@ -2,26 +2,25 @@ import {
 	ConfigurationBuilder,
 	IConfigurationBuilder,
 	IRootConfiguration
-}                                       from "@netleaf/extensions-configuration";
-import * as deasync                     from "deasync";
-import type { MetadataMiddleware }      from "../middlewares";
-import type { SourceFileVisitorPlugin } from "../plugins";
-import fs                               from "fs";
-import path                             from "path";
-import * as ts                          from "typescript";
-import { makeRe }                       from "minimatch";
+}                                  from "@netleaf/extensions-configuration";
+import * as deasync                from "deasync";
+import type { Plugin }             from "../plugins";
+import fs                          from "fs";
+import path                        from "path";
+import * as ts                     from "typescript";
+import { makeRe }                  from "minimatch";
 import {
 	PackageInfo,
 	PackageJson
-}                                       from "../declarations/general";
+}                                  from "../declarations/general";
 import {
 	log,
 	LogLevel
-}                                       from "../logging";
+}                                  from "../logging";
 import {
 	ConfigReflectionSection,
 	OptionalConfigReflectionSection
-}                                       from "./ConfigReflectionSection";
+}                                  from "./ConfigReflectionSection";
 
 const UNKNOWN_PACKAGE_NAME = "@@this";
 
@@ -34,8 +33,6 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		encode: true,
 		metadataTypelibPath: "metadata.typelib.js",
 		metadataIndexPath: "metadata.index.json",
-		typeFactory: "__τ",
-		middlewares: [],
 		include: ["**/*"],
 		exclude: []
 	}
@@ -50,14 +47,12 @@ export class Config
 	public readonly exclude: RegExp[];
 	public readonly dependencyResolution: ConfigReflectionSection["dependencyResolution"];
 
-	public readonly plugins: SourceFileVisitorPlugin[];
-	public readonly metadataMiddlewares: MetadataMiddleware[];
+	public readonly plugins: Plugin[];
 
 	public readonly projectDir: string;
 	public readonly rootDir: string;
 	public readonly outDir: string;
 	public readonly packageInfo: PackageInfo;
-	public readonly typeFactory: string;
 	public readonly encode: boolean;
 
 	public readonly metadataIndexPath: string;
@@ -101,16 +96,11 @@ export class Config
 		this.exclude = metadataConfig.get("exclude")!.map(pattern => this.toRegex(pattern));
 
 		this.plugins = reflectionConfig.get("plugins")!.map(plugin => this.getPlugin(plugin, projectRoot));
-		this.metadataMiddlewares = metadataConfig.get("middlewares")!.map(middleware => this.getMiddleware(
-			middleware,
-			projectRoot
-		));
 
 		this.projectDir = projectRoot;
 		this.rootDir = compilerOptions.rootDir || projectRoot;
 		this.outDir = compilerOptions.outDir || projectRoot;
 		this.packageInfo = packageInfo;
-		this.typeFactory = metadataConfig.get("typeFactory")!;
 		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
 
 		this.metadataIndexPath = path.join(this.outDir, metadataConfig.get("metadataIndexPath")!);
@@ -187,7 +177,7 @@ export class Config
 		}
 	}
 
-	private getPlugin(pluginPath: string, projectRoot: string): SourceFileVisitorPlugin
+	private getPlugin(pluginPath: string, projectRoot: string): Plugin
 	{
 		const plugin = require(path.resolve(projectRoot, pluginPath));
 
@@ -202,23 +192,6 @@ export class Config
 		}
 
 		return plugin.default;
-	}
-
-	private getMiddleware(middlewarePath: string, projectRoot: string): MetadataMiddleware
-	{
-		const middleware = require(path.resolve(projectRoot, middlewarePath));
-
-		if (!middleware)
-		{
-			log.error(`Invalid middleware path/name '${middlewarePath}'.`);
-		}
-
-		if (!middleware.default)
-		{
-			log.error("Middleware must have 'default' export.");
-		}
-
-		return middleware.default;
 	}
 
 	private toRegex(pattern: string): RegExp

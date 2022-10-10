@@ -1,41 +1,40 @@
-import * as ts               from "typescript";
-import { SourceFileContext } from "../contexts/SourceFileContext";
+import * as ts                from "typescript";
+import { SourceFileContext }  from "../contexts/SourceFileContext";
+import { MetadataSource }     from "../declarations/TypeProperties";
 
-/**
- * Interface for Plugins visiting and transforming SourceFiles.
- */
-export interface SourceFileVisitorPlugin
+export type MetadataContext = {
+	/**
+	 * Identifier of the imported Metadata object from "@rttist/abstract" package.
+	 */
+	metadataIdentifier: ts.Identifier
+};
+
+export interface Plugin
 {
-	visit(sourceFile: ts.SourceFile, context: SourceFileContext): ts.SourceFile;
+	/**
+	 * Visit SourceFile, allowing transformations of the SourceFile.
+	 * @param sourceFile
+	 * @param context
+	 */
+	visit?(sourceFile: ts.SourceFile, context: SourceFileContext): ts.SourceFile;
+
+	/**
+	 * Returns import declarations for the typelib SourceFile.
+	 */
+	getImports?(): ts.ImportDeclaration[];
+
+	/**
+	 * Returns JS code which will be appended right after imports.
+	 */
+	getInitScripts?(): string;
+
+	/**
+	 * Create expression registering
+	 */
+	createModuleRegistrars?(metadata: MetadataSource, context: MetadataContext): ts.Statement[];
+
+	/**
+	 * Returns JS code which will be appended to the end of the typelib..
+	 */
+	getEndScripts?(): string;
 }
-
-
-// export interface Plugin {
-// 	/**
-// 	 * Visit SourceFile, allowing transformations of the SourceFile. 
-// 	 * @param sourceFile
-// 	 * @param context
-// 	 */
-// 	visit?(sourceFile: ts.SourceFile, context: SourceFileContext): ts.SourceFile;
-//
-// 	/**
-// 	 * Returns import declarations for the typelib SourceFile.
-// 	 */
-// 	getImports?(): ts.ImportDeclaration[];
-//
-// 	/**
-// 	 * Returns JS code which will be appended right after imports. 
-// 	 */
-// 	getInitScripts?(): string;
-//	
-// 	/**
-// 	 * Returns JS code which will be appended to the end of the typelib..
-// 	 */
-// 	getEndScripts?(): string;
-//	
-// 	// /**
-// 	//  * Transform SourceFile of typelib.
-// 	//  * @param sourceFile
-// 	//  */
-// 	// updateTypeLib?(sourceFile: ts.SourceFile): ts.SourceFile;
-// }

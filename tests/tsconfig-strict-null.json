@@ -4,12 +4,12 @@
 		"target": "ES6",
 		"sourceMap": true,
 		"strict": true,
-		"strictNullChecks": false,
+		"noImplicitAny": false,
 		"stripInternal": true,
 		"declaration": false,
-		"outDir": "dist",
-		"rootDir": "./src",
-		"baseUrl": "./src",
+		"outDir": "dist-strict-null",
+		"rootDir": "./src-strict-null",
+		"baseUrl": "./src-strict-null",
 		"experimentalDecorators": true,
 		"plugins": [
 			{
@@ -18,7 +18,7 @@
 		]
 	},
 	"include": [
-		"src/*.ts"
+		"src-strict-null/*.ts"
 	],
 	"exclude": [
 		"node_modules/.pnpm/**/*",

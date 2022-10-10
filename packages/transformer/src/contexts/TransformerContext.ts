@@ -18,22 +18,26 @@ const perfProgramStart = performance.now();
 
 export class TransformerContext
 {
+	/**
+	 * @internal
+	 */
 	private readonly perfEntries: [initialization: number, persistance: number, ...sourceFiles: number[]] = [0, 0];
 
 	/**
 	 * Metadata manager use to work with metadata.
-	 * @private
+	 * @internal
 	 */
 	private readonly metadataManager: MetadataManager;
 
 	/**
 	 * SourceFile context set for each visiting SourceFile.
-	 * @private
+	 * @internal
 	 */
 	private sourceFileContext?: SourceFileContext;
 
 	/**
 	 * List of root filenames.
+	 * @internal
 	 * @description Paths of all TS files matched by "include" (not in "exclude") from tsconfig.
 	 * It is preferred to include only one root file and let other files be included by imports.
 	 * Root files are transformer as last.
@@ -42,7 +46,7 @@ export class TransformerContext
 	private readonly rootFileNames: ReadonlySet<string>;
 
 	/**
-	 * @private
+	 * @internal
 	 */
 	private _numberOfVisitedRootFileNames = 0;
 

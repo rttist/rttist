@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "CommonJS",
 		"target": "ES6",
 		"sourceMap": false,
 		"strict": true,
@@ -8,18 +8,16 @@
 		"declaration": true,
 		"outDir": "dist",
 		"rootDir": "./src",
-		"baseUrl": "./src",
-		"composite": true,
 		"typeRoots": [
-			"../../node_modules/@types",
-			"node_modules/@types"
+			"node_modules"
 		]
 	},
 	"include": [
 		"./src/**/*.ts"
 	],
 	"exclude": [
-		"node_modules/**/*",
-		"dist/**/*"
+		"./src/helpers.ts",
+		"./src/builders/**/*.ts",
+		"./src/type-builder/**/*.ts",
 	]
 }

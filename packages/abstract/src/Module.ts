@@ -1,15 +1,18 @@
-import { ModuleIds }             from "@rttist/core";
-import type { ModuleIdentifier } from "./declarations";
-import type { Type }             from "./Type";
+import type {
+	ModuleIdentifier,
+	ModuleReference
+}                          from "./declarations";
+import type { Type }       from "./Type";
+import { ModuleIds }       from "@rttist/core";
+import { LazyModuleArray } from "./utils/LazyModuleArray";
 
-export interface ModuleMetadata
-{
+export type ModuleInitializer = {
 	id: ModuleIdentifier;
 	name: string;
 	path: string;
-	children?: Module[];
+	children?: ModuleReference[];
 	types?: Type[];
-}
+};
 
 export class Module
 {
@@ -28,8 +31,11 @@ export class Module
 	 */
 	public static readonly Invalid: Module = new Module({ id: ModuleIds.Invalid, name: "invalid", path: "" });
 
-	private readonly _children: Module[];
+	/** @internal */
+	private readonly _childrenRefs: LazyModuleArray;
+	/** @internal */
 	private readonly _types: Type[];
+	/** @internal */
 	private readonly _id: ModuleIdentifier;
 
 	/**
@@ -54,12 +60,12 @@ export class Module
 	/**
 	 * @param initializer
 	 */
-	constructor(initializer: ModuleMetadata)
+	constructor(initializer: ModuleInitializer)
 	{
 		this._id = initializer.id;
 		this.name = initializer.name;
 		this.path = initializer.path;
-		this._children = initializer.children || [];
+		this._childrenRefs = new LazyModuleArray(initializer.children || []);
 		this._types = initializer.types || [];
 	}
 
@@ -67,15 +73,15 @@ export class Module
 	 * Returns array of modules required by this Module.
 	 * @description These are all the imported modules.
 	 */
-	getChildren(): Module[]
+	getChildren(): ReadonlyArray<Module>
 	{
-		return this._children.slice();
+		return this._childrenRefs.modules;
 	}
 
 	/**
 	 * Returns array of types from the module.
 	 */
-	getTypes(): Type[]
+	getTypes(): ReadonlyArray<Type>
 	{
 		return this._types.slice();
 	}

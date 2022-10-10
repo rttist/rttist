@@ -21,18 +21,6 @@ export type ConfigReflectionSection = {
 		metadataIndexPath: string;
 
 		/**
-		 * Name of the runtime type factory function.
-		 * @default "__τ"
-		 */
-		typeFactory: string;
-
-		/**
-		 * Optional list of metadata middlewares.
-		 * @description It is an array of paths and/or package names.
-		 */
-		middlewares: string[];
-
-		/**
 		 * List of glob patterns matching modules which should be included in metadata.
 		 */
 		include: string[];
@@ -55,7 +43,7 @@ export type ConfigReflectionSection = {
 	dependencyResolution: "direct-dependencies" | "all";
 
 	/**
-	 * List of SourceFile visiting plugins with possible transformations.
+	 * List of plugins.
 	 * @description It is an array of paths and/or package names.
 	 */
 	plugins: string[];

@@ -2,11 +2,8 @@ import * as ts                       from "typescript";
 import type { Config }               from "../config/Config";
 import type { MetadataSource }       from "../declarations/TypeProperties";
 import type { DependencyManager }    from "../dependencies/DependencyManager";
-import type { MiddlewareResult }     from "../middlewares";
 import type { MetadataLibrary }      from "./MetadataLibrary";
-import { processMiddlewares }        from "../middlewares/processMiddlewares";
-import { createValueExpression }     from "../utils/createValueExpression";
-import { LibraryFileEmitter }        from "./LibraryFileEmitter";
+import { MetadataFilesEmitter }      from "./MetadataFilesEmitter";
 import { SourceFileMetadataUpdater } from "./SourceFileMetadataUpdater";
 import {
 	LogColor,
@@ -16,7 +13,7 @@ import {
 
 export class MetadataManager
 {
-	private readonly libraryFileEmitter: LibraryFileEmitter;
+	private readonly libraryFileEmitter: MetadataFilesEmitter;
 	private readonly sourceFileMetadataUpdater: SourceFileMetadataUpdater;
 
 	constructor(
@@ -25,7 +22,7 @@ export class MetadataManager
 		dependencyManager: DependencyManager
 	)
 	{
-		this.libraryFileEmitter = new LibraryFileEmitter(config, dependencyManager, metadataLibrary);
+		this.libraryFileEmitter = new MetadataFilesEmitter(config, dependencyManager, metadataLibrary);
 		this.sourceFileMetadataUpdater = new SourceFileMetadataUpdater(config);
 	}
 
@@ -39,9 +36,8 @@ export class MetadataManager
 		const modules = Array.from(this.metadataLibrary.getModules())
 			.map(moduleMetadata => moduleMetadata.getModuleProperties());
 		const source: MetadataSource = { modules };
-		const metadata: MiddlewareResult = processMiddlewares(source);
 
-		this.libraryFileEmitter.emit(createValueExpression(metadata))
+		this.libraryFileEmitter.emit(source)
 			.then(() => {
 				log.log(
 					LogLevel.Trace,

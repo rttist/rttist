@@ -6,6 +6,7 @@ export type StringLiteralType = Omit<LiteralType, "value"> & { value: string };
 export type NumberLiteralType = Omit<LiteralType, "value"> & { value: number };
 export type BooleanLiteralType = Omit<LiteralType, "value"> & { value: boolean };
 export type BigIntLiteralType = Omit<LiteralType, "value"> & { value: BigInt };
+export type RegExpLiteralType = Omit<LiteralType, "value"> & { value: RegExp };
 
 export class LiteralType extends Type
 {
@@ -37,6 +38,11 @@ export class LiteralType extends Type
 		return this._kind === TypeKind.BigIntLiteral;
 	}
 
+	isRegExpLiteral(): this is RegExpLiteralType
+	{
+		return this._kind === TypeKind.RegExpLiteral;
+	}
+
 	/**
 	 * Check if this type is a "true" literal.
 	 */
@@ -66,6 +72,8 @@ export class LiteralType extends Type
 				return value === "true" || value === true;
 			case TypeKind.BigIntLiteral:
 				return BigInt(value);
+			case TypeKind.RegExpLiteral:
+				return new RegExp(value);
 		}
 
 		return value;

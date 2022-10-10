@@ -109,7 +109,6 @@ export type NativeTypeKind =
 	| TypeKind.Null
 	| TypeKind.Undefined
 	| TypeKind.NonPrimitiveObject
-	| TypeKind.Object
 	| TypeKind.String
 	| TypeKind.Number
 	| TypeKind.BigInt
@@ -119,7 +118,6 @@ export type NativeTypeKind =
 	| TypeKind.Date
 	| TypeKind.Error
 	| TypeKind.Symbol
-	| TypeKind.UniqueSymbol
 	| TypeKind.RegExp
 	| TypeKind.Int8Array
 	| TypeKind.Uint8Array
@@ -153,5 +151,4 @@ export type NativeTypeKind =
 	| TypeKind.AsyncIterableIteratorDefinition
 	;
 
-// TODO: Add generic type definitions Array, Set, Map, WeakSet, WeakMap etc. 
-//  all the generic types must have base generic type definition so it will be possible to compare them.
+export type NonNativeTypeKind = Exclude<TypeKind, NativeTypeKind>;

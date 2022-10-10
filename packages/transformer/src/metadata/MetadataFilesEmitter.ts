@@ -125,7 +125,7 @@ export class LibraryFileEmitter
 	}
 
 	/**
-	 * Generate import declarations for all the dependencies with typelibs.
+	 * Generate imports of typelib files from all the dependencies.
 	 * @private
 	 */
 	private createDependantTypeLibsImports()

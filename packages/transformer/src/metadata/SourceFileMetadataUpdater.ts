@@ -13,30 +13,22 @@ export class SourceFileMetadataUpdater
 
 	addMetadataToSourceFile(sourceFile: ts.SourceFile): ts.SourceFile
 	{
-		// TODO: This solves nothing. TypeProperties are still the same. We don't have reference to the type.
-		//  We should add identifier to the properties and use it here and remove in typelib.
+		// TODO: Handle access to in-file not exported constructors.
 
-		// TODO: Solve differently. This iterate over all modules from whole Program; those already processed.
-		// const modules = Array.from(this.transformerContext.metadata.getModules()).map(moduleMetadata => moduleMetadata.getModuleProperties());
-		//
-		// for (const module of modules)
-		// {
-		// 	const typesInFile: TransformerTypeReference[] = this.transformerContext.metadata.getInFileTypes(sourceFile);
-		//
-		// 	module.types = module.types?.filter(type =>
-		// 			// Only not exported types
-		// 			type.exported === undefined
-		// 			// found in given SourceFile
-		// 			&& typesInFile.some(typeInFileReference =>
-		// 				type.id === typeInFileReference
-		// 				|| (type.id === undefined && typeof typeInFileReference !== "string" && type.kind === typeInFileReference.kind)
-		// 			)
-		// 	);
-		// }
+		let tsLibPath = path.relative(
+			path.dirname(sourceFile.fileName),
+			this.config.metadataTypelibVirtualPath
+		)
+			.replace(/\\/g, "/");
 
-		// const source: MetadataSource = { modules };
-		// const metadata: MiddlewareResult = processMiddlewares(this.transformerContext, source);
-		// const expression = createValueExpression(metadata);
+		if (tsLibPath.charAt(0) !== ".")
+		{
+			tsLibPath = "./" + tsLibPath;
+		}
+		
+		// TODO: We have to create require() or import() based on config. 
+		//  TS will not transform import() to require if there is no other import in the file, 
+		//  isn't it bug?
 
 		return updateSourceFile(
 			sourceFile,
@@ -44,12 +36,8 @@ export class SourceFileMetadataUpdater
 				ts.factory.createImportDeclaration(
 					undefined,
 					undefined,
-					ts.factory.createStringLiteral(path.relative(
-						path.dirname(sourceFile.fileName),
-						this.config.metadataTypelibVirtualPath
-					))
+					ts.factory.createStringLiteral(tsLibPath)
 				)
-				// ts.factory.createExpressionStatement(expression)
 			]
 		);
 	}

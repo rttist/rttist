@@ -4,7 +4,7 @@ import type {
 	TypeIdentifier,
 	TypeMetadata,
 	TypesConfiguration,
-}                        from "./declarations";
+}                                from "./declarations";
 import type {
 	ClassType,
 	ConditionalType,
@@ -18,19 +18,21 @@ import type {
 	ObjectType,
 	TemplateType,
 	TypeParameterType,
-	UnionType
-}                        from "./types";
-import type { Module }   from "./Module";
-import { ModuleIds }     from "@rttist/core";
-import { TypeAliasType } from "./types/TypeAliasType";
-import { LazyModule }    from "./utils/LazyModule";
-import { LazyType }      from "./utils/LazyType";
-import { LazyTypeArray } from "./utils/LazyTypeArray";
+	UnionType,
+	ESSymbolType,
+	TypeAliasType,
+	UniqueSymbolType
+}                                from "./types";
+import type { Module }           from "./Module";
+import { ModuleIds }             from "@rttist/core";
+import { LazyModule }            from "./utils/LazyModule";
+import { LazyType }              from "./utils/LazyType";
+import { LazyTypeArray }         from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                        from "./enums";
+}                                from "./enums";
 
 const createdNativeTypes = new Set();
 
@@ -389,6 +391,22 @@ export class Type
 	isFunction(): this is FunctionType
 	{
 		return this._kind == TypeKind.Function;
+	}
+
+	/**
+	 * Determines whether the object represented by the current Type is one of the predefined ES symbols.
+	 */
+	isESSymbol(): this is ESSymbolType
+	{
+		return this._kind == TypeKind.ESSymbol;
+	}
+
+	/**
+	 * Determines whether the object represented by the current Type is an unique symbol.
+	 */
+	isUniqueSymbol(): this is UniqueSymbolType
+	{
+		return this._kind == TypeKind.UniqueSymbol;
 	}
 
 	//////////////////////////////////////////////////////////////////// CHECKS /////////////////////////////////////////////////////////////////

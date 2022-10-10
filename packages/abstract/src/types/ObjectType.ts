@@ -1,9 +1,9 @@
-import type { ObjectLikeBaseTypeMetadata } from "../declarations";
+import type { ObjectTypeMetadata } from "../declarations";
 import { ObjectLikeTypeBase }              from "./ObjectLikeTypeBase";
 
 export class ObjectType extends ObjectLikeTypeBase
 {
-	constructor(initializer: ObjectLikeBaseTypeMetadata)
+	constructor(initializer: ObjectTypeMetadata)
 	{
 		super(initializer);
 	}

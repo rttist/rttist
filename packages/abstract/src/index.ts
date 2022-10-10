@@ -12,21 +12,20 @@ import {
 	UnknownFunction
 }                     from "./helpers";
 
-export *            from "./enums";
-export *            from "./declarations";
+export *                         from "./enums";
+export *                         from "./declarations";
 export {
 	Module,
-	ModuleMetadata
-}                   from "./Module";
+	ModuleInitializer
+}                                from "./Module";
 export {
 	Type,
 	NativeTypes
-}                   from "./Type";
-export *            from "./types";
-export { Metadata } from "./Metadata";
-// export *            from "./builders"; // TODO: Remove this from abstract; What to do with "getTypeOfRuntimeVariable"?
-
+}                                from "./Type";
+export *                         from "./types";
+export { Metadata }              from "./Metadata";
 export { getType }               from "./functions/getType";
+export { createType }            from "./functions/createType";
 export { getClassTypeParameter } from "./functions/getClassTypeParameter";
 export { constructGeneric }      from "./functions/constructGeneric";
 export { getGenericClass }       from "./functions/getGenericClass";

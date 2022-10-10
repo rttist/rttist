@@ -7,8 +7,11 @@ import { mainVisitor }             from "../visitors/mainVisitor";
 
 export class SourceFileContext
 {
+	/** @internal */
 	private readonly _context: Context;
+	/** @internal */
 	private readonly _sourceFile: ts.SourceFile;
+	/** @internal */
 	private readonly _metadata: MetadataLibrary;
 
 	public readonly transformationContext: ts.TransformationContext;
