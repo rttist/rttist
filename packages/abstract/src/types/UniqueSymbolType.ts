@@ -39,7 +39,7 @@ export class UniqueSymbolType extends Type
 		
 		if (initializer.key !== undefined)
 		{
-			this._symbol = (Symbol as any)[initializer.key];
+			this._symbol = Symbol.for(initializer.key);
 		}
 	}
 

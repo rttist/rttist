@@ -4,7 +4,8 @@ import type {
 	TypeIdentifier,
 	TypeMetadata,
 	TypesConfiguration,
-}                                from "./declarations";
+	ObjectLikeBaseTypeMetadata
+}                                     from "./declarations";
 import type {
 	ClassType,
 	ConditionalType,
@@ -22,17 +23,17 @@ import type {
 	ESSymbolType,
 	TypeAliasType,
 	UniqueSymbolType
-}                                from "./types";
-import type { Module }           from "./Module";
-import { ModuleIds }             from "@rttist/core";
-import { LazyModule }            from "./utils/LazyModule";
-import { LazyType }              from "./utils/LazyType";
-import { LazyTypeArray }         from "./utils/LazyTypeArray";
+}                                     from "./types";
+import type { Module }                from "./Module";
+import { ModuleIds }                  from "@rttist/core";
+import { LazyModule }                 from "./utils/LazyModule";
+import { LazyType }                   from "./utils/LazyType";
+import { LazyTypeArray }              from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                                from "./enums";
+}                                     from "./enums";
 
 const createdNativeTypes = new Set();
 
@@ -58,35 +59,50 @@ function cn(name: string, kind: TypeKind): Type
  */
 export class Type
 {
-	public static readonly Invalid: Type = cn("Invalid", TypeKind.Invalid);
-	public static readonly NonPrimitiveObject: Type = cn("object", TypeKind.NonPrimitiveObject);
-	public static readonly Any: Type = cn("any", TypeKind.Any);
-	public static readonly Unknown: Type = cn("unknown", TypeKind.Unknown);
-	public static readonly Void: Type = cn("void", TypeKind.Void);
-	public static readonly Never: Type = cn("never", TypeKind.Never);
-	public static readonly Null: Type = cn("null", TypeKind.Null);
-	public static readonly Undefined: Type = cn("undefined", TypeKind.Undefined);
-	public static readonly String: Type = cn("String", TypeKind.String);
-	public static readonly Number: Type = cn("Number", TypeKind.Number);
-	public static readonly BigInt: Type = cn("BigInt", TypeKind.BigInt);
-	public static readonly Boolean: Type = cn("Boolean", TypeKind.Boolean);
-	public static readonly True: Type = cn("true", TypeKind.True);
-	public static readonly False: Type = cn("false", TypeKind.False);
-	public static readonly Date: Type = cn("Date", TypeKind.Date);
-	public static readonly Symbol: Type = cn("Symbol", TypeKind.Symbol);
-	public static readonly UniqueSymbol: Type = cn("UniqueSymbol", TypeKind.UniqueSymbol);
-	public static readonly RegExp: Type = cn("RegExp", TypeKind.RegExp);
-	public static readonly Int8Array: Type = cn("Int8Array", TypeKind.Int8Array);
-	public static readonly Uint8Array: Type = cn("Uint8Array", TypeKind.Uint8Array);
-	public static readonly Uint8ClampedArray: Type = cn("Uint8ClampedArray", TypeKind.Uint8ClampedArray);
-	public static readonly Int16Array: Type = cn("Int16Array", TypeKind.Int16Array);
-	public static readonly Uint16Array: Type = cn("Uint16Array", TypeKind.Uint16Array);
-	public static readonly Int32Array: Type = cn("Int32Array", TypeKind.Int32Array);
-	public static readonly Uint32Array: Type = cn("Uint32Array", TypeKind.Uint32Array);
-	public static readonly Float32Array: Type = cn("Float32Array", TypeKind.Float32Array);
-	public static readonly Float64Array: Type = cn("Float64Array", TypeKind.Float64Array);
-	public static readonly BigInt64Array: Type = cn("BigInt64Array", TypeKind.BigInt64Array);
-	public static readonly BigUint64Array: Type = cn("BigUint64Array", TypeKind.BigUint64Array);
+	public static readonly Invalid = cn("Invalid", TypeKind.Invalid);
+	public static readonly NonPrimitiveObject = cn("object", TypeKind.NonPrimitiveObject);
+	public static readonly Any = cn("any", TypeKind.Any);
+	public static readonly Unknown = cn("unknown", TypeKind.Unknown);
+	public static readonly Void = cn("void", TypeKind.Void);
+	public static readonly Never = cn("never", TypeKind.Never);
+	public static readonly Null = cn("null", TypeKind.Null);
+	public static readonly Undefined = cn("undefined", TypeKind.Undefined);
+	public static readonly String = cn("String", TypeKind.String);
+	public static readonly Number = cn("Number", TypeKind.Number);
+	public static readonly BigInt = cn("BigInt", TypeKind.BigInt);
+	public static readonly Boolean = cn("Boolean", TypeKind.Boolean);
+	public static readonly True = cn("true", TypeKind.True);
+	public static readonly False = cn("false", TypeKind.False);
+	public static readonly Date = cn("Date", TypeKind.Date);
+	public static readonly Symbol = cn("Symbol", TypeKind.Symbol);
+	public static readonly UniqueSymbol = cn("UniqueSymbol", TypeKind.UniqueSymbol);
+	public static readonly RegExp = cn("RegExp", TypeKind.RegExp);
+	public static readonly Int8Array = cn("Int8Array", TypeKind.Int8Array);
+	public static readonly Uint8Array = cn("Uint8Array", TypeKind.Uint8Array);
+	public static readonly Uint8ClampedArray = cn("Uint8ClampedArray", TypeKind.Uint8ClampedArray);
+	public static readonly Int16Array = cn("Int16Array", TypeKind.Int16Array);
+	public static readonly Uint16Array = cn("Uint16Array", TypeKind.Uint16Array);
+	public static readonly Int32Array = cn("Int32Array", TypeKind.Int32Array);
+	public static readonly Uint32Array = cn("Uint32Array", TypeKind.Uint32Array);
+	public static readonly Float32Array = cn("Float32Array", TypeKind.Float32Array);
+	public static readonly Float64Array = cn("Float64Array", TypeKind.Float64Array);
+	public static readonly BigInt64Array = cn("BigInt64Array", TypeKind.BigInt64Array);
+	public static readonly BigUint64Array = cn("BigUint64Array", TypeKind.BigUint64Array);
+	public static readonly ArrayDefinition = cn("ArrayDefinition", TypeKind.ArrayDefinition);
+	public static readonly ReadonlyArrayDefinition = cn("ReadonlyArray", TypeKind.ReadonlyArrayDefinition);
+	public static readonly MapDefinition = cn("Map", TypeKind.MapDefinition);
+	public static readonly WeakMapDefinition = cn("WeakMap", TypeKind.WeakMapDefinition);
+	public static readonly SetDefinition = cn("Set", TypeKind.SetDefinition);
+	public static readonly WeakSetDefinition = cn("WeakSet", TypeKind.WeakSetDefinition);
+	public static readonly PromiseDefinition = cn("Promise", TypeKind.PromiseDefinition);
+	public static readonly GeneratorDefinition = cn("Generator", TypeKind.GeneratorDefinition);
+	public static readonly AsyncGeneratorDefinition = cn("AsyncGenerator", TypeKind.AsyncGeneratorDefinition);
+	public static readonly IteratorDefinition = cn("Iterator", TypeKind.IteratorDefinition);
+	public static readonly IterableDefinition = cn("Iterable", TypeKind.IterableDefinition);
+	public static readonly IterableIteratorDefinition = cn("IterableIterator", TypeKind.IterableIteratorDefinition);
+	public static readonly AsyncIteratorDefinition = cn("AsyncIterator", TypeKind.AsyncIteratorDefinition);
+	public static readonly AsyncIterableDefinition = cn("AsyncIterable", TypeKind.AsyncIterableDefinition);
+	public static readonly AsyncIterableIteratorDefinition = cn("AsyncIterableIterator", TypeKind.AsyncIterableIteratorDefinition);
 
 	/**
 	 * Configuration - global nullability of all the types (StrictNullChecks TS option).
@@ -99,7 +115,7 @@ export class Type
 	/** @internal */
 	protected readonly _kind: TypeKind;
 	/** @internal */
-	protected readonly _name: string;
+	protected readonly _name: string; //MemberName;
 	/** @internal */
 	protected readonly _exported: boolean;
 	/** @internal */
@@ -112,6 +128,10 @@ export class Type
 	protected readonly _definitionRef?: LazyType<GenericType<Type>>;
 	/** @internal */
 	protected readonly _isGenericTypeDefinition: boolean;
+	/** @internal */
+	protected readonly _isIterable: boolean;
+	// /** @internal */
+	// protected readonly _hasIterator: boolean;
 
 	/**
 	 * Type identifier.
@@ -140,7 +160,7 @@ export class Type
 	/**
 	 * Name of the type.
 	 */
-	get name(): string
+	get name(): string //MemberName
 	{
 		return this._name;
 	}
@@ -151,6 +171,14 @@ export class Type
 	get exported(): boolean
 	{
 		return this._exported;
+	}
+
+	/**
+	 * Type has iterator, is iterable.
+	 */
+	get iterable(): boolean
+	{
+		return this._isIterable;
 	}
 
 	/**
@@ -182,11 +210,20 @@ export class Type
 			throw new Error("Cannot create native type multiple times.");
 		}
 
-		this._id = initializer.id;// ?? Symbol();
+		this._id = initializer.id;
 		this._kind = initializer.kind;
 		this._name = initializer.name;
-		// this._fullName = initializer.fullName || "";
 		this._exported = initializer.exported || false;
+		
+		this._isIterable = (initializer as ObjectLikeBaseTypeMetadata).properties
+				?.some(prop => prop.name.isSymbol() && prop.name.name === Symbol.iterator)
+			|| (initializer as ObjectLikeBaseTypeMetadata).methods
+				?.some(method => method.name.isSymbol() && method.name.name === Symbol.iterator);
+		
+		// this._isIterable = (initializer as ObjectLikeBaseTypeMetadata).methods
+		// 		?.some(method => method.name.isString() && method.name.name === "next" && method.getSignatures().)
+		// 	|| (initializer as ObjectLikeBaseTypeMetadata).properties
+		// 		?.some(prop => prop.name.isString() && prop.name.name === "next");
 
 		// Set to _nullable only when defined in initializer. If not specified, it must be lazily taken from TypesConfiguration.
 		if (initializer.nullable === true)
@@ -225,7 +262,7 @@ export class Type
 	 * Returns true if types are equal.
 	 * @param target
 	 */
-	is(target: Type)
+	is<TType extends Type>(target: TType): target is TType
 	{
 		if (this.isComparableByKind())
 		{

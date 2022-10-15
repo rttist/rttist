@@ -1,8 +1,11 @@
+import type { Type }          from "../Type";
+import type{ MemberName }         from "../types/MemberName";
+import type { TypeReference } from "./declarations";
+import type { DecoratorInfo } from "./DecoratorInfo";
 import {
 	AccessModifier,
 	Accessor
 }                             from "../enums";
-import type { Type }          from "../Type";
 import {
 	AccessModifierFlagsOffset,
 	AccessorFlagsOffset,
@@ -10,8 +13,6 @@ import {
 	getAccessor
 }                             from "../utils/flags";
 import { LazyType }           from "../utils/LazyType";
-import type { TypeReference } from "./declarations";
-import type { DecoratorInfo } from "./DecoratorInfo";
 
 export enum PropertyFlags
 {
@@ -31,7 +32,7 @@ export enum PropertyFlags
 export interface PropertyInfoInitializer
 {
 	flags: PropertyFlags;
-	name: string;
+	name: MemberName;
 	type: TypeReference;
 	decorators?: Array<DecoratorInfo>;
 }
@@ -55,7 +56,7 @@ export class PropertyInfo
 	/**
 	 * Property name
 	 */
-	readonly name: string;
+	readonly name: MemberName;
 
 	/**
 	 * Property type

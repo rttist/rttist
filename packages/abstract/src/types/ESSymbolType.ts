@@ -27,4 +27,9 @@ export class ESSymbolType extends Type
 		this._key = initializer.key;
 		this._symbol = (Symbol as any)[initializer.key];
 	}
+	
+	toString(): string
+	{
+		return "@@" + this._key;
+	}
 }

@@ -1,4 +1,5 @@
 import { AccessModifier }     from "../enums";
+import { MemberName }         from "../types/MemberName";
 import {
 	AccessModifierFlagsOffset,
 	getAccessModifier
@@ -19,7 +20,7 @@ export enum MethodFlags
 export interface MethodInfoInitializer
 {
 	flags: MethodFlags;
-	name: string;
+	name: MemberName;
 	signatures: Signature[];
 	decorators?: DecoratorInfo[];
 }
@@ -32,7 +33,7 @@ export class MethodInfo
 	/**
 	 * @internal
 	 */
-	private readonly _name: string;
+	private readonly _name: MemberName;
 
 	/**
 	 * @internal
@@ -57,7 +58,7 @@ export class MethodInfo
 	/**
 	 * Name of the method.
 	 */
-	get name(): string
+	get name(): MemberName
 	{
 		return this._name;
 	}

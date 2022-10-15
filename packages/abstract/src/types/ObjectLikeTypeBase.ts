@@ -31,9 +31,9 @@ export abstract class ObjectLikeTypeBase extends Type
 	/**
 	 * Returns property matched by name.
 	 */
-	getProperty(name: string): PropertyInfo | undefined
+	getProperty(name: string | number | symbol): PropertyInfo | undefined
 	{
-		return this._properties.find(x => x.name === name);
+		return this._properties.find(x => x.name.name === name);
 	}
 
 	/**
@@ -55,8 +55,8 @@ export abstract class ObjectLikeTypeBase extends Type
 	/**
 	 * Returns method matched by name.
 	 */
-	getMethod(name: string): MethodInfo | undefined
+	getMethod(name: string | number | symbol): MethodInfo | undefined
 	{
-		return this._methods.find(x => x.name === name);
+		return this._methods.find(x => x.name.name === name);
 	}
 }
