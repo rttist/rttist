@@ -5,13 +5,13 @@ export enum SymbolKind
 }
 
 export type SymbolMemberNameMetadata = { kind: SymbolKind, key: string }
-export type MemberNameMetadata = string | number | SymbolMemberNameMetadata
+export type MemberNameInitializer = string | number | SymbolMemberNameMetadata
 
 export class MemberName
 {
 	public readonly name: string | number | symbol;
 
-	constructor(initializer: MemberNameMetadata)
+	constructor(initializer: MemberNameInitializer)
 	{
 		if (typeof initializer === "object")
 		{

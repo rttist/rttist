@@ -23,8 +23,12 @@ import {
 	WeakMapType,
 	SetType,
 	WeakSetType,
-	PromiseType
-}                               from "../types";
+	PromiseType,
+	ReadonlyArrayType,
+	ModuleType,
+	NamespaceType,
+	GeneratorFunctionType
+} from "../types";
 
 export function createType(metadata: AnyTypeMetadata)
 {
@@ -58,38 +62,40 @@ export function createType(metadata: AnyTypeMetadata)
 			return new ConditionalType(metadata);
 		case TypeKind.IndexedAccess:
 			return new IndexedAccessType(metadata);
-		// case TypeKind.Module:
-		// 	return new ModuleType(); // TODO: Create
-		// case TypeKind.Namespace:
-		// 	return new NamespaceType(); // TODO: Create
+		case TypeKind.Module:
+			return new ModuleType(metadata);
+		case TypeKind.Namespace:
+			return new NamespaceType(metadata);
 		case TypeKind.Union:
 			return new UnionType(metadata);
 		case TypeKind.Intersection:
 			return new IntersectionType(metadata);
 		// case TypeKind.Method:
-		// 	return new MethodType(); // TODO: Create. Should it be serialized on its own or should it just point to MethodInfo of an object (class/interface/object literal)/...?
+		// 	return new MethodType(); // TODO: Create. Should it be serialized on its own or should it just point to MethodInfo of an object (class/interface/object literal)/...? Does Method even exists on its own? Wouldn't it be only IndexedAccess?
 		case TypeKind.Function:
 			return new FunctionType(metadata);
-		// case TypeKind.GeneratorFunction:
-		// 	return new GeneratorFunctionType(metadata); // TODO: Create
+		case TypeKind.GeneratorFunction:
+			return new GeneratorFunctionType(metadata);
 		case TypeKind.Enum:
 			return new EnumType(metadata);
 		case TypeKind.EnumLiteral:
 			return new EnumLiteralType(metadata);
 		case TypeKind.Promise:
-			return new PromiseType(metadata);
+			return new PromiseType([TypeKind.PromiseDefinition], metadata);
 		case TypeKind.Array:
-			return new ArrayType(metadata);
+			return new ArrayType([TypeKind.ArrayDefinition], metadata);
+		case TypeKind.ReadonlyArray:
+			return new ReadonlyArrayType([TypeKind.ReadonlyArrayDefinition], metadata);
 		case TypeKind.Tuple:
-			return new TupleType(metadata);
+			return new TupleType([TypeKind.ArrayDefinition], metadata);
 		case TypeKind.Map:
-			return new MapType(metadata);
+			return new MapType([TypeKind.MapDefinition], metadata);
 		case TypeKind.WeakMap:
-			return new WeakMapType(metadata);
+			return new WeakMapType([TypeKind.WeakMapDefinition], metadata);
 		case TypeKind.Set:
-			return new SetType(metadata);
+			return new SetType([TypeKind.SetDefinition], metadata);
 		case TypeKind.WeakSet:
-			return new WeakSetType(metadata);
+			return new WeakSetType([TypeKind.WeakSetDefinition], metadata);
 		// TODO: Create the rest
 		// case TypeKind.Generator:
 		// 	return new Type();

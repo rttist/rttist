@@ -141,6 +141,20 @@ export interface FunctionTypeMetadata extends TypeMetadata
 	signatures: Signature[];
 }
 
+export interface GeneratorFunctionTypeMetadata extends TypeMetadata
+{
+	kind: TypeKind.GeneratorFunction;
+	signatures: Signature[];
+}
+
+// export interface MethodTypeMetadata
+// {	
+// 	kind: TypeKind.Method;
+// 	owner: TypeReference;
+// 	member: MemberNameMetadata;
+// 	nullable?: boolean;
+// }
+
 export interface IndexedAccessTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.IndexedAccess;
@@ -151,6 +165,11 @@ export interface IndexedAccessTypeMetadata extends TypeMetadata
 export interface ArrayTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.Array;
+}
+
+export interface ReadonlyArrayTypeMetadata extends TypeMetadata
+{
+	kind: TypeKind.ReadonlyArray;
 }
 
 export interface TupleTypeMetadata extends TypeMetadata
@@ -183,6 +202,16 @@ export interface PromiseTypeMetadata extends TypeMetadata
 	kind: TypeKind.Promise;
 }
 
+export interface NamespaceTypeMetadata extends TypeMetadata
+{
+	kind: TypeKind.Namespace;
+}
+
+export interface ModuleTypeMetadata extends TypeMetadata
+{
+	kind: TypeKind.Module;
+}
+
 export type AnyTypeMetadata = //TypeMetadata 
 	TypeAliasTypeMetadata
 	| InterfaceTypeMetadata
@@ -199,12 +228,16 @@ export type AnyTypeMetadata = //TypeMetadata
 	| EnumTypeMetadata
 	| ConditionalTypeMetadata
 	| FunctionTypeMetadata
+	| GeneratorFunctionTypeMetadata
 	| IndexedAccessTypeMetadata
 	| ArrayTypeMetadata
+	| ReadonlyArrayTypeMetadata
 	| TupleTypeMetadata
 	| SetTypeMetadata
 	| WeakSetTypeMetadata
 	| MapTypeMetadata
 	| WeakMapTypeMetadata
 	| PromiseTypeMetadata
+	| NamespaceTypeMetadata
+	| ModuleTypeMetadata
 	;

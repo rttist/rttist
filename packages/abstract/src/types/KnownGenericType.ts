@@ -1,5 +1,5 @@
 import type {
-	PromiseTypeMetadata,
+	TypeMetadata,
 	TypeReference
 }                           from "../declarations";
 import type { GenericType } from "./GenericType";
@@ -15,7 +15,7 @@ export class KnownGenericType<TParams extends ReadonlyArray<Type>> extends Type
 		return this._definitionRef!.type;
 	}
 
-	constructor(definition: TypeReference, initializer: PromiseTypeMetadata)
+	constructor(definition: TypeReference, initializer: TypeMetadata)
 	{
 		initializer.genericTypeDefinition = definition;
 		super(initializer);

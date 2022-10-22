@@ -46,6 +46,7 @@ export enum TypeKind
 	RegExp,
 	RegExpLiteral,
 	Array,
+	ReadonlyArray,
 	Tuple,
 	Map,
 	WeakMap,
