@@ -1,17 +1,11 @@
-export enum SymbolKind
-{
-	ES,
-	Unique
-}
-
-export type SymbolMemberNameMetadata = { kind: SymbolKind, key: string }
-export type MemberNameInitializer = string | number | SymbolMemberNameMetadata
+import type { MemberNameMetadata } from "../declarations";
+import { SymbolKind }              from "../enums";
 
 export class MemberName
 {
 	public readonly name: string | number | symbol;
 
-	constructor(initializer: MemberNameInitializer)
+	constructor(initializer: MemberNameMetadata)
 	{
 		if (typeof initializer === "object")
 		{

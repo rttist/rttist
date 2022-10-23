@@ -38,23 +38,6 @@ import {
 const createdNativeTypes = new Set();
 
 /**
- * Create native type from object.
- */
-function cn(name: string, kind: TypeKind): Type
-{
-	const type = new Type({
-		kind,
-		name,
-		id: ModuleIds.Native + name,
-		module: ModuleIds.Native
-	});
-
-	createdNativeTypes.add(type);
-
-	return type;
-}
-
-/**
  * Object representing TypeScript type in memory
  */
 export class Type
@@ -129,7 +112,7 @@ export class Type
 	/** @internal */
 	protected readonly _isGenericTypeDefinition: boolean;
 	/** @internal */
-	protected readonly _isIterable: boolean;
+	protected readonly _isIterable: boolean = false;
 	// /** @internal */
 	// protected readonly _hasIterator: boolean;
 
@@ -214,16 +197,6 @@ export class Type
 		this._kind = initializer.kind;
 		this._name = initializer.name;
 		this._exported = initializer.exported || false;
-		
-		this._isIterable = (initializer as ObjectLikeBaseTypeMetadata).properties
-				?.some(prop => prop.name.isSymbol() && prop.name.name === Symbol.iterator)
-			|| (initializer as ObjectLikeBaseTypeMetadata).methods
-				?.some(method => method.name.isSymbol() && method.name.name === Symbol.iterator);
-		
-		// this._isIterable = (initializer as ObjectLikeBaseTypeMetadata).methods
-		// 		?.some(method => method.name.isString() && method.name.name === "next" && method.getSignatures().)
-		// 	|| (initializer as ObjectLikeBaseTypeMetadata).properties
-		// 		?.some(prop => prop.name.isString() && prop.name.name === "next");
 
 		// Set to _nullable only when defined in initializer. If not specified, it must be lazily taken from TypesConfiguration.
 		if (initializer.nullable === true)
@@ -549,6 +522,23 @@ export class Type
 	{
 		return `${TypeKind[this._kind]}\{${this.id}}`;
 	}
+}
+
+/**
+ * Create native type from object.
+ */
+function cn(name: string, kind: TypeKind): Type
+{
+	const type = new Type({
+		kind,
+		name,
+		id: ModuleIds.Native + name,
+		module: ModuleIds.Native
+	});
+
+	createdNativeTypes.add(type);
+
+	return type;
 }
 
 export const NativeTypes: { [typeKind: number]: Type } = {

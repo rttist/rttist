@@ -1,27 +1,26 @@
-import type {
-	GeneratorFunctionTypeMetadata,
-	Signature
-}               from "../declarations";
-import { Type } from "../Type";
+import type { GeneratorFunctionTypeMetadata } from "../declarations";
+import type { SignatureInfo }                 from "../infos";
+import { Type }                               from "../Type";
+import { mapSignatures }                      from "../utils/mappers";
 
 export class GeneratorFunctionType extends Type
 {
 	/**
 	 * @internal
 	 */
-	private readonly _signatures: ReadonlyArray<Signature>;
+	private readonly _signatures: ReadonlyArray<SignatureInfo>;
 
 	constructor(initializer: GeneratorFunctionTypeMetadata)
 	{
 		super(initializer);
 
-		this._signatures = Object.freeze(initializer.signatures || []);
+		this._signatures = mapSignatures(initializer);
 	}
 
 	/**
 	 * Returns array of method signatures.
 	 */
-	getSignatures(): ReadonlyArray<Signature>
+	getSignatures(): ReadonlyArray<SignatureInfo>
 	{
 		return this._signatures;
 	}

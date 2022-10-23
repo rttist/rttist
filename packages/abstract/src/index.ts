@@ -14,10 +14,7 @@ import {
 
 export *                         from "./enums";
 export *                         from "./declarations";
-export {
-	Module,
-	ModuleInitializer
-}                                from "./Module";
+export { Module }                from "./Module";
 export {
 	Type,
 	NativeTypes
@@ -25,10 +22,10 @@ export {
 export *                         from "./types";
 export { Metadata }              from "./Metadata";
 export { getType }               from "./functions/getType";
-export { createType }            from "./functions/createType";
 export { getClassTypeParameter } from "./functions/getClassTypeParameter";
 export { constructGeneric }      from "./functions/constructGeneric";
 export { getGenericClass }       from "./functions/getGenericClass";
+export *                         from "./factories";
 
 LazyType.resolver = Metadata.resolveType;
 LazyModule.resolver = Metadata.resolveModule;

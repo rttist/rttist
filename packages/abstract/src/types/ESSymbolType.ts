@@ -1,5 +1,5 @@
-﻿import { ESSymbolTypeMetadata } from "../declarations";
-import { Type }                 from "../Type";
+﻿import type { ESSymbolTypeMetadata } from "../declarations";
+import { Type }                      from "../Type";
 
 /**
  * Type for unique global symbols defined by ECMAScript such as iterator and hasInstance.
@@ -27,7 +27,7 @@ export class ESSymbolType extends Type
 		this._key = initializer.key;
 		this._symbol = (Symbol as any)[initializer.key];
 	}
-	
+
 	toString(): string
 	{
 		return "@@" + this._key;

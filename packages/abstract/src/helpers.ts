@@ -5,10 +5,8 @@ import {
 }                       from "@rttist/core";
 import {
 	ParameterFlags,
-	ParameterInfo,
-	Signature
-}                       from "./declarations";
-import { TypeKind }     from "./enums";
+	TypeKind
+}                       from "./enums";
 import { Metadata }     from "./Metadata";
 import { Type }         from "./Type";
 import { FunctionType } from "./types";
@@ -49,18 +47,14 @@ export const UnknownFunction = new FunctionType({
 	name: "Function",
 	id: ModuleIds.Native + "::Function",
 	module: ModuleIds.Native,
-	signatures: [
-		new Signature({
-			parameters: [
-				new ParameterInfo({
-					name: "x",
-					flags: ParameterFlags.Rest,
-					type: AnyArray.id
-				})
-			],
-			returnType: TypeIds.Unknown
-		})
-	]
+	signatures: [{
+		parameters: [{
+			name: "x",
+			flags: ParameterFlags.Rest,
+			type: AnyArray.id
+		}],
+		returnType: TypeIds.Unknown
+	}]
 });
 
 export function getTypeOfRuntimeValue(value: any): Type

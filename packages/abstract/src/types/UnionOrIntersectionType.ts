@@ -1,32 +1,29 @@
-import type {
-	TypeReference,
-	UnionOrIntersectionTypeMetadata
-}                   from "../declarations";
-import { Metadata } from "../Metadata";
-import { Type }     from "../Type";
+import type { UnionOrIntersectionTypeMetadata } from "../declarations";
+import { Type }                                 from "../Type";
+import { LazyTypeArray }                        from "../utils/LazyTypeArray";
 
 export abstract class UnionOrIntersectionType extends Type
 {
 	protected abstract operatorSymbol: string;
 
-	private readonly _typeReferences: TypeReference[];
-	private _types?: Type[];
+	/**
+	 * @internal
+	 */
+	private _types: LazyTypeArray;
 
 	/**
 	 * Array of underlying types.
 	 */
 	get types(): ReadonlyArray<Type>
 	{
-		return (
-			this._types ?? (this._types = this._typeReferences.map(type => Metadata.resolveType(type)))
-		).slice();
+		return this._types.types;
 	}
 
 	protected constructor(initializer: UnionOrIntersectionTypeMetadata)
 	{
 		super(initializer);
 
-		this._typeReferences = initializer.types || [];
+		this._types = new LazyTypeArray<Type>(initializer.types || []);
 	}
 
 	/**

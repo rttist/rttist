@@ -50,7 +50,7 @@ and modify your code slightly so you can reflect your types, even type parameter
 [//]: # (TODO: List of StackBlitz examples)
 
 ```typescript
-import { Type } from '@rttist/abstract';
+import { Type } from "rttist";
 
 abstract class AwesomeFeature {
   protected constructor(protected isCool: boolean) {}

@@ -1,12 +1,15 @@
 import type {
 	AsyncCtorReference,
-	ClassTypeMetadata,
-	DecoratorInfo,
-	Signature
+	ClassTypeMetadata
 }                             from "../declarations";
+import { mapDecorators }      from "../utils/mappers";
 import type { TypeAliasType } from "./TypeAliasType";
 import type { InterfaceType } from "./InterfaceType";
 import type { Type }          from "../Type";
+import {
+	DecoratorInfo,
+	SignatureInfo
+}                             from "infos";
 import { LazyType }           from "../utils/LazyType";
 import { LazyTypeArray }      from "../utils/LazyTypeArray";
 import { ObjectLikeTypeBase } from "./ObjectLikeTypeBase";
@@ -19,7 +22,7 @@ export class ClassType extends ObjectLikeTypeBase
 	private readonly _ctor?: AsyncCtorReference;
 	// private readonly _ctorSync: SyncCtorReference;
 	/** @internal */
-	private readonly _constructors: ReadonlyArray<Signature>;
+	private readonly _constructors: ReadonlyArray<SignatureInfo>;
 	/** @internal */
 	private readonly _decorators: ReadonlyArray<DecoratorInfo>;
 	/** @internal */
@@ -61,8 +64,8 @@ export class ClassType extends ObjectLikeTypeBase
 		this._extendsRef = initializer.extends === undefined
 			? undefined
 			: new LazyType<ClassType>(initializer.extends);
-		this._constructors = Object.freeze(initializer.constructors ?? []);
-		this._decorators = Object.freeze(initializer.decorators ?? []);
+		this._constructors = Object.freeze((initializer.constructors ?? []).map(meta => new SignatureInfo(meta)));
+		this._decorators = mapDecorators(initializer);
 		this._abstract = initializer.abstract ?? false;
 	}
 
@@ -77,7 +80,7 @@ export class ClassType extends ObjectLikeTypeBase
 	/**
 	 * Returns array of constructor signatures.
 	 */
-	getConstructors(): ReadonlyArray<Signature>
+	getConstructors(): ReadonlyArray<SignatureInfo>
 	{
 		return this._constructors;
 	}

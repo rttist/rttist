@@ -1,29 +1,18 @@
-import type {
-	TypeParameterTypeMetadata,
-	TypeReference
-}                   from "../declarations";
-import { Metadata } from "../Metadata";
-import { Type }     from "../Type";
+import type { TypeParameterTypeMetadata } from "../declarations";
+import { Type }                           from "../Type";
+import { LazyType }                       from "../utils/LazyType";
 
 export class TypeParameterType extends Type
 {
-	private readonly _constraintReference?: TypeReference;
-	private readonly _defaultReference?: TypeReference;
-
-	private _constraint?: Type;
-	private _default?: Type;
+	private _constraint?: LazyType;
+	private _default?: LazyType;
 
 	/**
 	 * Defined type constraint.
 	 */
 	get constraint(): Type | undefined
 	{
-		if (!this._constraintReference)
-		{
-			return undefined;
-		}
-
-		return this._constraint ?? (this._constraint = Metadata.resolveType(this._constraintReference));
+		return this._constraint?.type;
 	}
 
 	/**
@@ -31,19 +20,14 @@ export class TypeParameterType extends Type
 	 */
 	get default(): Type | undefined
 	{
-		if (!this._defaultReference)
-		{
-			return undefined;
-		}
-
-		return this._default ?? (this._default = Metadata.resolveType(this._defaultReference));
+		return this._default?.type;
 	}
 
 	constructor(initializer: TypeParameterTypeMetadata)
 	{
 		super(initializer);
 
-		this._constraintReference = initializer.constraint;
-		this._defaultReference = initializer.default;
+		this._constraint = initializer.constraint ? new LazyType<Type>(initializer.constraint) : undefined;
+		this._default = initializer.default ? new LazyType<Type>(initializer.default) : undefined;
 	}
 }

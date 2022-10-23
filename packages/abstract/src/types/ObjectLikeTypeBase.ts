@@ -1,10 +1,15 @@
-import { MethodInfo } from "../declarations";
-import type {
-	PropertyInfo,
+import type { ObjectLikeBaseTypeMetadata } from "../declarations";
+import {
 	IndexInfo,
-	ObjectLikeBaseTypeMetadata
-}                     from "../declarations";
-import { Type }       from "../Type";
+	MethodInfo,
+	PropertyInfo
+}                                          from "../infos";
+import { Type }                            from "../Type";
+import {
+	mapIndexes,
+	mapMethods,
+	mapProperties
+} from "../utils/mappers";
 
 export abstract class ObjectLikeTypeBase extends Type
 {
@@ -15,9 +20,20 @@ export abstract class ObjectLikeTypeBase extends Type
 	protected constructor(initializer: ObjectLikeBaseTypeMetadata)
 	{
 		super(initializer);
-		this._properties = initializer.properties;
-		this._methods = initializer.methods ?? [];
-		this._indexes = initializer.indexes;
+		this._properties = mapProperties(initializer);
+		this._methods = mapMethods(initializer);
+		this._indexes = mapIndexes(initializer);
+
+		// @ts-ignore
+		this._isIterable = this._properties
+				?.some(prop => prop.name.isSymbol() && prop.name.name === Symbol.iterator)
+			|| this._methods
+				?.some(method => method.name.isSymbol() && method.name.name === Symbol.iterator);
+
+		// this._isIterable = (initializer as ObjectLikeBaseTypeMetadata).methods
+		// 		?.some(method => method.name.isString() && method.name.name === "next" && method.getSignatures().)
+		// 	|| (initializer as ObjectLikeBaseTypeMetadata).properties
+		// 		?.some(prop => prop.name.isString() && prop.name.name === "next");
 	}
 
 	/**
@@ -25,7 +41,7 @@ export abstract class ObjectLikeTypeBase extends Type
 	 */
 	getProperties(): ReadonlyArray<PropertyInfo>
 	{
-		return this._properties.slice();
+		return this._properties;
 	}
 
 	/**
@@ -41,7 +57,7 @@ export abstract class ObjectLikeTypeBase extends Type
 	 */
 	getIndexes(): ReadonlyArray<IndexInfo>
 	{
-		return this._indexes.slice();
+		return this._indexes;
 	}
 
 	/**
@@ -49,7 +65,7 @@ export abstract class ObjectLikeTypeBase extends Type
 	 */
 	getMethods(): ReadonlyArray<MethodInfo>
 	{
-		return this._methods.slice();
+		return this._methods;
 	}
 
 	/**

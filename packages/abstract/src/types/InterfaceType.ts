@@ -1,8 +1,8 @@
-import { InterfaceTypeMetadata } from "../declarations";
-import { Type }                  from "../Type";
-import { LazyTypeArray }         from "../utils/LazyTypeArray";
-import { ObjectLikeTypeBase }    from "./ObjectLikeTypeBase";
-import { TypeAliasType }         from "./TypeAliasType";
+import type { InterfaceTypeMetadata } from "../declarations";
+import type { TypeAliasType }         from "./TypeAliasType";
+import { Type }                       from "../Type";
+import { LazyTypeArray }              from "../utils/LazyTypeArray";
+import { ObjectLikeTypeBase }         from "./ObjectLikeTypeBase";
 
 export class InterfaceType extends ObjectLikeTypeBase
 {

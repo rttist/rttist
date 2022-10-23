@@ -1,7 +1,7 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
-import { GenericTypeFactory } from "./factories/GenericTypeFactory";
+import { PROTOTYPE_TYPE_PROPERTY }  from "@rttist/core";
+import { GenericTypeFactory }       from "./factories";
 import { resolveSingletonInstance } from "./helpers";
-import type { Type } from "./Type";
+import type { Type }                from "./Type";
 
 class Register
 {
@@ -72,4 +72,4 @@ class Register
 	}
 }
 
-export const GenericTypeRegister = resolveSingletonInstance("@rttist/abstract/GenericTypeRegister", Register);
+export const GenericTypeRegister = resolveSingletonInstance("rttist/GenericTypeRegister", Register);

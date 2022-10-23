@@ -1,5 +1,5 @@
 {
-	"name": "@rttist/abstract",
+	"name": "rttist",
 	"version": "0.1.0",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "dist/index.js",

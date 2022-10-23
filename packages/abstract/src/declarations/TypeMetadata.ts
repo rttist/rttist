@@ -1,12 +1,14 @@
 import type { TypeKind } from "../enums";
 import type {
+	IndexFlags,
+	MethodFlags,
+	ParameterFlags,
+	PropertyFlags,
+	SymbolKind
+}                        from "../enums";
+import type {
 	AsyncCtorReference,
-	DecoratorInfo,
-	IndexInfo,
-	MethodInfo,
 	ModuleIdentifier,
-	PropertyInfo,
-	Signature,
 	SyncCtorReference,
 	TypeIdentifier,
 	TypeReference
@@ -27,9 +29,9 @@ export interface TypeMetadata
 
 export interface ObjectLikeBaseTypeMetadata extends TypeMetadata
 {
-	properties: ReadonlyArray<PropertyInfo>;
-	methods: ReadonlyArray<MethodInfo>;
-	indexes: ReadonlyArray<IndexInfo>;
+	properties: ReadonlyArray<PropertyInfoMetadata>;
+	methods: ReadonlyArray<MethodInfoMetadata>;
+	indexes: ReadonlyArray<IndexInfoMetadata>;
 }
 
 export interface ObjectTypeMetadata extends ObjectLikeBaseTypeMetadata
@@ -49,9 +51,9 @@ export interface ClassTypeMetadata extends ObjectLikeBaseTypeMetadata
 	kind: TypeKind.Class;
 	ctor?: AsyncCtorReference;
 	ctorSync?: SyncCtorReference;
-	constructors: ReadonlyArray<Signature>;
+	constructors: ReadonlyArray<SignatureMetadataBase>;
 	implements?: TypeReference[];
-	decorators: ReadonlyArray<DecoratorInfo>;
+	decorators: ReadonlyArray<DecoratorInfoMetadata>;
 	abstract?: boolean;
 	extends?: TypeReference;
 }
@@ -138,13 +140,13 @@ export interface ConditionalTypeMetadata extends TypeMetadata
 export interface FunctionTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.Function;
-	signatures: Signature[];
+	signatures: SignatureMetadataBase[];
 }
 
 export interface GeneratorFunctionTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.GeneratorFunction;
-	signatures: Signature[];
+	signatures: SignatureMetadataBase[];
 }
 
 // export interface MethodTypeMetadata
@@ -212,7 +214,59 @@ export interface ModuleTypeMetadata extends TypeMetadata
 	kind: TypeKind.Module;
 }
 
-export type AnyTypeMetadata = //TypeMetadata 
+
+export interface ParameterInfoMetadata
+{
+	flags: ParameterFlags;
+	name: string;
+	type: TypeReference;
+	decorators?: DecoratorInfoMetadata[];
+	initializer?: any;
+}
+
+
+export interface SignatureMetadataBase
+{
+	parameters?: Array<ParameterInfoMetadata>;
+	typeParameters?: TypeReference[];
+	returnType: TypeReference;
+}
+
+export interface MethodInfoMetadata
+{
+	flags: MethodFlags;
+	name: MemberNameMetadata;
+	signatures: SignatureMetadataBase[];
+	decorators?: DecoratorInfoMetadata[];
+}
+
+export interface IndexInfoMetadata
+{
+	flags: IndexFlags;
+	key: TypeReference;
+	type: TypeReference;
+}
+
+export type SymbolMemberNameMetadata = { kind: SymbolKind, key: string }
+export type MemberNameMetadata = string | number | SymbolMemberNameMetadata;
+
+export interface DecoratorInfoMetadata
+{
+	name: string;
+	id: TypeIdentifier;
+	args?: Array<any>;
+}
+
+export interface PropertyInfoMetadata
+{
+	flags: PropertyFlags;
+	name: MemberNameMetadata;
+	type: TypeReference;
+	decorators?: Array<DecoratorInfoMetadata>;
+}
+
+
+export type AnyTypeMetadata =
 	TypeAliasTypeMetadata
 	| InterfaceTypeMetadata
 	| ObjectTypeMetadata

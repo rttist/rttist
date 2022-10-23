@@ -1,24 +1,8 @@
-import { Metadata }      from "../Metadata";
-import type { Type }     from "../Type";
-import { TypeReference } from "./declarations";
-import { DecoratorInfo } from "./DecoratorInfo";
-
-export enum ParameterFlags
-{
-	None = 0,
-
-	Optional = 1,
-	Rest = 1 << 1
-}
-
-export interface ParameterInfoInitializer
-{
-	flags: ParameterFlags;
-	name: string;
-	type: TypeReference;
-	decorators?: DecoratorInfo[];
-	initializer?: any;
-}
+import type { Type }                  from "../Type";
+import type { ParameterInfoMetadata } from "../declarations";
+import { ParameterFlags }             from "../enums";
+import { LazyType }                   from "../utils/LazyType";
+import { DecoratorInfo }              from "./DecoratorInfo";
 
 /**
  * Details about parameter of method, function or constructor.
@@ -28,12 +12,7 @@ export class ParameterInfo
 	/**
 	 * @internal
 	 */
-	private readonly _typeReference: TypeReference;
-
-	/**
-	 * @internal
-	 */
-	private _type?: Type;
+	private _type: LazyType;
 
 	/**
 	 * @internal
@@ -60,19 +39,19 @@ export class ParameterInfo
 	 */
 	get type(): Type
 	{
-		return this._type ?? (this._type = Metadata.resolveType(this._typeReference));
+		return this._type.type;
 	}
 
 	/**
 	 * @param initializer
 	 */
-	constructor(initializer: ParameterInfoInitializer)
+	constructor(initializer: ParameterInfoMetadata)
 	{
 		this.name = initializer.name;
-		this._typeReference = initializer.type;
+		this._type = new LazyType(initializer.type);
 		this.optional = (initializer.flags & ParameterFlags.Optional) !== 0;
 		this.rest = (initializer.flags & ParameterFlags.Rest) !== 0;
-		this._decorators = Object.freeze(initializer.decorators || []);
+		this._decorators = Object.freeze((initializer.decorators || []).map(meta => new DecoratorInfo(meta)));
 	}
 
 	/**

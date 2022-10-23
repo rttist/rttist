@@ -1,29 +1,14 @@
-import { AccessModifier }     from "../enums";
-import { MemberName }         from "../types/MemberName";
+import type { MethodInfoMetadata } from "../declarations";
+import { DecoratorInfo }           from "./DecoratorInfo";
 import {
-	AccessModifierFlagsOffset,
+	AccessModifier,
+	PropertyFlags
+}                                  from "../enums";
+import { MemberName }              from "../types";
+import {
 	getAccessModifier
-}                             from "../utils/flags";
-import type { DecoratorInfo } from "./DecoratorInfo";
-import { PropertyFlags }      from "./PropertyInfo";
-import { Signature }          from "./Signature";
-
-export enum MethodFlags
-{
-	Optional = 1,
-	Static = 1 << 1,
-
-	Private = AccessModifier.Private << (AccessModifierFlagsOffset),
-	Protected = AccessModifier.Protected << (AccessModifierFlagsOffset),
-}
-
-export interface MethodInfoInitializer
-{
-	flags: MethodFlags;
-	name: MemberName;
-	signatures: Signature[];
-	decorators?: DecoratorInfo[];
-}
+}                                  from "../utils/flags";
+import { SignatureInfo }           from "./SignatureInfo";
 
 /**
  * Represents a method of a type.
@@ -43,7 +28,7 @@ export class MethodInfo
 	/**
 	 * @internal
 	 */
-	private readonly _signatures: ReadonlyArray<Signature>;
+	private readonly _signatures: ReadonlyArray<SignatureInfo>;
 
 	/**
 	 * @internal
@@ -54,6 +39,11 @@ export class MethodInfo
 	 * @internal
 	 */
 	private readonly _accessModifier: AccessModifier;
+
+	/**
+	 * @internal
+	 */
+	readonly metadata: MethodInfoMetadata;
 
 	/**
 	 * Name of the method.
@@ -83,11 +73,12 @@ export class MethodInfo
 	 * Internal method constructor.
 	 * @internal
 	 */
-	constructor(initializer: MethodInfoInitializer)
+	constructor(initializer: MethodInfoMetadata)
 	{
-		this._name = initializer.name;
-		this._signatures = Object.freeze(initializer.signatures || []);
-		this._decorators = Object.freeze(initializer.decorators || []);
+		this.metadata = initializer;
+		this._name = new MemberName(initializer.name);
+		this._signatures = Object.freeze((initializer.signatures || []).map(meta => new SignatureInfo(meta)));
+		this._decorators = Object.freeze((initializer.decorators || []).map(meta => new DecoratorInfo(meta)));
 		this._accessModifier = getAccessModifier(initializer.flags);
 		this._optional = (initializer.flags & PropertyFlags.Optional) !== 0;
 	}
@@ -103,7 +94,7 @@ export class MethodInfo
 	/**
 	 * Returns array of method signatures.
 	 */
-	getSignatures(): ReadonlyArray<Signature>
+	getSignatures(): ReadonlyArray<SignatureInfo>
 	{
 		return this._signatures;
 	}

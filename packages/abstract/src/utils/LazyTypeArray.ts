@@ -14,7 +14,9 @@ export class LazyTypeArray<TType = Type>
 
 	get types(): ReadonlyArray<TType>
 	{
-		return this._types ?? (this._types = this._references.map(type => LazyType.resolver(type) as TType));
+		return this._types ?? (this._types = Object.freeze(
+			this._references.map(type => LazyType.resolver(type) as TType)
+		));
 	}
 
 	constructor(typeRefs: ReadonlyArray<TypeReference>)

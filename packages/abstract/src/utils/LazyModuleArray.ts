@@ -14,7 +14,9 @@ export class LazyModuleArray<TModule = Module>
 
 	get modules(): ReadonlyArray<TModule>
 	{
-		return this._modules ?? (this._modules = this._references.map(module => LazyModule.resolver(module) as TModule));
+		return this._modules ?? (this._modules = Object.freeze(
+			this._references.map(module => LazyModule.resolver(module) as TModule)
+		));
 	}
 
 	constructor(moduleRefs: ReadonlyArray<ModuleReference>)

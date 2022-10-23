@@ -1,18 +1,11 @@
 import type {
 	ModuleIdentifier,
-	ModuleReference
+	ModuleMetadata
 }                          from "./declarations";
+import { TypeFactory }     from "./factories";
 import type { Type }       from "./Type";
 import { ModuleIds }       from "@rttist/core";
 import { LazyModuleArray } from "./utils/LazyModuleArray";
-
-export type ModuleInitializer = {
-	id: ModuleIdentifier;
-	name: string;
-	path: string;
-	children?: ModuleReference[];
-	types?: Type[];
-};
 
 export class Module
 {
@@ -34,7 +27,7 @@ export class Module
 	/** @internal */
 	private readonly _childrenRefs: LazyModuleArray;
 	/** @internal */
-	private readonly _types: Type[];
+	private readonly _types: readonly Type[];
 	/** @internal */
 	private readonly _id: ModuleIdentifier;
 
@@ -60,13 +53,13 @@ export class Module
 	/**
 	 * @param initializer
 	 */
-	constructor(initializer: ModuleInitializer)
+	constructor(initializer: ModuleMetadata)
 	{
 		this._id = initializer.id;
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._childrenRefs = new LazyModuleArray(initializer.children || []);
-		this._types = initializer.types || [];
+		this._types = Object.freeze((initializer.types || []).map(typeMetadata => TypeFactory.create(typeMetadata)));
 	}
 
 	/**
@@ -83,6 +76,6 @@ export class Module
 	 */
 	getTypes(): ReadonlyArray<Type>
 	{
-		return this._types.slice();
+		return this._types;
 	}
 }

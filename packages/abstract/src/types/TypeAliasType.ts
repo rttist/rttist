@@ -1,6 +1,6 @@
-﻿import { TypeAliasTypeMetadata } from "../declarations";
-import { Type }                  from "../Type";
-import { LazyType }              from "../utils/LazyType";
+﻿import type { TypeAliasTypeMetadata } from "../declarations";
+import { Type }                       from "../Type";
+import { LazyType }                   from "../utils/LazyType";
 
 export class TypeAliasType extends Type
 {

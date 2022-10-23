@@ -1,5 +1,5 @@
-﻿import { UniqueSymbolTypeMetadata } from "../declarations";
-import { Type }                     from "../Type";
+﻿import type { UniqueSymbolTypeMetadata } from "../declarations";
+import { Type }                          from "../Type";
 
 export type KnownUniqueSymbolType = UniqueSymbolType & {
 	/**
@@ -34,9 +34,9 @@ export class UniqueSymbolType extends Type
 	constructor(initializer: UniqueSymbolTypeMetadata)
 	{
 		super(initializer);
-		
+
 		this._key = initializer.key;
-		
+
 		if (initializer.key !== undefined)
 		{
 			this._symbol = Symbol.for(initializer.key);
