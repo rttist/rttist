@@ -1,8 +1,8 @@
-﻿import { NativeTypeKind }           from "@rttist/abstract";
-import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "./TransformerTypeReference";
-import { TypePropertiesWithId }     from "./TypeProperties";
+﻿import * as ts                           from "typescript";
+import type { NativeTypeKind }           from "rttist";
+import type { Context }                  from "../contexts/Context";
+import type { TransformerTypeReference } from "./TransformerTypeReference";
+import type { TypePropertiesWithId }     from "./TypeProperties";
 
 /**
  * Type for `package.json` structure.
@@ -41,13 +41,6 @@ export type TypeInfo = {
  * @internal
  */
 export type TransformerVisitor = (node: ts.Node, context: Context) => ts.VisitResult<ts.Node>;
-
-/**
- * Request given keys to exist in type.
- */
-export type Match<K extends keyof T, T> = {
-	[P in K]: T[P];
-};
 
 /**
  * TypeReference for native types used inside transformer.

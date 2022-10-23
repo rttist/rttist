@@ -6,7 +6,7 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "tsc"
+		"prepare": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc"
 	},
 	"files": [
 		"ts-lib-rttist.d.ts",
@@ -35,7 +35,8 @@
 		"@rttist/core": "workspace:*"
 	},
 	"devDependencies": {
-		"typescript": "4.8.x"
+		"typescript": "4.8.x",
+		"rimraf": "^3.0.2"
 	},
 	"repository": {
 		"type": "git",

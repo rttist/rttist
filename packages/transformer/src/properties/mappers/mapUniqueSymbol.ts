@@ -1,14 +1,11 @@
-import { TypeKind }         from "@rttist/abstract";
-import * as ts              from "typescript";
-import { ESSymbols }        from "../../consts";
-import { Context }          from "../../contexts/Context";
-import { TypeMapperResult } from "../../declarations/mappers";
-import { getDeclaration }   from "../../utils/symbolHelpers";
 import {
-	getSymbol,
-	getUniqueSymbolName,
-	isVariableLikeDeclarationWithInitializer
-}                           from "../../utils/typeHelpers";
+	SymbolKind,
+	TypeKind
+}                              from "rttist";
+import * as ts                 from "typescript";
+import { Context }             from "../../contexts/Context";
+import { TypeMapperResult }    from "../../declarations/mappers";
+import { getUniqueSymbolInfo } from "../../utils/getUniqueSymbolInfo";
 
 export function mapUniqueSymbol(
 	type: ts.UniqueESSymbolType,
@@ -16,47 +13,20 @@ export function mapUniqueSymbol(
 	context: Context
 ): TypeMapperResult
 {
-	let name: string | undefined = getUniqueSymbolName(type);
+	const symbolInfo = getUniqueSymbolInfo(type, context);
 
-	if (ESSymbols.has(name!))
+	if (symbolInfo.kind === SymbolKind.ES)
 	{
 		return {
 			kind: TypeKind.ESSymbol,
-			name: name!,
-			key: name!
+			name: symbolInfo.key,
+			key: symbolInfo.key
 		};
-	}
-
-	symbol = getSymbol(type, context.typeChecker);
-	const declaration = symbol && getDeclaration(symbol);
-
-	if (declaration !== undefined)
-	{
-		if (
-			isVariableLikeDeclarationWithInitializer(declaration)
-			&& declaration.initializer !== undefined
-			&& ts.isCallExpression(declaration.initializer)
-			&& ts.isPropertyAccessExpression(declaration.initializer.expression)
-			&& ts.isIdentifier(declaration.initializer.expression.name)
-			&& declaration.initializer.expression.name.escapedText === "for"
-		)
-		{
-			const arg = declaration.initializer.arguments[0];
-			const argumentType = context.typeChecker.getTypeAtLocation(arg);
-			const key = argumentType
-				? argumentType.isStringLiteral() && argumentType.value
-				: ts.isStringLiteral(arg) && arg.text;
-
-			return {
-				kind: TypeKind.UniqueSymbol,
-				name: name!,
-				key: key || undefined
-			};
-		}
 	}
 
 	return {
 		kind: TypeKind.UniqueSymbol,
-		name: name
+		name: symbolInfo.key,
+		key: symbolInfo.key
 	};
 }

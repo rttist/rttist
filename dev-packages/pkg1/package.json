@@ -19,7 +19,7 @@
 	"keywords": [],
 	"author": "Roman Jámbor",
 	"dependencies": {
-		"@rttist/abstract": "workspace:*"
+		"rttist": "workspace:*"
 	},
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*",

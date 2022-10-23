@@ -2,7 +2,7 @@ import * as ts                      from "typescript";
 import {
 	TypeKind,
 	NativeTypeKind
-}                                   from "@rttist/abstract";
+}                                   from "rttist";
 import { ModuleIds }                from "@rttist/core";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 

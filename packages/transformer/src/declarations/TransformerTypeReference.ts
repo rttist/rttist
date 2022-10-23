@@ -4,7 +4,7 @@ import {
 	TypeIdentifier,
 	TypeKind,
 	NativeTypeKind
-}                    from "@rttist/abstract";
+}                    from "rttist";
 import { ModuleIds } from "@rttist/core";
 import {
 	NativeTransformerTypeReference,

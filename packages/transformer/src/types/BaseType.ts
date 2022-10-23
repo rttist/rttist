@@ -2,7 +2,7 @@ import {
 	NativeTypeKind,
 	NativeTypes,
 	TypeIdentifier
-}                       from "@rttist/abstract";
+}                       from "rttist";
 import { encode }       from "base32768";
 import { encodeString } from "./encodeString";
 import {

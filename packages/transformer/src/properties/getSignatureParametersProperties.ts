@@ -1,5 +1,5 @@
 import * as ts                      from "typescript";
-import { ParameterFlags }           from "@rttist/abstract";
+import { ParameterFlags }           from "rttist";
 import { Context }                  from "../contexts/Context";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { ParameterProperties }      from "../declarations/TypeProperties";

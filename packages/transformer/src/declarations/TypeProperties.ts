@@ -1,29 +1,34 @@
 ﻿import {
 	ClassTypeMetadata,
-	DecoratorInfoInitializer,
-	IndexInfoInitializer,
+	DecoratorInfoMetadata,
+	IndexInfoMetadata,
 	InterfaceTypeMetadata,
 	MethodFlags,
-	MethodInfoInitializer,
+	MethodInfoMetadata,
 	ModuleIdentifier,
 	ModuleReference,
 	ObjectLikeBaseTypeMetadata,
 	ParameterFlags,
-	ParameterInfoInitializer,
+	ParameterInfoMetadata,
 	PropertyFlags,
-	PropertyInfoInitializer,
-	SignatureInitializerBase,
+	PropertyInfoMetadata,
+	SignatureMetadataBase,
 	TypeIdentifier,
 	TypeKind,
 	TypeMetadata,
 	NativeTypeKind,
 	TypeAliasTypeMetadata,
-	UniqueSymbolTypeMetadata
-} from "@rttist/abstract";
-import {
-	Match
-}                                   from "./general";
+	UniqueSymbolTypeMetadata,
+	MemberNameMetadata
+} from "rttist";
 import { TransformerTypeReference } from "./TransformerTypeReference";
+
+/**
+ * Request given keys to exist in type.
+ */
+export type Match<K extends keyof T, T> = {
+	[P in K]: T[P];
+};
 
 /**
  * Properties of general Type.
@@ -82,7 +87,7 @@ export interface ImportInfo
 	exportName: string;
 }
 
-export type ParameterProperties = Match<keyof ParameterInfoInitializer,
+export type ParameterProperties = Match<keyof ParameterInfoMetadata,
 	{
 		name: string;
 		type: TransformerTypeReference;
@@ -91,22 +96,22 @@ export type ParameterProperties = Match<keyof ParameterInfoInitializer,
 		decorators?: DecoratorProperties[];
 	}>;
 
-export type SignatureProperties = Match<keyof SignatureInitializerBase,
+export type SignatureProperties = Match<keyof SignatureMetadataBase,
 	{
 		parameters?: Array<ParameterProperties>;
 		typeParameters?: TransformerTypeReference[];
 		returnType: TransformerTypeReference;
 	}>;
 
-export type MethodProperties = Match<keyof MethodInfoInitializer,
+export type MethodProperties = Match<keyof MethodInfoMetadata,
 	{
 		flags: MethodFlags;
-		name: string;
+		name: MemberNameProperties;
 		signatures: SignatureProperties[];
 		decorators?: DecoratorProperties[];
 	}>;
 
-// export interface TemplateProperties extends TemplateInfoInitializer
+// export interface TemplateProperties extends TemplateInfoMetadata
 // {
 // }
 
@@ -116,20 +121,22 @@ export interface TypeParameterProperties extends NonNativeBaseTypeProperties
 	default?: TransformerTypeReference;
 }
 
-export type PropertyProperties = Match<keyof PropertyInfoInitializer, {
-	name: string;
+export type MemberNameProperties = MemberNameMetadata;
+
+export type PropertyProperties = Match<keyof PropertyInfoMetadata, {
+	name: MemberNameProperties;
 	flags: PropertyFlags;
 	type: TransformerTypeReference;
 	decorators?: Array<DecoratorProperties>;
 }>;
 
-export interface IndexProperties extends Omit<IndexInfoInitializer, "key" | "type">
+export interface IndexProperties extends Omit<IndexInfoMetadata, "key" | "type">
 {
 	key: TransformerTypeReference;
 	type: TransformerTypeReference;
 }
 
-export type DecoratorProperties = Match<keyof DecoratorInfoInitializer,
+export type DecoratorProperties = Match<keyof DecoratorInfoMetadata,
 	{
 		name: string;
 		id: TypeIdentifier;

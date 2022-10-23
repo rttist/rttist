@@ -1,8 +1,7 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import * as ts                     from "typescript";
-import { NodeBuilderFlags }        from "typescript";
 import { Context }                 from "../contexts/Context";
-import { createValueExpression }   from "../utils/createValueExpression";
+import { toExpression }            from "../utils/toExpression";
 
 export function functionVisitor(declaration: ts.FunctionDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
@@ -32,7 +31,7 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 					ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 				),
 				ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-				createValueExpression(typeReference)
+				toExpression(typeReference)
 			)
 		)
 	];

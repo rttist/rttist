@@ -1,4 +1,4 @@
-import { TypeKind }              from "@rttist/abstract";
+import { TypeKind }              from "rttist";
 import * as ts                   from "typescript";
 import { UnknownTypeProperties } from "../consts";
 import { Context }               from "../contexts/Context";

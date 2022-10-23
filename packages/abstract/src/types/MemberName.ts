@@ -4,11 +4,16 @@ import { SymbolKind }              from "../enums";
 export class MemberName
 {
 	public readonly name: string | number | symbol;
+	public readonly key?: string;
+	public readonly kind?: SymbolKind;
 
 	constructor(initializer: MemberNameMetadata)
 	{
 		if (typeof initializer === "object")
 		{
+			this.key = initializer.key;
+			this.kind = initializer.kind;
+
 			if (initializer.kind === SymbolKind.ES)
 			{
 				this.name = (Symbol as any)[initializer.key];
@@ -38,7 +43,7 @@ export class MemberName
 
 	toString(): string
 	{
-		return this.name.toString();
+		return this.isSymbol() ? `Symbol.for('${this.key}')` : this.name.toString();
 	}
 }
 

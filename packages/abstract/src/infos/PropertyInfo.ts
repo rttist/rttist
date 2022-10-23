@@ -1,17 +1,17 @@
-import type { Type }                 from "../Type";
 import type { PropertyInfoMetadata } from "../declarations";
-import type {
+import type { Type }                 from "../Type";
+import {
 	AccessModifier,
-	Accessor
+	Accessor,
+	PropertyFlags
 }                                    from "../enums";
-import { DecoratorInfo }             from "./DecoratorInfo";
 import { MemberName }                from "../types";
-import { PropertyFlags }             from "../enums";
 import {
 	getAccessModifier,
 	getAccessor
 }                                    from "../utils/flags";
 import { LazyType }                  from "../utils/LazyType";
+import { DecoratorInfo }             from "./DecoratorInfo";
 
 /**
  * Details about property of an object.
@@ -88,5 +88,14 @@ export class PropertyInfo
 	getDecorators(): ReadonlyArray<DecoratorInfo>
 	{
 		return this._decorators;
+	}
+
+	toString(): string
+	{
+		return this.getDecorators().map(d => "@" + d.name).join(" ")
+			+ (this.accessor ? Accessor[this.accessor] + " " : "")
+			+ (this.accessModifier ? AccessModifier[this.accessModifier] + " " : "")
+			+ (this.readonly ? "readonly " : "")
+			+ `${this.name.toString()}${this.optional ? "?" : ""}: ${this.type.toString()}`;
 	}
 }

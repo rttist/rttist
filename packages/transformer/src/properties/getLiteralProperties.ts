@@ -1,5 +1,5 @@
 import * as ts                   from "typescript";
-import { TypeKind }              from "@rttist/abstract";
+import { TypeKind }              from "rttist";
 import { Context }               from "../contexts/Context";
 import { LiteralTypeProperties } from "../declarations/TypeProperties";
 

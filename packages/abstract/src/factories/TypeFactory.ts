@@ -153,7 +153,9 @@ function createType(metadata: AnyTypeMetadata)
 		// 	return new Type();
 	}
 
-	return Type.Invalid;
+	console.warn("Creating Type of unknown TypeKind.", metadata);
+
+	return new Type(metadata);
 }
 
 export class TypeFactory

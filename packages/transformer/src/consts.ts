@@ -1,4 +1,4 @@
-﻿import { TypeKind }       from "@rttist/abstract";
+﻿import { TypeKind }       from "rttist";
 import { TypeProperties } from "./declarations/TypeProperties";
 
 /**

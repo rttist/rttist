@@ -2,7 +2,7 @@ import {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier
-}                              from "@rttist/abstract";
+}                              from "rttist";
 import { ModuleIds }           from "@rttist/core";
 import * as ts                 from "typescript";
 import { Context }             from "../contexts/Context";

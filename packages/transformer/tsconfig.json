@@ -7,22 +7,12 @@
 		"stripInternal": true,
 		"strictNullChecks": true,
 		"strict": true,
-		"rootDir": "./src",
-		"baseUrl": "./src",
-		"outDir": "./dist",
+		"rootDir": "src",
+		"outDir": "dist",
 		"composite": true,
-		"esModuleInterop": true,
-		"typeRoots": [
-			"../../node_modules/@types",
-			"node_modules/@types",
-			"./src/globals.d.ts"
-		]
+		"esModuleInterop": true
 	},
 	"include": [
 		"./src/**/*.ts"
-	],
-	"exclude": [
-		"node_modules/**/*",
-		"./dist/**/*"
 	]
 }

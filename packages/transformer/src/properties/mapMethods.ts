@@ -2,13 +2,14 @@ import {
 	AccessModifier,
 	ParameterFlags,
 	PropertyFlags
-}                                           from "@rttist/abstract";
+}                                           from "rttist";
 import * as ts                              from "typescript";
 import type { Context }                     from "../contexts/Context";
 import type {
 	MethodProperties,
 	SignatureProperties
 }                                           from "../declarations/TypeProperties";
+import { getMemberName }                    from "../utils/getMemberName";
 import { getModifiers }                     from "../utils/modifierHelpers";
 import { getDeclaration }                   from "../utils/symbolHelpers";
 import { getDecoratorsProperties }          from "./getDecoratorsProperties";
@@ -44,7 +45,7 @@ export function mapMethods(members: ts.Symbol[], context: Context): Array<Method
 				let modifiers = getModifiers(declaration, memberSymbol);
 
 				return {
-					name: memberSymbol.escapedName.toString(),
+					name: getMemberName(memberSymbol, context),
 					signatures: getMethodSignatures(type, context),
 					decorators: declaration ? getDecoratorsProperties(declaration, context) : [],
 					flags: (

@@ -1,7 +1,12 @@
+import { TypeKind }                 from "rttist";
 import * as ts                      from "typescript";
+import { SyntaxKind }               from "typescript";
+import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 
-export function createValueExpression(value: any): ts.Expression
+let devMode: boolean | undefined;
+
+export function toExpression(value: any): ts.Expression
 {
 	if (value != undefined)
 	{
@@ -24,16 +29,30 @@ export function createValueExpression(value: any): ts.Expression
 
 		if (value instanceof Array)
 		{
-			return ts.factory.createArrayLiteralExpression(value.map(val => createValueExpression(val)));
+			return ts.factory.createArrayLiteralExpression(value.map(val => toExpression(val)));
 		}
 
 		if (value instanceof TransformerTypeReference)
 		{
-			return value.isKindOnly()
-				? ts.factory.createArrayLiteralExpression([
+			if (value.isKindOnly())
+			{
+				const ref = [
 					ts.factory.createNumericLiteral(value.nativeReference.kind)
-				])
-				: ts.factory.createStringLiteral(value.id);
+				];
+
+				if (devMode === undefined ? (devMode = TransformerContext.instance.config.devMode) : devMode)
+				{
+					ts.addSyntheticTrailingComment(
+						ref[0],
+						SyntaxKind.MultiLineCommentTrivia,
+						TypeKind[value.nativeReference.kind]
+					);
+				}
+
+				return ts.factory.createArrayLiteralExpression(ref);
+			}
+
+			return ts.factory.createStringLiteral(value.id);
 		}
 
 		if (value.constructor === Object)
@@ -47,7 +66,7 @@ export function createValueExpression(value: any): ts.Expression
 				{
 					propertyAssignments.push(ts.factory.createPropertyAssignment(
 						prop,
-						createValueExpression(value[prop])
+						toExpression(value[prop])
 					));
 				}
 			}

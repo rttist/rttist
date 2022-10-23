@@ -4,6 +4,7 @@ import type {
 	TypeIdentifier,
 	TypeReference
 }                                   from "./declarations";
+import { ModuleIds }                from "@rttist/core";
 import { resolveSingletonInstance } from "./helpers";
 import { Module }                   from "./Module";
 import {
@@ -24,7 +25,14 @@ class MetadataLibrary
 	{
 		for (let module of modules)
 		{
-			this.modules.set(module.id ?? Symbol(), module);
+			if (module.id !== ModuleIds.Native && module.id !== ModuleIds.Invalid && this.modules.has(module.id))
+			{
+				throw new Error(`Module with id '${module.id}' already exists.`);
+			}
+			else
+			{
+				this.modules.set(module.id, module);
+			}
 
 			// Add types from the module
 			this.addType(...module.getTypes());
@@ -46,6 +54,11 @@ class MetadataLibrary
 
 			if (this.types.has(type.id))
 			{
+				if (type.id.slice(0, ModuleIds.Native.length) === ModuleIds.Native)
+				{
+					continue;
+				}
+
 				throw new Error(`Type with id '${type.id}' already exists.`);
 			}
 

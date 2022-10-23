@@ -1,21 +1,20 @@
-import { Config }            from "../config/Config";
+import { Config }             from "../config/Config";
 import {
 	writeFileSync,
-	readFileSync,
 	mkdirSync
-}                            from "fs";
-import {
-	join,
-	dirname
-}                            from "path";
-import * as ts               from "typescript";
-import { DependencyManager } from "../dependencies/DependencyManager";
-import { MetadataLibrary }   from "./MetadataLibrary";
+}                             from "fs";
+import { dirname }            from "path";
+import * as ts                from "typescript";
+import { TransformerContext } from "../contexts/TransformerContext";
+import { MetadataSource }     from "../declarations/TypeProperties";
+import { DependencyManager }  from "../dependencies/DependencyManager";
+import { MetadataContext }    from "../plugins";
+import { MetadataLibrary }    from "./MetadataLibrary";
 
 /**
- * Emitter use to write metadata into library file.
+ * Emitter used for creating metadata typelib and index file.
  */
-export class LibraryFileEmitter
+export class MetadataFilesEmitter
 {
 	constructor(
 		private readonly config: Config,
@@ -25,19 +24,30 @@ export class LibraryFileEmitter
 	{
 	}
 
-	emit(metadataExpression: ts.Expression): Promise<void>
+	emit(metadata: MetadataSource): Promise<void>
 	{
-		return this.write(metadataExpression);
+		// Create MetadataContext for plugins
+		const metadataContext: MetadataContext = {
+			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
+			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+		};
+
+		const typelibOutputPath = this.config.metadataTypelibPath;
+
+		return this.write(
+			this.transpile(
+				this.createSourceFile(metadata, metadataContext),
+				typelibOutputPath
+			), // TODO: Append plugin scripts
+			typelibOutputPath
+		);
 	}
 
-	private write(metadataExpression: ts.Expression): Promise<void>
+	private write(typelibText: string, typelibOutputPath: string): Promise<void>
 	{
-		const typelibOutputPath = this.config.metadataTypelibPath;
-		const transpiledTypelib = this.getTranspiledTypelib(metadataExpression, typelibOutputPath);
-
 		// Write typelib
 		mkdirSync(dirname(typelibOutputPath), { recursive: true });
-		writeFileSync(typelibOutputPath, transpiledTypelib, { encoding: "utf8", flag: "w" });
+		writeFileSync(typelibOutputPath, typelibText, { encoding: "utf8", flag: "w" });
 
 		// Write index
 		const indexOutputPath = this.config.metadataIndexPath;
@@ -62,31 +72,56 @@ export class LibraryFileEmitter
 
 	/**
 	 * Create SourceFile node with metadata library.
-	 * @param metadataExpression
+	 * @param metadata
+	 * @param context
 	 */
-	private createSourceFile(metadataExpression: ts.Expression)
+	private createSourceFile(metadata: MetadataSource, context: MetadataContext)
 	{
+		const plugins = TransformerContext.instance.config.plugins;
+
+		// Find a first plugin implementing 'createModuleRegistrars'
+		const firstCreateModuleRegistrars = plugins.find(p => p.createModuleRegistrars !== undefined);
+		const metadataStatements = firstCreateModuleRegistrars?.createModuleRegistrars?.(metadata, context) || [];
+
+		// Imports from plugins
+		const pluginsImports = plugins.flatMap(plugin => plugin.getImports?.() || []);
+
 		return ts.factory.createSourceFile(
 			[
 				ts.factory.createImportDeclaration(
 					undefined,
-					undefined,
-					ts.factory.createStringLiteral("@rttist/abstract")
+					ts.factory.createImportClause(
+						false,
+						undefined,
+						ts.factory.createNamedImports([
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.metadataIdentifier
+							),
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.moduleClassIdentifier
+							),
+						])
+					),
+					ts.factory.createStringLiteral("rttist")
 				),
+				...pluginsImports,
 				...this.createDependantTypeLibsImports(),
-				ts.factory.createExpressionStatement(metadataExpression)
+				...metadataStatements
 			],
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
 			ts.NodeFlags.None
 		);
 	}
 
-	private getTranspiledTypelib(metadataExpression: ts.Expression, fileName: string): string
+	private transpile(sourceFile: ts.SourceFile, fileName: string): string
 	{
-		const sourceFile = this.createSourceFile(metadataExpression);
 		const source = this.printToTypeScriptCode(sourceFile);
 
-		let transpiledTypelib = ts.transpileModule(source, {
+		return ts.transpileModule(source, {
 			fileName: fileName,
 			compilerOptions: {
 				...this.config.compilerOptions,
@@ -99,16 +134,16 @@ export class LibraryFileEmitter
 			}
 		}).outputText;
 
-		if (this.config.encode)
-		{
-			const stub = readFileSync(
-				join(__dirname, "..", "..", "templates", "typelib.template.ts"),
-				{ encoding: "utf-8" }
-			);
-			transpiledTypelib = transpiledTypelib + stub;
-		}
-
-		return transpiledTypelib;
+		// if (this.config.encode)
+		// {
+		// 	const stub = readFileSync(
+		// 		join(__dirname, "..", "..", "templates", "typelib.template.ts"),
+		// 		{ encoding: "utf-8" }
+		// 	);
+		// 	transpiledTypelib = transpiledTypelib + stub;
+		// }
+		//
+		// return transpiledTypelib;
 	}
 
 	private getIndex()

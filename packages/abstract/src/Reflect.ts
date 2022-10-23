@@ -1,7 +1,9 @@
+import type { TypeReference }    from "./declarations";
 import { constructGeneric }      from "./functions/constructGeneric";
 import { getClassTypeParameter } from "./functions/getClassTypeParameter";
 import { getGenericClass }       from "./functions/getGenericClass";
 import { getType }               from "./functions/getType";
+import { Metadata }              from "./Metadata";
 import { Type }                  from "./Type";
 
 declare global
@@ -53,6 +55,12 @@ declare global
 		export function getType<T = unknown>(): Type;
 
 		/**
+		 * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
+		 * @param reference
+		 */
+		export function resolveType(reference: TypeReference): Type;
+
+		/**
 		 * Returns generic class from generic class definition.
 		 * @param classCtor
 		 * @param typeParameters
@@ -72,6 +80,7 @@ declare global
 }
 
 Reflect.getType = getType;
+Reflect.resolveType = Metadata.resolveType.bind(Metadata);
 Reflect.getGenericClass = getGenericClass;
 Reflect.getClassTypeParameter = getClassTypeParameter;
 Reflect.constructGeneric = constructGeneric;

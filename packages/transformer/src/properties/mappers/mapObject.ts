@@ -1,7 +1,7 @@
 import {
 	PropertyFlags,
 	TypeKind
-}                                  from "@rttist/abstract";
+}                                  from "rttist";
 import { ModuleIds }               from "@rttist/core";
 import * as ts                     from "typescript";
 import { Context }                 from "../../contexts/Context";
@@ -27,6 +27,7 @@ import {
 }                                  from "../../utils/typeHelpers";
 import { getConstructors }         from "../getConstructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
+import { mapIndexes }              from "../mapIndexes";
 import { mapMethods }              from "../mapMethods";
 import { mapProperties }           from "../mapProperties";
 import { mapObjectLiteral }        from "./mapObjectLiteral";
@@ -114,6 +115,7 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 		const members = type.getProperties();
 		properties.properties = mapProperties(members, context);
 		properties.methods = mapMethods(members, context);
+		properties.indexes = mapIndexes(type, context);
 
 		if (kind === TypeKind.Class)
 		{

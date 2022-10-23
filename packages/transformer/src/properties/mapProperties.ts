@@ -2,10 +2,11 @@ import {
 	AccessModifier,
 	Accessor,
 	PropertyFlags
-}                                  from "@rttist/abstract";
+}                                  from "rttist";
 import * as ts                     from "typescript";
 import { Context }                 from "../contexts/Context";
 import { PropertyProperties }      from "../declarations/TypeProperties";
+import { getMemberName }           from "../utils/getMemberName";
 import { getModifiers }            from "../utils/modifierHelpers";
 import {
 	getDeclaration,
@@ -75,7 +76,7 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 			// }
 
 			return {
-				name: memberSymbol.escapedName.toString(),
+				name: getMemberName(memberSymbol, context),
 				type: ref,
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags: (

@@ -1,5 +1,5 @@
 import * as ts             from "typescript";
-import { AccessModifier, } from "@rttist/abstract";
+import { AccessModifier, } from "rttist";
 
 export function getModifiers(declaration: ts.Declaration | undefined, symbol?: ts.Symbol):
 	{

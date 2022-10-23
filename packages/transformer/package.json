@@ -32,7 +32,7 @@
 	},
 	"dependencies": {
 		"@netleaf/extensions-configuration": "0.4.1",
-		"@rttist/abstract": "workspace:*",
+		"rttist": "workspace:*",
 		"@rttist/core": "workspace:*",
 		"base32768": "^3.0.1",
 		"deasync": "^0.1.28",

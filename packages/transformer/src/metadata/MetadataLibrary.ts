@@ -2,7 +2,7 @@ import * as ts                      from "typescript";
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-}                                   from "@rttist/abstract";
+}                                   from "rttist";
 import { Context }                  from "../contexts/Context";
 import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
 import { TypeInfo }                 from "../declarations/general";

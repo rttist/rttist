@@ -1,7 +1,7 @@
 import {
 	ModuleIdentifier,
 	TypeIdentifier
-} from "@rttist/abstract";
+} from "rttist";
 
 /**
  * Format of the type Index.

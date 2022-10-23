@@ -1,6 +1,6 @@
 import * as ts            from "typescript";
 import { TypeIds }        from "@rttist/core";
-import { TypeIdentifier } from "@rttist/abstract";
+import { TypeIdentifier } from "rttist";
 import { getTypeRef }     from "./getTypeRef";
 
 /**

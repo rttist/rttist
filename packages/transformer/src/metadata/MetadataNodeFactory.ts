@@ -1,6 +1,6 @@
 import * as ts                      from "typescript";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { createValueExpression }    from "../utils/createValueExpression";
+import { toExpression }             from "../utils/toExpression";
 
 export class MetadataNodeFactory
 {
@@ -14,17 +14,17 @@ export class MetadataNodeFactory
 	 */
 	createTypeResolver(reference: TransformerTypeReference): ts.Expression
 	{
+		// NOTE: We can create Metadata for local file only 
+		// and in case of local-nly type we should resolveType from local Metadata.
+
 		return ts.factory.createCallExpression(
 			ts.factory.createPropertyAccessExpression(
-				ts.factory.createPropertyAccessExpression(
-					ts.factory.createIdentifier("Reflect"),
-					ts.factory.createIdentifier("Metadata")
-				),
+				ts.factory.createIdentifier("Reflect"),
 				ts.factory.createIdentifier("resolveType")
 			),
 			undefined,
 			[
-				createValueExpression(reference)
+				toExpression(reference)
 			]
 		);
 	}

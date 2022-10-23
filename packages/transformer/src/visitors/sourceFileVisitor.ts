@@ -45,7 +45,10 @@ export function createSourceFileVisitor(transformationContext: ts.Transformation
 		// PLUGINS
 		for (let plugin of config.plugins)
 		{
-			plugin.visit(visitedSourceFileNode, sourceFileContext);
+			if (plugin.visit !== undefined)
+			{
+				visitedSourceFileNode = plugin.visit(visitedSourceFileNode, sourceFileContext);
+			}
 		}
 
 		if (config.devMode)

@@ -9,7 +9,7 @@ import type { Type }          from "../Type";
 import {
 	DecoratorInfo,
 	SignatureInfo
-}                             from "infos";
+}                             from "../infos";
 import { LazyType }           from "../utils/LazyType";
 import { LazyTypeArray }      from "../utils/LazyTypeArray";
 import { ObjectLikeTypeBase } from "./ObjectLikeTypeBase";

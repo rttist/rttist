@@ -1,7 +1,7 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import * as ts                     from "typescript";
-import { Context }                 from "../contexts/Context";
-import { createValueExpression }   from "../utils/createValueExpression";
+import { Context }      from "../contexts/Context";
+import { toExpression } from "../utils/toExpression";
 
 export function classVisitor(declaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
@@ -33,7 +33,7 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 					ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 				),
 				ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-				createValueExpression(typeReference)
+				toExpression(typeReference)
 			)
 		)
 	];
@@ -81,7 +81,7 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 												ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 											),
 											ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-											createValueExpression(typeReference)
+											toExpression(typeReference)
 										)
 									)
 								]

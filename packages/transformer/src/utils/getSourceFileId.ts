@@ -1,4 +1,4 @@
-import { ModuleIdentifier }                 from "@rttist/abstract";
+import { ModuleIdentifier }                 from "rttist";
 import { ModuleIds }                        from "@rttist/core";
 import path                                 from "path";
 import * as ts                              from "typescript";
