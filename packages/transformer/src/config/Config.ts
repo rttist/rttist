@@ -67,6 +67,7 @@ export class Config
 	public readonly compilerOptions: ts.CompilerOptions;
 	public readonly parsedCommandLine?: ts.ParsedCommandLine;
 	public readonly moduleResolution: ts.ModuleResolutionKind;
+	public readonly strictNullChecks: boolean;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
 	{
@@ -85,6 +86,8 @@ export class Config
 		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
 
 		this.compilerOptions = compilerOptions;
+		this.strictNullChecks = (ts as any).getStrictOptionValue?.(compilerOptions, "strictNullChecks") 
+			?? compilerOptions.strictNullChecks === true;
 		this.moduleResolution = this.getModuleResolutionKind(compilerOptions);
 		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(
 			tsConfigPath,

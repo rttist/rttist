@@ -15,7 +15,7 @@ export default function transform(
 	const config = new Config(program, configParams?.reflection || {});
 	
 	// Add default plugin
-	config.plugins.splice(0, 0, new DefaultPlugin());
+	config.plugins.unshift(new DefaultPlugin());
 	
 	// Set logging level
 	Logger.setLevel(config.logLevel);

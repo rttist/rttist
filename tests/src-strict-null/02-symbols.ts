@@ -27,7 +27,7 @@ test("Symbols resolved correctly", () => {
 
 	expect(t.isClass()).toBeTruthy();
 	expect(prop.a.type.is(Type.Symbol)).toBeTruthy();
-	expect(prop.b.type.is(Type.Symbol) && prop.b.type.nullable).toBeTruthy();
+	expect(prop.b.type.isUnion() && prop.b.type.types.every(t => t.is(Type.Symbol) || t.is(Type.Undefined))).toBeTruthy();
 	expect(prop.c.type.isUnion() && prop.c.type.types.every(t => t.is(Type.Symbol) || t.is(Type.Undefined))).toBeTruthy();
 	expect(prop.d.type.isUnion() && prop.d.type.types.every(t => t.is(Type.Symbol) || t.is(Type.Boolean))).toBeTruthy();
 	expect(prop.e.type.is(Type.Symbol)).toBeTruthy();

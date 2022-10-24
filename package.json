@@ -16,6 +16,7 @@
 		"tsc": "tsc --build",
 		"watch": "tsc --build --watch",
 		"test": "ttsc -p ./tests/tsconfig.json && ttsc -p ./tests/tsconfig-strict-null.json && ttsc -p ./tests/tsconfig-mjs.json && jest",
+		"test:base": "ttsc -p ./tests/tsconfig.json && jest",
 		"test:coverage": "npm test -- --coverage",
 		"test:badges": "npm run test:coverage && make-coverage-badge -- --output-path ./docs/_images/coverage-badge.svg"
 	},

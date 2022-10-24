@@ -9,5 +9,8 @@ class Test
 	g = Symbol();
 }
 
+type TestAlias = Test;
+
 test("Type alias", () => {
+	Reflect.getType<TestAlias>();
 });

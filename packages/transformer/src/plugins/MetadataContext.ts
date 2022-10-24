@@ -10,4 +10,9 @@ export type MetadataContext = {
 	 * Identifier of the Module class imported from the "rttist" package.
 	 */
 	moduleClassIdentifier: ts.Identifier;
+
+	/**
+	 * Identifier of the Type class imported from the "rttist" package.
+	 */
+	typeClassIdentifier: ts.Identifier;
 };

@@ -1,15 +1,15 @@
-import { Config }             from "../config/Config";
+import { Config }            from "../config/Config";
 import {
 	writeFileSync,
 	mkdirSync
-}                             from "fs";
-import { dirname }            from "path";
-import * as ts                from "typescript";
-import { TransformerContext } from "../contexts/TransformerContext";
-import { MetadataSource }     from "../declarations/TypeProperties";
-import { DependencyManager }  from "../dependencies/DependencyManager";
-import { MetadataContext }    from "../plugins";
-import { MetadataLibrary }    from "./MetadataLibrary";
+}                            from "fs";
+import { dirname }           from "path";
+import * as ts               from "typescript";
+import { MetadataSource }    from "../declarations/TypeProperties";
+import { DependencyManager } from "../dependencies/DependencyManager";
+import { MetadataContext }   from "../plugins";
+import { toExpression }      from "../utils/toExpression";
+import { MetadataLibrary }   from "./MetadataLibrary";
 
 /**
  * Emitter used for creating metadata typelib and index file.
@@ -30,6 +30,7 @@ export class MetadataFilesEmitter
 		const metadataContext: MetadataContext = {
 			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
 			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+			typeClassIdentifier: ts.factory.createIdentifier("Type"),
 		};
 
 		const typelibOutputPath = this.config.metadataTypelibPath;
@@ -38,7 +39,7 @@ export class MetadataFilesEmitter
 			this.transpile(
 				this.createSourceFile(metadata, metadataContext),
 				typelibOutputPath
-			), // TODO: Append plugin scripts
+			),
 			typelibOutputPath
 		);
 	}
@@ -77,7 +78,7 @@ export class MetadataFilesEmitter
 	 */
 	private createSourceFile(metadata: MetadataSource, context: MetadataContext)
 	{
-		const plugins = TransformerContext.instance.config.plugins;
+		const plugins = this.config.plugins;
 
 		// Find a first plugin implementing 'createModuleRegistrars'
 		const firstCreateModuleRegistrars = plugins.find(p => p.createModuleRegistrars !== undefined);
@@ -104,12 +105,31 @@ export class MetadataFilesEmitter
 								undefined,
 								context.moduleClassIdentifier
 							),
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.typeClassIdentifier
+							),
 						])
 					),
 					ts.factory.createStringLiteral("rttist")
 				),
 				...pluginsImports,
 				...this.createDependantTypeLibsImports(),
+				ts.factory.createExpressionStatement(
+					ts.factory.createCallExpression(
+						ts.factory.createPropertyAccessExpression(
+							context.typeClassIdentifier,
+							ts.factory.createIdentifier("configure")
+						),
+						undefined,
+						[
+							toExpression({
+								nullability: !this.config.strictNullChecks
+							})
+						]
+					)
+				),
 				...metadataStatements
 			],
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
@@ -132,7 +152,7 @@ export class MetadataFilesEmitter
 				skipLibCheck: true,
 				skipDefaultLibCheck: true
 			}
-		}).outputText;
+		}).outputText + this.config.plugins.map(p => p.getEndScripts?.() ?? "").join("\n");
 
 		// if (this.config.encode)
 		// {

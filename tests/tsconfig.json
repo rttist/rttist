@@ -8,8 +8,7 @@
 		"stripInternal": true,
 		"declaration": false,
 		"outDir": "dist",
-		"rootDir": "./src",
-		"baseUrl": "./src",
+		"rootDir": "src",
 		"experimentalDecorators": true,
 		"plugins": [
 			{
