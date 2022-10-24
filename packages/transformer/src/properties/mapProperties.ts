@@ -6,7 +6,7 @@ import {
 import * as ts                     from "typescript";
 import { Context }                 from "../contexts/Context";
 import { PropertyProperties }      from "../declarations/TypeProperties";
-import { getMemberName }           from "../utils/getMemberName";
+import { getMemberName }           from "./getMemberName";
 import { getModifiers }            from "../utils/modifierHelpers";
 import {
 	getDeclaration,

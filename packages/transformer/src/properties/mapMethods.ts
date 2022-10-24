@@ -9,7 +9,7 @@ import type {
 	MethodProperties,
 	SignatureProperties
 }                                           from "../declarations/TypeProperties";
-import { getMemberName }                    from "../utils/getMemberName";
+import { getMemberName }                    from "./getMemberName";
 import { getModifiers }                     from "../utils/modifierHelpers";
 import { getDeclaration }                   from "../utils/symbolHelpers";
 import { getDecoratorsProperties }          from "./getDecoratorsProperties";
