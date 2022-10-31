@@ -65,6 +65,8 @@ export enum TypeKind
 	BigUint64Array,
 	ArrayBuffer,
 	SharedArrayBuffer,
+	FunctionType,
+	ObjectType,
 	Generator,
 	AsyncGenerator,
 	Iterator,
@@ -78,7 +80,7 @@ export enum TypeKind
 	DataView,
 	Proxy, // TODO: Proxy does not exists IMHO, only ProxyCtor - typeof Proxy
 	
-	Type, // interfaces of Function, Object,...
+	Type, // interfaces of Function, Object,... Function and Object created as FunctionType and ObjectType
 	TypeCtor, // Constructors of all native types - interfaces ArrayConstructor,...
 	
 	ArrayDefinition,
@@ -133,6 +135,8 @@ export type NativeTypeKind =
 	| TypeKind.BigUint64Array
 	| TypeKind.ArrayBuffer
 	| TypeKind.SharedArrayBuffer
+	| TypeKind.FunctionType
+	| TypeKind.ObjectType
 	| TypeKind.Atomics
 	| TypeKind.DataView
 	| TypeKind.ArrayDefinition

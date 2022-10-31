@@ -2,9 +2,14 @@ import * as ts                   from "typescript";
 import { TypeKind }              from "rttist";
 import { Context }               from "../contexts/Context";
 import { LiteralTypeProperties } from "../declarations/TypeProperties";
+import { mapEnumLiteral }        from "./mappers/mapEnumLiteral";
 
-export function getLiteralProperties(type: ts.LiteralType, context: Context): LiteralTypeProperties | undefined
+export function getLiteralProperties(type: ts.LiteralType, symbol: ts.Symbol | undefined, context: Context): LiteralTypeProperties | undefined
 {
+	if ((type.flags & ts.TypeFlags.EnumLiteral) !== 0) {
+		return mapEnumLiteral(type, symbol, context);
+	}
+	
 	const props = {
 		kind: TypeKind.Unknown,
 		value: type.value

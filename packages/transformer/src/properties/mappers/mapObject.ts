@@ -30,6 +30,7 @@ import { getDecoratorsProperties } from "../getDecoratorsProperties";
 import { mapIndexes }              from "../mapIndexes";
 import { mapMethods }              from "../mapMethods";
 import { mapProperties }           from "../mapProperties";
+import { mapFunction }             from "./mapFunction";
 import { mapObjectLiteral }        from "./mapObjectLiteral";
 import { mapTuple }                from "./mapTuple";
 
@@ -55,6 +56,13 @@ function getTypeArgumentsReference(type: ts.ObjectType, context: Context)
 
 export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
+	// Anonymous object, functions, ...
+	if (type.objectFlags & ts.ObjectFlags.Anonymous) {
+		if ((type.symbol.flags & ts.SymbolFlags.Function) !== 0) {
+			return mapFunction(type, symbol, context);
+		}
+	}
+	
 	const mapper = ObjectFlagsMappers[type.objectFlags];
 
 	if (mapper)

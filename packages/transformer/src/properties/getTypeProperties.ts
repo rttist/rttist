@@ -9,6 +9,7 @@ import {
 	TypeProperties
 }                                from "../declarations/TypeProperties";
 import { getDeclaration }        from "../utils/symbolHelpers";
+import { getMajorTypeFlag }      from "../utils/typeHelpers";
 import { getLiteralProperties }  from "./getLiteralProperties";
 import { mapConditional }        from "./mappers/mapConditional";
 import { mapEnum }               from "./mappers/mapEnum";
@@ -65,7 +66,7 @@ export function getTypeProperties(
 
 	if (type.isLiteral())
 	{
-		const literalDescriptionResult = getLiteralProperties(type, context);
+		const literalDescriptionResult = getLiteralProperties(type, symbol, context);
 
 		if (literalDescriptionResult !== undefined)
 		{
@@ -114,7 +115,26 @@ export function getTypeProperties(
 		}
 	}
 
-	const mapper = TypeFlagsMappers[type.flags];
+	let mapper: TypeMapper;
+
+	if ((type.flags & ts.TypeFlags.EnumLike) !== 0)
+	{
+		let enumSymbol = symbol ?? type.symbol;
+
+		if ((enumSymbol.flags & ts.SymbolFlags.Enum) !== 0)
+		{
+			mapper = mapEnum;
+		}
+		else
+		{
+			context.log.warn("No mapper found for an EnumLike type.\n\t" + printTypeDebugInfo(type, context.typeChecker));
+			return UnknownTypeProperties;
+		}
+	}
+	else
+	{
+		mapper = TypeFlagsMappers[getMajorTypeFlag(type)];
+	}
 
 	if (mapper === undefined)
 	{

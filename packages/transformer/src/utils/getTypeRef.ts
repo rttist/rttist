@@ -196,6 +196,9 @@ export function getTypeRef(
 					sourceFile
 				);
 			}
+			else {
+				log.debug("Handled as union: ", printTypeDebugInfo(type, typeChecker));
+			}
 		}
 	}
 
@@ -296,6 +299,10 @@ function getTypeRefWithoutDeclaration(
 
 function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker)
 {
+	if ((type.flags & ts.TypeFlags.EnumLike) !== 0) {
+		return undefined;
+	}
+	
 	if (type.isUnion())
 	{
 		return new TransformerTypeReference(

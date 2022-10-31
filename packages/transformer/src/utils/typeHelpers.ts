@@ -54,14 +54,17 @@ export function getSymbol(type: ts.Type, typeChecker: ts.TypeChecker): ts.Symbol
 
 export function getMajorTypeFlag(type: ts.Type)
 {
-	let flags = type.flags;
-
 	// Boolean is Boolean | (true | false)
-	if ((flags & ts.TypeFlags.Boolean) !== 0)
+	if ((type.flags & ts.TypeFlags.Boolean) !== 0)
 	{
-		flags = ts.TypeFlags.Boolean;
+		return ts.TypeFlags.Boolean;
 	}
-	return flags;
+	if ((type.flags & ts.TypeFlags.Enum) !== 0)
+	{
+		return ts.TypeFlags.Enum;
+	}
+
+	return type.flags;
 }
 
 export function getTypeId(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker): TypeIdentifier

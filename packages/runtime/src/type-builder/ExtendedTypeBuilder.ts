@@ -1,6 +1,6 @@
 import {
 	TypeBuilder as AbstractTypeBuilder
-} from "@rttist/abstract";
+} from "rttist";
 
 export abstract class ExtendedTypeBuilder extends AbstractTypeBuilder
 {

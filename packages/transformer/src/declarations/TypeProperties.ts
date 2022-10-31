@@ -19,7 +19,11 @@
 	NativeTypeKind,
 	TypeAliasTypeMetadata,
 	UniqueSymbolTypeMetadata,
-	MemberNameMetadata
+	MemberNameMetadata,
+	ConditionalTypeMetadata,
+	EnumTypeMetadata,
+	EnumLiteralTypeMetadata,
+	FunctionTypeMetadata
 } from "rttist";
 import { TransformerTypeReference } from "./TransformerTypeReference";
 
@@ -130,6 +134,12 @@ export type PropertyProperties = Match<keyof PropertyInfoMetadata, {
 	decorators?: Array<DecoratorProperties>;
 }>;
 
+export type ConditionalTypeProperties = Match<keyof Omit<ConditionalTypeMetadata, "id">, NonNativeBaseTypeProperties & {
+	extends: TransformerTypeReference;
+	trueType: TransformerTypeReference;
+	falseType: TransformerTypeReference;
+}>;
+
 export interface IndexProperties extends Omit<IndexInfoMetadata, "key" | "type">
 {
 	key: TransformerTypeReference;
@@ -196,10 +206,29 @@ export type UniqueSymbolProperties = Match<keyof Omit<UniqueSymbolTypeMetadata, 
 	key?: string;
 }>;
 
+export type EnumProperties = Match<keyof Omit<EnumTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
+	NonNativeBaseTypeProperties & {
+	kind: TypeKind.Enum;
+	const: boolean;
+	entries: { [key: string]: number | string };
+}>;
+
+export type EnumLiteralProperties = Match<keyof Omit<EnumLiteralTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
+	NonNativeBaseTypeProperties & {
+	kind: TypeKind.EnumLiteral;
+	enum: TransformerTypeReference;
+}>;
+
+export type FunctionProperties = Match<keyof Omit<FunctionTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
+	NonNativeBaseTypeProperties & {
+	kind: TypeKind.Function;
+	signatures: SignatureProperties[];
+}>;
+
 /**
  * Properties of a Type.
  */
-export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypeProperties
+export type TypeProperties = NativeBaseTypeProperties// | NonNativeBaseTypeProperties
 	| LiteralTypeProperties
 	| UnionTypeProperties
 	| IntersectionTypeProperties
@@ -208,6 +237,10 @@ export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypePropert
 	| ClassProperties
 	| InterfaceProperties
 	| UniqueSymbolProperties
+	| ConditionalTypeProperties
+	| EnumProperties
+	| EnumLiteralProperties
+	| FunctionProperties
 	;
 
 export type TypePropertiesWithId = TypeProperties & {

@@ -1,7 +1,7 @@
 import {
 	Metadata,
     Type
-} from "@rttist/abstract";
+} from "rttist";
 
 export const SomeString = "SomeTypeString";
 

@@ -103,13 +103,14 @@ export interface IntersectionTypeMetadata extends UnionOrIntersectionTypeMetadat
 export interface EnumTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.Enum;
+	const: boolean;
 	entries: { [key: string]: number | string };
 }
 
 export interface EnumLiteralTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.EnumLiteral;
-	value?: any;
+	//value?: any; TODO: Fix EnumLiteralType.. We'll use name instead of value
 	enum: TypeReference;
 }
 

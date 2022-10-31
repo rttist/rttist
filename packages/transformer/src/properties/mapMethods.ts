@@ -2,18 +2,15 @@ import {
 	AccessModifier,
 	ParameterFlags,
 	PropertyFlags
-}                                           from "rttist";
-import * as ts                              from "typescript";
-import type { Context }                     from "../contexts/Context";
-import type {
-	MethodProperties,
-	SignatureProperties
-}                                           from "../declarations/TypeProperties";
-import { getMemberName }                    from "./getMemberName";
-import { getModifiers }                     from "../utils/modifierHelpers";
-import { getDeclaration }                   from "../utils/symbolHelpers";
-import { getDecoratorsProperties }          from "./getDecoratorsProperties";
-import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
+}                                  from "rttist";
+import * as ts                     from "typescript";
+import type { Context }            from "../contexts/Context";
+import type { MethodProperties }   from "../declarations/TypeProperties";
+import { getModifiers }            from "../utils/modifierHelpers";
+import { getDeclaration }          from "../utils/symbolHelpers";
+import { getCallSignatures }       from "./getCallSignatures";
+import { getDecoratorsProperties } from "./getDecoratorsProperties";
+import { getMemberName }           from "./getMemberName";
 
 const METHOD_SYMBOL_PROPS = ts.SymbolFlags.Method | ts.SymbolFlags.Function;
 
@@ -46,7 +43,7 @@ export function mapMethods(members: ts.Symbol[], context: Context): Array<Method
 
 				return {
 					name: getMemberName(memberSymbol, context),
-					signatures: getMethodSignatures(type, context),
+					signatures: getCallSignatures(type, context),
 					decorators: declaration ? getDecoratorsProperties(declaration, context) : [],
 					flags: (
 							optional
@@ -65,26 +62,4 @@ export function mapMethods(members: ts.Symbol[], context: Context): Array<Method
 		);
 
 	return methods;
-}
-
-function getMethodSignatures(type: ts.Type, context: Context): SignatureProperties[]
-{
-	return type.getCallSignatures()
-		.map(signature => ({
-			parameters: getSignatureParametersProperties(signature, context),
-			returnType: context.metadata.referenceType
-			(
-				signature.getReturnType(),
-				undefined, // TODO: This can be a problem and not just here. If we don't get symbol from declaration, the symbol from type will be received, which will be symbol of the simplified type. Image case: `type X = string; function x(): X {} getType<x>().returnType.is(getType<X>())` it will return false, because getType<X>() will return X and getType<x>().returnType return string. Maybe it's OK cuz getType<X>() should return TypeAliasType. So everybody should check if (type.isAlias()) type.target ==; And TypeAliasType.is can be overriden to do this.target.is(typeToCheck). 
-				undefined,
-				context
-			),
-			typeParameters: signature.typeParameters
-				?.map(typeParameter => context.metadata.referenceType(
-					typeParameter,
-					undefined,
-					undefined,
-					context
-				)),
-		}));
 }

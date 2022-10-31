@@ -3,10 +3,10 @@ import {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeMetadata,
-	createType,
+	// createType,
 	AnyTypeMetadata,
 	Metadata
-} from "@rttist/abstract";
+} from "rttist";
 
 //
 // const resolver = {
@@ -42,20 +42,20 @@ export type ModuleMetadata = {
 	types?: TypeMetadata[];
 };
 
-export function loadModule(metadata: ModuleMetadata)
-{
-	const types = metadata.types?.map(typeMetadata => createType(typeMetadata as AnyTypeMetadata));
-
-	const module = new Module({
-		types,
-		id: metadata.id,
-		name: metadata.name,
-		path: metadata.path,
-		children: metadata.children,
-	});
-
-	Metadata.addModule(module);
-}
+// export function loadModule(metadata: ModuleMetadata)
+// {
+// 	const types = metadata.types?.map(typeMetadata => createType(typeMetadata as AnyTypeMetadata));
+//
+// 	const module = new Module({
+// 		types,
+// 		id: metadata.id,
+// 		name: metadata.name,
+// 		path: metadata.path,
+// 		children: metadata.children,
+// 	});
+//
+// 	Metadata.addModule(module);
+// }
 
 export function loadEncodedModule(metadata: string)
 {

@@ -44,6 +44,8 @@ const NameMap: { [name: string]: TransformerTypeReference } = {
 	RegExp: ct("RegExp", TypeKind.RegExp),
 	ArrayBuffer: ct("ArrayBuffer", TypeKind.ArrayBuffer),
 	SharedArrayBuffer: ct("SharedArrayBuffer", TypeKind.SharedArrayBuffer),
+	Function: ct("Function", TypeKind.FunctionType),
+	Object: ct("Object", TypeKind.ObjectType),
 	Atomics: ct("Atomics", TypeKind.Atomics),
 	DataView: ct("DataView", TypeKind.DataView),
 	Array: ct("Array", TypeKind.ArrayDefinition),

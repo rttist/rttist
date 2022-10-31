@@ -7,10 +7,7 @@
 		"stripInternal": true,
 		"declaration": true,
 		"outDir": "dist",
-		"rootDir": "./src",
-		"typeRoots": [
-			"node_modules"
-		]
+		"rootDir": "./src"
 	},
 	"include": [
 		"./src/**/*.ts"
