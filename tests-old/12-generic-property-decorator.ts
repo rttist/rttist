@@ -1,7 +1,7 @@
 import {
 	getType,
 	Type
-} from "@rttist/abstract"
+} from "rttist"
 
 test("Property decorator reflects generic type", () => {
 	/**

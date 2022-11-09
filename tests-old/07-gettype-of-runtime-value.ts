@@ -2,7 +2,7 @@ import {
 	getType,
 	reflect,
 	Type
-} from "@rttist/abstract"
+} from "rttist"
 
 test("getType(val) called with runtime value and it is not Type.Unknown", () => {
 	// @reflect() decorator required in some configurations

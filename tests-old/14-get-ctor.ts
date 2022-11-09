@@ -1,4 +1,4 @@
-import { getType } from "@rttist/abstract"
+import { getType } from "rttist"
 
 class NotExportedClass
 {

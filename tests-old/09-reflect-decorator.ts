@@ -1,7 +1,7 @@
 import {
 	reflect,
 	Type
-} from "@rttist/abstract"
+} from "rttist"
 
 @reflect()
 class A

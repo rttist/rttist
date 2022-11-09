@@ -1,4 +1,4 @@
-import { getType } from "@rttist/abstract"
+import { getType } from "rttist"
 
 const ReflectedInfoFromMethodDecorator: Array<{
 	typeName: string,

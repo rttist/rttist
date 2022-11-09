@@ -4,7 +4,7 @@ import {
 	getType,
 	Type,
 	TypeKind
-}                from "@rttist/abstract"
+}                from "rttist"
 import * as path from "path";
 
 export class Something
