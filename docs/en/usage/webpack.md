@@ -9,7 +9,7 @@
 
 1. Install packages,
 ```
-npm i tst-reflect && npm i tst-reflect-transformer -D
+npm i rttist && npm i tst-reflect-transformer -D
 ```
 2. add transformer to `tsconfig.json`,
 ```json5
@@ -58,7 +58,7 @@ module.exports = {
 ## With `awesome-typescript-loader`
 1. Install packages,
 ```
-npm i tst-reflect && npm i tst-reflect-transformer -D
+npm i rttist && npm i tst-reflect-transformer -D
 ```
 2. add transformer to `tsconfig.json`,
 ```json5

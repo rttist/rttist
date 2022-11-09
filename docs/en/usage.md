@@ -1,5 +1,5 @@
 ## How to Get a Type
-Use function `getType<TType>(runtimeValue?: any): Type` from native `Reflect` namespace; extended by package `@rttist/abstract`.
+Use function `getType<TType>(runtimeValue?: any): Type` from native `Reflect` namespace; extended by package `rttist`.
 ```typescript
 type Alias = string | boolean;
 interface Ifce {}
