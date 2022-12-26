@@ -1,8 +1,8 @@
+import { getGlobalThis } from "../utils/getGlobalThis";
 import {
-	getGlobalThis,
 	getTypeOfRuntimeValue
-}                                  from "../helpers";
-import { Type }                    from "../Type";
+}                        from "../helpers";
+import { Type }          from "../Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -17,7 +17,7 @@ export function getType<T>(...args: any[]): Type
 
 	if (!globalObject[ERROR_DISABLE_PROPERTY_NAME])
 	{
-		console.debug("[ERR] Reflect: You call `Reflect.getType()` function directly. " +
+		console.debug("[ERR] Reflect: You are calling `getType()` function directly. " +
 			"You have probably wrong configuration, because some @rttist transformer " +
 			"should replace this call by the Type instance.\n" +
 			"If you have right configuration it may be BUG so try to create an issue.\n" +

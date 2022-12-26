@@ -1,29 +1,25 @@
 ﻿import {
 	ClassTypeMetadata,
-	DecoratorInfoMetadata,
-	IndexInfoMetadata,
+	DecoratorInfoInitializer,
+	IndexInfoInitializer,
 	InterfaceTypeMetadata,
 	MethodFlags,
-	MethodInfoMetadata,
+	MethodInfoInitializer,
 	ModuleIdentifier,
 	ModuleReference,
 	ObjectLikeBaseTypeMetadata,
 	ParameterFlags,
-	ParameterInfoMetadata,
+	ParameterInfoInitializer,
 	PropertyFlags,
-	PropertyInfoMetadata,
-	SignatureMetadataBase,
+	PropertyInfoInitializer,
+	SignatureInitializerBase,
 	TypeIdentifier,
 	TypeKind,
 	TypeMetadata,
 	NativeTypeKind,
 	TypeAliasTypeMetadata,
 	UniqueSymbolTypeMetadata,
-	MemberNameMetadata,
-	ConditionalTypeMetadata,
-	EnumTypeMetadata,
-	EnumLiteralTypeMetadata,
-	FunctionTypeMetadata
+	MemberNameInitializer
 } from "rttist";
 import { TransformerTypeReference } from "./TransformerTypeReference";
 
@@ -58,10 +54,10 @@ export type NonNativeBaseTypeProperties = Match<keyof Omit<BaseTypeProperties, "
 	name: string;
 	module?: ModuleIdentifier;
 	exported?: boolean;
-	nullable?: true;
-	isGenericTypeDefinition?: true;
 	typeArguments?: TransformerTypeReference[];
+	nullable?: true;
 	genericTypeDefinition?: TransformerTypeReference;
+	isGenericTypeDefinition?: true;
 }>;
 
 /**
@@ -91,7 +87,7 @@ export interface ImportInfo
 	exportName: string;
 }
 
-export type ParameterProperties = Match<keyof ParameterInfoMetadata,
+export type ParameterProperties = Match<keyof ParameterInfoInitializer,
 	{
 		name: string;
 		type: TransformerTypeReference;
@@ -100,14 +96,14 @@ export type ParameterProperties = Match<keyof ParameterInfoMetadata,
 		decorators?: DecoratorProperties[];
 	}>;
 
-export type SignatureProperties = Match<keyof SignatureMetadataBase,
+export type SignatureProperties = Match<keyof SignatureInitializerBase,
 	{
 		parameters?: Array<ParameterProperties>;
 		typeParameters?: TransformerTypeReference[];
 		returnType: TransformerTypeReference;
 	}>;
 
-export type MethodProperties = Match<keyof MethodInfoMetadata,
+export type MethodProperties = Match<keyof MethodInfoInitializer,
 	{
 		flags: MethodFlags;
 		name: MemberNameProperties;
@@ -115,7 +111,7 @@ export type MethodProperties = Match<keyof MethodInfoMetadata,
 		decorators?: DecoratorProperties[];
 	}>;
 
-// export interface TemplateProperties extends TemplateInfoMetadata
+// export interface TemplateProperties extends TemplateInfoInitializer
 // {
 // }
 
@@ -125,28 +121,22 @@ export interface TypeParameterProperties extends NonNativeBaseTypeProperties
 	default?: TransformerTypeReference;
 }
 
-export type MemberNameProperties = MemberNameMetadata;
+export type MemberNameProperties = MemberNameInitializer;
 
-export type PropertyProperties = Match<keyof PropertyInfoMetadata, {
+export type PropertyProperties = Match<keyof PropertyInfoInitializer, {
 	name: MemberNameProperties;
 	flags: PropertyFlags;
 	type: TransformerTypeReference;
 	decorators?: Array<DecoratorProperties>;
 }>;
 
-export type ConditionalTypeProperties = Match<keyof Omit<ConditionalTypeMetadata, "id">, NonNativeBaseTypeProperties & {
-	extends: TransformerTypeReference;
-	trueType: TransformerTypeReference;
-	falseType: TransformerTypeReference;
-}>;
-
-export interface IndexProperties extends Omit<IndexInfoMetadata, "key" | "type">
+export interface IndexProperties extends Omit<IndexInfoInitializer, "key" | "type">
 {
 	key: TransformerTypeReference;
 	type: TransformerTypeReference;
 }
 
-export type DecoratorProperties = Match<keyof DecoratorInfoMetadata,
+export type DecoratorProperties = Match<keyof DecoratorInfoInitializer,
 	{
 		name: string;
 		id: TypeIdentifier;
@@ -206,30 +196,10 @@ export type UniqueSymbolProperties = Match<keyof Omit<UniqueSymbolTypeMetadata, 
 	key?: string;
 }>;
 
-export type EnumProperties = Match<keyof Omit<EnumTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
-	NonNativeBaseTypeProperties & {
-	kind: TypeKind.Enum;
-	const: boolean;
-	entries: { [key: string]: number | string };
-}>;
-
-export type EnumLiteralProperties = Match<keyof Omit<EnumLiteralTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
-	NonNativeBaseTypeProperties & {
-	kind: TypeKind.EnumLiteral;
-	value: number | string;
-	enum: TransformerTypeReference;
-}>;
-
-export type FunctionProperties = Match<keyof Omit<FunctionTypeMetadata, "id">, // TODO: Refactor names of types and properties. EnumType vs Enum? Function vs FunctionType, Object vs ObjectType
-	NonNativeBaseTypeProperties & {
-	kind: TypeKind.Function;
-	signatures: SignatureProperties[];
-}>;
-
 /**
  * Properties of a Type.
  */
-export type TypeProperties = NativeBaseTypeProperties// | NonNativeBaseTypeProperties
+export type TypeProperties = NativeBaseTypeProperties | NonNativeBaseTypeProperties
 	| LiteralTypeProperties
 	| UnionTypeProperties
 	| IntersectionTypeProperties
@@ -238,10 +208,6 @@ export type TypeProperties = NativeBaseTypeProperties// | NonNativeBaseTypePrope
 	| ClassProperties
 	| InterfaceProperties
 	| UniqueSymbolProperties
-	| ConditionalTypeProperties
-	| EnumProperties
-	| EnumLiteralProperties
-	| FunctionProperties
 	;
 
 export type TypePropertiesWithId = TypeProperties & {

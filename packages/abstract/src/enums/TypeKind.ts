@@ -3,55 +3,26 @@
  */
 export enum TypeKind
 {
+	Invalid,
 	Unknown,
 	Any,
 	Never,
 	Void,
 	Undefined,
 	Null,
-	NonPrimitiveObject,
 	Boolean,
-	// BooleanLiteral,
 	False,
 	True,
 	Number,
-	NumberLiteral,
 	BigInt,
-	BigIntLiteral,
 	String,
-	StringLiteral,
-	TemplateLiteral,
 	Symbol,
-	UniqueSymbol,
-	ESSymbol,
-	Object,
-	Interface,
-	Class,
-	TypeParameter,
-	Alias,
-	ConditionalType,
-	IndexedAccess,
-	Module,
-	Namespace,
-	Union,
-	Intersection,
-	Method,
-	Function,
-	GeneratorFunction,
-	Enum,
-	EnumLiteral,
+	NonPrimitiveObject,
+	ObjectType,
+	FunctionType,
 	Date,
-	Promise,
 	Error,
 	RegExp,
-	RegExpLiteral,
-	Array,
-	ReadonlyArray,
-	Tuple,
-	Map,
-	WeakMap,
-	Set,
-	WeakSet,
 	Int8Array,
 	Uint8Array,
 	Uint8ClampedArray,
@@ -65,27 +36,11 @@ export enum TypeKind
 	BigUint64Array,
 	ArrayBuffer,
 	SharedArrayBuffer,
-	FunctionType,
-	ObjectType,
-	Generator,
-	AsyncGenerator,
-	Iterator,
-	Iterable,
-	IterableIterator,
-	AsyncIterator,
-	AsyncIterable,
-	AsyncIterableIterator,
-	Jsx,
 	Atomics,
 	DataView,
-	Proxy, // TODO: Proxy does not exists IMHO, only ProxyCtor - typeof Proxy
-	
-	Type, // interfaces of Function, Object,... Function and Object created as FunctionType and ObjectType
-	TypeCtor, // Constructors of all native types - interfaces ArrayConstructor,...
-	
+
 	ArrayDefinition,
 	ReadonlyArrayDefinition,
-	// TupleDefinition,
 	MapDefinition,
 	WeakMapDefinition,
 	SetDefinition,
@@ -100,8 +55,50 @@ export enum TypeKind
 	AsyncIterableDefinition,
 	AsyncIterableIteratorDefinition,
 
-	// Keep last
-	Invalid,
+	Module = 60,
+	Namespace,
+	Object,
+	Interface,
+	Class,
+	Union,
+	Intersection,
+	ConditionalType,
+	IndexedAccess,
+	TypeParameter,
+	Alias,
+	Method,
+	Function,
+	GeneratorFunction,
+	NumberLiteral,
+	BigIntLiteral,
+	StringLiteral,
+	TemplateLiteral,
+	EnumLiteral,
+	RegExpLiteral,
+	Enum,
+	UniqueSymbol,
+	ESSymbol,
+	Promise,
+	Array,
+	ReadonlyArray,
+	Tuple,
+	Map,
+	WeakMap,
+	Set,
+	WeakSet,
+	Generator,
+	AsyncGenerator,
+	Iterator,
+	Iterable,
+	IterableIterator,
+	AsyncIterator,
+	AsyncIterable,
+	AsyncIterableIterator,
+	Jsx,
+	//Proxy, // TODO: Proxy does not exists IMHO, only ProxyCtor - typeof Proxy
+
+	Type, // interfaces of Function, Object,... Function and Object created as FunctionType and ObjectType
+	TypeCtor, // Constructors of all native types - interfaces ArrayConstructor,...
 }
 
 export type NativeTypeKind =
@@ -154,6 +151,8 @@ export type NativeTypeKind =
 	| TypeKind.AsyncIteratorDefinition
 	| TypeKind.AsyncIterableDefinition
 	| TypeKind.AsyncIterableIteratorDefinition
+	
+	| TypeKind.Invalid
 	;
 
 export type NonNativeTypeKind = Exclude<TypeKind, NativeTypeKind>;

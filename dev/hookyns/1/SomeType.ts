@@ -62,7 +62,7 @@ class StaticEntity {
 }
 
 
-const entityType = Reflect.getType<Entity>();
+const entityType = Rttist.getType<Entity>();
 
 const allEntities: Type[] = Metadata.getModules()
 	.filter(module => module.path.includes(__dirname))

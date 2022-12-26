@@ -7,6 +7,6 @@ export function constructGeneric<TType = any>(
 	newTarget?: Function
 ): TType
 {
-	const Class = Reflect.getGenericClass(target as { new(...args: any): TType }, ...typeParameters);
+	const Class = Rttist.getGenericClass(target as { new(...args: any): TType }, ...typeParameters);
 	return Reflect.construct(Class, argumentsList, newTarget);
 }

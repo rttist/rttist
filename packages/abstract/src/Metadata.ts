@@ -25,6 +25,12 @@ class MetadataLibrary
 	{
 		for (let module of modules)
 		{
+			// noinspection SuspiciousTypeOfGuard
+			if (!(module instanceof Module))
+			{
+				throw new Error("Given module is not an instance of the Module class.");
+			}
+
 			if (module.id !== ModuleIds.Native && module.id !== ModuleIds.Invalid && this.modules.has(module.id))
 			{
 				throw new Error(`Module with id '${module.id}' already exists.`);
@@ -47,6 +53,12 @@ class MetadataLibrary
 	{
 		for (let type of types)
 		{
+			// noinspection SuspiciousTypeOfGuard
+			if (!(type instanceof Type))
+			{
+				throw new Error("Given type is not an instance of the Type class.");
+			}
+
 			if (!type.id)
 			{
 				throw new Error("Given type has invalid id.");
@@ -126,6 +138,11 @@ class MetadataLibrary
 	 */
 	resolveType(reference: TypeReference): Type
 	{
+		if (!reference)
+		{
+			throw new Error("Invalid type reference.");
+		}
+
 		if (typeof (reference) === "object")
 		{
 			const nativeType: Type | undefined = NativeTypes[reference[0]];
@@ -148,6 +165,11 @@ class MetadataLibrary
 	 */
 	resolveModule(reference: ModuleReference): Module
 	{
+		if (!reference)
+		{
+			throw new Error("Invalid module reference.");
+		}
+
 		return this.modules.get(reference) ?? Module.Invalid;
 	}
 }

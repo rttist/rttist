@@ -21,10 +21,10 @@ export interface TypeMetadata
 	module: ModuleIdentifier;
 	name: string;
 	exported?: boolean;
-	typeArguments?: TypeReference[];
 	nullable?: boolean;
-	genericTypeDefinition?: TypeReference;
 	isGenericTypeDefinition?: boolean;
+	typeArguments?: TypeReference[];
+	genericTypeDefinition?: TypeReference;
 }
 
 export interface ObjectLikeBaseTypeMetadata extends TypeMetadata
@@ -110,7 +110,7 @@ export interface EnumTypeMetadata extends TypeMetadata
 export interface EnumLiteralTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.EnumLiteral;
-	//value?: any; TODO: Fix EnumLiteralType.. We'll use name instead of value
+	value: number | string;
 	enum: TypeReference;
 }
 
@@ -120,7 +120,7 @@ export interface LiteralTypeMetadata extends TypeMetadata
 		| TypeKind.StringLiteral
 		| TypeKind.BigIntLiteral
 		| TypeKind.RegExpLiteral;
-	value?: any;
+	value: number | string | bigint | RegExp;
 }
 
 export interface TemplateTypeMetadata extends TypeMetadata

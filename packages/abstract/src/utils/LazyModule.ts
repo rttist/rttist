@@ -25,6 +25,11 @@ export class LazyModule
 
 	constructor(moduleRef: ModuleReference)
 	{
+		if (!moduleRef)
+		{
+			throw new Error("Invalid module reference.");
+		}
+
 		this._reference = moduleRef;
 	}
 }

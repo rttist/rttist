@@ -1,10 +1,11 @@
 import type { TypeReference }    from "./declarations";
+import type { Type }             from "./Type";
 import { constructGeneric }      from "./functions/constructGeneric";
 import { getClassTypeParameter } from "./functions/getClassTypeParameter";
 import { getGenericClass }       from "./functions/getGenericClass";
 import { getType }               from "./functions/getType";
 import { Metadata }              from "./Metadata";
-import { Type }                  from "./Type";
+import { getGlobalThis }         from "./utils/getGlobalThis";
 
 declare global
 {
@@ -77,6 +78,16 @@ declare global
 		 */
 		export function getClassTypeParameter(instance: any, typeParameterIndex: number): Type;
 	}
+
+	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass" | "getClassTypeParameter">;
+
+	// const Rttist: {
+	// 	constructGeneric: typeof Reflect["constructGeneric"];
+	// 	getType: typeof Reflect["getType"];
+	// 	resolveType: typeof Reflect["resolveType"];
+	// 	getGenericClass: typeof Reflect["getGenericClass"];
+	// 	getClassTypeParameter: typeof Reflect["getClassTypeParameter"];
+	// };
 }
 
 Reflect.getType = getType;
@@ -84,3 +95,5 @@ Reflect.resolveType = Metadata.resolveType.bind(Metadata);
 Reflect.getGenericClass = getGenericClass;
 Reflect.getClassTypeParameter = getClassTypeParameter;
 Reflect.constructGeneric = constructGeneric;
+
+getGlobalThis()["Rttist"] = Reflect;

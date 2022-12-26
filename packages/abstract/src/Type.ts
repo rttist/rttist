@@ -5,7 +5,7 @@ import type {
 	TypeMetadata,
 	TypesConfiguration,
 	ObjectLikeBaseTypeMetadata
-}                                     from "./declarations";
+}                        from "./declarations";
 import type {
 	ClassType,
 	ConditionalType,
@@ -23,17 +23,17 @@ import type {
 	ESSymbolType,
 	TypeAliasType,
 	UniqueSymbolType
-}                                     from "./types";
-import type { Module }                from "./Module";
-import { ModuleIds }                  from "@rttist/core";
-import { LazyModule }                 from "./utils/LazyModule";
-import { LazyType }                   from "./utils/LazyType";
-import { LazyTypeArray }              from "./utils/LazyTypeArray";
+}                        from "./types";
+import type { Module }   from "./Module";
+import { ModuleIds }     from "@rttist/core";
+import { LazyModule }    from "./utils/LazyModule";
+import { LazyType }      from "./utils/LazyType";
+import { LazyTypeArray } from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                                     from "./enums";
+}                        from "./enums";
 
 const createdNativeTypes = new Set();
 
@@ -85,7 +85,10 @@ export class Type
 	public static readonly IterableIteratorDefinition = cn("IterableIterator", TypeKind.IterableIteratorDefinition);
 	public static readonly AsyncIteratorDefinition = cn("AsyncIterator", TypeKind.AsyncIteratorDefinition);
 	public static readonly AsyncIterableDefinition = cn("AsyncIterable", TypeKind.AsyncIterableDefinition);
-	public static readonly AsyncIterableIteratorDefinition = cn("AsyncIterableIterator", TypeKind.AsyncIterableIteratorDefinition);
+	public static readonly AsyncIterableIteratorDefinition = cn(
+		"AsyncIterableIterator",
+		TypeKind.AsyncIterableIteratorDefinition
+	);
 
 	/**
 	 * Configuration - global nullability of all the types (StrictNullChecks TS option).
@@ -191,6 +194,11 @@ export class Type
 		if (createdNativeTypes.has(initializer.kind))
 		{
 			throw new Error("Cannot create native type multiple times.");
+		}
+
+		if (!initializer.module)
+		{
+			throw new Error("Type must have a module.");
 		}
 
 		this._id = initializer.id;

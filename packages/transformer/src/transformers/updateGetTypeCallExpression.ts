@@ -14,7 +14,7 @@ export function updateGetTypeCallExpression(node: ts.CallExpression, context: Co
 	let typeArgumentType = context.typeChecker.getTypeAtLocation(typeArgumentNode);
 
 	// If the type parameter is another type parameter; replace by "__typeParam__.X", where X is name of generic parameter
-	if (typeArgumentType.flags === ts.TypeFlags.TypeParameter) // TODO: If it is declared on class, replace by Reflect.getType(this).getTypeParameters()[index of required generic type]
+	if (typeArgumentType.flags === ts.TypeFlags.TypeParameter) // TODO: If it is declared on class, replace by Rttist.getType(this).getTypeParameters()[index of required generic type]
 	{
 		if (ts.isTypeReferenceNode(typeArgumentNode))
 		{

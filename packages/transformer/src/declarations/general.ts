@@ -1,7 +1,11 @@
 ﻿import * as ts                           from "typescript";
-import type { NativeTypeKind }           from "rttist";
+import type {
+	NativeTypeKind,
+	TypeIdentifier
+} from "rttist";
 import type { Context }                  from "../contexts/Context";
 import type { TransformerTypeReference } from "./TransformerTypeReference";
+import { TypeProperties }                from "./TypeProperties";
 import type { TypePropertiesWithId }     from "./TypeProperties";
 
 /**
@@ -65,3 +69,9 @@ export type ReflectedSymbolWithReference = ts.Symbol & { _typeReference: Transfo
  * Extended SourceFile with our reflection info.
  */
 export type ReflectedSourceFileWithReference = ts.SourceFile & { _reflectId: string };
+
+/**
+ * Type serializer
+ * @return Array of uint8. Common array is used
+ */
+export type TypeSerializer = (typeProperties: TypeProperties & { id?: TypeIdentifier }) => number[];

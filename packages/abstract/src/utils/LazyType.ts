@@ -25,6 +25,11 @@ export class LazyType<TType extends Type = Type>
 
 	constructor(typeReference: TypeReference)
 	{
+		if (!typeReference)
+		{
+			throw new Error("Invalid type reference.");
+		}
+
 		this._reference = typeReference;
 	}
 }

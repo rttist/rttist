@@ -2,23 +2,15 @@ import {
 	ModuleIds,
 	PROTOTYPE_TYPE_PROPERTY,
 	TypeIds
-}                       from "@rttist/core";
+}                        from "@rttist/core";
 import {
 	ParameterFlags,
 	TypeKind
-}                       from "./enums";
-import { Metadata }     from "./Metadata";
-import { Type }         from "./Type";
-import { FunctionType } from "./types";
-
-export function getGlobalThis(): any
-{
-	return typeof globalThis === "object"
-		? globalThis
-		: typeof window === "object"
-			? window
-			: global;
-}
+}                        from "./enums";
+import { getGlobalThis } from "./utils/getGlobalThis";
+import { Metadata }      from "./Metadata";
+import { Type }          from "./Type";
+import { FunctionType }  from "./types";
 
 export function resolveSingletonInstance<T>(key: string, Class: { new(): T }): T
 {

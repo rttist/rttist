@@ -30,7 +30,7 @@ class Register
 	 */
 	getGenericClass<T extends { new(...args: any[]): any }>(classCtor: T, typeParameters: Type[]): T
 	{
-		const genericTypeDefinition = Reflect.getType(classCtor);
+		const genericTypeDefinition = Rttist.getType(classCtor);
 
 		if (!genericTypeDefinition.isClass())
 		{
@@ -55,7 +55,7 @@ class Register
 					{
 						super(...args);
 						// this.__getType = () => {
-						// 	return Reflect.getType(this);
+						// 	return Rttist.getType(this);
 						// }
 					}
 				}

@@ -1,4 +1,5 @@
 import * as ts                from "typescript";
+import { createImport }       from "../ast-utils/createImport";
 import { TransformerContext } from "../contexts/TransformerContext";
 import { MetadataSource }     from "../declarations/TypeProperties";
 import { log }                from "../logging";
@@ -20,22 +21,14 @@ export class DefaultPlugin implements Plugin
 	/**
 	 * @inheritDoc
 	 */
-	getImports?(): ts.ImportDeclaration[]
+	getImports?(): Array<ts.ImportDeclaration | ts.VariableStatement>
 	{
 		// In case the encoding is enabled, import tst-reflect runtime which is able to decode it.
 		// Otherwise we'll use rttist directly.
 		if (TransformerContext.instance.config.encode)
 		{
 			return [
-				ts.factory.createImportDeclaration(
-					undefined,
-					ts.factory.createImportClause(
-						false,
-						this.tstReflectIdentifier,
-						undefined
-					),
-					ts.factory.createStringLiteral("tst-reflect")
-				)
+				createImport(this.tstReflectIdentifier, "tst-reflect")
 			];
 		}
 
