@@ -1,7 +1,13 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
-import * as ts                     from "typescript";
-import { Context }                 from "../contexts/Context";
-import { toExpression }            from "../utils/toExpression";
+import {
+	CALLSITE_TYPE_ARGS_PROPERTY,
+	PROTOTYPE_TYPE_PROPERTY
+}                                from "@rttist/core";
+import * as ts                   from "typescript";
+import { Context }               from "../contexts/Context";
+import { toExpression }          from "../utils/toExpression";
+import { callExpressionVisitor } from "./callExpressionVisitor";
+
+const TYPE_PARAMS = "__typeParams__";
 
 export function functionVisitor(declaration: ts.FunctionDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
@@ -13,12 +19,46 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 		context
 	);
 
-	return [
-		ts.visitEachChild(
+	declaration = context.createNestedContext(
+		visitFunctionDeclaration,
+		nestedContext => ts.visitEachChild(
 			declaration,
-			(node: ts.Node) => visitClassDeclaration(node, context),
+			nestedContext.visitor,
 			context.transformationContext
-		),
+		)
+	);
+
+	declaration = ts.factory.updateFunctionDeclaration(
+		declaration,
+		declaration.modifiers,
+		declaration.asteriskToken,
+		declaration.name,
+		declaration.typeParameters,
+		declaration.parameters,
+		declaration.type,
+		ts.factory.createBlock(
+			[
+				ts.factory.createVariableStatement(
+					undefined,
+					[
+						ts.factory.createVariableDeclaration(
+							TYPE_PARAMS,
+							undefined,
+							undefined,
+							ts.factory.createElementAccessExpression(
+								declaration.name!, // TODO: May be undefined
+								ts.factory.createStringLiteral(CALLSITE_TYPE_ARGS_PROPERTY)
+							)
+						)
+					]
+				),
+				declaration.body ?? ts.factory.createEmptyStatement()
+			]
+		)
+	);
+
+	return [
+		declaration,
 
 		// EMIT: ClassIdentifier.prototype[REFLECTED_TYPE_ID] = typeId;
 		ts.factory.createExpressionStatement(
@@ -37,38 +77,12 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 	];
 }
 
-function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
+function visitFunctionDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
-	if (ts.isPropertyDeclaration(node))
+	if (ts.isCallExpression(node))
 	{
-
+		return callExpressionVisitor(node, context);
 	}
 
-	if (ts.isGetAccessorDeclaration(node))
-	{
-
-	}
-
-	if (ts.isSetAccessorDeclaration(node))
-	{
-
-	}
-
-	// Index signature has no implementation to alter.
-	// if (ts.isIndexSignatureDeclaration(node))
-	// {
-	//	
-	// }
-
-	if (ts.isMethodDeclaration(node))
-	{
-
-	}
-
-	if (ts.isConstructorDeclaration(node))
-	{
-
-	}
-
-	return node;
+	return ts.visitEachChild(node, context.visitor, context.transformationContext);
 }

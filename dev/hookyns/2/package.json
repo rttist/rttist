@@ -1,14 +1,12 @@
 {
 	"private": true,
-	"name": "all-types",
+	"name": "simple-tests",
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"
 	},
 	"dependencies": {
-		"rttist": "workspace:*",
-		"tst-reflect": "workspace:*",
-		"@rttist/dev-pkg1": "workspace:*"
+		"rttist": "workspace:*"
 	},
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*"

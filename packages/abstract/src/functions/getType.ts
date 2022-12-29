@@ -1,8 +1,10 @@
-import { getGlobalThis } from "../utils/getGlobalThis";
+import type { TypeReference }          from "../declarations";
+import { CALLSITE_TYPE_ARGS_PROPERTY } from "@rttist/core";
+import { getGlobalThis }               from "../utils/getGlobalThis";
 import {
 	getTypeOfRuntimeValue
-}                        from "../helpers";
-import { Type }          from "../Type";
+}                                      from "../helpers";
+import { Type }                        from "../Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -11,6 +13,14 @@ export function getType<T>(...args: any[]): Type
 	if (args.length)
 	{
 		return getTypeOfRuntimeValue(args[0]);
+	}
+
+	const callSiteTypeArg = (getType as any)[CALLSITE_TYPE_ARGS_PROPERTY]?.[0] as TypeReference;
+	(getType as any)[CALLSITE_TYPE_ARGS_PROPERTY] = undefined;
+
+	if (callSiteTypeArg !== undefined)
+	{
+		return Reflect.resolveType(callSiteTypeArg);
 	}
 
 	const globalObject = getGlobalThis();

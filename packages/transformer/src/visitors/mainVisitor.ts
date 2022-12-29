@@ -14,30 +14,57 @@ import { typeAliasVisitor }       from "./typeAliasVisitor";
  */
 export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
-	if (ts.isClassDeclaration(nodeToVisit))
+	switch (nodeToVisit.kind)
 	{
-		return classVisitor(nodeToVisit, context);
+		case  ts.SyntaxKind.ClassDeclaration:
+			return classVisitor(nodeToVisit as unknown as ts.ClassDeclaration, context);
+		case  ts.SyntaxKind.InterfaceDeclaration:
+			return interfaceVisitor(nodeToVisit as unknown as ts.InterfaceDeclaration, context);
+		case  ts.SyntaxKind.TypeAliasDeclaration:
+			return typeAliasVisitor(nodeToVisit as unknown as ts.TypeAliasDeclaration, context);
+		case  ts.SyntaxKind.FunctionDeclaration:
+			return functionVisitor(nodeToVisit as unknown as ts.FunctionDeclaration, context);
+		// Interesting Statement
+		case  ts.SyntaxKind.ExpressionStatement:
+		case  ts.SyntaxKind.WhileStatement:
+		case  ts.SyntaxKind.DoStatement:
+		case  ts.SyntaxKind.ForStatement:
+		case  ts.SyntaxKind.ForInStatement:
+		case  ts.SyntaxKind.ForOfStatement:
+		case  ts.SyntaxKind.IfStatement:
+		case  ts.SyntaxKind.SwitchStatement:
+		case  ts.SyntaxKind.ThrowStatement:
+		case  ts.SyntaxKind.TryStatement:
+		case  ts.SyntaxKind.VariableStatement:
+		case  ts.SyntaxKind.WithStatement:
+		case  ts.SyntaxKind.Block:
+			return statementVisitor(nodeToVisit as ts.Statement, context);
 	}
 
-	if (ts.isInterfaceDeclaration(nodeToVisit))
-	{
-		return interfaceVisitor(nodeToVisit, context);
-	}
-
-	if (ts.isTypeAliasDeclaration(nodeToVisit))
-	{
-		return typeAliasVisitor(nodeToVisit, context);
-	}
-
-	if (ts.isFunctionDeclaration(nodeToVisit))
-	{
-		return functionVisitor(nodeToVisit, context);
-	}
-
-	if (isInterestingStatement(nodeToVisit))
-	{
-		return statementVisitor(nodeToVisit, context);
-	}
+	// if (ts.isClassDeclaration(nodeToVisit))
+	// {
+	// 	return classVisitor(nodeToVisit, context);
+	// }
+	//
+	// if (ts.isInterfaceDeclaration(nodeToVisit))
+	// {
+	// 	return interfaceVisitor(nodeToVisit, context);
+	// }
+	//
+	// if (ts.isTypeAliasDeclaration(nodeToVisit))
+	// {
+	// 	return typeAliasVisitor(nodeToVisit, context);
+	// }
+	//
+	// if (ts.isFunctionDeclaration(nodeToVisit))
+	// {
+	// 	return functionVisitor(nodeToVisit, context);
+	// }
+	//
+	// if (isInterestingStatement(nodeToVisit))
+	// {
+	// 	return statementVisitor(nodeToVisit, context);
+	// }
 
 	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
 

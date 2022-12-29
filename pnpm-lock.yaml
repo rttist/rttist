@@ -59,6 +59,15 @@ importers:
     devDependencies:
       tst-reflect-transformer: link:../../../packages/transformer
 
+  dev/hookyns/2:
+    specifiers:
+      rttist: workspace:*
+      tst-reflect-transformer: workspace:*
+    dependencies:
+      rttist: link:../../../packages/abstract
+    devDependencies:
+      tst-reflect-transformer: link:../../../packages/transformer
+
   packages/abstract:
     specifiers:
       '@rttist/core': workspace:*

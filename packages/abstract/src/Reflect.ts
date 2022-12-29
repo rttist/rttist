@@ -1,4 +1,5 @@
 import type { TypeReference }    from "./declarations";
+import { createCallsite }        from "./functions/createCallsite";
 import type { Type }             from "./Type";
 import { constructGeneric }      from "./functions/constructGeneric";
 import { getClassTypeParameter } from "./functions/getClassTypeParameter";
@@ -77,9 +78,18 @@ declare global
 		 * @param typeParameterIndex
 		 */
 		export function getClassTypeParameter(instance: any, typeParameterIndex: number): Type;
+
+		/**
+		 * @internal
+		 * @param fn
+		 * @param context
+		 * @param typeArgs
+		 * @param args
+		 */
+		export function createCallsite(fn: Function, context: any, typeArgs: { [typeParameterIndex: number]: TypeReference }, ...args: any[]): any;
 	}
 
-	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass" | "getClassTypeParameter">;
+	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass"/* | "getClassTypeParameter"*/>;
 
 	// const Rttist: {
 	// 	constructGeneric: typeof Reflect["constructGeneric"];
@@ -95,5 +105,6 @@ Reflect.resolveType = Metadata.resolveType.bind(Metadata);
 Reflect.getGenericClass = getGenericClass;
 Reflect.getClassTypeParameter = getClassTypeParameter;
 Reflect.constructGeneric = constructGeneric;
+Reflect.createCallsite = createCallsite;
 
 getGlobalThis()["Rttist"] = Reflect;

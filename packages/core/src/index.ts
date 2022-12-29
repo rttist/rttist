@@ -1,4 +1,5 @@
 export const PROTOTYPE_TYPE_PROPERTY = "[[type]]";
+export const CALLSITE_TYPE_ARGS_PROPERTY = "[[csArgs]]";
 
 export const ModuleIds = {
 	Native: "::native",

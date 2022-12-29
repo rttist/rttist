@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"module": "CommonJS",
+		"target": "ESNext",
+		"removeComments": false,
+		"declaration": true,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"rootDir": ".",
+		"outDir": "dist",
+		"plugins": [
+			{
+				"transform": "tst-reflect-transformer",
+				"reflection": {
+					"devMode": true
+				}
+			}
+		]
+	},
+	"include": [
+		"index.ts"
+	]
+}

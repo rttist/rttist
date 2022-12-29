@@ -11,10 +11,10 @@
 > Advanced TypeScript runtime reflection system, inspired by the C#'s reflection.
 
 
-<center style="float:left">
+<div style="float:left;padding-right:2em;">
 
-![Reflect](docs/_images/logo_256_flat.png)
-</center>
+![Reflect](docs/_images/logo-mark.png)
+</div>
 
 
 ## About

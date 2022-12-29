@@ -1,7 +1,7 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import * as ts                     from "typescript";
-import { Context }      from "../contexts/Context";
-import { toExpression } from "../utils/toExpression";
+import { Context }                 from "../contexts/Context";
+import { toExpression }            from "../utils/toExpression";
 
 export function classVisitor(declaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
@@ -14,13 +14,16 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 	);
 
 	return [
-		context.createNestedContext(visitClassDeclaration, nestContext => {
-			return ts.visitEachChild(
-				declaration,
-				nestContext.visitor,
-				context.transformationContext
-			);
-		}),
+		context.createNestedContext(
+			visitClassDeclaration,
+			nestContext => {
+				return ts.visitEachChild(
+					declaration,
+					nestContext.visitor,
+					context.transformationContext
+				);
+			}
+		),
 
 		// EMIT: ClassIdentifier.prototype[REFLECTED_TYPE_ID] = typeId;
 		ts.factory.createExpressionStatement(
@@ -111,12 +114,12 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 
 	if (ts.isMethodDeclaration(node))
 	{
-
+		// TODO: Invoke methodVisitor
 	}
 
 	if (ts.isConstructorDeclaration(node))
 	{
-
+		// TODO: Invoke constructorVisitor
 	}
 
 	return node;

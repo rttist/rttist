@@ -1,3 +1,156 @@
+import * as ts                      from "typescript";
+import { Context }                  from "../contexts/Context";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { getDeclaration }           from "../utils/symbolHelpers";
+import { toExpression }             from "../utils/toExpression";
+
+function createCallsiteGenerator(node: ts.CallExpression, typeArgTypes: Map<number, ts.Type>, context: Context)
+{
+	const obj: { [index: number]: TransformerTypeReference } = {};
+	for (const [index, type] of typeArgTypes.entries())
+	{
+		obj[index] = context.metadata.referenceType(
+			type,
+			undefined, // TODO: We should probably capture symbol too and pass it here
+			undefined,
+			context
+		);
+	}
+
+	return ts.factory.createCallExpression(
+		ts.factory.createPropertyAccessExpression(
+			ts.factory.createIdentifier("Rttist"), // TODO: use consts
+			ts.factory.createIdentifier("createCallsite")
+		),
+		undefined,
+		[
+			node.expression,
+			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
+			toExpression(obj),
+			...node.arguments
+		]
+	);
+	
+	// return ts.factory.updateCallExpression(
+	// 	node,
+	// 	ts.factory.createParenthesizedExpression(
+	// 		ts.factory.createCommaListExpression([
+	// 			ts.factory.createCallExpression(
+	// 				ts.factory.createPropertyAccessExpression(
+	// 					ts.factory.createIdentifier("Rttist"), // TODO: use consts
+	// 					ts.factory.createIdentifier("createCallsite")
+	// 				),
+	// 				undefined,
+	// 				[
+	// 					node.expression,
+	// 					ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
+	// 					toExpression(obj),
+	// 					...node.arguments
+	// 				]
+	// 			),
+	// 			node.expression
+	// 		])
+	// 	),
+	// 	node.typeArguments,
+	// 	node.arguments
+	// );
+
+	// createCallsite accept function and invoke that function inside (problem with context "this")
+	// return ts.factory.createCallExpression(
+	// 	ts.factory.createPropertyAccessExpression(
+	// 		ts.factory.createIdentifier("Rttist"), // TODO: use consts
+	// 		ts.factory.createIdentifier("createCallsite")
+	// 	),
+	// 	undefined,
+	// 	[
+	// 		node.expression,
+	//		obj
+	// 	]
+	// )
+}
+
+export function callExpressionVisitor(node: ts.CallExpression, context: Context)
+{
+	const typeArgTypes = new Map<number, ts.Type>();
+
+	// If Type Arguments defined
+	if (node.typeArguments !== undefined && node.typeArguments.length !== 0)
+	{
+		for (let index = 0; index < node.typeArguments.length; index++)
+		{
+			typeArgTypes.set(index, context.typeChecker.getTypeFromTypeNode(node.typeArguments[index]));
+		}
+	}
+	else
+	{
+		// Try to infer type arguments
+		if (!inferTypeArguments(node, typeArgTypes, context))
+		{
+			return node;
+		}
+	}
+
+	if (typeArgTypes.size !== 0)
+	{
+
+		console.log(...Array.from(typeArgTypes.entries()).map(([index, t]) => [index, t?.symbol?.name || ts.TypeFlags[t.flags]]));
+
+		return createCallsiteGenerator(
+			ts.visitEachChild(node, context.visitor, context.transformationContext),
+			typeArgTypes,
+			context
+		);
+	}
+
+	return ts.visitEachChild(node, context.visitor, context.transformationContext);
+}
+
+function inferTypeArguments(node: ts.CallExpression, typeArgTypes: Map<number, ts.Type>, context: Context): boolean
+{
+	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
+	let declaration: ts.SignatureDeclarationBase | undefined = symbol && getDeclaration(symbol);
+
+	if (!declaration)
+	{
+		context.log.info(`There is an callExpression '${node.expression.getText()}' but no declaration has been found.`);
+		return false;
+	}
+
+	// Return node, there is no type parameter, so there is nothing to do (no type info to pass).
+	if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0)
+	{
+		return false;
+	}
+
+	const typeParametersTypes = declaration.typeParameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
+
+	// Find parameters of generic type
+	for (let paramIndex = 0; paramIndex < declaration.parameters.length; paramIndex++)
+	{
+		const parameter: ts.ParameterDeclaration = declaration.parameters[paramIndex];
+
+		// Type of the parameter
+		let typeArgumentType = context.typeChecker.getTypeAtLocation(parameter);
+
+		// If the parameter is type parameter
+		if (typeArgumentType.flags === ts.TypeFlags.TypeParameter)
+		{
+			const indexOfTypeParam = typeParametersTypes.indexOf(typeArgumentType);
+
+			if (indexOfTypeParam !== -1)
+			{
+				typeArgTypes.set(
+					indexOfTypeParam,
+					context.typeChecker.getTypeAtLocation(node.arguments[paramIndex])
+				);
+			}
+		}
+	}
+
+	return true;
+}
+
+
 // import { PROTOTYPE_TYPE_PROPERTY }      from "@rttist/core";
 // import * as ts                          from "typescript";
 // import { Context }                      from "../contexts/Context";

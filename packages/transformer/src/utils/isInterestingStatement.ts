@@ -13,7 +13,7 @@ const INTERESTING_STATEMENT_KINDS = new Set<ts.SyntaxKind>([
 	ts.SyntaxKind.TryStatement,
 	ts.SyntaxKind.VariableStatement,
 	ts.SyntaxKind.WithStatement,
-	ts.SyntaxKind.Block,
+	ts.SyntaxKind.Block
 ]);
 
 export function isInterestingStatement(node: ts.Node): node is ts.Statement
