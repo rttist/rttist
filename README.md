@@ -14,6 +14,7 @@
 
 <img src="docs/_images/logo-mark.png" alt="Reflect" align="left" style="padding: 0 2em 2em 0">
 
+
 ## About
 <p style="text-align: justify">
 This project is all about runtime <strong>reflection</strong>. 
@@ -26,6 +27,14 @@ and modify your code slightly so you can reflect your types, even type parameter
 <p style="clear: both;"></p>
 
 For more information check our website [rttist.org](https://rttist.org) or docs [docs.rttist.org](https://docs.rttist.org).
+
+
+## Alpha
+This project is currently in alpha phase.
+There still may be some major changes, but no changes are expected.
+
+If you participate in Alpha, you can use our [discord](https://discord.gg/74qn6KPAUP).
+
 
 [//]: # (## Features)
 
@@ -94,12 +103,6 @@ if (type.isInterface()) {
     console.log(signatures); // > [ sayHello(), sayHello(toSomebody: string) ]
 }
 ```
-
-## Alpha
-This project is currently in alpha phase. 
-There still may be some major changes, but no changes are expected.
-
-If you participate in Alpha, you can use our [discord](https://discord.gg/74qn6KPAUP).
 
 ## License
 This project is licensed under the [MIT license](./LICENSE).
