@@ -10,8 +10,11 @@
 
 > Advanced TypeScript runtime reflection system, inspired by the C#'s reflection.
 
+<br>
+<br>
+<br>
 
-<img src="docs/_images/logo-mark.png" alt="Reflect" align="left" style="padding-right: 2em;">
+<img src="docs/_images/logo-mark.png" alt="Reflect" align="left" style="padding: 1em 2em 0 0">
 
 ## About
 <p style="text-align: justify">
