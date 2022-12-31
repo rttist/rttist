@@ -1,9 +1,9 @@
-[![tst-reflect](https://img.shields.io/npm/v/tst-reflect.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect)](https://www.npmjs.com/package/tst-reflect)
-[![tst-reflect-transformer](https://img.shields.io/npm/v/tst-reflect-transformer.svg?color=brightgreen&style=flat-square&logo=npm&label=tst-reflect-transformer)](https://www.npmjs.com/package/tst-reflect-transformer)
-[![License MIT](https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square)](https://opensource.org/licenses/MIT)
-![Code coverage](docs/_images/coverage-badge.svg)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![tst-reflect](https://img.shields.io/npm/v/rttist.svg?color=brightgreen&style=flat-square&logo=npm&label=rttist)](https://www.npmjs.com/package/rttist)
+[![License MIT](https://img.shields.io/badge/License-MIT-brightgreen?style=flat-square)](https://opensource.org/licenses/MIT)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+
+<!-- ![Code coverage](docs/_images/coverage-badge.svg) -->
 
 # RTTIST
 <sup><i>Pronounce /ˈɑː(r)tɪst/ the same as Artist.</i> Means Run-Time Type Information System for Typescript.</sup>
@@ -11,11 +11,7 @@
 > Advanced TypeScript runtime reflection system, inspired by the C#'s reflection.
 
 
-<div style="float:left;padding-right:2em;">
-
-![Reflect](docs/_images/logo-mark.png)
-</div>
-
+<img src="docs/_images/logo-mark.png" alt="Reflect" align="left" style="padding-right: 2em;">
 
 ## About
 <p style="text-align: justify">
@@ -28,109 +24,81 @@ and modify your code slightly so you can reflect your types, even type parameter
 
 <p style="clear: both;"></p>
 
-## Features
+For more information check our website [rttist.org](https://rttist.org) or docs [docs.rttist.org](https://docs.rttist.org).
 
-- Regular TypeScript, no annotations required to use the reflection,
-- generate metadata of modules and types,
-- dynamic imports of reflected types,
-- no problem with types from 3rd party packages,
-- reflection over classes, interfaces, type aliases, unions, intersections, just all of that,
-- reflection over runtime values (eg. get type of class' instance),
-- reflection over type parameters (function, method and class type parameters supported)
-- overloads of constructors, methods and functions supported,
-- reflection inside custom decorators,
-- check if one type is assignable to another without instances of those type,
-- static metadata library to lookup types and modules,
-- Plugins! You can write custom transformer plugin which will be executed in our context so you will have access to all the types. You can change them or just use them for something,
-- browser usage,
-- CJS & ESM,
-- but no pre-implemented features like validators or automatic type-guards!
+[//]: # (## Features)
+
+[//]: # ()
+[//]: # (- Regular TypeScript, no annotations required to use the reflection,)
+
+[//]: # (- generate metadata of modules and types,)
+
+[//]: # (- dynamic imports of reflected types,)
+
+[//]: # (- no problem with types from 3rd party packages,)
+
+[//]: # (- reflection over classes, interfaces, type aliases, unions, intersections, just all of that,)
+
+[//]: # (- reflection over runtime values &#40;eg. get type of class' instance&#41;,)
+
+[//]: # (- reflection over type parameters &#40;function, method and class type parameters supported&#41;)
+
+[//]: # (- overloads of constructors, methods and functions supported,)
+
+[//]: # (- reflection inside custom decorators,)
+
+[//]: # (- static type checking &#40;check if one type is derived from another without instances of those type&#41;,)
+
+[//]: # (- static metadata library to lookup types and modules,)
+
+[//]: # (- Plugins! You can write custom transformer plugin which will be executed in our context so you will have access to all the types. You can change them or just use them for own purposes,)
+
+[//]: # (- browser usage,)
+
+[//]: # (- CJS & ESM,)
+
+[//]: # (- but no pre-implemented features like validators or automatic type-guards!)
 
 ## Showcase
 [//]: # (TODO: List of StackBlitz examples)
 
 ```typescript
-import { Type } from "rttist";
+import { getType, Type, PropertyInfo, MethodInfo } from "rttist";
 
-abstract class AwesomeFeature {
-  protected constructor(protected isCool: boolean) {}
+interface Employee {
+    name: string;
+    salary: number;
+    sayHello();
+    sayHello(toSomebody: string);
 }
 
-class TypeScriptRuntimeReflection<TProps> extends AwesomeFeature {
-  like = ".NET";
-  props?: TProps;
+const type: Type = getType&lt;Employee>();
 
-  constructor(isCool: boolean)
-  constructor(isCool: boolean, props: TProps)
-  constructor(isCool: boolean, props?: TProps) {
-    super(isCool);
-    this.props = props;
-  }
+if (type.isInterface()) {
+    const properties = type.getProperties().map((prop: PropertyInfo) => prop.name);
+    const methods = type.getMethods().map((method: MethodInfo) => method.name);
+
+    console.log(properties); // > [ name, salary ]
+    console.log(methods); // > [ sayHello ]
+
+    const sayHelloMethod: MethodInfo = type.getMethods().find(m => m.name === "sayHello");
+    const signatures = sayHelloMethod.getSignatures()
+        .map(sig => {
+            const parameters = sig.getParameters()
+                .map(param => param.name + ": " + param.type.name);
+
+            return `sayHello(${parameters.join(", ")})`
+        });
+
+    console.log(signatures); // > [ sayHello(), sayHello(toSomebody: string) ]
 }
-
-// Here we have some function with type parameter
-function printTypeInfo<TType>() {
-  const type: Type = Reflect.getType<TType>(); // getting the type passed as type argument
-
-  console.log(`
-    Type name: ${type.name}, extends: ${type.baseType.name}
-      Constructors:`,
-        type.getConstructors().map(ctor => ctor.getParameters().map(param => `${param.name}: ${param.type.name}`)), `
-      Properties:`,
-        type.getProperties().map(prop => `${prop.name}: ${prop.type.name}`)
-  );
-}
-
-printTypeInfo<AwesomeFeature>();
-printTypeInfo<TypeScriptRuntimeReflection<{}>>();
 ```
 
+## Alpha
+This project is currently in alpha phase. 
+There still may be some major changes, but no changes are expected.
 
-## Contributors ✨
-
-Thanks go to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://bitbucket.org/HookCZ/"><img src="https://avatars.githubusercontent.com/u/2551259?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Roman Jámbor</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/commits?author=Hookyns" title="Code">💻</a> <a href="#maintenance-Hookyns" title="Maintenance">🚧</a> <a href="https://github.com/Hookyns/tst-reflect/commits?author=Hookyns" title="Documentation">📖</a> <a href="https://github.com/Hookyns/tst-reflect/pulls?q=is%3Apr+reviewed-by%3AHookyns" title="Reviewed Pull Requests">👀</a> <a href="#example-Hookyns" title="Examples">💡</a> <a href="#ideas-Hookyns" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-Hookyns" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#question-Hookyns" title="Answering Questions">💬</a> <a href="https://github.com/Hookyns/tst-reflect/commits?author=Hookyns" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://github.com/iDevelopThings"><img src="https://avatars.githubusercontent.com/u/4105581?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sam Parton</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/commits?author=iDevelopThings" title="Code">💻</a> <a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3AiDevelopThings" title="Bug reports">🐛</a> <a href="#ideas-iDevelopThings" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="http://filmos.net/"><img src="https://avatars.githubusercontent.com/u/78136833?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Filmos</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3AFilmos" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://dunglas.fr/"><img src="https://avatars.githubusercontent.com/u/57224?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kévin Dunglas</b></sub></a><br /><a href="#ideas-dunglas" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/usaccounts"><img src="https://avatars.githubusercontent.com/u/12177064?v=4?s=100" width="100px;" alt=""/><br /><sub><b>usaccounts</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Ausaccounts" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/caiodallecio"><img src="https://avatars.githubusercontent.com/u/20131875?v=4?s=100" width="100px;" alt=""/><br /><sub><b>caiodallecio</b></sub></a><br /><a href="#ideas-caiodallecio" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/hugebdu"><img src="https://avatars.githubusercontent.com/u/1109601?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Shmuglin</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Ahugebdu" title="Bug reports">🐛</a> <a href="#ideas-hugebdu" title="Ideas, Planning, & Feedback">🤔</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/avin-kavish"><img src="https://avatars.githubusercontent.com/u/48435155?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Avin</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Aavin-kavish" title="Bug reports">🐛</a> <a href="https://github.com/Hookyns/tst-reflect/commits?author=avin-kavish" title="Code">💻</a></td>
-    <td align="center"><a href="http://joeferner.github.io/"><img src="https://avatars.githubusercontent.com/u/808857?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Joe Ferner</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/commits?author=joeferner" title="Code">💻</a></td>
-    <td align="center"><a href="https://dhkatz.dev"><img src="https://avatars.githubusercontent.com/u/8341611?v=4?s=100" width="100px;" alt=""/><br /><sub><b>David Katz</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Adhkatz" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://experimental-learning.com/"><img src="https://avatars.githubusercontent.com/u/58147075?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jamesb &#124; Experimental Learning</b></sub></a><br /><a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Abjsi" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://www.linkedin.com/in/carloszimmerle/"><img src="https://avatars.githubusercontent.com/u/4553211?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Carlos Zimmerle</b></sub></a><br /><a href="#ideas-carloszimm" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/Hookyns/tst-reflect/issues?q=author%3Acarloszimm" title="Bug reports">🐛</a></td>
-  </tr>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-  </tr>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://allcontributors.org) specification.
-Contributions of any kind are welcome!
+If you participate in Alpha, you can use our [discord](https://discord.gg/74qn6KPAUP).
 
 ## License
 This project is licensed under the [MIT license](./LICENSE).
