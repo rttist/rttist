@@ -1,2 +1,0 @@
-- [Home](/)
-  - [About](/cz/README.md?id=about)

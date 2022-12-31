@@ -12,7 +12,6 @@
 		"tests"
 	],
 	"scripts": {
-		"startdocs": "docsify serve docs",
 		"tsc": "tsc --build",
 		"watch": "tsc --build --watch",
 		"test": "ttsc -p ./tests/tsconfig.json && ttsc -p ./tests/tsconfig-strict-null.json && ttsc -p ./tests/tsconfig-mjs.json && jest",
