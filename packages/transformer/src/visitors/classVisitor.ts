@@ -16,6 +16,7 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 	return [
 		context.createNestedContext(
 			visitClassDeclaration,
+			undefined,
 			nestContext => {
 				return ts.visitEachChild(
 					declaration,

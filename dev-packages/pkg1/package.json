@@ -24,6 +24,6 @@
 	"devDependencies": {
 		"tst-reflect-transformer": "workspace:*",
 		"typescript": "^4.8.3",
-		"ttypescript": "^1.5.13"
+		"ttypescript": "1.x"
 	}
 }

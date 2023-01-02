@@ -119,7 +119,10 @@ export class MetadataLibrary
 			|| (
 				typeRef.sourceFile
 				&& this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.typelibPath
-			))
+			)
+			|| typeRef.id === "@rttist/dist/Type" 
+			|| typeRef.id === "@rttist/dist/Module"
+		)
 		{
 			return typeRef;
 		}

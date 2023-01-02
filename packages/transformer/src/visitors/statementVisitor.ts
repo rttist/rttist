@@ -10,6 +10,7 @@ export function statementVisitor<TNode extends ts.Statement>(node: TNode, contex
 {
 	return context.createNestedContext(
 		visit,
+		undefined,
 		nestedContext => ts.visitEachChild(
 			node,
 			// visit(node, context), 

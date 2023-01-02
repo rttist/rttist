@@ -1,15 +1,15 @@
-import * as ts       from "typescript";
+import type * as ts from "typescript";
+import type {
+	NativeTransformerTypeReference,
+	TransformerNativeTypeReference
+} from "./general";
 import {
 	ModuleIdentifier,
 	TypeIdentifier,
 	TypeKind,
 	NativeTypeKind
-}                    from "rttist";
+} from "rttist";
 import { ModuleIds } from "@rttist/core";
-import {
-	NativeTransformerTypeReference,
-	TransformerNativeTypeReference
-}                    from "./general";
 
 /**
  * TypeReference used inside transformer. Change nativeReference to TyeKind -> remove TransformerNativeTypeReference
@@ -34,6 +34,8 @@ export class TransformerTypeReference
 	public static readonly Date = new TransformerTypeReference(ModuleIds.Native, "Date", TypeKind.Date);
 	public static readonly Error = new TransformerTypeReference(ModuleIds.Native, "Error", TypeKind.Error);
 	public static readonly RegExp = new TransformerTypeReference(ModuleIds.Native, "RegExp", TypeKind.RegExp);
+	public static readonly RttistType = new TransformerTypeReference(ModuleIds.Native, "Type", TypeKind.RttistType);
+	public static readonly RttistModule = new TransformerTypeReference(ModuleIds.Native, "Module", TypeKind.RttistModule);
 
 	private readonly _native: boolean;
 	private readonly _module: ModuleIdentifier;

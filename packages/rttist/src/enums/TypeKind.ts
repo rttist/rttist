@@ -54,6 +54,8 @@ export enum TypeKind
 	AsyncIteratorDefinition,
 	AsyncIterableDefinition,
 	AsyncIterableIteratorDefinition,
+	RttistType,
+	RttistModule,
 
 	Module = 60,
 	Namespace,
@@ -151,6 +153,9 @@ export type NativeTypeKind =
 	| TypeKind.AsyncIteratorDefinition
 	| TypeKind.AsyncIterableDefinition
 	| TypeKind.AsyncIterableIteratorDefinition
+	
+	| TypeKind.RttistType
+	| TypeKind.RttistModule
 	
 	| TypeKind.Invalid
 	;

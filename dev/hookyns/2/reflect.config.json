@@ -1,4 +1,6 @@
 {
-//	"logLevel": "Trace"
-	"logLevel": "Error"
+	"metadata": {
+		"encode": false
+	},
+	"logLevel": "Trace"
 }

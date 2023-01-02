@@ -1,8 +1,15 @@
 export const PROTOTYPE_TYPE_PROPERTY = "[[type]]";
-export const CALLSITE_TYPE_ARGS_PROPERTY = "[[csArgs]]";
+export const CALLSITE_TYPE_ARGS_PROPERTY = "[[csTArgs]]";
+export const RTTIST_NAMESPACE = "Rttist";
+export const FncNames = {
+	createCallsite: "cs$",
+	getClassTypeParameter: "getTP$"
+}
 
 export const ModuleIds = {
 	Native: "::native",
+	RttistType: "@rttist/dist/Type",
+	RttistModule: "@rttist/dist/Module",
 	Dynamic: "::dynamic",
 	Invalid: "::invalid",
 };

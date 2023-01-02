@@ -1,6 +1,7 @@
 import type { TypeReference }    from "./declarations";
-import { createCallsite }        from "./functions/createCallsite";
 import type { Type }             from "./Type";
+import { RTTIST_NAMESPACE }      from "@rttist/core";
+import { createCallsite }        from "./functions/createCallsite";
 import { constructGeneric }      from "./functions/constructGeneric";
 import { getClassTypeParameter } from "./functions/getClassTypeParameter";
 import { getGenericClass }       from "./functions/getGenericClass";
@@ -72,39 +73,37 @@ declare global
 			...typeParameters: Type[]
 		): T;
 
-		/**
-		 * @internal
-		 * @param instance
-		 * @param typeParameterIndex
-		 */
-		export function getClassTypeParameter(instance: any, typeParameterIndex: number): Type;
-
-		/**
-		 * @internal
-		 * @param fn
-		 * @param context
-		 * @param typeArgs
-		 * @param args
-		 */
-		export function createCallsite(fn: Function, context: any, typeArgs: { [typeParameterIndex: number]: TypeReference }, ...args: any[]): any;
+		// /**
+		//  * @internal
+		//  * @param instance
+		//  * @param typeParameterIndex
+		//  */
+		// export function getClassTypeParameter(instance: any, typeParameterIndex: number): Type;
+		//
+		// /**
+		//  * @internal
+		//  * @param fn
+		//  * @param context
+		//  * @param typeArgs
+		//  * @param args
+		//  */
+		// export function createCallsite(fn: Function, context: any, typeArgs: { [typeParameterIndex: number]: TypeReference }, ...args: any[]): any;
 	}
 
-	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass"/* | "getClassTypeParameter"*/>;
-
-	// const Rttist: {
-	// 	constructGeneric: typeof Reflect["constructGeneric"];
-	// 	getType: typeof Reflect["getType"];
-	// 	resolveType: typeof Reflect["resolveType"];
-	// 	getGenericClass: typeof Reflect["getGenericClass"];
-	// 	getClassTypeParameter: typeof Reflect["getClassTypeParameter"];
-	// };
+	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass">;
 }
 
-Reflect.getType = getType;
-Reflect.resolveType = Metadata.resolveType.bind(Metadata);
-Reflect.getGenericClass = getGenericClass;
-Reflect.getClassTypeParameter = getClassTypeParameter;
-Reflect.constructGeneric = constructGeneric;
-Reflect.createCallsite = createCallsite;
+let Rttist;
+getGlobalThis()[RTTIST_NAMESPACE] = Rttist = {
+	getType: getType,
+	resolveType: Metadata.resolveType.bind(Metadata),
+	getGenericClass: getGenericClass,
+	constructGeneric: constructGeneric,
+	getTp$: getClassTypeParameter,
+	cs$: createCallsite,
+};
 
-getGlobalThis()["Rttist"] = Reflect;
+for (let key of Object.keys(Rttist))
+{
+	(Reflect as any)[key] = Rttist[key];
+}

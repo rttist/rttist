@@ -1,6 +1,6 @@
 ﻿packages:
     - 'packages/core'
-    - 'packages/abstract'
+    - 'packages/rttist'
     - 'packages/runtime'
     - 'packages/transformer'
     - 'tests/'

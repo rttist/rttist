@@ -1,11 +1,11 @@
-﻿import * as ts                           from "typescript";
+﻿import type * as ts                      from "typescript";
 import type {
 	NativeTypeKind,
 	TypeIdentifier
-} from "rttist";
+}                                        from "rttist";
 import type { Context }                  from "../contexts/Context";
 import type { TransformerTypeReference } from "./TransformerTypeReference";
-import { TypeProperties }                from "./TypeProperties";
+import type { TypeProperties }           from "./TypeProperties";
 import type { TypePropertiesWithId }     from "./TypeProperties";
 
 /**

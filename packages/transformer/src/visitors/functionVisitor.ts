@@ -1,17 +1,22 @@
 import {
 	CALLSITE_TYPE_ARGS_PROPERTY,
 	PROTOTYPE_TYPE_PROPERTY
-}                                from "@rttist/core";
-import * as ts                   from "typescript";
-import { Context }               from "../contexts/Context";
-import { toExpression }          from "../utils/toExpression";
-import { callExpressionVisitor } from "./callExpressionVisitor";
-
-const TYPE_PARAMS = "__typeParams__";
+}                                             from "@rttist/core";
+import * as ts                                from "typescript";
+import { TYPE_PARAMS_VAR_NAME }               from "../consts";
+import { Context }                            from "../contexts/Context";
+import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
+import { toExpression }                       from "../utils/toExpression";
+import { callExpressionVisitor }              from "./callExpressionVisitor";
 
 export function functionVisitor(declaration: ts.FunctionDeclaration, context: Context): ts.VisitResult<ts.Node>
 {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
+	const typeParameters = declaration.typeParameters?.map(tp => tp.name.escapedText) ?? [];
+	// const typeParametersMap = getTypeParametersMap(declaration, context);
+
+	// createAccessToGenericParameter()
+	
 	const typeReference = context.metadata.referenceType(
 		type,
 		context.typeChecker.getSymbolAtLocation(declaration),
@@ -21,6 +26,10 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 
 	declaration = context.createNestedContext(
 		visitFunctionDeclaration,
+		(typeArgTypes, context) => {
+			
+			return directTypeCallsiteReferenceFactory(typeArgTypes, context);
+		},
 		nestedContext => ts.visitEachChild(
 			declaration,
 			nestedContext.visitor,
@@ -38,11 +47,16 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 		declaration.type,
 		ts.factory.createBlock(
 			[
+				// Declare variables for access to TypeParameters from Callsite
 				ts.factory.createVariableStatement(
 					undefined,
-					[
+					ts.factory.createVariableDeclarationList([
 						ts.factory.createVariableDeclaration(
-							TYPE_PARAMS,
+							ts.factory.createArrayBindingPattern(
+								typeParameters.map(tp => 
+									ts.factory.createBindingElement(undefined, undefined, TYPE_PARAMS_VAR_NAME + tp)
+								)
+							),
 							undefined,
 							undefined,
 							ts.factory.createElementAccessExpression(
@@ -50,7 +64,7 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 								ts.factory.createStringLiteral(CALLSITE_TYPE_ARGS_PROPERTY)
 							)
 						)
-					]
+					], ts.NodeFlags.Const)
 				),
 				declaration.body ?? ts.factory.createEmptyStatement()
 			]

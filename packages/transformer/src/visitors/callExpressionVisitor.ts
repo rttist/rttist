@@ -1,36 +1,39 @@
-import * as ts                      from "typescript";
-import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { getDeclaration }           from "../utils/symbolHelpers";
-import { toExpression }             from "../utils/toExpression";
+import { TYPE_PARAMS_VAR_NAME }   from "../consts";
+import type { CallsiteReference } from "../declarations/callsites";
+import * as ts                    from "typescript";
+import {
+	FncNames,
+	RTTIST_NAMESPACE
+}                                 from "@rttist/core";
+import { Context }                from "../contexts/Context";
+import { getDeclaration }         from "../utils/symbolHelpers";
+import { toExpression }           from "../utils/toExpression";
 
-function createCallsiteGenerator(node: ts.CallExpression, typeArgTypes: Map<number, ts.Type>, context: Context)
+function createCallsiteCallExpression(
+	node: ts.CallExpression,
+	callsiteReferences: CallsiteReference
+)
 {
-	const obj: { [index: number]: TransformerTypeReference } = {};
-	for (const [index, type] of typeArgTypes.entries())
-	{
-		obj[index] = context.metadata.referenceType(
-			type,
-			undefined, // TODO: We should probably capture symbol too and pass it here
-			undefined,
-			context
-		);
-	}
-
 	return ts.factory.createCallExpression(
 		ts.factory.createPropertyAccessExpression(
-			ts.factory.createIdentifier("Rttist"), // TODO: use consts
-			ts.factory.createIdentifier("createCallsite")
+			ts.factory.createIdentifier(RTTIST_NAMESPACE),
+			ts.factory.createIdentifier(FncNames.createCallsite)
 		),
 		undefined,
 		[
 			node.expression,
 			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
-			toExpression(obj),
+			ts.factory.createArrayLiteralExpression(callsiteReferences.map(reference => {
+				if (typeof (reference) === "string") {
+					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference)
+				}
+				
+				return toExpression(reference);
+			})),
 			...node.arguments
 		]
 	);
-	
+
 	// return ts.factory.updateCallExpression(
 	// 	node,
 	// 	ts.factory.createParenthesizedExpression(
@@ -71,41 +74,46 @@ function createCallsiteGenerator(node: ts.CallExpression, typeArgTypes: Map<numb
 
 export function callExpressionVisitor(node: ts.CallExpression, context: Context)
 {
-	const typeArgTypes = new Map<number, ts.Type>();
+	// const typeArgTypes = new Map<number, [ts.Type, ts.Symbol | undefined]>();
+	const typeArgTypes: Array<undefined | [ts.Type, ts.Symbol | undefined]> = [];
 
 	// If Type Arguments defined
 	if (node.typeArguments !== undefined && node.typeArguments.length !== 0)
 	{
 		for (let index = 0; index < node.typeArguments.length; index++)
 		{
-			typeArgTypes.set(index, context.typeChecker.getTypeFromTypeNode(node.typeArguments[index]));
+			typeArgTypes.push([
+				context.typeChecker.getTypeFromTypeNode(node.typeArguments[index]),
+				context.typeChecker.getSymbolAtLocation(node.typeArguments[index])
+			]);
 		}
 	}
 	else
 	{
 		// Try to infer type arguments
-		if (!inferTypeArguments(node, typeArgTypes, context))
-		{
-			return node;
-		}
+		inferTypeArguments(node, typeArgTypes, context);
 	}
 
-	if (typeArgTypes.size !== 0)
+	if (typeArgTypes.length !== 0)
 	{
+		console.log(...typeArgTypes
+			// .filter(entry => entry !== null)
+			.map(entry => entry === undefined ? undefined : [(entry[1] || entry[0].symbol)?.name || ts.TypeFlags[entry[0].flags]]));
 
-		console.log(...Array.from(typeArgTypes.entries()).map(([index, t]) => [index, t?.symbol?.name || ts.TypeFlags[t.flags]]));
-
-		return createCallsiteGenerator(
+		return createCallsiteCallExpression(
 			ts.visitEachChild(node, context.visitor, context.transformationContext),
-			typeArgTypes,
-			context
+			context.callsiteReferenceFactory(typeArgTypes, context)
 		);
 	}
 
 	return ts.visitEachChild(node, context.visitor, context.transformationContext);
 }
 
-function inferTypeArguments(node: ts.CallExpression, typeArgTypes: Map<number, ts.Type>, context: Context): boolean
+function inferTypeArguments(
+	node: ts.CallExpression,
+	typeArgTypes: Array<undefined | [ts.Type, ts.Symbol | undefined]>,
+	context: Context
+)
 {
 	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
 	let declaration: ts.SignatureDeclarationBase | undefined = symbol && getDeclaration(symbol);
@@ -113,41 +121,60 @@ function inferTypeArguments(node: ts.CallExpression, typeArgTypes: Map<number, t
 	if (!declaration)
 	{
 		context.log.info(`There is an callExpression '${node.expression.getText()}' but no declaration has been found.`);
-		return false;
+		return;
 	}
 
-	// Return node, there is no type parameter, so there is nothing to do (no type info to pass).
+	// Return node. There is no type parameter, so there is nothing to do (no type info to pass).
 	if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0)
 	{
-		return false;
+		return;
 	}
 
 	const typeParametersTypes = declaration.typeParameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
+	const parametersTypes = declaration.parameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
 
-	// Find parameters of generic type
-	for (let paramIndex = 0; paramIndex < declaration.parameters.length; paramIndex++)
+	for (const typeParameterType of typeParametersTypes)
 	{
-		const parameter: ts.ParameterDeclaration = declaration.parameters[paramIndex];
+		const parameterIndex = parametersTypes.indexOf(typeParameterType);
 
-		// Type of the parameter
-		let typeArgumentType = context.typeChecker.getTypeAtLocation(parameter);
-
-		// If the parameter is type parameter
-		if (typeArgumentType.flags === ts.TypeFlags.TypeParameter)
+		if (parameterIndex !== -1)
 		{
-			const indexOfTypeParam = typeParametersTypes.indexOf(typeArgumentType);
-
-			if (indexOfTypeParam !== -1)
-			{
-				typeArgTypes.set(
-					indexOfTypeParam,
-					context.typeChecker.getTypeAtLocation(node.arguments[paramIndex])
-				);
-			}
+			typeArgTypes.push([
+				context.typeChecker.getTypeAtLocation(node.arguments[parameterIndex]),
+				context.typeChecker.getSymbolAtLocation(node.arguments[parameterIndex])
+			]);
+		}
+		else
+		{
+			typeArgTypes.push(undefined);
 		}
 	}
 
-	return true;
+	// // Find parameters of generic type
+	// for (let paramIndex = 0; paramIndex < declaration.parameters.length; paramIndex++)
+	// {
+	// 	const parameter: ts.ParameterDeclaration = declaration.parameters[paramIndex];
+	//
+	// 	// Type of the parameter
+	// 	let typeArgumentType = context.typeChecker.getTypeAtLocation(parameter);
+	//
+	// 	// If the parameter is type parameter
+	// 	if (typeArgumentType.flags === ts.TypeFlags.TypeParameter)
+	// 	{
+	// 		const indexOfTypeParam = typeParametersTypes.indexOf(typeArgumentType);
+	//
+	// 		if (indexOfTypeParam !== -1)
+	// 		{
+	// 			typeArgTypes.set(
+	// 				indexOfTypeParam,
+	// 				[
+	// 					context.typeChecker.getTypeAtLocation(node.arguments[paramIndex]),
+	// 					context.typeChecker.getSymbolAtLocation(node.arguments[paramIndex])
+	// 				]
+	// 			);
+	// 		}
+	// 	}
+	// }
 }
 
 

@@ -42,7 +42,7 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/rttist/rttist.git",
-		"directory": "packages/abstract"
+		"directory": "packages/rttist"
 	},
 	"bugs": {
 		"url": "https://github.com/rttist/rttist/issues"

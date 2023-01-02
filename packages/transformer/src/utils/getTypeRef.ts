@@ -1,17 +1,20 @@
-import * as ts                       from "typescript";
 import { ModuleIds }                 from "@rttist/core";
+import { TypeKind }                  from "rttist";
+import * as ts                       from "typescript";
 import { SyntaxKind }                from "typescript/lib/tsserverlibrary";
 import { ESSymbols }                 from "../consts";
+import { TransformerContext }        from "../contexts/TransformerContext";
+import { printTypeDebugInfo }        from "../debugs/printTypeDebugInfo";
 import type {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference
 }                                    from "../declarations/general";
-import { TransformerContext }        from "../contexts/TransformerContext";
-import { printTypeDebugInfo }        from "../debugs/printTypeDebugInfo";
 import { TransformerTypeReference }  from "../declarations/TransformerTypeReference";
 import { log }                       from "../logging";
 import { getComplexNativeTypeRef }   from "../properties/getComplexNativeTypeRef";
+import { getLiteralTypeReference }   from "../properties/getLiteralTypeReference";
 import { getPrimitiveTypeReference } from "../properties/getPrimitiveTypeReference";
+import { getWellKnownTypeRef }       from "../properties/getWellKnownTypeRef";
 import { getSourceFileId }           from "./getSourceFileId";
 import { isExported }                from "./isExported";
 import { getDeclaration }            from "./symbolHelpers";
@@ -68,6 +71,13 @@ export function getTypeRef(
 	if (primitiveTypeReference !== undefined)
 	{
 		return primitiveTypeReference;
+	}
+	
+	const literalTypeReference = getLiteralTypeReference(type);
+
+	if (literalTypeReference !== undefined)
+	{
+		return literalTypeReference;
 	}
 
 	// const isAnonymous = ((type as any).objectFlags & ts.ObjectFlags.Anonymous) !== 0;
@@ -127,6 +137,13 @@ export function getTypeRef(
 	}
 	else
 	{
+		const knownTypeReference = getWellKnownTypeRef(sourceFileId, type, symbol);
+
+		if (knownTypeReference !== undefined)
+		{
+			return knownTypeReference;
+		}
+		
 		// TODO: It is important to distinguish Generic type definition and generic type
 		const typeArguments = (type as ts.GenericType).typeArguments
 			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)

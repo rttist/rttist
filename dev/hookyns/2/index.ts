@@ -1,31 +1,35 @@
-﻿import "rttist";
+﻿import { Type } from "rttist";
 
+// console.log(Reflect.getType<number>().name);
+//
+//
 function fn1<TType>(t: TType) {
-	// fn1(5);
-	// {
-		const fn1 = true;
-		return Reflect.getType<TType>();
-	// }
+	return Reflect.getType<TType>();
 }
 
 function fn2<UType, TType>(...t: TType[]) {
-	return fn1(t);
+	return fn1(t[0]);
 }
 
 const a = ["a", "b"];
 
-fn2("");
-fn2(3);
-fn2<true, string>(...a);
-fn2<object, number>(5);
+const reg = /[a-z]/;
 
-class Foo {
-	name = "Foo";
-	
-	bar<T>() {
-		return this.name;
-	}
-}
-
-const f = new Foo();
-f.bar<string>();
+console.log(fn1(reg).id);
+console.log(fn1("").id);
+console.log(fn1(3).id);
+console.log(fn1(9007199254740454498794654991n).id);
+console.log(fn2<true, string>(...a).id);
+const x: Type = fn2<object, number>(5);
+console.log(x.id);
+//
+// class Foo {
+// 	name = "Foo";
+//
+// 	bar<T>() {
+// 		return this.name;
+// 	}
+// }
+//
+// const f = new Foo();
+// f.bar<string>();

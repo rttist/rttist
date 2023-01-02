@@ -9,7 +9,7 @@ export const UnknownTypeProperties: TypeProperties = { kind: TypeKind.Unknown };
 /**
  * Name of parameter for method/function declarations containing generic getType() calls
  */
-export const TYPE_PARAMS_VAR_NAME = "__typeParams__";
+export const TYPE_PARAMS_VAR_NAME = "__tp$";
 
 /**
  * Package name/identifier

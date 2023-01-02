@@ -35,7 +35,7 @@ import {
 	TypeKind
 }                        from "./enums";
 
-const createdNativeTypes = new Set();
+const createdWellKnownTypes = new Set();
 
 /**
  * Object representing TypeScript type in memory
@@ -89,6 +89,8 @@ export class Type
 		"AsyncIterableIterator",
 		TypeKind.AsyncIterableIteratorDefinition
 	);
+	public static readonly Type = cn("Type", TypeKind.RttistType, "@rttist/dist/Type");
+	public static readonly Module = cn("Module", TypeKind.RttistModule, "@rttist/dist/Module");
 
 	/**
 	 * Configuration - global nullability of all the types (StrictNullChecks TS option).
@@ -116,7 +118,7 @@ export class Type
 	protected readonly _isGenericTypeDefinition: boolean;
 	/** @internal */
 	protected readonly _isIterable: boolean = false;
-	// /** @internal */
+
 	// protected readonly _hasIterator: boolean;
 
 	/**
@@ -191,9 +193,9 @@ export class Type
 	 */
 	constructor(initializer: TypeMetadata)
 	{
-		if (createdNativeTypes.has(initializer.kind))
+		if (createdWellKnownTypes.has(initializer.kind))
 		{
-			throw new Error("Cannot create native type multiple times.");
+			throw new Error("Cannot create well-known type multiple times.");
 		}
 
 		if (!initializer.module)
@@ -535,16 +537,16 @@ export class Type
 /**
  * Create native type from object.
  */
-function cn(name: string, kind: TypeKind): Type
+function cn(name: string, kind: TypeKind, module: string = ModuleIds.Native): Type
 {
 	const type = new Type({
 		kind,
 		name,
-		id: ModuleIds.Native + name,
-		module: ModuleIds.Native
+		id: module + "::" + name,
+		module: module
 	});
 
-	createdNativeTypes.add(type);
+	createdWellKnownTypes.add(type);
 
 	return type;
 }

@@ -26,10 +26,10 @@ importers:
     specifiers:
       rttist: workspace:*
       tst-reflect-transformer: workspace:*
-      ttypescript: ^1.5.13
+      ttypescript: 1.x
       typescript: ^4.8.3
     dependencies:
-      rttist: link:../../packages/abstract
+      rttist: link:../../packages/rttist
     devDependencies:
       tst-reflect-transformer: link:../../packages/transformer
       ttypescript: 1.5.13_typescript@4.8.3
@@ -41,7 +41,7 @@ importers:
       tst-reflect-transformer: workspace:*
       typescript: ^4.8.3
     dependencies:
-      rttist: link:../../packages/abstract
+      rttist: link:../../packages/rttist
     devDependencies:
       tst-reflect-transformer: link:../../packages/transformer
       typescript: 4.8.3
@@ -54,7 +54,7 @@ importers:
       tst-reflect-transformer: workspace:*
     dependencies:
       '@rttist/dev-pkg1': link:../../../dev-packages/pkg1
-      rttist: link:../../../packages/abstract
+      rttist: link:../../../packages/rttist
       tst-reflect: link:../../../packages/runtime
     devDependencies:
       tst-reflect-transformer: link:../../../packages/transformer
@@ -64,11 +64,17 @@ importers:
       rttist: workspace:*
       tst-reflect-transformer: workspace:*
     dependencies:
-      rttist: link:../../../packages/abstract
+      rttist: link:../../../packages/rttist
     devDependencies:
       tst-reflect-transformer: link:../../../packages/transformer
 
-  packages/abstract:
+  packages/core:
+    specifiers:
+      typescript: ^4.8.0
+    devDependencies:
+      typescript: 4.8.3
+
+  packages/rttist:
     specifiers:
       '@rttist/core': workspace:*
       rimraf: ^3.0.2
@@ -79,19 +85,13 @@ importers:
       rimraf: 3.0.2
       typescript: 4.8.3
 
-  packages/core:
-    specifiers:
-      typescript: ^4.8.0
-    devDependencies:
-      typescript: 4.8.3
-
   packages/runtime:
     specifiers:
       '@types/node': ^16.0.0
       rttist: workspace:*
       typescript: ^4.8.0
     dependencies:
-      rttist: link:../abstract
+      rttist: link:../rttist
     devDependencies:
       '@types/node': 16.11.58
       typescript: 4.8.3
@@ -114,7 +114,7 @@ importers:
       base32768: 3.0.1
       deasync: 0.1.28
       minimatch: 5.1.0
-      rttist: link:../abstract
+      rttist: link:../rttist
       typescript: 4.8.3
     devDependencies:
       '@types/deasync': 0.1.2
@@ -132,7 +132,7 @@ importers:
       '@types/jest': 27.5.2
       '@types/node': 16.11.58
       jest: 27.5.1
-      rttist: link:../packages/abstract
+      rttist: link:../packages/rttist
       tst-reflect-transformer: link:../packages/transformer
 
 packages:

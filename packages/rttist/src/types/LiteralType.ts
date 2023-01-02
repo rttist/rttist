@@ -71,7 +71,7 @@ export class LiteralType extends Type
 			case TypeKind.True:
 				return value === "true" || value === true;
 			case TypeKind.BigIntLiteral:
-				return BigInt(value);
+				return BigInt(value[value.length - 1] === "n" ? value.slice(0, -1) : value);
 			case TypeKind.RegExpLiteral:
 				return new RegExp(value);
 		}

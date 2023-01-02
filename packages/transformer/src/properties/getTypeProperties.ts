@@ -9,7 +9,10 @@ import {
 	TypeProperties
 }                                from "../declarations/TypeProperties";
 import { getDeclaration }        from "../utils/symbolHelpers";
-import { getMajorTypeFlag }      from "../utils/typeHelpers";
+import {
+	getMajorTypeFlag,
+	isLiteral
+} from "../utils/typeHelpers";
 import { getLiteralProperties }  from "./getLiteralProperties";
 import { mapConditional }        from "./mappers/mapConditional";
 import { mapEnum }               from "./mappers/mapEnum";
@@ -64,7 +67,7 @@ export function getTypeProperties(
 	// 		return primitiveTypeProperties;
 	// 	}
 
-	if (type.isLiteral())
+	if (isLiteral(type))
 	{
 		const literalDescriptionResult = getLiteralProperties(type, symbol, context);
 

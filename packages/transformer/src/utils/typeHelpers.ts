@@ -107,3 +107,14 @@ export function getUniqueSymbolName(type: ts.Type): string | undefined
 
 	return name;
 }
+
+const LiteralFlags = ts.TypeFlags.StringLiteral | ts.TypeFlags.NumberLiteral | ts.TypeFlags.BigIntLiteral;
+
+export function isLiteral(type: ts.Type): type is ts.LiteralType {
+	return (type.flags & LiteralFlags) !== 0;
+}
+
+export function toBigIntLiteral(value: ts.PseudoBigInt)
+{
+	return (value.negative ? "-" : "") + value.base10Value + "n";
+}

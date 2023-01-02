@@ -2,14 +2,20 @@ import * as ts                   from "typescript";
 import { TypeKind }              from "rttist";
 import { Context }               from "../contexts/Context";
 import { LiteralTypeProperties } from "../declarations/TypeProperties";
+import { toBigIntLiteral }       from "../utils/typeHelpers";
 import { mapEnumLiteral }        from "./mappers/mapEnumLiteral";
 
-export function getLiteralProperties(type: ts.LiteralType, symbol: ts.Symbol | undefined, context: Context): LiteralTypeProperties | undefined
+export function getLiteralProperties(
+	type: ts.LiteralType,
+	symbol: ts.Symbol | undefined,
+	context: Context
+): LiteralTypeProperties | undefined
 {
-	if ((type.flags & ts.TypeFlags.EnumLiteral) !== 0) {
+	if ((type.flags & ts.TypeFlags.EnumLiteral) !== 0)
+	{
 		return mapEnumLiteral(type, symbol, context);
 	}
-	
+
 	const props = {
 		kind: TypeKind.Unknown,
 		value: type.value
@@ -25,6 +31,7 @@ export function getLiteralProperties(type: ts.LiteralType, symbol: ts.Symbol | u
 			return props as LiteralTypeProperties;
 		case ts.TypeFlags.BigIntLiteral:
 			props.kind = TypeKind.BigIntLiteral;
+			props.value = toBigIntLiteral(type.value as ts.PseudoBigInt);
 			return props as LiteralTypeProperties;
 	}
 
