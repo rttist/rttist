@@ -24,7 +24,7 @@ and modify your code slightly so you can reflect your types, even type parameter
 
 <p style="clear: both;"></p>
 
-For more information check our website [rttist.org](https://rttist.org) or docs [docs.rttist.org](https://docs.rttist.org).
+For more information see our website [rttist.org](https://rttist.org) and docs [docs.rttist.org](https://docs.rttist.org).
 
 
 ## Alpha
