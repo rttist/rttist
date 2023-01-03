@@ -42,7 +42,7 @@ const createdWellKnownTypes = new Set();
  */
 export class Type
 {
-	public static readonly Invalid = cn("Invalid", TypeKind.Invalid);
+	public static readonly Invalid = cn("Invalid", TypeKind.Invalid, ModuleIds.Invalid);
 	public static readonly NonPrimitiveObject = cn("object", TypeKind.NonPrimitiveObject);
 	public static readonly Any = cn("any", TypeKind.Any);
 	public static readonly Unknown = cn("unknown", TypeKind.Unknown);

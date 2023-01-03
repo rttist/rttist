@@ -33,43 +33,6 @@ function createCallsiteCallExpression(
 			...node.arguments
 		]
 	);
-
-	// return ts.factory.updateCallExpression(
-	// 	node,
-	// 	ts.factory.createParenthesizedExpression(
-	// 		ts.factory.createCommaListExpression([
-	// 			ts.factory.createCallExpression(
-	// 				ts.factory.createPropertyAccessExpression(
-	// 					ts.factory.createIdentifier("Rttist"), // TODO: use consts
-	// 					ts.factory.createIdentifier("createCallsite")
-	// 				),
-	// 				undefined,
-	// 				[
-	// 					node.expression,
-	// 					ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
-	// 					toExpression(obj),
-	// 					...node.arguments
-	// 				]
-	// 			),
-	// 			node.expression
-	// 		])
-	// 	),
-	// 	node.typeArguments,
-	// 	node.arguments
-	// );
-
-	// createCallsite accept function and invoke that function inside (problem with context "this")
-	// return ts.factory.createCallExpression(
-	// 	ts.factory.createPropertyAccessExpression(
-	// 		ts.factory.createIdentifier("Rttist"), // TODO: use consts
-	// 		ts.factory.createIdentifier("createCallsite")
-	// 	),
-	// 	undefined,
-	// 	[
-	// 		node.expression,
-	//		obj
-	// 	]
-	// )
 }
 
 export function callExpressionVisitor(node: ts.CallExpression, context: Context)
@@ -96,10 +59,6 @@ export function callExpressionVisitor(node: ts.CallExpression, context: Context)
 
 	if (typeArgTypes.length !== 0)
 	{
-		console.log(...typeArgTypes
-			// .filter(entry => entry !== null)
-			.map(entry => entry === undefined ? undefined : [(entry[1] || entry[0].symbol)?.name || ts.TypeFlags[entry[0].flags]]));
-
 		return createCallsiteCallExpression(
 			ts.visitEachChild(node, context.visitor, context.transformationContext),
 			context.callsiteReferenceFactory(typeArgTypes, context)
@@ -149,32 +108,6 @@ function inferTypeArguments(
 			typeArgTypes.push(undefined);
 		}
 	}
-
-	// // Find parameters of generic type
-	// for (let paramIndex = 0; paramIndex < declaration.parameters.length; paramIndex++)
-	// {
-	// 	const parameter: ts.ParameterDeclaration = declaration.parameters[paramIndex];
-	//
-	// 	// Type of the parameter
-	// 	let typeArgumentType = context.typeChecker.getTypeAtLocation(parameter);
-	//
-	// 	// If the parameter is type parameter
-	// 	if (typeArgumentType.flags === ts.TypeFlags.TypeParameter)
-	// 	{
-	// 		const indexOfTypeParam = typeParametersTypes.indexOf(typeArgumentType);
-	//
-	// 		if (indexOfTypeParam !== -1)
-	// 		{
-	// 			typeArgTypes.set(
-	// 				indexOfTypeParam,
-	// 				[
-	// 					context.typeChecker.getTypeAtLocation(node.arguments[paramIndex]),
-	// 					context.typeChecker.getSymbolAtLocation(node.arguments[paramIndex])
-	// 				]
-	// 			);
-	// 		}
-	// 	}
-	// }
 }
 
 

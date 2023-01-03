@@ -4,8 +4,11 @@ export const RTTIST_NAMESPACE = "Rttist";
 
 export const FncNames = {
 	createCallsite: "cs$",
-	getClassTypeParameter: "getTP$"
-}
+	getClassTypeParameter: "getTP$",
+	invalidTypeGenerator: "utg$",
+	resolveFunctionCallsite: "resFnCs$",
+	resolveMethodCallsite: "resMCs$"
+} as const;
 
 export const ModuleIds = {
 	Native: "::native",
@@ -13,14 +16,14 @@ export const ModuleIds = {
 	Invalid: "::invalid",
 	RttistType: "@rttist/dist/Type",
 	RttistModule: "@rttist/dist/Module",
-};
+} as const;
 
 export const TypeIds = {
-	Invalid: "::invalid::id",
+	Invalid: ModuleIds.Invalid + "::Invalid",
 	Any: ModuleIds.Native + "::Any",
 	Unknown: ModuleIds.Native + "::Unknown",
 	Void: ModuleIds.Native + "::Void",
 	Never: ModuleIds.Native + "::Never",
 	Null: ModuleIds.Native + "::Null",
 	Undefined: ModuleIds.Native + "::Undefined",
-};
+} as const;

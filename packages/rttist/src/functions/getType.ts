@@ -15,12 +15,16 @@ export function getType<T>(...args: any[]): Type
 		return getTypeOfRuntimeValue(args[0]);
 	}
 
-	const callSiteTypeArg = (getType as any)[CALLSITE_TYPE_ARGS_PROPERTY]?.[0] as TypeReference;
+	const callsiteArgs: TypeReference[] | undefined = (getType as any)[CALLSITE_TYPE_ARGS_PROPERTY];
 	(getType as any)[CALLSITE_TYPE_ARGS_PROPERTY] = undefined;
 
-	if (callSiteTypeArg !== undefined)
+	if (callsiteArgs !== undefined)
 	{
-		return Reflect.resolveType(callSiteTypeArg);
+		if (callsiteArgs.length === 0 || callsiteArgs[0] === undefined) {
+			return Type.Invalid;
+		}
+		
+		return Reflect.resolveType(callsiteArgs[0]);
 	}
 
 	const globalObject = getGlobalThis();
@@ -36,6 +40,6 @@ export function getType<T>(...args: any[]): Type
 			"eg. `window['" + ERROR_DISABLE_PROPERTY_NAME + "'] = true;`");
 	}
 
-	// In case of direct call, we'll return Unknown type.
-	return Type.Unknown;
+	// In case of direct call without argument nor callsite, we'll return Invalid type.
+	return Type.Invalid;
 }

@@ -1,13 +1,19 @@
-import type { TypeReference }    from "./declarations";
-import type { Type }             from "./Type";
-import { RTTIST_NAMESPACE }      from "@rttist/core";
-import { createCallsite }        from "./functions/createCallsite";
-import { constructGeneric }      from "./functions/constructGeneric";
-import { getClassTypeParameter } from "./functions/getClassTypeParameter";
-import { getGenericClass }       from "./functions/getGenericClass";
-import { getType }               from "./functions/getType";
-import { Metadata }              from "./Metadata";
-import { getGlobalThis }         from "./utils/getGlobalThis";
+import type { TypeReference }      from "./declarations";
+import type { Type }               from "./Type";
+import { resolveFunctionCallsite } from "./functions/resolveFunctionCallsite";
+import { resolveMethodCallsite }   from "./functions/resolveMethodCallsite";
+import { unknownTypeGenerator }    from "./functions/unknownTypeGenerator";
+import {
+	FncNames,
+	RTTIST_NAMESPACE
+}                                  from "@rttist/core";
+import { createCallsite }          from "./functions/createCallsite";
+import { constructGeneric }        from "./functions/constructGeneric";
+import { getClassTypeParameter }   from "./functions/getClassTypeParameter";
+import { getGenericClass }         from "./functions/getGenericClass";
+import { getType }                 from "./functions/getType";
+import { Metadata }                from "./Metadata";
+import { getGlobalThis }           from "./utils/getGlobalThis";
 
 declare global
 {
@@ -93,17 +99,20 @@ declare global
 	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass">;
 }
 
-let Rttist;
-getGlobalThis()[RTTIST_NAMESPACE] = Rttist = {
+let RttistObj;
+getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	getType: getType,
 	resolveType: Metadata.resolveType.bind(Metadata),
 	getGenericClass: getGenericClass,
 	constructGeneric: constructGeneric,
-	getTp$: getClassTypeParameter,
-	cs$: createCallsite,
+	[FncNames.getClassTypeParameter]: getClassTypeParameter,
+	[FncNames.createCallsite]: createCallsite,
+	[FncNames.invalidTypeGenerator]: unknownTypeGenerator,
+	[FncNames.resolveFunctionCallsite]: resolveFunctionCallsite,
+	[FncNames.resolveMethodCallsite]: resolveMethodCallsite,
 };
 
-for (let key of Object.keys(Rttist))
+for (let key of Object.keys(RttistObj))
 {
-	(Reflect as any)[key] = Rttist[key];
+	(Reflect as any)[key] = RttistObj[key];
 }

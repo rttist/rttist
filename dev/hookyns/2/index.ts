@@ -4,7 +4,7 @@
 //
 //
 function fn1<TType>(t: TType) {
-	return Reflect.getType<TType>();
+	return Rttist.getType<TType>();
 }
 
 function fn2<UType, TType>(...t: TType[]) {
@@ -22,14 +22,14 @@ console.log(fn1(9007199254740454498794654991n).id);
 console.log(fn2<true, string>(...a).id);
 const x: Type = fn2<object, number>(5);
 console.log(x.id);
-//
-// class Foo {
-// 	name = "Foo";
-//
-// 	bar<T>() {
-// 		return this.name;
-// 	}
-// }
-//
-// const f = new Foo();
-// f.bar<string>();
+
+class Foo {
+	name = "Foo";
+
+	bar<T>() {
+		return this.name;
+	}
+}
+
+const f = new Foo();
+f.bar<string>();

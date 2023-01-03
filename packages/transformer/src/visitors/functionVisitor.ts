@@ -1,6 +1,7 @@
 import {
-	CALLSITE_TYPE_ARGS_PROPERTY,
-	PROTOTYPE_TYPE_PROPERTY
+	FncNames,
+	PROTOTYPE_TYPE_PROPERTY,
+	RTTIST_NAMESPACE
 }                                             from "@rttist/core";
 import * as ts                                from "typescript";
 import { TYPE_PARAMS_VAR_NAME }               from "../consts";
@@ -13,10 +14,7 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeParameters = declaration.typeParameters?.map(tp => tp.name.escapedText) ?? [];
-	// const typeParametersMap = getTypeParametersMap(declaration, context);
 
-	// createAccessToGenericParameter()
-	
 	const typeReference = context.metadata.referenceType(
 		type,
 		context.typeChecker.getSymbolAtLocation(declaration),
@@ -27,7 +25,7 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 	declaration = context.createNestedContext(
 		visitFunctionDeclaration,
 		(typeArgTypes, context) => {
-			
+
 			return directTypeCallsiteReferenceFactory(typeArgTypes, context);
 		},
 		nestedContext => ts.visitEachChild(
@@ -53,15 +51,21 @@ export function functionVisitor(declaration: ts.FunctionDeclaration, context: Co
 					ts.factory.createVariableDeclarationList([
 						ts.factory.createVariableDeclaration(
 							ts.factory.createArrayBindingPattern(
-								typeParameters.map(tp => 
+								typeParameters.map(tp =>
 									ts.factory.createBindingElement(undefined, undefined, TYPE_PARAMS_VAR_NAME + tp)
 								)
 							),
 							undefined,
 							undefined,
-							ts.factory.createElementAccessExpression(
-								declaration.name!, // TODO: May be undefined
-								ts.factory.createStringLiteral(CALLSITE_TYPE_ARGS_PROPERTY)
+							ts.factory.createCallExpression(
+								ts.factory.createPropertyAccessExpression(
+									ts.factory.createIdentifier(RTTIST_NAMESPACE),
+									FncNames.resolveFunctionCallsite
+								),
+								undefined,
+								[
+									declaration.name!, // TODO: May be undefined
+								]
 							)
 						)
 					], ts.NodeFlags.Const)

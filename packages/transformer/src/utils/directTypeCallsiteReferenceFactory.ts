@@ -34,25 +34,4 @@ export function directTypeCallsiteReferenceFactory(
 			);
 		}
 	);
-
-	// const obj: { [index: number]: TransformerTypeReference } = {};
-	// for (const entry of typeArgTypes.entries())
-	// {
-	// 	const [type, symbol] = entry;
-	// 	if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
-	// 	{
-	//
-	// 	}
-	// 	else
-	// 	{
-	// 		obj[index] = context.metadata.referenceType(
-	// 			type,
-	// 			symbol,
-	// 			undefined,
-	// 			context
-	// 		);
-	// 	}
-	// }
-	//
-	// return obj;
 }

@@ -59,7 +59,10 @@ export class Module
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._childrenRefs = new LazyModuleArray(initializer.children || []);
-		this._types = Object.freeze((initializer.types || []).map(typeMetadata => TypeFactory.create(typeMetadata)));
+		this._types = Object.freeze((initializer.types || []).map(typeMetadata => {
+			typeMetadata.module = initializer.id;
+			return TypeFactory.create(typeMetadata);
+		}));
 	}
 
 	/**
