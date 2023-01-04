@@ -10,7 +10,7 @@
 
 <br>
 
-<img src="docs/_images/logo-mark.png" alt="Reflect" align="left" style="padding: 0 2em 2em 0">
+<img src="assets/images/logo-mark.png" alt="Reflect" align="left" style="padding: 0 2em 2em 0">
 
 
 ## About
