@@ -1,10 +1,9 @@
 import * as ts                    from "typescript";
 import { Context }                from "../contexts/Context";
-import { isInterestingStatement } from "../utils/isInterestingStatement";
+import { callExpressionVisitor }  from "./callExpressionVisitor";
 import { classVisitor }           from "./classVisitor";
 import { functionVisitor }        from "./functionVisitor";
 import { interfaceVisitor }       from "./interfaceVisitor";
-import { statementVisitor }       from "./statementVisitor";
 import { typeAliasVisitor }       from "./typeAliasVisitor";
 
 /**
@@ -16,30 +15,20 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 {
 	switch (nodeToVisit.kind)
 	{
+		case  ts.SyntaxKind.ClassExpression: // TODO: Update classVisitor to support CLassExpression
 		case  ts.SyntaxKind.ClassDeclaration:
 			return classVisitor(nodeToVisit as unknown as ts.ClassDeclaration, context);
 		case  ts.SyntaxKind.InterfaceDeclaration:
 			return interfaceVisitor(nodeToVisit as unknown as ts.InterfaceDeclaration, context);
 		case  ts.SyntaxKind.TypeAliasDeclaration:
 			return typeAliasVisitor(nodeToVisit as unknown as ts.TypeAliasDeclaration, context);
+		case  ts.SyntaxKind.MethodDeclaration: // This will be called only if declared in objects; class methods are handled inside classVisitor
+		case  ts.SyntaxKind.FunctionExpression:
 		case  ts.SyntaxKind.FunctionDeclaration:
 			return functionVisitor(nodeToVisit as unknown as ts.FunctionDeclaration, context);
-		// Interesting Statements
-		case  ts.SyntaxKind.ExpressionStatement:
-		case  ts.SyntaxKind.WhileStatement:
-		case  ts.SyntaxKind.DoStatement:
-		case  ts.SyntaxKind.ForStatement:
-		case  ts.SyntaxKind.ForInStatement:
-		case  ts.SyntaxKind.ForOfStatement:
-		case  ts.SyntaxKind.IfStatement:
-		case  ts.SyntaxKind.SwitchStatement:
-		case  ts.SyntaxKind.ThrowStatement:
-		case  ts.SyntaxKind.TryStatement:
-		case  ts.SyntaxKind.VariableStatement:
-		case  ts.SyntaxKind.WithStatement:
-		case  ts.SyntaxKind.Block:
-			return statementVisitor(nodeToVisit as ts.Statement, context);
+		case ts.SyntaxKind.CallExpression:
+			return callExpressionVisitor(nodeToVisit as ts.CallExpression, context);
 	}
-
+	
 	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
 }

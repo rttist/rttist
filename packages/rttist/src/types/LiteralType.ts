@@ -78,4 +78,9 @@ export class LiteralType extends Type
 
 		return value;
 	}
+	
+	toString(): string
+	{
+		return `${TypeKind[this._kind]}\(${this.value})`;
+	}
 }

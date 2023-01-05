@@ -8,6 +8,7 @@ import {
 import { Context }                from "../contexts/Context";
 import { getDeclaration }         from "../utils/symbolHelpers";
 import { toExpression }           from "../utils/toExpression";
+import { getNodeLocationText }    from "../utils/traceHelpers";
 
 function createCallsiteCallExpression(
 	node: ts.CallExpression,
@@ -75,11 +76,16 @@ function inferTypeArguments(
 )
 {
 	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
-	let declaration: ts.SignatureDeclarationBase | undefined = symbol && getDeclaration(symbol);
+	const symbolDeclaration: ts.Declaration | undefined = symbol && getDeclaration(symbol);
+	let declaration: ts.SignatureDeclarationBase | undefined = symbolDeclaration as ts.SignatureDeclarationBase | undefined;
+	
+	if (symbolDeclaration && (ts.isVariableDeclaration(symbolDeclaration) || ts.isPropertyAssignment(symbolDeclaration) || ts.isPropertyDeclaration(symbolDeclaration))) {
+		declaration = symbolDeclaration.initializer as ts.SignatureDeclarationBase | undefined;
+	}
 
 	if (!declaration)
 	{
-		context.log.info(`There is an callExpression '${node.expression.getText()}' but no declaration has been found.`);
+		context.log.info(`There is an callExpression but no declaration of function/method has been found.\n\t`, getNodeLocationText(node));
 		return;
 	}
 
@@ -105,6 +111,8 @@ function inferTypeArguments(
 		}
 		else
 		{
+			// In this case, we can enhance infer logic,.. but it would be complex...
+			context.log.warn("Failed to infer type parameter from call-expression's argument.\n\t", getNodeLocationText(node));
 			typeArgTypes.push(undefined);
 		}
 	}

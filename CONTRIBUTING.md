@@ -35,3 +35,4 @@ To enable developer mode and logging, you must update reflect.config.
 ## Some rules
 
 * Use type imports `import type {} from ""` whenever it is possible. In rttist package there is problem with circular dependencies so type imports help to identify issues.
+* Use `===` equality.

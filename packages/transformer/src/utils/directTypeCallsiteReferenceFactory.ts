@@ -19,11 +19,9 @@ export function directTypeCallsiteReferenceFactory(
 
 			if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
 			{
-				return symbol !== undefined
-					? symbol.escapedName!
-					: type.symbol !== undefined
-						? type.symbol.escapedName!
-						: TransformerTypeReference.Unknown;
+				return type.symbol !== undefined
+					? type.symbol.escapedName!
+					: TransformerTypeReference.Unknown;
 			}
 
 			return context.metadata.referenceType(
