@@ -28,8 +28,8 @@ export { constructGeneric }      from "./functions/constructGeneric";
 export { getGenericClass }       from "./functions/getGenericClass";
 export *                         from "./factories";
 
-LazyType.resolver = Metadata.resolveType;
-LazyModule.resolver = Metadata.resolveModule;
+LazyType.resolver = Metadata.resolveType.bind(Metadata);
+LazyModule.resolver = Metadata.resolveModule.bind(Metadata);
 
 Metadata.addType(
 	Type.Invalid,

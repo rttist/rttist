@@ -7,7 +7,9 @@ export const FncNames = {
 	getClassTypeParameter: "getTP$",
 	invalidTypeGenerator: "utg$",
 	resolveFunctionCallsite: "resFnCs$",
-	resolveMethodCallsite: "resMCs$"
+	resolveMethodCallsite: "resMCs$",
+	getGenericClass: "getGenericClass",
+	constructGeneric: "constructGeneric",
 } as const;
 
 export const ModuleIds = {

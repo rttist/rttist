@@ -1,80 +1,12 @@
-import { TYPE_PARAMS_VAR_NAME }               from "../consts";
-import type { CallsiteReference }             from "../declarations/callsites";
+import type { Context }                       from "../contexts/Context";
 import * as ts                                from "typescript";
-import {
-	FncNames,
-	RTTIST_NAMESPACE
-}                                             from "@rttist/core";
-import { Context }                            from "../contexts/Context";
-import { ClassTypeReference }                 from "../declarations/ClassTypeReference";
-import { ContextTypeReference }               from "../declarations/ContextTypeReference";
-import { getNodeLocationText }                from "../tracers/getNodeLocationText";
+import { createCallsiteCallExpression }       from "../ast-utils/createCallsiteCallExpression";
+import { getArgumentsTypes }                  from "../ast-utils/getArgumentsTypes";
 import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
-import { getDeclaration }                     from "../utils/symbolHelpers";
-import { toExpression }                       from "../utils/toExpression";
 
-function createCallsiteCallExpression(
-	node: ts.CallExpression,
-	callsiteReferences: CallsiteReference
-)
+export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression, context: Context)
 {
-	return ts.factory.createCallExpression(
-		ts.factory.createPropertyAccessExpression(
-			ts.factory.createIdentifier(RTTIST_NAMESPACE),
-			ts.factory.createIdentifier(FncNames.createCallsite)
-		),
-		undefined,
-		[
-			node.expression,
-			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
-			ts.factory.createArrayLiteralExpression(callsiteReferences.map(reference => {
-				if (reference instanceof ContextTypeReference)
-				{
-					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference.typeName);
-				}
-
-				if (reference instanceof ClassTypeReference)
-				{
-					return ts.factory.createCallExpression(
-						ts.factory.createPropertyAccessExpression(
-							ts.factory.createIdentifier(RTTIST_NAMESPACE),
-							FncNames.getClassTypeParameter
-						), 
-						undefined,
-						[
-							ts.factory.createStringLiteral(reference.typeName)
-						]
-					);
-				}
-
-				return toExpression(reference);
-			})),
-			...node.arguments
-		]
-	);
-}
-
-export function callExpressionVisitor(node: ts.CallExpression, context: Context)
-{
-	// const typeArgTypes = new Map<number, [ts.Type, ts.Symbol | undefined]>();
-	const typeArgTypes: Array<undefined | [ts.Type, ts.Symbol | undefined]> = [];
-
-	// If Type Arguments defined
-	if (node.typeArguments !== undefined && node.typeArguments.length !== 0)
-	{
-		for (let index = 0; index < node.typeArguments.length; index++)
-		{
-			typeArgTypes.push([
-				context.typeChecker.getTypeFromTypeNode(node.typeArguments[index]),
-				context.typeChecker.getSymbolAtLocation(node.typeArguments[index])
-			]);
-		}
-	}
-	else
-	{
-		// Try to infer type arguments
-		inferTypeArguments(node, typeArgTypes, context);
-	}
+	const typeArgTypes = getArgumentsTypes(node, context);
 
 	if (typeArgTypes.length !== 0)
 	{
@@ -85,63 +17,6 @@ export function callExpressionVisitor(node: ts.CallExpression, context: Context)
 	}
 
 	return ts.visitEachChild(node, context.visitor, context.transformationContext);
-}
-
-function inferTypeArguments(
-	node: ts.CallExpression,
-	typeArgTypes: Array<undefined | [ts.Type, ts.Symbol | undefined]>,
-	context: Context
-)
-{
-	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
-	const symbolDeclaration: ts.Declaration | undefined = symbol && getDeclaration(symbol);
-	let declaration: ts.SignatureDeclarationBase | undefined = symbolDeclaration as ts.SignatureDeclarationBase | undefined;
-
-	if (symbolDeclaration && (ts.isVariableDeclaration(symbolDeclaration) || ts.isPropertyAssignment(symbolDeclaration) || ts.isPropertyDeclaration(
-		symbolDeclaration)))
-	{
-		declaration = symbolDeclaration.initializer as ts.SignatureDeclarationBase | undefined;
-	}
-
-	if (!declaration)
-	{
-		context.log.info(
-			`There is an callExpression but no declaration of function/method has been found.\n\t`,
-			getNodeLocationText(node)
-		);
-		return;
-	}
-
-	// Return node. There is no type parameter, so there is nothing to do (no type info to pass).
-	if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0)
-	{
-		return;
-	}
-
-	const typeParametersTypes = declaration.typeParameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
-	const parametersTypes = declaration.parameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
-
-	for (const typeParameterType of typeParametersTypes)
-	{
-		const parameterIndex = parametersTypes.indexOf(typeParameterType);
-
-		if (parameterIndex !== -1)
-		{
-			typeArgTypes.push([
-				context.typeChecker.getTypeAtLocation(node.arguments[parameterIndex]),
-				context.typeChecker.getSymbolAtLocation(node.arguments[parameterIndex])
-			]);
-		}
-		else
-		{
-			// In this case, we can enhance infer logic,.. but it would be complex...
-			context.log.warn(
-				"Failed to infer type parameter from call-expression's argument.\n\t",
-				getNodeLocationText(node)
-			);
-			typeArgTypes.push(undefined);
-		}
-	}
 }
 
 

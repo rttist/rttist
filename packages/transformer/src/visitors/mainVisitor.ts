@@ -1,10 +1,11 @@
-import * as ts                    from "typescript";
-import { Context }                from "../contexts/Context";
-import { callExpressionVisitor }  from "./callExpressionVisitor";
-import { classVisitor }           from "./classVisitor";
-import { functionVisitor }        from "./functionVisitor";
-import { interfaceVisitor }       from "./interfaceVisitor";
-import { typeAliasVisitor }       from "./typeAliasVisitor";
+import * as ts                   from "typescript";
+import { Context }               from "../contexts/Context";
+import { callExpressionVisitor } from "./callExpressionVisitor";
+import { classVisitor }          from "./classVisitor";
+import { functionVisitor }       from "./functionVisitor";
+import { interfaceVisitor }      from "./interfaceVisitor";
+import { newExpressionVisitor }  from "./newExpressionVisitor";
+import { typeAliasVisitor }      from "./typeAliasVisitor";
 
 /**
  * Main visitor, splitting visitation into specific parts
@@ -26,9 +27,11 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 		case  ts.SyntaxKind.FunctionExpression:
 		case  ts.SyntaxKind.FunctionDeclaration:
 			return functionVisitor(nodeToVisit as unknown as ts.FunctionDeclaration, context);
-		case ts.SyntaxKind.CallExpression:
+		case ts.SyntaxKind.CallExpression: // TODO: Handle Reflect.apply() etc.
 			return callExpressionVisitor(nodeToVisit as ts.CallExpression, context);
+		case ts.SyntaxKind.NewExpression:
+			return newExpressionVisitor(nodeToVisit as ts.NewExpression, context);
 	}
-	
+
 	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
 }

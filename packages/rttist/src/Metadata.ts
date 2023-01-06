@@ -153,10 +153,10 @@ class MetadataLibrary
 			}
 
 			console.error("Type referenced by", reference, "not found.");
-			return Type.Unknown;
+			return Type.Invalid;
 		}
 
-		return this.types.get(reference) ?? Type.Unknown;
+		return this.types.get(reference) ?? Type.Invalid;
 	}
 
 	/**

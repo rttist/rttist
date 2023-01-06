@@ -28,10 +28,10 @@ class Foo<U = void> {
 		return [Reflect.getType<T>(), Reflect.getType<U>()];
 	}
 }
-//
-// const f = new Foo<number>();
-// console.log("f", f.bar<string>()[0].name, f.bar<string>()[1].name);
-//
+
+const f = new Foo<number>();
+console.log("f", f.bar<string>()[0].toString(), f.bar<string>()[1].toString());
+
 // OBJECTS ----------------
 const b = {
 	name: "Bar",

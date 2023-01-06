@@ -2,6 +2,7 @@ import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import * as ts                     from "typescript";
 import { Context }                 from "../contexts/Context";
 import { toExpression }            from "../utils/toExpression";
+import { functionVisitor }         from "./functionVisitor";
 
 export function classVisitor(declaration: ts.ClassDeclaration | ts.ClassExpression, context: Context): ts.VisitResult<ts.Node>
 {
@@ -108,7 +109,7 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 
 	if (ts.isMethodDeclaration(node))
 	{
-		// TODO: Invoke methodVisitor
+		return functionVisitor(node, context);
 	}
 
 	if (ts.isConstructorDeclaration(node))

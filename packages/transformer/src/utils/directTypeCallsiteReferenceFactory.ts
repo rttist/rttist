@@ -21,15 +21,17 @@ export function directTypeCallsiteReferenceFactory(
 
 			if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
 			{
-				// TODO: Make while traversing over "parent"s; we can have class inside class inside function etc..
-				if (context.node && (/*ts.isFunctionLike(context.node) || */ts.isClassLike(context.node)))
+				let ctx: Context | undefined = context;
+
+				while (ctx !== undefined)
 				{
-					if (context.node.typeParameters?.some(tp => context.typeChecker.getTypeAtLocation(tp) === type))
+					if (ctx.node !== undefined && ts.isClassLike(ctx.node)
+						&& ctx.node.typeParameters?.some(tp => context.typeChecker.getTypeAtLocation(tp) === type))
 					{
-						// if (ts.isFunctionLike(context.node)) {
 						return new ClassTypeReference(type.symbol.escapedName + "");
-						// }
 					}
+
+					ctx = ctx.parent;
 				}
 
 				return type.symbol !== undefined

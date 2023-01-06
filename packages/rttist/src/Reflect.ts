@@ -103,8 +103,8 @@ let RttistObj;
 getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	getType: getType,
 	resolveType: Metadata.resolveType.bind(Metadata),
-	getGenericClass: getGenericClass,
-	constructGeneric: constructGeneric,
+	[FncNames.getGenericClass]: getGenericClass,
+	[FncNames.constructGeneric]: constructGeneric,
 	[FncNames.getClassTypeParameter]: getClassTypeParameter,
 	[FncNames.createCallsite]: createCallsite,
 	[FncNames.invalidTypeGenerator]: unknownTypeGenerator,

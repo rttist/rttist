@@ -3,7 +3,6 @@ import {
 	PROTOTYPE_TYPE_PROPERTY,
 	RTTIST_NAMESPACE
 }                                   from "@rttist/core";
-import { FunctionExpression }       from "typescript";
 import * as ts                      from "typescript";
 import { TYPE_PARAMS_VAR_NAME }     from "../consts";
 import { Context }                  from "../contexts/Context";
@@ -137,13 +136,13 @@ function createCallsiteVariableStatement(
 	declaration: ts.FunctionExpression | ts.FunctionDeclaration | ts.MethodDeclaration
 )
 {
-	const functionRef = ts.isMethodDeclaration(declaration) 
+	const functionRef = ts.isMethodDeclaration(declaration)
 		? ts.factory.createPropertyAccessExpression(
 			ts.factory.createThis(),
 			functionName
 		)
 		: functionName;
-	
+
 	return ts.factory.createVariableStatement(
 		undefined,
 		ts.factory.createVariableDeclarationList([
