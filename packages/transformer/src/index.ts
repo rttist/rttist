@@ -13,13 +13,13 @@ export default function transform(
 {
 	// Create configuration object
 	const config = new Config(program, configParams?.reflection || {});
-	
+
 	// Add default plugin
 	config.plugins.unshift(new DefaultPlugin());
-	
+
 	// Set logging level
 	Logger.setLevel(config.logLevel);
-	
+
 	// Initiate global TransformerContext
 	TransformerContext.init(program, config);
 

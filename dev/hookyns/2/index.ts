@@ -1,35 +1,48 @@
 ﻿import { Type } from "rttist";
 
-// console.log(Reflect.getType<number>().name);
-//
-//
+// FUNCTIONS ----------------
 function fn1<TType>(t: TType) {
 	return Rttist.getType<TType>();
 }
 
-function fn2<UType, TType>(...t: TType[]) {
-	return fn1(t[0]);
+const fn2 = function<UType, TType>(t: TType) {
+	return fn1(t);
 }
 
-const a = ["a", "b"];
+console.log(fn2("ff").toString());
+console.log(fn1<boolean>(null as any).toString());
 
-const reg = /[a-z]/;
-
-console.log(fn1(reg).id);
-console.log(fn1("").id);
-console.log(fn1(3).id);
-console.log(fn1(9007199254740454498794654991n).id);
-console.log(fn2<true, string>(...a).id);
-const x: Type = fn2<object, number>(5);
-console.log(x.id);
-
-class Foo {
+// CLASS ----------------
+class Foo<U = void> {
 	name = "Foo";
 
+	constructor(..._: U extends void ? ["You have to set Type Parameter"] : [])
+	{
+	}
+
 	bar<T>() {
-		return this.name;
+		if (this.name !== "Foo") {
+			throw new Error("Name in Foo is not 'Foo'!");
+		}
+
+		return [Reflect.getType<T>(), Reflect.getType<U>()];
+	}
+}
+//
+// const f = new Foo<number>();
+// console.log("f", f.bar<string>()[0].name, f.bar<string>()[1].name);
+//
+// OBJECTS ----------------
+const b = {
+	name: "Bar",
+
+	bar<T>() {
+		if (this.name !== "Bar") {
+			throw new Error("Name in b.bar is not 'Bar'!");
+		}
+
+		return Reflect.getType<T>();
 	}
 }
 
-const f = new Foo();
-f.bar<string>();
+console.log("b", b.bar<string>().toString());

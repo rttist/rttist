@@ -1,14 +1,17 @@
-import { TYPE_PARAMS_VAR_NAME }   from "../consts";
-import type { CallsiteReference } from "../declarations/callsites";
-import * as ts                    from "typescript";
+import { TYPE_PARAMS_VAR_NAME }               from "../consts";
+import type { CallsiteReference }             from "../declarations/callsites";
+import * as ts                                from "typescript";
 import {
 	FncNames,
 	RTTIST_NAMESPACE
-}                                 from "@rttist/core";
-import { Context }                from "../contexts/Context";
-import { getNodeLocationText }    from "../tracers/getNodeLocationText";
-import { getDeclaration }         from "../utils/symbolHelpers";
-import { toExpression }           from "../utils/toExpression";
+}                                             from "@rttist/core";
+import { Context }                            from "../contexts/Context";
+import { ClassTypeReference }                 from "../declarations/ClassTypeReference";
+import { ContextTypeReference }               from "../declarations/ContextTypeReference";
+import { getNodeLocationText }                from "../tracers/getNodeLocationText";
+import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
+import { getDeclaration }                     from "../utils/symbolHelpers";
+import { toExpression }                       from "../utils/toExpression";
 
 function createCallsiteCallExpression(
 	node: ts.CallExpression,
@@ -25,9 +28,23 @@ function createCallsiteCallExpression(
 			node.expression,
 			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
 			ts.factory.createArrayLiteralExpression(callsiteReferences.map(reference => {
-				if (typeof (reference) === "string")
+				if (reference instanceof ContextTypeReference)
 				{
-					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference);
+					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference.typeName);
+				}
+
+				if (reference instanceof ClassTypeReference)
+				{
+					return ts.factory.createCallExpression(
+						ts.factory.createPropertyAccessExpression(
+							ts.factory.createIdentifier(RTTIST_NAMESPACE),
+							FncNames.getClassTypeParameter
+						), 
+						undefined,
+						[
+							ts.factory.createStringLiteral(reference.typeName)
+						]
+					);
 				}
 
 				return toExpression(reference);
@@ -63,7 +80,7 @@ export function callExpressionVisitor(node: ts.CallExpression, context: Context)
 	{
 		return createCallsiteCallExpression(
 			ts.visitEachChild(node, context.visitor, context.transformationContext),
-			context.callsiteReferenceFactory(typeArgTypes, context)
+			directTypeCallsiteReferenceFactory(typeArgTypes, context)
 		);
 	}
 

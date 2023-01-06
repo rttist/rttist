@@ -2,14 +2,14 @@ import {
 	FncNames,
 	PROTOTYPE_TYPE_PROPERTY,
 	RTTIST_NAMESPACE
-}                                             from "@rttist/core";
-import * as ts                                from "typescript";
-import { TYPE_PARAMS_VAR_NAME }               from "../consts";
-import { Context }                            from "../contexts/Context";
-import { TransformerTypeReference }           from "../declarations/TransformerTypeReference";
-import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
-import { toExpression }                       from "../utils/toExpression";
-import { mainVisitor }                        from "./mainVisitor";
+}                                   from "@rttist/core";
+import { FunctionExpression }       from "typescript";
+import * as ts                      from "typescript";
+import { TYPE_PARAMS_VAR_NAME }     from "../consts";
+import { Context }                  from "../contexts/Context";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { toExpression }             from "../utils/toExpression";
+import { mainVisitor }              from "./mainVisitor";
 
 export function functionVisitor(
 	declaration: ts.FunctionLikeDeclarationBase,
@@ -45,7 +45,7 @@ export function functionVisitor(
 			declaration.typeParameters,
 			declaration.parameters,
 			declaration.type,
-			recreateBody(typeParameters, functionName as ts.Identifier, declaration.body)
+			recreateBody(typeParameters, functionName as ts.Identifier, declaration)
 		);
 
 		return [
@@ -55,7 +55,7 @@ export function functionVisitor(
 			createPrototypeTypeIdAssignment(functionName as ts.Identifier, typeReference)
 		];
 	}
-	
+
 	if (ts.isMethodDeclaration(declaration))
 	{
 		return ts.factory.updateMethodDeclaration(
@@ -67,10 +67,10 @@ export function functionVisitor(
 			declaration.typeParameters,
 			declaration.parameters,
 			declaration.type,
-			recreateBody(typeParameters, functionName as ts.Identifier, declaration.body)
+			recreateBody(typeParameters, functionName as ts.Identifier, declaration)
 		);
 	}
-	
+
 	if (ts.isFunctionExpression(declaration))
 	{
 		declaration = ts.factory.updateFunctionExpression(
@@ -81,7 +81,7 @@ export function functionVisitor(
 			declaration.typeParameters,
 			declaration.parameters,
 			declaration.type,
-			recreateBody(typeParameters, functionName as ts.Identifier, declaration.body)
+			recreateBody(typeParameters, functionName as ts.Identifier, declaration)
 		);
 
 		const localFnName = ts.factory.createIdentifier("f");
@@ -100,7 +100,12 @@ export function functionVisitor(
 							undefined,
 							ts.factory.createVariableDeclarationList(
 								[
-									ts.factory.createVariableDeclaration(localFnName, undefined, undefined, declaration as ts.FunctionExpression)
+									ts.factory.createVariableDeclaration(
+										localFnName,
+										undefined,
+										undefined,
+										declaration as ts.FunctionExpression
+									)
 								],
 								ts.NodeFlags.Const
 							)
@@ -128,9 +133,17 @@ function visitFunctionDeclaration(node: ts.Node, context: Context): ts.VisitResu
 
 function createCallsiteVariableStatement(
 	typeParameters: string[],
-	functionName: ts.Identifier
+	functionName: ts.Identifier,
+	declaration: ts.FunctionExpression | ts.FunctionDeclaration | ts.MethodDeclaration
 )
 {
+	const functionRef = ts.isMethodDeclaration(declaration) 
+		? ts.factory.createPropertyAccessExpression(
+			ts.factory.createThis(),
+			functionName
+		)
+		: functionName;
+	
 	return ts.factory.createVariableStatement(
 		undefined,
 		ts.factory.createVariableDeclarationList([
@@ -149,7 +162,7 @@ function createCallsiteVariableStatement(
 					),
 					undefined,
 					[
-						functionName
+						functionRef
 					]
 				)
 			)
@@ -157,13 +170,17 @@ function createCallsiteVariableStatement(
 	);
 }
 
-function recreateBody(typeParameters: string[], functionName: ts.Identifier, body: ts.Block | undefined)
+function recreateBody(
+	typeParameters: string[],
+	functionName: ts.Identifier,
+	declaration: ts.FunctionExpression | ts.FunctionDeclaration | ts.MethodDeclaration
+)
 {
 	return ts.factory.createBlock(
 		[
 			// Declare variables for access to TypeParameters from Callsite
-			createCallsiteVariableStatement(typeParameters, functionName),
-			body ?? ts.factory.createEmptyStatement()
+			createCallsiteVariableStatement(typeParameters, functionName, declaration),
+			declaration.body ?? ts.factory.createEmptyStatement()
 		]
 	);
 }
