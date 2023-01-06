@@ -1,31 +1,31 @@
-import { TypeKind }              from "rttist";
-import * as ts                   from "typescript";
+import { TypeKind } from "rttist";
+import * as ts from "typescript";
 import { UnknownTypeProperties } from "../consts";
-import { Context }               from "../contexts/Context";
-import { printTypeDebugInfo }    from "../debugs/printTypeDebugInfo";
-import { TypeMapper }            from "../declarations/mappers";
+import { Context } from "../contexts/Context";
+import { TypeMapper } from "../declarations/mappers";
 import {
 	TypeAliasProperties,
 	TypeProperties
-}                                from "../declarations/TypeProperties";
-import { getDeclaration }        from "../utils/symbolHelpers";
+} from "../declarations/TypeProperties";
+import { printTypeDebugInfo } from "../tracers/printTypeDebugInfo";
+import { getDeclaration } from "../utils/symbolHelpers";
 import {
 	getMajorTypeFlag,
 	isLiteral
 } from "../utils/typeHelpers";
-import { getLiteralProperties }  from "./getLiteralProperties";
-import { mapConditional }        from "./mappers/mapConditional";
-import { mapEnum }               from "./mappers/mapEnum";
-import { mapEnumLiteral }        from "./mappers/mapEnumLiteral";
-import { mapIndex }              from "./mappers/mapIndex";
-import { mapIndexedAccessType }  from "./mappers/mapIndexedAccessType";
-import { mapIntersection }       from "./mappers/mapIntersection";
-import { mapObject }             from "./mappers/mapObject";
-import { mapStringMapping }      from "./mappers/mapStringMapping";
-import { mapTemplateLiteral }    from "./mappers/mapTemplateLiteral";
-import { mapTypeParameter }      from "./mappers/mapTypeParameter";
-import { mapUnion }              from "./mappers/mapUnion";
-import { mapUniqueSymbol }       from "./mappers/mapUniqueSymbol";
+import { getLiteralProperties } from "./getLiteralProperties";
+import { mapConditional } from "./mappers/mapConditional";
+import { mapEnum } from "./mappers/mapEnum";
+import { mapEnumLiteral } from "./mappers/mapEnumLiteral";
+import { mapIndex } from "./mappers/mapIndex";
+import { mapIndexedAccessType } from "./mappers/mapIndexedAccessType";
+import { mapIntersection } from "./mappers/mapIntersection";
+import { mapObject } from "./mappers/mapObject";
+import { mapStringMapping } from "./mappers/mapStringMapping";
+import { mapTemplateLiteral } from "./mappers/mapTemplateLiteral";
+import { mapTypeParameter } from "./mappers/mapTypeParameter";
+import { mapUnion } from "./mappers/mapUnion";
+import { mapUniqueSymbol } from "./mappers/mapUniqueSymbol";
 
 const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.TypeFlags.Enum]: mapEnum as TypeMapper,
@@ -130,7 +130,10 @@ export function getTypeProperties(
 		}
 		else
 		{
-			context.log.warn("No mapper found for an EnumLike type.\n\t" + printTypeDebugInfo(type, context.typeChecker));
+			context.log.warn("No mapper found for an EnumLike type.\n\t" + printTypeDebugInfo(
+				type,
+				context.typeChecker
+			));
 			return UnknownTypeProperties;
 		}
 	}

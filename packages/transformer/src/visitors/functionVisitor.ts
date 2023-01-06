@@ -26,18 +26,10 @@ export function functionVisitor(
 		context
 	);
 
-	declaration = context.createNestedContext(
-		visitFunctionDeclaration,
-		(typeArgTypes, context) => {
-
-			return directTypeCallsiteReferenceFactory(typeArgTypes, context);
-		},
-		nestedContext => ts.visitEachChild(
-			declaration,
-			nestedContext.visitor,
-			context.transformationContext
-		)
-	);
+	declaration = context.visitWithNewContext(
+		declaration,
+		visitFunctionDeclaration
+	) as ts.FunctionLikeDeclarationBase;
 
 	const functionName = declaration.name || ts.factory.createIdentifier(
 		"__fn" + (context.typeChecker.getTypeAtLocation(declaration) as any).id

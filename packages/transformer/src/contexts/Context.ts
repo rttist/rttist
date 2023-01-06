@@ -1,41 +1,39 @@
-import * as ts                                from "typescript";
 import type { CallsiteReferenceFactory }      from "../declarations/callsites";
 import type { TransformerVisitor }            from "../declarations/general";
+import * as ts                                from "typescript";
+import { Logger }                             from "../logging";
+import { MetadataLibrary }                    from "../metadata/MetadataLibrary";
+import { getNodeLocationText }                from "../tracers/getNodeLocationText";
 import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
-import type { SourceFileContext }             from "./SourceFileContext";
+import { TransformerContext }                 from "./TransformerContext";
 
 /**
  * Context of visitors
  */
 export class Context
 {
-	private readonly _sourceFileContext: SourceFileContext;
-	private readonly _visitor: ts.Visitor;
+	public readonly metadata: MetadataLibrary;
+	public readonly transformationContext: ts.TransformationContext;
+	public readonly program: ts.Program;
+	public readonly typeChecker: ts.TypeChecker;
+	public readonly transformerContext: TransformerContext;
+	public readonly log: Logger;
+	public readonly node: ts.Node;
+	public readonly parent?: Context;
+	public readonly visitor: ts.Visitor;
+
+
+	// private readonly _sourceFileContext: SourceFileContext;
 	private readonly _callsiteReferenceFactory: CallsiteReferenceFactory;
 
-	/**
-	 * When visiting declaration bodies, names of generic types used in getType() are inserted into this array.
-	 */
-	public usedGenericParameters: Array<string> = [];
-
-	get metadata()
-	{
-		return this._sourceFileContext.metadata;
-	}
-
-	get log()
-	{
-		return this._sourceFileContext.log;
-	}
+	// /**
+	//  * When visiting declaration bodies, names of generic types used in getType() are inserted into this array.
+	//  */
+	// public usedGenericParameters: Array<string> = [];
 
 	get config()
 	{
-		return this._sourceFileContext.transformerContext.config;
-	}
-
-	get visitor(): ts.Visitor
-	{
-		return this._visitor;
+		return this.transformerContext.config;
 	}
 
 	get callsiteReferenceFactory(): CallsiteReferenceFactory
@@ -43,33 +41,27 @@ export class Context
 		return this._callsiteReferenceFactory;
 	}
 
-	get transformationContext(): ts.TransformationContext
-	{
-		return this._sourceFileContext.transformationContext;
-	}
-
-	get typeChecker(): ts.TypeChecker
-	{
-		return this._sourceFileContext.checker;
-	}
-
-	get program(): ts.Program
-	{
-		return this._sourceFileContext.program;
-	}
-
 	constructor(
-		sourceFileContext: SourceFileContext,
-		visitor: TransformerVisitor,
-		callsiteReferenceFactory?: CallsiteReferenceFactory
+		parent: Context | undefined,
+		transformerContext: TransformerContext,
+		transformationContext: ts.TransformationContext,
+		node: ts.Node,
+		visitor: TransformerVisitor
 	)
 	{
-		this._sourceFileContext = sourceFileContext;
-		this._visitor = (node: ts.Node) => visitor(node, this);
-		this._callsiteReferenceFactory = callsiteReferenceFactory ?? directTypeCallsiteReferenceFactory;
+		this.log = new Logger(getNodeLocationText(node));
+		this.node = node;
+		this.parent = parent;
+		this.transformerContext = transformerContext;
+		this.transformationContext = transformationContext;
+		this.program = transformerContext.program;
+		this.typeChecker = transformerContext.typeChecker;
+		this.metadata = transformerContext.metadata;
+		this.visitor = (node: ts.Node) => visitor(node, this);
+		this._callsiteReferenceFactory = /*callsiteReferenceFactory ?? */directTypeCallsiteReferenceFactory;
 	}
 
-	visit(node: ts.Node): ts.VisitResult<ts.Node>
+	visitWithCurrentContext(node: ts.Node): ts.VisitResult<ts.Node>
 	{
 		return this.visitor(node);
 	}
@@ -87,31 +79,36 @@ export class Context
 	// 	}
 	// }
 
-	visitFunctionLikeDeclaration(node: ts.FunctionLikeDeclarationBase): void
-	{
-		ts.visitEachChild(node, this.visitor, this._sourceFileContext.transformationContext);
-	}
+	// visitFunctionLikeDeclaration(node: ts.FunctionLikeDeclarationBase): void
+	// {
+	// 	ts.visitEachChild(node, this.visitor, this._sourceFileContext.transformationContext);
+	// }
 
-	createNestedContext<TReturn = undefined>(
-		visitor: TransformerVisitor,
-		callsiteReferenceFactory: CallsiteReferenceFactory | undefined,
-		contextAction: (context: Context) => TReturn
-	): TReturn
+	visitWithNewContext(node: ts.Node, visitor: TransformerVisitor): ts.Node
 	{
-		const context = new Context(this._sourceFileContext, visitor, callsiteReferenceFactory);
-		return contextAction(context);
+		const context = new Context(this, this.transformerContext, this.transformationContext, node, visitor);
+
+		return ts.visitEachChild(
+			node,
+			context.visitor,
+			context.transformationContext
+		);
 	}
 
 	get currentSourceFile(): ts.SourceFile
 	{
-		return this._sourceFileContext.sourceFile;
-	}
+		let node: ts.Node | undefined = this.node;
 
-	// /**
-	//  * Get the metadata library writer handler
-	//  */
-	// get metaWriter(): IMetadataWriter
-	// {
-	// 	return this._sourceFileContext.metaWriter;
-	// }
+		while (node)
+		{
+			if (ts.isSourceFile(node))
+			{
+				return node;
+			}
+
+			node = this.parent?.node;
+		}
+
+		throw new Error("No SourceFile found in contexts.");
+	}
 }

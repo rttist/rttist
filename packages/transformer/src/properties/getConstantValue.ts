@@ -1,6 +1,6 @@
 import { Context }             from "../contexts/Context";
 import * as ts                 from "typescript";
-import { getNodeLocationText } from "../utils/traceHelpers";
+import { getNodeLocationText } from "../tracers/getNodeLocationText";
 
 export function getConstantValue(
 	node: ts.Node,

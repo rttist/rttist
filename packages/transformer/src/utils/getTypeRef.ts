@@ -1,20 +1,19 @@
-import { ModuleIds }                 from "@rttist/core";
-import { TypeKind }                  from "rttist";
-import * as ts                       from "typescript";
-import { SyntaxKind }                from "typescript/lib/tsserverlibrary";
-import { ESSymbols }                 from "../consts";
-import { TransformerContext }        from "../contexts/TransformerContext";
-import { printTypeDebugInfo }        from "../debugs/printTypeDebugInfo";
 import type {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference
 }                                    from "../declarations/general";
+import { ModuleIds }                 from "@rttist/core";
+import * as ts                       from "typescript";
+import { SyntaxKind }                from "typescript/lib/tsserverlibrary";
+import { ESSymbols }                 from "../consts";
+import { TransformerContext }        from "../contexts/TransformerContext";
 import { TransformerTypeReference }  from "../declarations/TransformerTypeReference";
 import { log }                       from "../logging";
 import { getComplexNativeTypeRef }   from "../properties/getComplexNativeTypeRef";
 import { getLiteralTypeReference }   from "../properties/getLiteralTypeReference";
 import { getPrimitiveTypeReference } from "../properties/getPrimitiveTypeReference";
 import { getWellKnownTypeRef }       from "../properties/getWellKnownTypeRef";
+import { printTypeDebugInfo }        from "../tracers/printTypeDebugInfo";
 import { getSourceFileId }           from "./getSourceFileId";
 import { isExported }                from "./isExported";
 import { getDeclaration }            from "./symbolHelpers";
@@ -72,7 +71,7 @@ export function getTypeRef(
 	{
 		return primitiveTypeReference;
 	}
-	
+
 	const literalTypeReference = getLiteralTypeReference(type);
 
 	if (literalTypeReference !== undefined)
@@ -143,7 +142,7 @@ export function getTypeRef(
 		{
 			return knownTypeReference;
 		}
-		
+
 		// TODO: It is important to distinguish Generic type definition and generic type
 		const typeArguments = (type as ts.GenericType).typeArguments
 			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
@@ -213,7 +212,8 @@ export function getTypeRef(
 					sourceFile
 				);
 			}
-			else {
+			else
+			{
 				log.debug("Handled as union: ", printTypeDebugInfo(type, typeChecker));
 			}
 		}
@@ -316,10 +316,11 @@ function getTypeRefWithoutDeclaration(
 
 function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker)
 {
-	if ((type.flags & ts.TypeFlags.EnumLike) !== 0) {
+	if ((type.flags & ts.TypeFlags.EnumLike) !== 0)
+	{
 		return undefined;
 	}
-	
+
 	if (type.isUnion())
 	{
 		return new TransformerTypeReference(

@@ -1,16 +1,16 @@
-import * as ts                      from "typescript";
-import {
+import type {
 	ModuleIdentifier,
 	TypeIdentifier
-}                                   from "rttist";
-import { Context }                  from "../contexts/Context";
-import { printTypeDebugInfo }       from "../debugs/printTypeDebugInfo";
-import { TypeInfo }                 from "../declarations/general";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { DependencyManager }        from "../dependencies/DependencyManager";
-import { getTypeRef }               from "../utils/getTypeRef";
-import { MetadataNodeFactory }      from "./MetadataNodeFactory";
-import { ModuleMetadata }           from "./ModuleMetadata";
+}                                        from "rttist";
+import type { Context }                  from "../contexts/Context";
+import type { TypeInfo }                 from "../declarations/general";
+import type { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import * as ts                           from "typescript";
+import { DependencyManager }             from "../dependencies/DependencyManager";
+import { printTypeDebugInfo }            from "../tracers/printTypeDebugInfo";
+import { getTypeRef }                    from "../utils/getTypeRef";
+import { MetadataNodeFactory }           from "./MetadataNodeFactory";
+import { ModuleMetadata }                from "./ModuleMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -120,7 +120,7 @@ export class MetadataLibrary
 				typeRef.sourceFile
 				&& this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.typelibPath
 			)
-			|| typeRef.id === "@rttist/dist/Type" 
+			|| typeRef.id === "@rttist/dist/Type"
 			|| typeRef.id === "@rttist/dist/Module"
 		)
 		{
@@ -163,7 +163,7 @@ export class MetadataLibrary
 				);
 
 				return ModuleMetadata.Invalid;
-				// return typeRef; // TODO: Test if we can do this -> do not return here but add it no Unknown module.
+				// return typeRef; // TODO: Test if we can do this -> do not return here but add it to Unknown module.
 			}
 
 			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);

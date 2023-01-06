@@ -6,9 +6,9 @@ import {
 	RTTIST_NAMESPACE
 }                                 from "@rttist/core";
 import { Context }                from "../contexts/Context";
+import { getNodeLocationText }    from "../tracers/getNodeLocationText";
 import { getDeclaration }         from "../utils/symbolHelpers";
 import { toExpression }           from "../utils/toExpression";
-import { getNodeLocationText }    from "../utils/traceHelpers";
 
 function createCallsiteCallExpression(
 	node: ts.CallExpression,
@@ -25,10 +25,11 @@ function createCallsiteCallExpression(
 			node.expression,
 			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
 			ts.factory.createArrayLiteralExpression(callsiteReferences.map(reference => {
-				if (typeof (reference) === "string") {
-					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference)
+				if (typeof (reference) === "string")
+				{
+					return ts.factory.createIdentifier(TYPE_PARAMS_VAR_NAME + reference);
 				}
-				
+
 				return toExpression(reference);
 			})),
 			...node.arguments
@@ -78,14 +79,19 @@ function inferTypeArguments(
 	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
 	const symbolDeclaration: ts.Declaration | undefined = symbol && getDeclaration(symbol);
 	let declaration: ts.SignatureDeclarationBase | undefined = symbolDeclaration as ts.SignatureDeclarationBase | undefined;
-	
-	if (symbolDeclaration && (ts.isVariableDeclaration(symbolDeclaration) || ts.isPropertyAssignment(symbolDeclaration) || ts.isPropertyDeclaration(symbolDeclaration))) {
+
+	if (symbolDeclaration && (ts.isVariableDeclaration(symbolDeclaration) || ts.isPropertyAssignment(symbolDeclaration) || ts.isPropertyDeclaration(
+		symbolDeclaration)))
+	{
 		declaration = symbolDeclaration.initializer as ts.SignatureDeclarationBase | undefined;
 	}
 
 	if (!declaration)
 	{
-		context.log.info(`There is an callExpression but no declaration of function/method has been found.\n\t`, getNodeLocationText(node));
+		context.log.info(
+			`There is an callExpression but no declaration of function/method has been found.\n\t`,
+			getNodeLocationText(node)
+		);
 		return;
 	}
 
@@ -112,7 +118,10 @@ function inferTypeArguments(
 		else
 		{
 			// In this case, we can enhance infer logic,.. but it would be complex...
-			context.log.warn("Failed to infer type parameter from call-expression's argument.\n\t", getNodeLocationText(node));
+			context.log.warn(
+				"Failed to infer type parameter from call-expression's argument.\n\t",
+				getNodeLocationText(node)
+			);
 			typeArgTypes.push(undefined);
 		}
 	}

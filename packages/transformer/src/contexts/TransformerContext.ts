@@ -1,15 +1,17 @@
-import * as ts               from "typescript";
-import { Config }            from "../config/Config";
-import { PACKAGE_ID }        from "../consts";
-import { DependencyManager } from "../dependencies/DependencyManager";
+import * as ts                from "typescript";
+import { Config }             from "../config/Config";
+import { PACKAGE_ID }         from "../consts";
+import { TransformerVisitor } from "../declarations/general";
+import { DependencyManager }  from "../dependencies/DependencyManager";
 import {
 	log,
 	LogColor,
 	LogLevel
-}                            from "../logging";
-import { MetadataLibrary }   from "../metadata/MetadataLibrary";
-import { MetadataManager }   from "../metadata/MetadataManager";
-import { SourceFileContext } from "./SourceFileContext";
+}                             from "../logging";
+import { MetadataLibrary }    from "../metadata/MetadataLibrary";
+import { MetadataManager }    from "../metadata/MetadataManager";
+import { mainVisitor }        from "../visitors/mainVisitor";
+import { Context }            from "./Context";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
 let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
@@ -33,7 +35,7 @@ export class TransformerContext
 	 * SourceFile context set for each visiting SourceFile.
 	 * @internal
 	 */
-	private sourceFileContext?: SourceFileContext;
+	private sourceFileContext?: Context;
 
 	/**
 	 * List of root filenames.
@@ -88,13 +90,13 @@ export class TransformerContext
 		return instance;
 	}
 
-	/**
-	 * Accessor to currently visiting SourceFile.
-	 */
-	get currentSourceFileContext(): SourceFileContext | undefined
-	{
-		return this.sourceFileContext;
-	}
+	// /**
+	//  * Accessor to currently visiting SourceFile.
+	//  */
+	// get currentSourceFileContext(): SourceFileContext | undefined
+	// {
+	// 	return this.sourceFileContext;
+	// }
 
 	/**
 	 * Protected constructor.
@@ -153,16 +155,18 @@ export class TransformerContext
 	visitSourceFile(
 		sourceFileNode: ts.SourceFile,
 		transformationContext: ts.TransformationContext,
-		visitor: (sourceFileNode: ts.SourceFile, sourceFileContext: SourceFileContext) => ts.SourceFile
+		visitor: (sourceFileNode: ts.SourceFile, sourceFileContext: Context) => ts.SourceFile
 	): ts.SourceFile
 	{
 		const sourceFileStart = performance.now();
 
 		// Create SourceFile context and register it.
-		const sourceFileContext = this.sourceFileContext = new SourceFileContext(
-			sourceFileNode,
+		const sourceFileContext = this.sourceFileContext = new Context(
+			undefined,
 			this,
-			transformationContext
+			transformationContext,
+			sourceFileNode,
+			mainVisitor
 		);
 
 		// Callback

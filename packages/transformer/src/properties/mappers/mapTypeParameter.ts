@@ -2,9 +2,9 @@ import { TypeKind }              from "rttist";
 import * as ts                   from "typescript";
 import { UnknownTypeProperties } from "../../consts";
 import { Context }               from "../../contexts/Context";
-import { printTypeDebugInfo }    from "../../debugs/printTypeDebugInfo";
 import { TypeMapperResult }      from "../../declarations/mappers";
 import { log }                   from "../../logging";
+import { printTypeDebugInfo }    from "../../tracers/printTypeDebugInfo";
 import { getDeclaration }        from "../../utils/symbolHelpers";
 
 export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult

@@ -3,7 +3,7 @@ import * as ts                     from "typescript";
 import { Context }                 from "../contexts/Context";
 import { toExpression }            from "../utils/toExpression";
 
-export function classVisitor(declaration: ts.ClassDeclaration, context: Context): ts.VisitResult<ts.Node>
+export function classVisitor(declaration: ts.ClassDeclaration | ts.ClassExpression, context: Context): ts.VisitResult<ts.Node>
 {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeReference = context.metadata.referenceType(
@@ -14,16 +14,9 @@ export function classVisitor(declaration: ts.ClassDeclaration, context: Context)
 	);
 
 	return [
-		context.createNestedContext(
-			visitClassDeclaration,
-			undefined,
-			nestContext => {
-				return ts.visitEachChild(
-					declaration,
-					nestContext.visitor,
-					context.transformationContext
-				);
-			}
+		context.visitWithNewContext(
+			declaration,
+			visitClassDeclaration
 		),
 
 		// EMIT: ClassIdentifier.prototype[REFLECTED_TYPE_ID] = typeId;

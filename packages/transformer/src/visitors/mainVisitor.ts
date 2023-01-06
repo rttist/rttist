@@ -17,7 +17,7 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 	{
 		case  ts.SyntaxKind.ClassExpression: // TODO: Update classVisitor to support CLassExpression
 		case  ts.SyntaxKind.ClassDeclaration:
-			return classVisitor(nodeToVisit as unknown as ts.ClassDeclaration, context);
+			return classVisitor(nodeToVisit as unknown as ts.ClassDeclaration | ts.ClassExpression, context);
 		case  ts.SyntaxKind.InterfaceDeclaration:
 			return interfaceVisitor(nodeToVisit as unknown as ts.InterfaceDeclaration, context);
 		case  ts.SyntaxKind.TypeAliasDeclaration:

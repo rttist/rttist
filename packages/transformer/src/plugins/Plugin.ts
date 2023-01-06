@@ -1,7 +1,7 @@
-import * as ts               from "typescript";
-import { SourceFileContext } from "../contexts/SourceFileContext";
-import { MetadataSource }    from "../declarations/TypeProperties";
-import { MetadataContext }   from "./MetadataContext";
+import type { Context }    from "../contexts/Context";
+import * as ts             from "typescript";
+import { MetadataSource }  from "../declarations/TypeProperties";
+import { MetadataContext } from "./MetadataContext";
 
 export interface Plugin
 {
@@ -10,7 +10,7 @@ export interface Plugin
 	 * @param sourceFile
 	 * @param context
 	 */
-	visit?(sourceFile: ts.SourceFile, context: SourceFileContext): ts.SourceFile;
+	visit?(sourceFile: ts.SourceFile, context: Context): ts.SourceFile;
 
 	/**
 	 * Returns import declarations for the typelib SourceFile.

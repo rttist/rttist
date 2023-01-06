@@ -1,22 +1,22 @@
-import {
+import type { Context }      from "../contexts/Context";
+import type { TypeInfo }     from "../declarations/general";
+import type {
+	ModuleMetadataProperties,
+	ModuleProperties,
+	TypePropertiesWithId
+}                              from "../declarations/TypeProperties";
+import type {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier
 }                              from "rttist";
 import { ModuleIds }           from "@rttist/core";
 import * as ts                 from "typescript";
-import { Context }             from "../contexts/Context";
-import { TransformerContext }  from "../contexts/TransformerContext";
-import { TypeInfo }            from "../declarations/general";
-import {
-	ModuleMetadataProperties,
-	ModuleProperties,
-	TypePropertiesWithId
-}                              from "../declarations/TypeProperties";
+import { log }                 from "../logging";
 import { getTypeProperties }   from "../properties/getTypeProperties";
+import { getNodeLocationText } from "../tracers/getNodeLocationText";
 import { getSourceFile }       from "../utils/findSourceFile";
 import { getSourceFileId }     from "../utils/getSourceFileId";
-import { getNodeLocationText } from "../utils/traceHelpers";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -138,8 +138,7 @@ export class ModuleMetadata
 			}
 			else
 			{
-				const sourceFileContext = TransformerContext.instance.currentSourceFileContext!;
-				sourceFileContext.log.warn(`SourceFile of child module '${importDeclaration.moduleSpecifier.getText()}' `
+				log.warn(`SourceFile of child module '${importDeclaration.moduleSpecifier.getText()}' `
 					+ `not found.\n\tAt ${getNodeLocationText(importDeclaration)}`);
 			}
 		}

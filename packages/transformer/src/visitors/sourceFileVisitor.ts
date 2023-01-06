@@ -1,5 +1,5 @@
 import * as ts                  from "typescript";
-import { SourceFileContext }    from "../contexts/SourceFileContext";
+import { Context }              from "../contexts/Context";
 import { TransformerContext }   from "../contexts/TransformerContext";
 import {
 	LogColor,
@@ -32,7 +32,7 @@ export function createSourceFileVisitor(transformationContext: ts.Transformation
 		return visitSourceFile(sourceFileNode, transformationContext, sourceFileVisitor);
 	};
 
-	function sourceFileVisitor(sourceFileNode: ts.SourceFile, sourceFileContext: SourceFileContext)
+	function sourceFileVisitor(sourceFileNode: ts.SourceFile, sourceFileContext: Context)
 	{
 		if (config.devMode)
 		{
@@ -40,7 +40,7 @@ export function createSourceFileVisitor(transformationContext: ts.Transformation
 		}
 
 		// Visit SourceFile
-		let visitedSourceFileNode = sourceFileContext.visit();
+		let visitedSourceFileNode = sourceFileContext.visitWithCurrentContext(sourceFileNode) as ts.SourceFile;
 
 		// PLUGINS
 		for (let plugin of config.plugins)
