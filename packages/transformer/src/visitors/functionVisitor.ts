@@ -15,15 +15,7 @@ export function functionVisitor(
 	context: Context
 ): ts.VisitResult<ts.Node>
 {
-	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeParameters: string[] = declaration.typeParameters?.map(tp => tp.name.escapedText + "") ?? [];
-
-	const typeReference = context.metadata.referenceType(
-		type,
-		context.typeChecker.getSymbolAtLocation(declaration),
-		undefined,
-		context
-	);
 
 	declaration = context.visitWithNewContext(
 		declaration,
@@ -36,6 +28,13 @@ export function functionVisitor(
 
 	if (ts.isFunctionDeclaration(declaration))
 	{
+		const typeReference = context.metadata.referenceType(
+			context.typeChecker.getTypeAtLocation(declaration),
+			context.typeChecker.getSymbolAtLocation(declaration),
+			undefined,
+			context
+		);
+
 		declaration = ts.factory.updateFunctionDeclaration(
 			declaration,
 			declaration.modifiers,
@@ -72,6 +71,13 @@ export function functionVisitor(
 
 	if (ts.isFunctionExpression(declaration))
 	{
+		const typeReference = context.metadata.referenceType(
+			context.typeChecker.getTypeAtLocation(declaration),
+			context.typeChecker.getSymbolAtLocation(declaration),
+			undefined,
+			context
+		);
+
 		declaration = ts.factory.updateFunctionExpression(
 			declaration,
 			declaration.modifiers,

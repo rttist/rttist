@@ -12,21 +12,21 @@ import {
 	UnknownFunction
 }                     from "./helpers";
 
-export *                         from "./enums";
-export *                         from "./declarations";
-export { Module }                from "./Module";
+export *                                  from "./enums";
+export *                                  from "./declarations";
+export { Module }                         from "./Module";
 export {
 	Type,
 	NativeTypes
-}                                from "./Type";
-export *                         from "./infos";
-export *                         from "./types";
-export { Metadata }              from "./Metadata";
-export { getType }               from "./functions/getType";
-export { getClassTypeParameter } from "./functions/getClassTypeParameter";
-export { constructGeneric }      from "./functions/constructGeneric";
-export { getGenericClass }       from "./functions/getGenericClass";
-export *                         from "./factories";
+}                                         from "./Type";
+export *                                  from "./infos";
+export *                                  from "./types";
+export { Metadata }                       from "./Metadata";
+export { getType }                        from "./functions/getType";
+export { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
+export { constructGeneric }               from "./functions/constructGeneric";
+export { getGenericClass }                from "./functions/getGenericClass";
+export *                                  from "./factories";
 
 LazyType.resolver = Metadata.resolveType.bind(Metadata);
 LazyModule.resolver = Metadata.resolveModule.bind(Metadata);

@@ -8,9 +8,9 @@ import {
 	RTTIST_NAMESPACE
 }                                  from "@rttist/core";
 import { createCallsite }          from "./functions/createCallsite";
-import { constructGeneric }        from "./functions/constructGeneric";
-import { getClassTypeParameter }   from "./functions/getClassTypeParameter";
-import { getGenericClass }         from "./functions/getGenericClass";
+import { constructGeneric }               from "./functions/constructGeneric";
+import { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
+import { getGenericClass }                from "./functions/getGenericClass";
 import { getType }                 from "./functions/getType";
 import { Metadata }                from "./Metadata";
 import { getGlobalThis }           from "./utils/getGlobalThis";
@@ -105,7 +105,7 @@ getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	resolveType: Metadata.resolveType.bind(Metadata),
 	[FncNames.getGenericClass]: getGenericClass,
 	[FncNames.constructGeneric]: constructGeneric,
-	[FncNames.getClassTypeParameter]: getClassTypeParameter,
+	[FncNames.getClassTypeParameter]: getClassTypeParameterReference,
 	[FncNames.createCallsite]: createCallsite,
 	[FncNames.invalidTypeGenerator]: unknownTypeGenerator,
 	[FncNames.resolveFunctionCallsite]: resolveFunctionCallsite,
