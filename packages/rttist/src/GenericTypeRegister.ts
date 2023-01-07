@@ -54,9 +54,6 @@ class Register
 					constructor(...args: any[])
 					{
 						super(...args);
-						// this.__getType = () => {
-						// 	return Rttist.getType(this);
-						// }
 					}
 				}
 			}[name];
