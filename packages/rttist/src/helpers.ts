@@ -7,6 +7,7 @@ import {
 	ParameterFlags,
 	TypeKind
 }                        from "./enums";
+import { Module }        from "./Module";
 import { getGlobalThis } from "./utils/getGlobalThis";
 import { Metadata }      from "./Metadata";
 import { Type }          from "./Type";
@@ -71,6 +72,8 @@ export function getTypeOfRuntimeValue(value: any): Type
 	if (value instanceof Float64Array) return Type.Float64Array;
 	if (value instanceof BigInt64Array) return Type.BigInt64Array;
 	if (value instanceof BigUint64Array) return Type.BigUint64Array;
+	if (value instanceof Type) return Type.Type;
+	if (value instanceof Module) return Type.Module;
 
 	if (value.constructor === undefined)
 	{
