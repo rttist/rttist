@@ -8,16 +8,23 @@ import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteR
 import { createReferenceExpressions }         from "./createReferenceExpressions";
 import { getArgumentsTypes }                  from "./getArgumentsTypes";
 
-export function createConstructGenericCallExpression(expression: ts.NewExpression, context: Context)
+export function createConstructGenericClassExpression(expression: ts.NewExpression, context: Context)
 {
-	const visitedArguments = expression.arguments === undefined
-		? []
-		: ts.visitNodes(
-			expression.arguments,
-			context.visitor
-		);
+	// // If there are no arguments, we cannot pass any generic type info 
+	// // so we will skip generation of callsite to same performance.
+	// if ((expression.arguments === undefined || expression.arguments.length === 0) 
+	// 	&& (expression.typeArguments === undefined || expression.typeArguments.length === 0))
+	// {
+	// 	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
+	// }
 
 	const typeArgTypes = getArgumentsTypes(expression, context);
+
+	// if (typeArgTypes.length === 0 || typeArgTypes.every(ta => ta === null))
+	// {
+	// 	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
+	// }
+
 	const callsiteReferences = directTypeCallsiteReferenceFactory(typeArgTypes, context);
 
 	// if (typeArgTypes.length !== 0)
@@ -27,6 +34,13 @@ export function createConstructGenericCallExpression(expression: ts.NewExpressio
 	// 		directTypeCallsiteReferenceFactory(typeArgTypes, context)
 	// 	);
 	// }
+
+	const visitedArguments = expression.arguments === undefined
+		? []
+		: ts.visitNodes(
+			expression.arguments,
+			context.visitor
+		);
 
 	return ts.factory.createCallExpression(
 		ts.factory.createPropertyAccessExpression(

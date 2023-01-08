@@ -1,6 +1,6 @@
-import * as ts                                  from "typescript";
-import { createConstructGenericCallExpression } from "../ast-utils/createConstructGenericCallExpression";
-import { Context }                              from "../contexts/Context";
+import * as ts                                   from "typescript";
+import { createConstructGenericClassExpression } from "../ast-utils/createConstructGenericClassExpression";
+import { Context }                               from "../contexts/Context";
 
 export function newExpressionVisitor(expression: ts.NewExpression, context: Context): ts.VisitResult<ts.Node>
 {
@@ -16,7 +16,7 @@ export function newExpressionVisitor(expression: ts.NewExpression, context: Cont
 		// 	context
 		// );
 
-		return createConstructGenericCallExpression(expression, context);
+		return createConstructGenericClassExpression(expression, context);
 	}
 
 

@@ -1,16 +1,20 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import { TypeReference }           from "../declarations";
+import { Type }                    from "../Type";
 
 export function constructGeneric<TType = any>(
 	target: { new(...args: any): TType } | Function,
-	typeParameters: TypeReference[],
+	typeParameters: Array<Type | TypeReference>,
 	argumentsList: ArrayLike<any>,
 	newTarget?: Function
 ): TType
 {
 	const Class = Rttist.getGenericClass(
 		target as { new(...args: any): TType },
-		...typeParameters.map(tpReference => Rttist.resolveType(tpReference))
+		...typeParameters.map(tpReference => tpReference instanceof Type
+			? tpReference
+			: Rttist.resolveType(tpReference)
+		)
 	);
 
 	if (newTarget !== undefined)

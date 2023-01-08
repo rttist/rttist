@@ -1,14 +1,22 @@
-import * as ts              from "typescript";
-import { Context }          from "../../contexts/Context";
-import { TypeMapperResult } from "../../declarations/mappers";
+import * as ts                        from "typescript";
+import { TypeKind }                   from "rttist";
+import { Context }                    from "../../contexts/Context";
+import { TypeMapperResult }           from "../../declarations/mappers";
+import { IntersectionTypeProperties } from "../../declarations/TypeProperties";
 
-export function mapIntersection(type: ts.IntersectionType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
+export function mapIntersection(
+	type: ts.IntersectionType,
+	symbol: ts.Symbol | undefined,
+	context: Context
+): TypeMapperResult
 {
-	// return {
-	// 		kind: TypeKind.Intersection,
-	// 		name: type.symbol?.escapedName.toString(),
-	// 		types: type.types.map((type: ts.Type) => getTypeCall(type, undefined, context))
-	// };
-
-	return undefined;
+	return {
+		kind: TypeKind.Intersection,
+		types: type.types.map(type => context.metadata.referenceType(
+			type,
+			undefined,
+			undefined,
+			context
+		))
+	} as IntersectionTypeProperties;
 }

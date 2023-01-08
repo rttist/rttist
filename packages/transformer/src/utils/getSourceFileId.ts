@@ -16,6 +16,11 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 		return sourceFile._reflectId;
 	}
 
+	if (sourceFile.fileName.includes(TS_LIB_PATTERN))
+	{
+		return ModuleIds.Native;
+	}
+
 	const { packageInfo, projectDir } = TransformerContext.instance.config;
 	const isExternal = TransformerContext.instance.program.isSourceFileFromExternalLibrary(sourceFile);
 
@@ -31,11 +36,6 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 			setSourceFileReflectId(sourceFile, sourceFileId);
 			return sourceFileId;
 		}
-	}
-
-	if (sourceFile.fileName.includes(TS_LIB_PATTERN))
-	{
-		return ModuleIds.Native;
 	}
 
 	const filePath = getOutPathForSourceFile(sourceFile.fileName);

@@ -1,22 +1,83 @@
+import { ModuleIds }                          from "@rttist/core";
 import type { Context }                       from "../contexts/Context";
 import * as ts                                from "typescript";
 import { createCallsiteCallExpression }       from "../ast-utils/createCallsiteCallExpression";
 import { getArgumentsTypes }                  from "../ast-utils/getArgumentsTypes";
 import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
+import { getSourceFileId }                    from "../utils/getSourceFileId";
+import { getDeclaration }                     from "../utils/symbolHelpers";
 
 export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression, context: Context)
 {
-	const typeArgTypes = getArgumentsTypes(node, context);
-
-	if (typeArgTypes.length !== 0)
+	// If there are no arguments, we cannot pass any generic type info 
+	// so we will skip generation of callsite to same performance.
+	if ((node.arguments === undefined || node.arguments.length === 0)
+		&& (node.typeArguments === undefined || node.typeArguments.length === 0))
 	{
-		return createCallsiteCallExpression(
-			ts.visitEachChild(node, context.visitor, context.transformationContext),
-			directTypeCallsiteReferenceFactory(typeArgTypes, context)
-		);
+		return ts.visitEachChild(node, context.visitor, context.transformationContext);
 	}
 
-	return ts.visitEachChild(node, context.visitor, context.transformationContext);
+	const result = handleReflectConstructCalls(node, context);
+
+	if (result !== undefined)
+	{
+		return result;
+	}
+
+	const typeArgTypes = getArgumentsTypes(node, context);
+
+	if (typeArgTypes.length === 0 || typeArgTypes.every(ta => ta === null))
+	{
+		return ts.visitEachChild(node, context.visitor, context.transformationContext);
+	}
+
+	return createCallsiteCallExpression(
+		ts.visitEachChild(node, context.visitor, context.transformationContext),
+		directTypeCallsiteReferenceFactory(typeArgTypes, context)
+	);
+}
+
+
+function handleReflectConstructCalls(node: ts.CallExpression | ts.NewExpression, context: Context)
+{
+	if (
+		(
+			ts.isPropertyAccessExpression(node.expression) && (
+				node.expression.name.escapedText.toString() === "construct"
+				// || node.expression.name.escapedText.toString() === "constructGeneric"
+			)
+			&& (
+				ts.isIdentifier(node.expression.expression)
+				&& (
+					node.expression.expression.escapedText.toString() === "Reflect"
+					// || node.expression.expression.escapedText.toString() === "Rttist"
+				)
+			)
+		)
+		|| (
+			ts.isIdentifier(node.expression) && (
+				node.expression.escapedText.toString() === "construct"
+				// || node.expression.escapedText.toString() === "constructGeneric"
+			)
+		)
+	)
+	{
+		const functionSymbol = context.typeChecker.getSymbolAtLocation(node.expression);
+		const declaration = getDeclaration(functionSymbol);
+
+		if (declaration)
+		{
+			const sourceFile = declaration.getSourceFile();
+			const sourceFileId = getSourceFileId(sourceFile);
+
+			if (sourceFileId === ModuleIds.Native)
+			{
+
+			}
+		}
+	}
+
+	return undefined;
 }
 
 

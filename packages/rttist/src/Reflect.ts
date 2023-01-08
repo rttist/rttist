@@ -47,7 +47,7 @@ declare global
 		 */
 		export function constructGeneric<TType = any>(
 			target: { new(...args: any): TType } | Function,
-			typeParameters: Type[],
+			typeParameters: Array<Type | TypeReference>,
 			argumentsList: ArrayLike<any>,
 			newTarget?: Function
 		): TType;
