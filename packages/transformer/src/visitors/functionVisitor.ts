@@ -1,14 +1,10 @@
-import {
-	FncNames,
-	PROTOTYPE_TYPE_PROPERTY,
-	RTTIST_NAMESPACE
-}                                   from "@rttist/core";
-import * as ts                      from "typescript";
-import { TYPE_PARAMS_VAR_NAME }     from "../consts";
-import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { toExpression }             from "../utils/toExpression";
-import { mainVisitor }              from "./mainVisitor";
+import { PROTOTYPE_TYPE_PROPERTY }                          from "@rttist/core";
+import * as ts                                              from "typescript";
+import { createCallsiteTypeArgumentsReadVariableStatement } from "../ast-utils/createCallsiteTypeArgumentsReadVariableStatement";
+import { Context }                                          from "../contexts/Context";
+import { TransformerTypeReference }                         from "../declarations/TransformerTypeReference";
+import { toExpression }                                     from "../utils/toExpression";
+import { mainVisitor }                                      from "./mainVisitor";
 
 export function functionVisitor(
 	declaration: ts.FunctionLikeDeclarationBase,
@@ -126,53 +122,12 @@ export function functionVisitor(
 		);
 	}
 
-	context.log.warn("Unknown function kind.");
-
 	return declaration;
 }
 
 function visitFunctionDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
 {
 	return mainVisitor(node, context);
-}
-
-function createCallsiteVariableStatement(
-	typeParameters: string[],
-	functionName: ts.Identifier,
-	declaration: ts.FunctionExpression | ts.FunctionDeclaration | ts.MethodDeclaration
-)
-{
-	const functionRef = ts.isMethodDeclaration(declaration)
-		? ts.factory.createPropertyAccessExpression(
-			ts.factory.createThis(),
-			functionName
-		)
-		: functionName;
-
-	return ts.factory.createVariableStatement(
-		undefined,
-		ts.factory.createVariableDeclarationList([
-			ts.factory.createVariableDeclaration(
-				ts.factory.createArrayBindingPattern(
-					typeParameters.map(tp =>
-						ts.factory.createBindingElement(undefined, undefined, TYPE_PARAMS_VAR_NAME + tp)
-					)
-				),
-				undefined,
-				undefined,
-				ts.factory.createCallExpression(
-					ts.factory.createPropertyAccessExpression(
-						ts.factory.createIdentifier(RTTIST_NAMESPACE),
-						FncNames.resolveFunctionCallsite
-					),
-					undefined,
-					[
-						functionRef
-					]
-				)
-			)
-		], ts.NodeFlags.Const)
-	);
 }
 
 function recreateBody(
@@ -184,7 +139,7 @@ function recreateBody(
 	return ts.factory.createBlock(
 		[
 			// Declare variables for access to TypeParameters from Callsite
-			createCallsiteVariableStatement(typeParameters, functionName, declaration),
+			createCallsiteTypeArgumentsReadVariableStatement(typeParameters, functionName, declaration),
 			declaration.body ?? ts.factory.createEmptyStatement()
 		]
 	);

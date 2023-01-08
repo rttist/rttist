@@ -19,7 +19,9 @@ export function createCallsiteCallExpression(
 		undefined,
 		[
 			node.expression,
-			ts.isPropertyAccessExpression(node.expression) ? node.expression.expression : ts.factory.createVoidZero(),
+			ts.isPropertyAccessExpression(node.expression) || ts.isElementAccessExpression(node.expression) 
+				? node.expression.expression 
+				: ts.factory.createVoidZero(),
 			ts.factory.createArrayLiteralExpression(
 				createReferenceExpressions(callsiteReferences)
 			),

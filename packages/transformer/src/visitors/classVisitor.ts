@@ -1,5 +1,6 @@
 import { PROTOTYPE_TYPE_PROPERTY }  from "@rttist/core";
 import * as ts                      from "typescript";
+import { SELF_VAR_NAME }            from "../consts";
 import { Context }                  from "../contexts/Context";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { toExpression }             from "../utils/toExpression";
@@ -74,11 +75,13 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 					undefined,
 					context
 				);
-
+				const classDeclaration = (context.node as ts.ClassDeclaration | ts.ClassExpression);
 				const updatedDeclaration = context.visitWithNewContext(
 					node.initializer,
 					visitClassDeclaration
 				) as ts.ClassExpression;
+
+				const thisArg = ts.factory.createIdentifier(SELF_VAR_NAME + classDeclaration.name?.escapedText ?? "");
 
 				return ts.factory.updatePropertyDeclaration(
 					node,
@@ -86,23 +89,49 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 					node.name,
 					node.questionToken,
 					node.type,
-					ts.factory.updateClassExpression(
-						updatedDeclaration,
-						updatedDeclaration.modifiers,
-						updatedDeclaration.name,
-						updatedDeclaration.typeParameters,
-						updatedDeclaration.heritageClauses,
-						updatedDeclaration.members.concat(
-							// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-							createClassStaticBlockDeclaration(typeReference)
-						)
+					ts.factory.createCallExpression(
+						ts.factory.createParenthesizedExpression(
+							ts.factory.createFunctionExpression(
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								[
+									ts.factory.createParameterDeclaration(
+										undefined,
+										undefined,
+										thisArg
+									)
+								],
+								undefined,
+								ts.factory.createBlock([
+									ts.factory.createReturnStatement(
+										ts.factory.updateClassExpression(
+											updatedDeclaration,
+											updatedDeclaration.modifiers,
+											updatedDeclaration.name,
+											updatedDeclaration.typeParameters,
+											updatedDeclaration.heritageClauses,
+											updatedDeclaration.members.concat(
+												// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
+												createClassStaticBlockDeclaration(typeReference)
+											)
+										)
+									)
+								])
+							)
+						),
+						undefined,
+						[
+							ts.factory.createThis()
+						]
 					)
 				);
 			}
 
-			return ts.visitEachChild(node, context.visitor, context.transformationContext) as ts.PropertyDeclaration
+			return ts.visitEachChild(node, context.visitor, context.transformationContext) as ts.PropertyDeclaration;
 		}
-		
+
 		return node;
 	}
 

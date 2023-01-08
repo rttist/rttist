@@ -30,7 +30,7 @@ export function newExpressionVisitor(expression: ts.NewExpression, context: Cont
 	// 	context
 	// );
 
-	return ts.visitEachChild(expression.expression, context.visitor, context.transformationContext);
+	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
 }
 
 // function visitInterfaceDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
