@@ -57,6 +57,7 @@ export class Type
 	public static readonly True = cn("true", TypeKind.True);
 	public static readonly False = cn("false", TypeKind.False);
 	public static readonly Date = cn("Date", TypeKind.Date);
+	public static readonly Error = cn("Error", TypeKind.Error);
 	public static readonly Symbol = cn("Symbol", TypeKind.Symbol);
 	public static readonly UniqueSymbol = cn("UniqueSymbol", TypeKind.UniqueSymbol);
 	public static readonly RegExp = cn("RegExp", TypeKind.RegExp);
@@ -567,6 +568,7 @@ export const NativeTypes: { [typeKind: number]: Type } = {
 	[TypeKind.True]: Type.True,
 	[TypeKind.False]: Type.False,
 	[TypeKind.Date]: Type.Date,
+	[TypeKind.Error]: Type.Error,
 	[TypeKind.Symbol]: Type.Symbol,
 	[TypeKind.UniqueSymbol]: Type.UniqueSymbol,
 	[TypeKind.RegExp]: Type.RegExp,

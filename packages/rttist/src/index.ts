@@ -47,6 +47,7 @@ Metadata.addType(
 	Type.True,
 	Type.False,
 	Type.Date,
+	Type.Error,
 	Type.Symbol,
 	Type.UniqueSymbol,
 	Type.RegExp,

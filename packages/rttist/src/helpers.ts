@@ -60,6 +60,7 @@ export function getTypeOfRuntimeValue(value: any): Type
 	if (typeof value === "boolean") return Type.Boolean;
 	if (typeof value === "bigint") return Type.BigInt;
 	if (value instanceof Date) return Type.Date;
+	if (value instanceof Error) return Type.Error;
 	if (value instanceof RegExp) return Type.RegExp;
 	if (value instanceof Int8Array) return Type.Int8Array;
 	if (value instanceof Uint8Array) return Type.Uint8Array;
