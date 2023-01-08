@@ -24,30 +24,6 @@ import {
 	isInvalidType,
 }                                    from "./typeHelpers";
 
-function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference
-function hasReflectedTypeReference(symbol: ts.Symbol): symbol is ReflectedSymbolWithReference
-function hasReflectedTypeReference(typeOrSymbol: ts.Type | ts.Symbol): boolean
-{
-	return (typeOrSymbol as ReflectedTypeWithReference | ReflectedSymbolWithReference)._typeReference !== undefined;
-}
-
-function setReflectedTypeReference(
-	type: ts.Type,
-	symbol: ts.Symbol | undefined,
-	ref: TransformerTypeReference
-)
-{
-	if ((type as ReflectedTypeWithReference)._typeReference === undefined)
-	{
-		(type as ReflectedTypeWithReference)._typeReference = ref;
-	}
-
-	if (symbol !== undefined)
-	{
-		(symbol as ReflectedSymbolWithReference)._typeReference = ref;
-	}
-}
-
 /**
  * Returns id of given type
  * @param type
@@ -342,4 +318,28 @@ function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefi
 	}
 
 	return undefined;
+}
+
+function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference
+function hasReflectedTypeReference(symbol: ts.Symbol): symbol is ReflectedSymbolWithReference
+function hasReflectedTypeReference(typeOrSymbol: ts.Type | ts.Symbol): boolean
+{
+	return (typeOrSymbol as ReflectedTypeWithReference | ReflectedSymbolWithReference)._typeReference !== undefined;
+}
+
+function setReflectedTypeReference(
+	type: ts.Type,
+	symbol: ts.Symbol | undefined,
+	ref: TransformerTypeReference
+)
+{
+	if ((type as ReflectedTypeWithReference)._typeReference === undefined)
+	{
+		(type as ReflectedTypeWithReference)._typeReference = ref;
+	}
+
+	if (symbol !== undefined)
+	{
+		(symbol as ReflectedSymbolWithReference)._typeReference = ref;
+	}
 }

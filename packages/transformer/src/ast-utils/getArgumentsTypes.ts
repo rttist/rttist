@@ -11,9 +11,13 @@ export function getArgumentsTypes(node: ts.CallExpression | ts.NewExpression, co
 	{
 		for (let index = 0; index < node.typeArguments.length; index++)
 		{
+			const argTypeNode = node.typeArguments[index];
+
 			typeArgTypes.push([
-				context.typeChecker.getTypeFromTypeNode(node.typeArguments[index]),
-				context.typeChecker.getSymbolAtLocation(node.typeArguments[index])
+				context.typeChecker.getTypeFromTypeNode(argTypeNode),
+				ts.isTypeReferenceNode(argTypeNode)
+					? context.typeChecker.getSymbolAtLocation(argTypeNode.typeName)
+					: undefined
 			]);
 		}
 	}
