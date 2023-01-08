@@ -2,9 +2,9 @@
 import { TypeProperties } from "./declarations/TypeProperties";
 
 /**
- * The Unknown type properties.
+ * The Invalid type properties.
  */
-export const UnknownTypeProperties: TypeProperties = { kind: TypeKind.Unknown };
+export const InvalidTypeProperties: TypeProperties = { kind: TypeKind.Invalid };
 
 /**
  * Name (prefix) of parameter for method/function declarations containing generic getType() calls

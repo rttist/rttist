@@ -1,6 +1,6 @@
 import { TypeKind }              from "rttist";
 import * as ts                   from "typescript";
-import { UnknownTypeProperties } from "../../consts";
+import { InvalidTypeProperties } from "../../consts";
 import { Context }               from "../../contexts/Context";
 import { TypeMapperResult }      from "../../declarations/mappers";
 import { log }                   from "../../logging";
@@ -35,5 +35,5 @@ export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, c
 	}
 
 	log.warn("Unhandled TypeParameter.\n\t" + printTypeDebugInfo(type, context.typeChecker));
-	return UnknownTypeProperties;
+	return InvalidTypeProperties;
 }

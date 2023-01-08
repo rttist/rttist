@@ -18,6 +18,7 @@ import { ModuleIds } from "@rttist/core";
 export class TransformerTypeReference
 {
 	public static readonly Unknown = new TransformerTypeReference(ModuleIds.Native, "Unknown", TypeKind.Unknown);
+	public static readonly Invalid = new TransformerTypeReference(ModuleIds.Native, "Invalid", TypeKind.Invalid);
 	public static readonly Any = new TransformerTypeReference(ModuleIds.Native, "Any", TypeKind.Any);
 	public static readonly NonPrimitiveObject = new TransformerTypeReference(ModuleIds.Native, "object", TypeKind.NonPrimitiveObject);
 	public static readonly Void = new TransformerTypeReference(ModuleIds.Native, "Void", TypeKind.Void);

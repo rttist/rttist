@@ -1,6 +1,6 @@
 import { TypeKind } from "rttist";
 import * as ts from "typescript";
-import { UnknownTypeProperties } from "../consts";
+import { InvalidTypeProperties } from "../consts";
 import { Context } from "../contexts/Context";
 import { TypeMapper } from "../declarations/mappers";
 import {
@@ -77,7 +77,7 @@ export function getTypeProperties(
 		}
 
 		context.log.warn("Unhandled Literal type.\n\t" + printTypeDebugInfo(type, context.typeChecker));
-		return UnknownTypeProperties;
+		return InvalidTypeProperties;
 	}
 
 	// TODO: Separate to mapTypeAlias file
@@ -134,7 +134,7 @@ export function getTypeProperties(
 				type,
 				context.typeChecker
 			));
-			return UnknownTypeProperties;
+			return InvalidTypeProperties;
 		}
 	}
 	else
@@ -145,7 +145,7 @@ export function getTypeProperties(
 	if (mapper === undefined)
 	{
 		context.log.warn("No mapper found for the type.\n\t" + printTypeDebugInfo(type, context.typeChecker));
-		return UnknownTypeProperties;
+		return InvalidTypeProperties;
 	}
 
 	const mapperResult = mapper(type, symbol, context);
@@ -160,5 +160,5 @@ export function getTypeProperties(
 		context.typeChecker
 	));
 
-	return UnknownTypeProperties;
+	return InvalidTypeProperties;
 }

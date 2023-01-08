@@ -38,7 +38,7 @@ export function getTypeRef(
 {
 	if (isInvalidType(type))
 	{
-		return TransformerTypeReference.Unknown;
+		return TransformerTypeReference.Invalid;
 	}
 
 	const primitiveTypeReference = getPrimitiveTypeReference(type);
@@ -149,7 +149,7 @@ export function getTypeRef(
 					log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
 				}
 
-				typeReference = TransformerTypeReference.Unknown;
+				typeReference = TransformerTypeReference.Invalid;
 			}
 		}
 		else
@@ -197,7 +197,7 @@ export function getTypeRef(
 
 	if (typeReference === undefined)
 	{
-		typeReference = TransformerTypeReference.Unknown;
+		typeReference = TransformerTypeReference.Invalid;
 		log.warn("Unhandled type kind. Unable to generate type id.", printTypeDebugInfo(type, typeChecker));
 	}
 
@@ -269,7 +269,7 @@ function getTypeRefWithoutDeclaration(
 			printTypeDebugInfo(type, typeChecker)
 		);
 
-		typeReference = TransformerTypeReference.Unknown;
+		typeReference = TransformerTypeReference.Invalid;
 	}
 	// }
 
