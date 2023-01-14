@@ -1,7 +1,7 @@
 import "rttist";
-// import { NativeTypes } from "@rttist/dev-pkg1/dist/native";
-// import { SomeType } from "./SomeType";
-//
+import { NativeTypes } from "@rttist/dev-pkg1/dist/native";
+import { SomeType } from "./SomeType";
+
 console.log("any", Reflect.getType<any>().toString());
 console.log("unknown", Reflect.getType<unknown>().toString());
 console.log("undefined", Reflect.getType<undefined>().toString());
@@ -61,63 +61,66 @@ console.log("AsyncGeneratorFunction", Reflect.getType<AsyncGeneratorFunction>().
 type Obj = { foo: string, bar: Obj };
 type ObjAlias = Obj;
 console.log("Obj", Reflect.getType<Obj>().toString());
-console.log("ObjAlias", Reflect.getType<ObjAlias>().toString()); // TODO: Not stored as Alias
+console.log("ObjAlias", Reflect.getType<ObjAlias>().toString());
 console.log("{ foo: string, bar: number }", Reflect.getType<{ foo: string, bar: number }>().toString());
 
 
 
-// Reflect.getType<SomeType>();
-//
-// function genericFunction<T, U>(x: T, y: U) {
-//	
-// }
-//
-// class Foo<T>
-// {
-// 	native: NativeTypes;
-// 	promise: Promise<boolean>;
-// 	regex = /sss/;
-// 	date = new Date();
-// 	symbol = Symbol();
-// 	array: number[];
-// 	array2: Array<string>;
-// 	array3 = [];
-// 	array4 = Array;
-// 	array5: typeof Array<string>;
-// 	readonlyArray: ReadonlyArray<string>;
-// 	iterableIterator = [].values();
-// 	map = new Map<string, undefined>();
-// 	set = new Set<string>();
-//
-// 	private* generator()
-// 	{
-// 		return 0;
-// 	}
-//
-// 	private async* asyncGenerator()
-// 	{
-// 		return 0;
-// 	}
-//
-// 	function: Function;
-//
-// 	constructor(bar: T, ...rest: any[])
-// 	{
-// 		Reflect.getType<T>();
-// 	}
-//
-// 	doSomething<U>()
-// 	{
-// 		Reflect.getType<T>();
-// 		Reflect.getType<U>();
-// 	}
-// }
-//
-// Reflect.construct(Foo, []);
-//
-// // new,
-// new Foo<string>("bar").doSomething();
-//
+console.log("SomeType", Reflect.getType<SomeType>().toString());
+
+function genericFunction<T, U>(x: T, y: U) {
+
+}
+
+class Foo<T>
+{
+	static readonly prop: number;
+	native: NativeTypes;
+	promise: Promise<boolean>;
+	regex = /sss/;
+	date = new Date();
+	symbol = Symbol();
+	array: number[];
+	array2: Array<string>;
+	array3 = [];
+	array4 = Array;
+	array5: typeof Array<string>;
+	readonlyArray: ReadonlyArray<string>;
+	iterableIterator = [].values();
+	map = new Map<string, undefined>();
+	set = new Set<string>();
+
+	private* generator()
+	{
+		return 0;
+	}
+
+	private async* asyncGenerator()
+	{
+		return 0;
+	}
+
+	function: Function;
+
+	constructor(bar: T, ...rest: any[])
+	{
+		Reflect.getType<T>();
+	}
+
+	doSomething<U>()
+	{
+		console.log("Foo::T", Reflect.getType<T>().toString());
+		console.log("Foo.doSomething::U", Reflect.getType<U>().toString());
+	}
+}
+
+// Reflect.construct
+const f1 = Reflect.construct(Foo, []);
+
+// new,
+const f2 = new Foo<string>("bar");
+f2.doSomething();
+
 // // or Reflect.construct<T>(Function, args: any[], newTarget: Function),
 // Reflect.construct<Foo<string>>(Foo, ["some", "args"]).doSomething();
 //

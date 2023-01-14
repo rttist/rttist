@@ -1,4 +1,4 @@
-class TestAsyncGeneratorFunction implements AsyncGenerator<number, number, number>
+class TestAsyncGenerator implements AsyncGenerator<number, number, number>
 {
     next(...args: [] | [number]): Promise<IteratorResult<number, number>> {
         throw new Error("Method not implemented.");
@@ -71,7 +71,7 @@ export class NativeTypes {
 	prop43!: AsyncIterator<any>;
 	
 	prop44!: AsyncGeneratorFunction;
-	prop45 = TestAsyncGeneratorFunction;
+	prop45 = TestAsyncGenerator;
 	prop46!: AsyncGenerator<any>;
 	async *asyncGenerator() {
 		yield Promise.resolve(1);

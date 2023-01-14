@@ -90,6 +90,10 @@ export class Type
 		"AsyncIterableIterator",
 		TypeKind.AsyncIterableIteratorDefinition
 	);
+	public static readonly ArrayBuffer = cn("ArrayBuffer", TypeKind.ArrayBuffer);
+	public static readonly SharedArrayBuffer = cn("SharedArrayBuffer", TypeKind.SharedArrayBuffer);
+	public static readonly Atomics = cn("Atomics", TypeKind.Atomics);
+	public static readonly DataView = cn("DataView", TypeKind.DataView);
 	public static readonly Type = cn("Type", TypeKind.RttistType, "@rttist/dist/Type");
 	public static readonly Module = cn("Module", TypeKind.RttistModule, "@rttist/dist/Module");
 
@@ -594,4 +598,8 @@ export const NativeTypes: { [typeKind: number]: Type } = {
 	[TypeKind.Float64Array]: Type.Float64Array,
 	[TypeKind.BigInt64Array]: Type.BigInt64Array,
 	[TypeKind.BigUint64Array]: Type.BigUint64Array,
+	[TypeKind.ArrayBuffer]: Type.ArrayBuffer,
+	[TypeKind.SharedArrayBuffer]: Type.SharedArrayBuffer,
+	[TypeKind.Atomics]: Type.Atomics,
+	[TypeKind.DataView]: Type.DataView,
 } as const;

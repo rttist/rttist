@@ -64,12 +64,11 @@ export function inferTypeArguments(
 
 	if (!anyMatch)
 	{
-		// In this case, we can enhance infer logic,.. but it would be complex...
-		context.log.ifInfo(() => [
-			"Failed to infer type parameters from call-expression's argument.\n\t",
-			getNodeLocationText(node)
-		]);
-
+		// // In this case, we can enhance infer logic,.. but it would be complex...
+		// context.log.ifInfo(() => [
+		// 	"Failed to infer type parameters from call-expression's argument.\n\t",
+		// 	getNodeLocationText(node)
+		// ]);
 		return undefined;
 	}
 

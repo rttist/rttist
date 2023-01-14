@@ -62,6 +62,10 @@ Metadata.addType(
 	Type.Float64Array,
 	Type.BigInt64Array,
 	Type.BigUint64Array,
+	Type.ArrayBuffer,
+	Type.SharedArrayBuffer,
+	Type.Atomics,
+	Type.DataView,
 	AnyArray,
 	UnknownFunction
 );
