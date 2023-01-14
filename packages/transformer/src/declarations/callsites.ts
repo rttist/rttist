@@ -5,11 +5,7 @@ import type { TransformerTypeReference } from "./TransformerTypeReference";
 import type { ClassTypeReference }       from "./ClassTypeReference";
 import type { ContextTypeReference }     from "./ContextTypeReference";
 
-/**
- * Reference to type parameter.
- * It will be name of the type parameter.
- */
-export type TypeParameterReference = string;
+export type TypeArgumentsInfo = Array<undefined | [ts.Type, ts.Symbol | undefined]>;
 
 /**
  * References to all type parameters for callsite.

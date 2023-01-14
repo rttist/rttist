@@ -1,6 +1,7 @@
-import * as ts                                   from "typescript";
+import * as ts from "typescript";
 import { createConstructGenericClassExpression } from "../ast-utils/createConstructGenericClassExpression";
-import { Context }                               from "../contexts/Context";
+import { getArgumentsTypes } from "../ast-utils/getArgumentsTypes";
+import { Context } from "../contexts/Context";
 
 export function newExpressionVisitor(expression: ts.NewExpression, context: Context): ts.VisitResult<ts.Node>
 {
@@ -15,8 +16,21 @@ export function newExpressionVisitor(expression: ts.NewExpression, context: Cont
 		// 	undefined,
 		// 	context
 		// );
+		const typeArgTypes = getArgumentsTypes(expression, context);
+		const visitedArguments: ts.NodeArray<ts.Expression> = expression.arguments === undefined
+			? [] as any as ts.NodeArray<ts.Expression>
+			: ts.visitNodes(
+				expression.arguments,
+				context.visitor
+			);
 
-		return createConstructGenericClassExpression(expression, context);
+		return createConstructGenericClassExpression(
+			expression.expression,
+			typeArgTypes,
+			ts.factory.createArrayLiteralExpression(visitedArguments),
+			undefined,
+			context
+		);
 	}
 
 

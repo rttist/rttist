@@ -3,14 +3,14 @@ import { TypeReference }           from "../declarations";
 import { Type }                    from "../Type";
 
 export function constructGeneric<TType = any>(
-	target: { new(...args: any): TType } | Function,
+	target: Function,
 	typeParameters: Array<Type | TypeReference>,
 	argumentsList: ArrayLike<any>,
 	newTarget?: Function
 ): TType
 {
 	const Class = Rttist.getGenericClass(
-		target as { new(...args: any): TType },
+		target,
 		...typeParameters.map(tpReference => tpReference instanceof Type
 			? tpReference
 			: Rttist.resolveType(tpReference)

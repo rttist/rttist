@@ -15,7 +15,7 @@ export class GenericTypeFactory
 	 */
 	static create(
 		genericTypeDefinition: ClassType,
-		typeParameters: Type[],
+		typeParameters: readonly Type[],
 		genericTypeFullName: string
 	): GenericType<ClassType>
 	{

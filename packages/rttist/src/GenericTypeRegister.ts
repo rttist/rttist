@@ -17,7 +17,7 @@ class Register
 	 * @param typeParameters
 	 * @private
 	 */
-	private getId(genericTypeDefinition: Type, typeParameters: Type[])
+	private getId(genericTypeDefinition: Type, typeParameters: readonly Type[])
 	{
 		return genericTypeDefinition.id + "{" + typeParameters.map(tp => tp.id).join(",") + "}";
 	}
@@ -28,7 +28,7 @@ class Register
 	 * @param classCtor
 	 * @param typeParameters
 	 */
-	getGenericClass<T extends { new(...args: any[]): any }>(classCtor: T, typeParameters: Type[]): T
+	getGenericClass<T>(classCtor: { new(...args: any[]): T }, typeParameters: readonly Type[]): { new(...args: any[]): T }
 	{
 		const genericTypeDefinition = Rttist.getType(classCtor);
 
@@ -38,18 +38,18 @@ class Register
 
 			return class Invalid
 			{
-			} as T;
+			} as any;
 		}
 
 		const fullName = this.getId(genericTypeDefinition, typeParameters);
-		let genericClass: T = this.createdTypes[fullName] as T;
+		let genericClass = this.createdTypes[fullName];
 
 		if (!genericClass)
 		{
 			const name = classCtor.name + "{}";
 
 			this.createdTypes[fullName] = genericClass = {
-				[name]: class extends classCtor
+				[name]: class extends (classCtor as any)
 				{
 					constructor(...args: any[])
 					{
@@ -65,7 +65,7 @@ class Register
 			);
 		}
 
-		return genericClass;
+		return genericClass as any;
 	}
 }
 

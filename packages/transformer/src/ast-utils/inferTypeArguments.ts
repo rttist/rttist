@@ -1,14 +1,15 @@
 import * as ts                 from "typescript";
 import { Context }             from "../contexts/Context";
+import { TypeArgumentsInfo }   from "../declarations/callsites";
 import { getNodeLocationText } from "../tracers/getNodeLocationText";
 import { getDeclaration }      from "../utils/symbolHelpers";
 
 export function inferTypeArguments(
 	node: ts.CallExpression | ts.NewExpression,
-	typeArgTypes: Array<undefined | [ts.Type, ts.Symbol | undefined]>,
 	context: Context
-)
+): TypeArgumentsInfo
 {
+	const typeArgTypes: TypeArgumentsInfo = [];
 	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
 	const symbolDeclaration: ts.Declaration | undefined = symbol && getDeclaration(symbol);
 	let declaration: ts.SignatureDeclarationBase | undefined = symbolDeclaration as ts.SignatureDeclarationBase | undefined;
@@ -28,13 +29,13 @@ export function inferTypeArguments(
 			`There is an callExpression but no declaration of function/method has been found.\n\t`,
 			getNodeLocationText(node)
 		);
-		return;
+		return typeArgTypes;
 	}
 
 	// Return node. There is no type parameter, so there is nothing to do (no type info to pass).
 	if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0)
 	{
-		return;
+		return typeArgTypes;
 	}
 
 	const typeParametersTypes = declaration.typeParameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
@@ -63,4 +64,6 @@ export function inferTypeArguments(
 			typeArgTypes.push(undefined);
 		}
 	}
+	
+	return typeArgTypes;
 }

@@ -1,11 +1,13 @@
-import { ModuleIds }                          from "@rttist/core";
-import type { Context }                       from "../contexts/Context";
-import * as ts                                from "typescript";
-import { createCallsiteCallExpression }       from "../ast-utils/createCallsiteCallExpression";
-import { getArgumentsTypes }                  from "../ast-utils/getArgumentsTypes";
-import { directTypeCallsiteReferenceFactory } from "../utils/directTypeCallsiteReferenceFactory";
-import { getSourceFileId }                    from "../utils/getSourceFileId";
-import { getDeclaration }                     from "../utils/symbolHelpers";
+import { ModuleIds }                             from "@rttist/core";
+import { createConstructGenericClassExpression } from "../ast-utils/createConstructGenericClassExpression";
+import { getTypeArgumentsInfo }                  from "../ast-utils/getTypeArgumentsInfo";
+import type { Context }                          from "../contexts/Context";
+import * as ts                                   from "typescript";
+import { createCallsiteCallExpression }          from "../ast-utils/createCallsiteCallExpression";
+import { getArgumentsTypes }                     from "../ast-utils/getArgumentsTypes";
+import { directTypeCallsiteReferenceFactory }    from "../utils/directTypeCallsiteReferenceFactory";
+import { getSourceFileId }                       from "../utils/getSourceFileId";
+import { getDeclaration }                        from "../utils/symbolHelpers";
 
 export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression, context: Context)
 {
@@ -41,26 +43,27 @@ export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression
 function handleReflectConstructCalls(node: ts.CallExpression | ts.NewExpression, context: Context)
 {
 	if (
-		(
-			ts.isPropertyAccessExpression(node.expression) && (
-				node.expression.name.escapedText.toString() === "construct"
-				// || node.expression.name.escapedText.toString() === "constructGeneric"
-			)
-			&& (
-				ts.isIdentifier(node.expression.expression)
+		node.typeArguments !== undefined && node.typeArguments.length !== 0 && (
+			(
+				ts.isPropertyAccessExpression(node.expression) && (
+					node.expression.name.escapedText.toString() === "construct"
+					// || node.expression.name.escapedText.toString() === "constructGeneric"
+				)
 				&& (
-					node.expression.expression.escapedText.toString() === "Reflect"
-					// || node.expression.expression.escapedText.toString() === "Rttist"
+					ts.isIdentifier(node.expression.expression)
+					&& (
+						node.expression.expression.escapedText.toString() === "Reflect"
+						// || node.expression.expression.escapedText.toString() === "Rttist"
+					)
 				)
 			)
-		)
-		|| (
-			ts.isIdentifier(node.expression) && (
-				node.expression.escapedText.toString() === "construct"
-				// || node.expression.escapedText.toString() === "constructGeneric"
+			|| (
+				ts.isIdentifier(node.expression) && (
+					node.expression.escapedText.toString() === "construct"
+					// || node.expression.escapedText.toString() === "constructGeneric"
+				)
 			)
-		)
-	)
+		))
 	{
 		const functionSymbol = context.typeChecker.getSymbolAtLocation(node.expression);
 		const declaration = getDeclaration(functionSymbol);
@@ -72,7 +75,28 @@ function handleReflectConstructCalls(node: ts.CallExpression | ts.NewExpression,
 
 			if (sourceFileId === ModuleIds.Native)
 			{
+				const classTypeNode = node.typeArguments[0];
 
+				if (ts.isTypeReferenceNode(classTypeNode)
+					&& classTypeNode.typeArguments !== undefined
+					&& classTypeNode.typeArguments.length !== 0)
+				{
+					const typeArgTypes = getTypeArgumentsInfo(classTypeNode.typeArguments, context);
+					const visitedArguments: ts.NodeArray<ts.Expression> = node.arguments === undefined
+						? [] as any as ts.NodeArray<ts.Expression>
+						: ts.visitNodes(
+							node.arguments,
+							context.visitor
+						);
+
+					return createConstructGenericClassExpression(
+						visitedArguments[0] as ts.LeftHandSideExpression,
+						typeArgTypes,
+						visitedArguments[1],
+						visitedArguments[2] as ts.LeftHandSideExpression | undefined,
+						context
+					);
+				}
 			}
 		}
 	}

@@ -74,10 +74,10 @@ declare global
 		 * @param classCtor
 		 * @param typeParameters
 		 */
-		export function getGenericClass<T extends { new(...args: any[]): any }>(
-			classCtor: T,
+		export function getGenericClass<T>(
+			classCtor: Function,
 			...typeParameters: Type[]
-		): T;
+		): Function;
 
 		// /**
 		//  * @internal
