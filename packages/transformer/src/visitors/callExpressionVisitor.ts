@@ -28,7 +28,7 @@ export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression
 
 	const typeArgTypes = getArgumentsTypes(node, context);
 
-	if (typeArgTypes.length === 0 || typeArgTypes.every(ta => ta === null))
+	if (typeArgTypes === undefined)
 	{
 		return ts.visitEachChild(node, context.visitor, context.transformationContext);
 	}

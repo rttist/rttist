@@ -7,9 +7,8 @@ import { getDeclaration }      from "../utils/symbolHelpers";
 export function inferTypeArguments(
 	node: ts.CallExpression | ts.NewExpression,
 	context: Context
-): TypeArgumentsInfo
+): undefined | TypeArgumentsInfo
 {
-	const typeArgTypes: TypeArgumentsInfo = [];
 	const symbol = context.typeChecker.getSymbolAtLocation(node.expression);
 	const symbolDeclaration: ts.Declaration | undefined = symbol && getDeclaration(symbol);
 	let declaration: ts.SignatureDeclarationBase | undefined = symbolDeclaration as ts.SignatureDeclarationBase | undefined;
@@ -29,17 +28,19 @@ export function inferTypeArguments(
 			`There is an callExpression but no declaration of function/method has been found.\n\t`,
 			getNodeLocationText(node)
 		);
-		return typeArgTypes;
+		return undefined;
 	}
 
 	// Return node. There is no type parameter, so there is nothing to do (no type info to pass).
 	if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0)
 	{
-		return typeArgTypes;
+		return undefined;
 	}
 
 	const typeParametersTypes = declaration.typeParameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
 	const parametersTypes = declaration.parameters.map(tp => context.typeChecker.getTypeAtLocation(tp));
+	const typeArgTypes: TypeArgumentsInfo = [];
+	let anyMatch = false;
 
 	for (const typeParameterType of typeParametersTypes)
 	{
@@ -48,6 +49,7 @@ export function inferTypeArguments(
 		if (parameterIndex !== -1)
 		{
 			const args = node.arguments || [];
+			anyMatch = true;
 
 			typeArgTypes.push([
 				context.typeChecker.getTypeAtLocation(args[parameterIndex]),
@@ -56,13 +58,18 @@ export function inferTypeArguments(
 		}
 		else
 		{
-			// In this case, we can enhance infer logic,.. but it would be complex...
-			context.log.warn(
-				"Failed to infer type parameter from call-expression's argument.\n\t",
-				getNodeLocationText(node)
-			);
 			typeArgTypes.push(undefined);
 		}
+	}
+	
+	if (!anyMatch) {
+		// In this case, we can enhance infer logic,.. but it would be complex...
+		context.log.warn(
+			"Failed to infer type parameters from call-expression's argument.\n\t",
+			getNodeLocationText(node)
+		);
+		
+		return undefined;
 	}
 	
 	return typeArgTypes;

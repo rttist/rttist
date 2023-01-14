@@ -72,9 +72,14 @@ export function getTypeId(type: ts.Type, symbol: ts.Symbol | undefined, typeChec
 	return getTypeRef(type, symbol, typeChecker).id || TypeIds.Invalid;
 }
 
-export function isInvalidType(type: ts.Type | undefined): boolean
+export function isInvalidType(type: ts.Type | undefined | { intrinsicName: "error" }): type is (undefined | { intrinsicName: "error" })
 {
 	return type === undefined || (type as any).intrinsicName === "error";
+}
+
+export function hasTypeArguments(type: ts.Type): type is ts.Type & { resolvedTypeArguments: readonly ts.Type[] }
+{
+	return (type as any).resolvedTypeArguments !== undefined;
 }
 
 const KindsWithInitializer = new Set([
