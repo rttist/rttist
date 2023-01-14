@@ -15,7 +15,7 @@ export interface Plugin
 	/**
 	 * Returns import declarations for the typelib SourceFile.
 	 */
-	getImports?(): Array<ts.ImportDeclaration | ts.VariableStatement>;
+	getImports?(): Array<ts.ImportDeclaration | ts.Statement>;
 
 	// /**
 	//  * Returns JS code which will be appended right after imports.

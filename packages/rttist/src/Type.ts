@@ -381,7 +381,7 @@ export class Type
 	 */
 	isEnum(): this is EnumType
 	{
-		return this._kind == TypeKind.Enum;
+		return this._kind === TypeKind.Enum;
 	}
 
 	/**
@@ -390,7 +390,7 @@ export class Type
 	 */
 	isConditional(): this is ConditionalType
 	{
-		return this._kind == TypeKind.ConditionalType;
+		return this._kind === TypeKind.ConditionalType;
 	}
 
 	/**
@@ -406,7 +406,7 @@ export class Type
 	 */
 	isObject(): this is ObjectType
 	{
-		return this._kind == TypeKind.Object;
+		return this._kind === TypeKind.Object;
 	}
 
 	/**
@@ -414,7 +414,7 @@ export class Type
 	 */
 	isTemplate(): this is TemplateType // TODO: TemplateLiteral vs Template expression
 	{
-		return this._kind == TypeKind.TemplateLiteral;
+		return this._kind === TypeKind.TemplateLiteral;
 	}
 
 	/**
@@ -422,7 +422,7 @@ export class Type
 	 */
 	isFunction(): this is FunctionType
 	{
-		return this._kind == TypeKind.Function;
+		return this._kind === TypeKind.Function;
 	}
 
 	/**
@@ -430,7 +430,7 @@ export class Type
 	 */
 	isESSymbol(): this is ESSymbolType
 	{
-		return this._kind == TypeKind.ESSymbol;
+		return this._kind === TypeKind.ESSymbol;
 	}
 
 	/**
@@ -438,7 +438,7 @@ export class Type
 	 */
 	isUniqueSymbol(): this is UniqueSymbolType
 	{
-		return this._kind == TypeKind.UniqueSymbol;
+		return this._kind === TypeKind.UniqueSymbol;
 	}
 
 	//////////////////////////////////////////////////////////////////// CHECKS /////////////////////////////////////////////////////////////////

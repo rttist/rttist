@@ -1,17 +1,16 @@
-import * as ts                from "typescript";
-import { Config }             from "../config/Config";
-import { PACKAGE_ID }         from "../consts";
-import { TransformerVisitor } from "../declarations/general";
-import { DependencyManager }  from "../dependencies/DependencyManager";
+import * as ts               from "typescript";
+import { Config }            from "../config/Config";
+import { PACKAGE_ID }        from "../consts";
+import { DependencyManager } from "../dependencies/DependencyManager";
 import {
 	log,
 	LogColor,
 	LogLevel
-}                             from "../logging";
-import { MetadataLibrary }    from "../metadata/MetadataLibrary";
-import { MetadataManager }    from "../metadata/MetadataManager";
-import { mainVisitor }        from "../visitors/mainVisitor";
-import { Context }            from "./Context";
+}                            from "../logging";
+import { MetadataLibrary }   from "../metadata/MetadataLibrary";
+import { MetadataManager }   from "../metadata/MetadataManager";
+import { mainVisitor }       from "../visitors/mainVisitor";
+import { Context }           from "./Context";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
 let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
@@ -104,7 +103,7 @@ export class TransformerContext
 	 */
 	protected constructor(program: ts.Program, config: Config)
 	{
-		if (new.target != Activator)
+		if (new.target !== Activator)
 		{
 			throw new Error("This constructor is protected.");
 		}
@@ -192,7 +191,9 @@ export class TransformerContext
 				this.perfEntries[1] = performance.now() - persistStart;
 
 				const total = this.perfEntries.reduce((sum, num) => sum + num, 0);
-				log.debug(
+				log.log(
+					sourceFileContext.config.devMode ? LogLevel.Dev : LogLevel.Debug,
+					LogColor.magenta,
 					"Completed!",
 					"\n\tInitialization:",
 					roundPerfTime(this.perfEntries[0]), "sec.",

@@ -1,5 +1,5 @@
-import type { Context }      from "../contexts/Context";
-import type { TypeInfo }     from "../declarations/general";
+import type { Context }        from "../contexts/Context";
+import type { TypeInfo }       from "../declarations/general";
 import type {
 	ModuleMetadataProperties,
 	ModuleProperties,
@@ -138,8 +138,10 @@ export class ModuleMetadata
 			}
 			else
 			{
-				log.warn(`SourceFile of child module '${importDeclaration.moduleSpecifier.getText()}' `
-					+ `not found.\n\tAt ${getNodeLocationText(importDeclaration)}`);
+				log.ifWarn(() => [
+					`SourceFile of child module '${importDeclaration.moduleSpecifier.getText()}' `
+					+ `not found.\n\tAt ${getNodeLocationText(importDeclaration)}`
+				]);
 			}
 		}
 

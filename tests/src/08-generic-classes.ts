@@ -128,3 +128,8 @@ test("generic classes - instanceof", () => {
 	expect(b instanceof A).toBeTruthy();
 	expect(b instanceof a.constructor).toBeFalsy();
 });
+
+test("generic classes - Type.is", () => {
+	const ANumberType = getType<A<number>>();
+	expect(ANumberType.is<A<number>>()).toBeTruthy();
+});

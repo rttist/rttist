@@ -21,10 +21,10 @@ export function getConstantValue(
 
 	if (context.config.devMode)
 	{
-		context.log.warn(
+		context.log.ifWarn(() => [
 			"Unexpected value. Only constant values are allowed.\n\t"
 			+ getNodeLocationText(node)
-		);
+		]);
 	}
 
 	return ts.factory.createNull();

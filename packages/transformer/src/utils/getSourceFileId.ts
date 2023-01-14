@@ -42,7 +42,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	const nodeModulesIndex = filePath.lastIndexOf(NODE_MODULES_PATTERN);
 
 	const sourceFileId = removeExtensions(
-		nodeModulesIndex != -1
+		nodeModulesIndex !== -1
 			? "@" + filePath.slice(nodeModulesIndex + NODE_MODULES_PATTERN.length)
 			: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/")
 	);

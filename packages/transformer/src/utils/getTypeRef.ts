@@ -190,7 +190,7 @@ export function getTypeRef(
 			}
 			else
 			{
-				log.debug("Handled as union: ", printTypeDebugInfo(type, typeChecker));
+				log.ifDebug(() => ["Handled as union: ", printTypeDebugInfo(type, typeChecker)]);
 			}
 		}
 	}
@@ -233,10 +233,10 @@ function getTypeRefOfTypeParameter(
 		);
 	}
 
-	log.warn(
+	log.ifWarn(() => [
 		"Unable to properly generate Id for a TypeParameter because parent type is unknown.",
 		printTypeDebugInfo(type, typeChecker)
-	);
+	]);
 
 	return new TransformerTypeReference(
 		sourceFileId,
@@ -264,10 +264,10 @@ function getTypeRefWithoutDeclaration(
 
 	if (typeReference === undefined)
 	{
-		log.warn(
+		log.ifWarn(() => [
 			`Unable to generate Id for type without ${!symbol ? "symbol" : "declaration"}.`,
 			printTypeDebugInfo(type, typeChecker)
-		);
+		]);
 
 		typeReference = TransformerTypeReference.Invalid;
 	}

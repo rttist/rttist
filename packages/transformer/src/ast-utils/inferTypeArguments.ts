@@ -24,10 +24,10 @@ export function inferTypeArguments(
 
 	if (!declaration)
 	{
-		context.log.info(
+		context.log.ifInfo(() => [
 			`There is an callExpression but no declaration of function/method has been found.\n\t`,
 			getNodeLocationText(node)
-		);
+		]);
 		return undefined;
 	}
 
@@ -61,16 +61,17 @@ export function inferTypeArguments(
 			typeArgTypes.push(undefined);
 		}
 	}
-	
-	if (!anyMatch) {
+
+	if (!anyMatch)
+	{
 		// In this case, we can enhance infer logic,.. but it would be complex...
-		context.log.warn(
+		context.log.ifInfo(() => [
 			"Failed to infer type parameters from call-expression's argument.\n\t",
 			getNodeLocationText(node)
-		);
-		
+		]);
+
 		return undefined;
 	}
-	
+
 	return typeArgTypes;
 }

@@ -1,37 +1,32 @@
-import { TypeKind }                 from "rttist";
 import * as ts                      from "typescript";
+import { TypeKind }                 from "rttist";
 import { SyntaxKind }               from "typescript";
 import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-
-let devMode: boolean | undefined;
 
 export function toExpression(value: any): ts.Expression
 {
 	if (value != undefined)
 	{
-		if (typeof value === "string")
+		switch (typeof value)
 		{
-			return ts.factory.createStringLiteral(value);
+			case "string":
+				return ts.factory.createStringLiteral(value);
+			case "number":
+				return ts.factory.createNumericLiteral(value);
+			case "boolean":
+				return value
+					? ts.factory.createTrue()
+					: ts.factory.createFalse();
 		}
 
-		if (typeof value === "number")
-		{
-			return ts.factory.createNumericLiteral(value);
-		}
-
-		if (typeof value === "boolean")
-		{
-			return value
-				? ts.factory.createTrue()
-				: ts.factory.createFalse();
-		}
-
+		// noinspection SuspiciousTypeOfGuard
 		if (value instanceof Array)
 		{
 			return ts.factory.createArrayLiteralExpression(value.map(val => toExpression(val)));
 		}
 
+		// noinspection SuspiciousTypeOfGuard
 		if (value instanceof TransformerTypeReference)
 		{
 			if (value.isKindOnly())
@@ -40,7 +35,7 @@ export function toExpression(value: any): ts.Expression
 					ts.factory.createNumericLiteral(value.nativeReference.kind)
 				];
 
-				if (devMode === undefined ? (devMode = TransformerContext.instance.config.devMode) : devMode)
+				if (TransformerContext.instance.config.devMode)
 				{
 					ts.addSyntheticTrailingComment(
 						ref[0],

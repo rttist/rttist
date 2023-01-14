@@ -6,4 +6,5 @@ export enum LogLevel
 	Info = "INF",
 	Warning = "WRN",
 	Error = "ERR",
+	Dev = "DEV",
 }

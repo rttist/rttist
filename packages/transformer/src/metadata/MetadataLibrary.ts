@@ -45,7 +45,7 @@ export class MetadataLibrary
 	 */
 	protected constructor(dependencyManager: DependencyManager)
 	{
-		if (new.target != Activator)
+		if (new.target !== Activator)
 		{
 			throw new Error("This constructor is protected.");
 		}
@@ -157,10 +157,10 @@ export class MetadataLibrary
 		{
 			if (!typeRef.sourceFile)
 			{
-				context.log.warn(
+				context.log.ifWarn(() => [
 					"Unable to access SourceFile of type."
 					+ printTypeDebugInfo(type, context.typeChecker)
-				);
+				]);
 
 				return ModuleMetadata.Invalid;
 				// return typeRef; // TODO: Test if we can do this -> do not return here but add it to Unknown module.

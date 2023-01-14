@@ -21,7 +21,7 @@ export class DefaultPlugin implements Plugin
 	/**
 	 * @inheritDoc
 	 */
-	getImports?(): Array<ts.ImportDeclaration | ts.VariableStatement>
+	getImports?(): Array<ts.ImportDeclaration | ts.Statement>
 	{
 		// In case the encoding is enabled, import tst-reflect runtime which is able to decode it.
 		// Otherwise we'll use rttist directly.

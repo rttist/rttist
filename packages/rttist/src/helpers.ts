@@ -86,7 +86,7 @@ export function getTypeOfRuntimeValue(value: any): Type
 
 	if (typeof value === "function"
 		&& (
-			value.prototype == undefined
+			value.prototype === undefined
 			|| Object.getOwnPropertyDescriptor(value, "prototype")?.writable === true
 		)
 	)

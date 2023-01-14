@@ -41,7 +41,7 @@ export function getHeritageClauses(
 
 	if (declaration.heritageClauses)
 	{
-		const ext = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ExtendsKeyword)[0];
+		const ext = declaration.heritageClauses.filter(h => h.token === ts.SyntaxKind.ExtendsKeyword)[0];
 
 		if (ext)
 		{
@@ -53,7 +53,7 @@ export function getHeritageClauses(
 			));
 		}
 
-		const impl = declaration.heritageClauses.filter(h => h.token == ts.SyntaxKind.ImplementsKeyword)[0];
+		const impl = declaration.heritageClauses.filter(h => h.token === ts.SyntaxKind.ImplementsKeyword)[0];
 
 		if (impl)
 		{

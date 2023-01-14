@@ -105,7 +105,7 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 
 function getAccessor(node?: ts.Declaration): Accessor
 {
-	if (node != undefined)
+	if (node !== undefined)
 	{
 		if (node.kind === ts.SyntaxKind.GetAccessor)
 		{
