@@ -13,4 +13,6 @@ type TestAlias = Test;
 
 test("Type alias", () => {
 	Reflect.getType<TestAlias>();
+	// TODO: Write tests 
+	expect(true).toBeTruthy();
 });

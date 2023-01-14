@@ -1,3 +1,4 @@
+import { createImport }     from "../ast-utils/createImport";
 import type { Config }      from "../config/Config";
 import * as ts              from "typescript";
 import path                 from "path";
@@ -25,19 +26,11 @@ export class SourceFileMetadataUpdater
 		{
 			tsLibPath = "./" + tsLibPath;
 		}
-		
-		// TODO: We have to create require() or import() based on config. 
-		//  TS will not transform import() to require if there is no other import in the file, 
-		//  isn't it bug?
 
 		return updateSourceFile(
 			sourceFile,
 			[
-				ts.factory.createImportDeclaration(
-					undefined,
-					undefined,
-					ts.factory.createStringLiteral(tsLibPath)
-				)
+				createImport(undefined, tsLibPath)
 			]
 		);
 	}

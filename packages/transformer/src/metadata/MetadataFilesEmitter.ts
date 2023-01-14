@@ -89,7 +89,7 @@ export class MetadataFilesEmitter
 
 		return ts.factory.createSourceFile(
 			[
-				ts.factory.createImportDeclaration(
+				ts.factory.createImportDeclaration( // TODO: Generate import or require(), based on tsconfig
 					undefined,
 					ts.factory.createImportClause(
 						false,

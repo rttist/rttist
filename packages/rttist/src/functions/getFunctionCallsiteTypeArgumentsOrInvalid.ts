@@ -5,10 +5,10 @@ import {
 import { TypeReference } from "../declarations";
 
 /**
- * Resolves callsite of a function.
+ * Resolves callsite of a function or it returns generator of Invalid type references. 
  * @param fn
  */
-export function resolveFunctionCallsite(fn: Function)
+export function getFunctionCallsiteTypeArgumentsOrInvalid(fn: Function)
 {
 	const callsiteArgs: TypeReference[] | undefined = (fn as any)[CALLSITE_TYPE_ARGS_PROPERTY];
 	(fn as any)[CALLSITE_TYPE_ARGS_PROPERTY] = undefined;

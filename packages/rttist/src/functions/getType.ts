@@ -1,10 +1,9 @@
-import type { TypeReference }          from "../declarations";
-import { CALLSITE_TYPE_ARGS_PROPERTY } from "@rttist/core";
-import { getGlobalThis }               from "../utils/getGlobalThis";
+import { getGlobalThis }            from "../utils/getGlobalThis";
 import {
 	getTypeOfRuntimeValue
-}                                      from "../helpers";
-import { Type }                        from "../Type";
+}                                   from "../helpers";
+import { Type }                     from "../Type";
+import { getCallsiteTypeArguments } from "./getCallsiteTypeArguments";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -15,8 +14,7 @@ export function getType<T>(...args: any[]): Type
 		return getTypeOfRuntimeValue(args[0]);
 	}
 
-	const callsiteArgs: TypeReference[] | undefined = (getType as any)[CALLSITE_TYPE_ARGS_PROPERTY];
-	(getType as any)[CALLSITE_TYPE_ARGS_PROPERTY] = undefined;
+	const callsiteArgs = getCallsiteTypeArguments(getType);
 
 	if (callsiteArgs !== undefined)
 	{

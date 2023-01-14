@@ -1,3 +1,6 @@
 {
+	"metadata": {
+		"encode": false
+	},
 	"logLevel": "Warning"
 }

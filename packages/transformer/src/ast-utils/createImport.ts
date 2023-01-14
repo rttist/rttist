@@ -2,9 +2,9 @@ import * as ts                from "typescript";
 import { TransformerContext } from "../contexts/TransformerContext";
 
 export function createImport(
-	identifier: ts.Identifier,
+	identifier: ts.Identifier | undefined,
 	moduleSpecifier: string
-): ts.ImportDeclaration | ts.VariableStatement
+): ts.ImportDeclaration | ts.Statement
 {
 	if (TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.Node16
 		|| TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.NodeNext)
@@ -20,22 +20,26 @@ export function createImport(
 		);
 	}
 
-	return ts.factory.createVariableStatement(
+	const callExpression = ts.factory.createCallExpression(
+		ts.factory.createIdentifier("require"),
 		undefined,
-		ts.factory.createVariableDeclarationList(
-			[
-				ts.factory.createVariableDeclaration(
-					identifier,
-					undefined,
-					undefined,
-					ts.factory.createCallExpression(
-						ts.factory.createIdentifier("require"),
-						undefined,
-						[ts.factory.createStringLiteral(moduleSpecifier)]
-					)
-				)
-			],
-			ts.NodeFlags.Const
-		)
+		[ts.factory.createStringLiteral(moduleSpecifier)]
 	);
+
+	return identifier === undefined
+		? ts.factory.createExpressionStatement(callExpression)
+		: ts.factory.createVariableStatement(
+			undefined,
+			ts.factory.createVariableDeclarationList(
+				[
+					ts.factory.createVariableDeclaration(
+						identifier,
+						undefined,
+						undefined,
+						callExpression
+					)
+				],
+				ts.NodeFlags.Const
+			)
+		);
 }

@@ -3,9 +3,9 @@
 import type {
 	TypeIdentifier,
 	TypeMetadata,
-	TypesConfiguration,
-	ObjectLikeBaseTypeMetadata
-}                        from "./declarations";
+	TypesConfiguration
+}                                                    from "./declarations";
+import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
 import type {
 	ClassType,
 	ConditionalType,
@@ -23,7 +23,7 @@ import type {
 	ESSymbolType,
 	TypeAliasType,
 	UniqueSymbolType
-}                        from "./types";
+}                                                    from "./types";
 import type { Module }   from "./Module";
 import { ModuleIds }     from "@rttist/core";
 import { LazyModule }    from "./utils/LazyModule";
@@ -243,11 +243,22 @@ export class Type
 	}
 
 	/**
+	 * Returns true if type is equal to type passed as type argument.
+	 */
+	is<T>(): boolean
+	/**
 	 * Returns true if types are equal.
 	 * @param target
 	 */
 	is<TType extends Type>(target: TType): target is TType
+	is<T>(target?: Type): boolean
 	{
+		if (target === undefined)
+		{
+			const [targetTypeReference] = getFunctionCallsiteTypeArgumentsOrInvalid(this.is);
+			target = Reflect.resolveType(targetTypeReference);
+		}
+		
 		if (this.isComparableByKind())
 		{
 			return this._kind === target._kind;

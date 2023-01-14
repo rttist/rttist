@@ -1,12 +1,12 @@
 import type { TypeReference }      from "./declarations";
-import type { Type }               from "./Type";
-import { resolveFunctionCallsite } from "./functions/resolveFunctionCallsite";
-import { resolveMethodCallsite }   from "./functions/resolveMethodCallsite";
-import { unknownTypeGenerator }    from "./functions/unknownTypeGenerator";
+import type { Type }                                 from "./Type";
+import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
+import { resolveMethodCallsite }                     from "./functions/resolveMethodCallsite";
+import { invalidTypeGenerator }  from "./functions/invalidTypeGenerator";
 import {
 	FncNames,
 	RTTIST_NAMESPACE
-}                                  from "@rttist/core";
+}                                from "@rttist/core";
 import { createCallsite }          from "./functions/createCallsite";
 import { constructGeneric }               from "./functions/constructGeneric";
 import { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
@@ -107,8 +107,8 @@ getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	[FncNames.constructGeneric]: constructGeneric,
 	[FncNames.getClassTypeParameter]: getClassTypeParameterReference,
 	[FncNames.createCallsite]: createCallsite,
-	[FncNames.invalidTypeGenerator]: unknownTypeGenerator,
-	[FncNames.resolveFunctionCallsite]: resolveFunctionCallsite,
+	[FncNames.invalidTypeGenerator]: invalidTypeGenerator,
+	[FncNames.resolveFunctionCallsite]: getFunctionCallsiteTypeArgumentsOrInvalid,
 	[FncNames.resolveMethodCallsite]: resolveMethodCallsite,
 };
 
