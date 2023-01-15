@@ -9,6 +9,9 @@
 		},
 		{
 			"path": "./packages/transformer/tsconfig.json"
+		},
+		{
+			"path": "./tests/tsconfig.json"
 		}
 	],
 	"compilerOptions": {

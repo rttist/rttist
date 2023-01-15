@@ -1,0 +1,69 @@
+import {
+	getType,
+	MethodInfo,
+	ParameterInfo,
+	PropertyInfo,
+	Type
+} from "rttist";
+
+let decorateType: Type = Type.Invalid;
+function decorate(target: Function) {
+	decorateType = getType(target);
+}
+
+
+let decoratePropType: PropertyInfo | undefined;
+function decorateProp(target: any, prop: string) {
+	const type = getType(target);
+	decoratePropType = type.isClass() && type.getProperty(prop);
+}
+
+
+let decorateMethodType: MethodInfo | undefined;
+function decorateMethod(target: any, method: string) {
+	const type = getType(target);
+	decorateMethodType = type.isClass() && type.getMethod(method);
+}
+
+let decorateParamType: ParameterInfo | undefined;
+function decorateParam(target: any, method: string, parameterIndex: number) {
+	const type = getType(target);
+	const methodInfo = type.isClass() && type.getMethod(method);
+	decorateParamType = methodInfo.getSignatures()[0].getParameters()[parameterIndex];
+}
+
+@decorate
+class Foo<U extends "b" | "a" = undefined> {
+	@decorateProp
+	propName: string;
+
+	@decorateMethod
+	methodName(@decorateParam param: boolean): true {
+		return true;
+	}
+}
+
+test("class decorator", () => {
+	expect(decorateType).toBe(getType(Foo));
+})
+
+test("property decorator", () => {
+	expect(decoratePropType instanceof PropertyInfo).toBeTruthy();
+	expect(decoratePropType.name.name).toBe("propName");
+	expect(decoratePropType.type).toBe(Type.String);
+})
+
+test("method decorator", () => {
+	expect(decorateMethodType instanceof MethodInfo).toBeTruthy();
+	expect(decorateMethodType.name.name).toBe("methodName");
+	
+	const sig = decorateMethodType.getSignatures();
+	expect(sig).toHaveLength(1);
+	expect(sig[0].returnType).toBe(Type.True);
+})
+
+test("parameter decorator", () => {
+	expect(decorateParamType instanceof ParameterInfo).toBeTruthy();
+	expect(decorateParamType.name).toBe("param");
+	expect(decorateParamType.type).toBe(Type.Boolean);
+})
