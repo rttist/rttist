@@ -6,20 +6,21 @@ import type {
 	ModuleMetadataProperties,
 	ModuleProperties,
 	TypePropertiesWithId
-}                             from "../declarations/TypeProperties";
+}                                   from "../declarations/TypeProperties";
 import type {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier
-}                             from "rttist";
-import { ModuleIds }           from "@rttist/core";
-import * as ts                 from "typescript";
-import { log }                 from "../logging";
-import { getTypeProperties }   from "../properties/getTypeProperties";
-import { getNodeLocationText } from "../tracers/getNodeLocationText";
-import { getSourceFile }       from "../utils/findSourceFile";
-import { getRelativePath }     from "../utils/getRelativePath";
-import { getSourceFileId }     from "../utils/getSourceFileId";
+}                                   from "rttist";
+import { ModuleIds }                from "@rttist/core";
+import * as ts                      from "typescript";
+import { log }                      from "../logging";
+import { getTypeProperties }        from "../properties/getTypeProperties";
+import { getNodeLocationText }      from "../tracers/getNodeLocationText";
+import { changeExtensionForOutput } from "../utils/changeExtensionForOutput";
+import { getSourceFile }            from "../utils/findSourceFile";
+import { getRelativePath }          from "../utils/getRelativePath";
+import { getSourceFileId }          from "../utils/getSourceFileId";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -85,6 +86,13 @@ export class ModuleMetadata
 	 */
 	getModuleProperties({ withoutTypes = false }: { withoutTypes?: boolean } = { withoutTypes: false }): ModuleProperties
 	{
+		const modulePath = changeExtensionForOutput(
+			getRelativePath(
+				path.dirname(TransformerContext.instance.config.metadataTypelibVirtualPath), 
+				this.moduleProperties.path
+			)
+		);
+		
 		return {
 			...this.moduleProperties,
 			import: (
@@ -93,14 +101,19 @@ export class ModuleMetadata
 				|| this.moduleProperties.id === ModuleIds.Dynamic
 			)
 				? undefined
-				: ts.factory.createCallExpression(
-					ts.factory.createIdentifier("import"),
+				: ts.factory.createArrowFunction(
 					undefined,
-					[
-						ts.factory.createStringLiteral(
-							getRelativePath(path.dirname(TransformerContext.instance.config.metadataTypelibVirtualPath), this.moduleProperties.path)
-						)
-					]
+					undefined,
+					[],
+					undefined,
+					undefined,
+					ts.factory.createCallExpression(
+						ts.factory.createIdentifier("import"),
+						undefined,
+						[
+							ts.factory.createStringLiteral(modulePath)
+						]
+					)
 				),
 			types: withoutTypes ? undefined : Array.from(this.types.values()).map(typeInfo => typeInfo.properties!)
 		};

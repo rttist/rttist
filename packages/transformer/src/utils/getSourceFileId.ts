@@ -1,9 +1,10 @@
-import { ModuleIdentifier }                 from "rttist";
 import { ModuleIds }                        from "@rttist/core";
 import path                                 from "path";
+import { ModuleIdentifier }                 from "rttist";
 import * as ts                              from "typescript";
 import { TransformerContext }               from "../contexts/TransformerContext";
 import { ReflectedSourceFileWithReference } from "../declarations/general";
+import { removeExtensions }                 from "./removeExtensions";
 
 const PATH_SEPARATOR_REGEX = /\\/g;
 const NODE_MODULES_PATTERN = "/node_modules/";
@@ -48,33 +49,6 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	);
 
 	setSourceFileReflectId(sourceFile, sourceFileId);
-
-	return sourceFileId;
-}
-
-function removeExtensions(sourceFileId: string)
-{
-	if (sourceFileId.slice(-5) === ".d.ts")
-	{
-		return sourceFileId.slice(0, -5);
-	}
-
-	const last3 = sourceFileId.slice(-3);
-
-	if (last3 === ".js" || last3 === ".ts")
-	{
-		return sourceFileId.slice(0, -3);
-	}
-
-	const last4 = sourceFileId.slice(-4);
-
-	if (last4 === ".jsx" || last4 === ".tsx"
-		|| last4 === ".cjs" || last4 === ".cts"
-		|| last4 === ".mjs" || last4 === ".mts"
-	)
-	{
-		return sourceFileId.slice(0, -4);
-	}
 
 	return sourceFileId;
 }

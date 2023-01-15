@@ -72,7 +72,7 @@ export type ModuleProperties = {
 	id: ModuleIdentifier;
 	name: string;
 	path: string;
-	import?: ts.CallExpression;
+	import?: ts.FunctionLikeDeclarationBase;
 	children?: ModuleReference[];
 	types?: TypePropertiesWithId[];
 };
