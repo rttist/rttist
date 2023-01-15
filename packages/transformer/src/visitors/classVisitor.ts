@@ -1,10 +1,10 @@
-import { PROTOTYPE_TYPE_PROPERTY }  from "@rttist/core";
-import * as ts                      from "typescript";
-import { SELF_VAR_NAME }            from "../consts";
-import { Context }                  from "../contexts/Context";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
-import { toExpression }             from "../utils/toExpression";
-import { functionVisitor }          from "./functionVisitor";
+import type { Context }                  from "../contexts/Context";
+import type { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { PROTOTYPE_TYPE_PROPERTY }       from "@rttist/core";
+import * as ts                           from "typescript";
+import { SELF_VAR_NAME }                 from "../consts";
+import { toExpression }                  from "../utils/toExpression";
+import { functionVisitor }               from "./functionVisitor";
 
 export function classVisitor(
 	declaration: ts.ClassDeclaration | ts.ClassExpression,
@@ -35,7 +35,7 @@ export function classVisitor(
 			visitedDeclaration.heritageClauses,
 			visitedDeclaration.members.concat([
 				// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-				createClassStaticBlockDeclaration(typeReference)
+				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name)
 			])
 		);
 	}
@@ -50,7 +50,7 @@ export function classVisitor(
 			visitedDeclaration.heritageClauses,
 			visitedDeclaration.members.concat([
 				// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-				createClassStaticBlockDeclaration(typeReference)
+				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name)
 			])
 		);
 	}
@@ -116,7 +116,10 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 											updatedDeclaration.heritageClauses,
 											updatedDeclaration.members.concat(
 												// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-												createClassStaticBlockDeclaration(typeReference)
+												createClassStaticBlockDeclaration(
+													typeReference,
+													updatedDeclaration.name
+												)
 											)
 										)
 									)
@@ -166,7 +169,10 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 	return node;
 }
 
-function createClassStaticBlockDeclaration(typeReference: TransformerTypeReference)
+function createClassStaticBlockDeclaration(
+	typeReference: TransformerTypeReference,
+	className: ts.Identifier | undefined
+)
 {
 	return ts.factory.createClassStaticBlockDeclaration(
 		ts.factory.createBlock([

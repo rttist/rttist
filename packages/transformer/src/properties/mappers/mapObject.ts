@@ -130,7 +130,14 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 
 		if (kind === TypeKind.Class)
 		{
-			properties.constructors = getConstructors(type, context);
+			properties.constructors = getConstructors(
+				declaration
+					? context.typeChecker.getTypeOfSymbolAtLocation(type.symbol, declaration)
+					: type,
+				context
+			);
+
+			// TODO: Remove?! There is an "import" on Module, so types can be imported that way. - module.import().then(m => m[module.getTypes().filter(t => t.exported)[0].name]
 			properties.ctor = undefined; // TODO: Create ImportDetails and let middlewares to generate imports or generate import right here?? But Imports must be generated somewhere to support lazy loadings of webpack etc.
 			properties.ctorSync = undefined;
 

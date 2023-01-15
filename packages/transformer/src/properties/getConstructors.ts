@@ -13,8 +13,7 @@ export function getConstructors(type: ts.Type, context: Context): SignaturePrope
 	{
 		constructors.push({
 			returnType: TransformerTypeReference.Void,
-			parameters: getSignatureParametersProperties(ctorSignature, context),
-			//typeParameters: [] // TODO: Remove. Constructors have no type parameters ctorSignature.typeParameters?.map(typeParameter => getTypeParameterProperties(typeParameter, context))
+			parameters: getSignatureParametersProperties(ctorSignature, context)
 		});
 	}
 
