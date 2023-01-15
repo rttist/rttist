@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-alpha.1",
+	"version": "1.0.0-alpha.2",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -15,9 +15,6 @@
 		"dist/**/*.js",
 		"dist/**/*.d.ts"
 	],
-	"typescript": {
-		"definition": "ts-lib-rttist.d.ts"
-	},
 	"keywords": [
 		"abstract",
 		"declaration",
