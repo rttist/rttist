@@ -8,8 +8,8 @@ export function mapIndexes(type: ts.Type, context: Context): Array<IndexProperti
 	return context.typeChecker.getIndexInfosOfType(type)
 		.map((indexInfo: ts.IndexInfo) => {
 			return {
-				key: context.metadata.referenceType(indexInfo.keyType, undefined, undefined, context),
-				type: context.metadata.referenceType(indexInfo.type, undefined, undefined, context),
+				key: context.metadata.referenceType(indexInfo.keyType, false, undefined, undefined, context),
+				type: context.metadata.referenceType(indexInfo.type, false, undefined, undefined, context),
 				flags: (
 					indexInfo.isReadonly
 						? IndexFlags.Readonly

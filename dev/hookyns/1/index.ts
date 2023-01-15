@@ -79,6 +79,7 @@ class Foo<T>
 	promise: Promise<boolean>;
 	regex = /sss/;
 	date = new Date();
+	dateOptional?: Date;
 	symbol = Symbol();
 	array: number[];
 	array2: Array<string>;

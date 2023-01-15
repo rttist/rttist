@@ -30,6 +30,8 @@ export class Module
 	private readonly _types: readonly Type[];
 	/** @internal */
 	private readonly _id: ModuleIdentifier;
+	/** @internal */
+	private readonly _import: () => Promise<object | undefined>;
 
 	/**
 	 * The name of the module.
@@ -56,6 +58,7 @@ export class Module
 	constructor(initializer: ModuleMetadata)
 	{
 		this._id = initializer.id;
+		this._import = initializer.import ?? (() => Promise.resolve(undefined));
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._childrenRefs = new LazyModuleArray(initializer.children || []);
@@ -80,5 +83,12 @@ export class Module
 	getTypes(): ReadonlyArray<Type>
 	{
 		return this._types;
+	}
+
+	/**
+	 * Imports module and returns exported object.
+	 */
+	import(): Promise<object | undefined> {
+		return this._import();
 	}
 }

@@ -44,7 +44,7 @@ const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 function getTypeArgumentsReference(type: ts.ObjectType, context: Context)
 {
 	let typeArguments = (type as ts.TypeReference).typeArguments
-		?.map(typeArg => context.metadata.referenceType(typeArg, undefined, undefined, context));
+		?.map(typeArg => context.metadata.referenceType(typeArg, false, undefined, undefined, context));
 
 	if (typeArguments === undefined || typeArguments.length === 0)
 	{
@@ -92,7 +92,7 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 
 		const declaration = getDeclaration(symbol);
 		const typeArguments = getTypeArgumentsReference(type, context);
-		const typeRef = getTypeRef(type, symbol, context.typeChecker);
+		const typeRef = getTypeRef(type, false, symbol, context.typeChecker); // TODO: This is used just to check it is native; is it OK? (perf)
 
 		const properties: ClassProperties & InterfaceProperties = {
 			kind: kind,
@@ -105,6 +105,7 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 		{
 			properties.genericTypeDefinition = context.metadata.referenceType(
 				resolvedType,
+				false,
 				undefined,
 				undefined,
 				context

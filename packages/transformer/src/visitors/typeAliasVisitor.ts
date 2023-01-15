@@ -14,6 +14,7 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 	// Add type alias to the metadata.
 	context.metadata.referenceType(
 		type,
+		false,
 		(declaration as any).symbol || context.typeChecker.getSymbolAtLocation(declaration.name),
 		undefined,
 		context

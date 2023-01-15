@@ -14,8 +14,8 @@ export function mapConditional(type: ts.ConditionalType, symbol: ts.Symbol | und
 	return {
 		kind: TypeKind.ConditionalType,
 		name: type.symbol.escapedName.toString(),
-		extends: context.metadata.referenceType(extendsType, undefined, undefined, context),
-		trueType: context.metadata.referenceType(trueType, undefined, undefined, context),
-		falseType: context.metadata.referenceType(falseType, undefined, undefined, context)
+		extends: context.metadata.referenceType(extendsType, false, undefined, undefined, context),
+		trueType: context.metadata.referenceType(trueType, false, undefined, undefined, context),
+		falseType: context.metadata.referenceType(falseType, false, undefined, undefined, context)
 	} as ConditionalTypeProperties;
 }

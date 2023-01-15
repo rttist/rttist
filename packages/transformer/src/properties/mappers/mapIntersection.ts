@@ -14,6 +14,7 @@ export function mapIntersection(
 		kind: TypeKind.Intersection,
 		types: type.types.map(type => context.metadata.referenceType(
 			type,
+			false,
 			undefined,
 			undefined,
 			context

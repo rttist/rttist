@@ -11,7 +11,7 @@ export function mapEnumLiteral(type: ts.Type, symbol: ts.Symbol | undefined, con
 	return {
 		kind: TypeKind.EnumLiteral,
 		name: type.symbol.escapedName.toString(),
-		enum: getTypeRef(context.typeChecker.getDeclaredTypeOfSymbol((symbol as any).parent), undefined, context.typeChecker)
+		enum: getTypeRef(context.typeChecker.getDeclaredTypeOfSymbol((symbol as any).parent), false, undefined, context.typeChecker)
 		//types: type.types.map(type => context.metadata.referenceType(type, undefined, undefined, context)),
 		// exported: declaration !== undefined && isExported(declaration)
 	};

@@ -100,7 +100,7 @@ export function getTypeProperties(
 				return {
 					name: symbol.escapedName.toString(),
 					kind: TypeKind.Alias,
-					target: context.metadata.referenceType(type, undefined, undefined, context)
+					target: context.metadata.referenceType(type, false, undefined, undefined, context)
 				} as TypeAliasProperties;
 			}
 

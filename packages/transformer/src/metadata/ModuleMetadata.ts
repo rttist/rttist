@@ -1,21 +1,24 @@
-import type { Context }        from "../contexts/Context";
-import type { TypeInfo }       from "../declarations/general";
+import path                   from "path";
+import type { Context }       from "../contexts/Context";
+import { TransformerContext } from "../contexts/TransformerContext";
+import type { TypeInfo }      from "../declarations/general";
 import type {
 	ModuleMetadataProperties,
 	ModuleProperties,
 	TypePropertiesWithId
-}                              from "../declarations/TypeProperties";
+}                             from "../declarations/TypeProperties";
 import type {
 	ModuleIdentifier,
 	ModuleReference,
 	TypeIdentifier
-}                              from "rttist";
+}                             from "rttist";
 import { ModuleIds }           from "@rttist/core";
 import * as ts                 from "typescript";
 import { log }                 from "../logging";
 import { getTypeProperties }   from "../properties/getTypeProperties";
 import { getNodeLocationText } from "../tracers/getNodeLocationText";
 import { getSourceFile }       from "../utils/findSourceFile";
+import { getRelativePath }     from "../utils/getRelativePath";
 import { getSourceFileId }     from "../utils/getSourceFileId";
 
 /**
@@ -84,6 +87,21 @@ export class ModuleMetadata
 	{
 		return {
 			...this.moduleProperties,
+			import: (
+				this.moduleProperties.id === ModuleIds.Native
+				|| this.moduleProperties.id === ModuleIds.Invalid
+				|| this.moduleProperties.id === ModuleIds.Dynamic
+			)
+				? undefined
+				: ts.factory.createCallExpression(
+					ts.factory.createIdentifier("import"),
+					undefined,
+					[
+						ts.factory.createStringLiteral(
+							getRelativePath(path.dirname(TransformerContext.instance.config.metadataTypelibVirtualPath), this.moduleProperties.path)
+						)
+					]
+				),
 			types: withoutTypes ? undefined : Array.from(this.types.values()).map(typeInfo => typeInfo.properties!)
 		};
 	}
@@ -100,19 +118,18 @@ export class ModuleMetadata
 		context: Context
 	): void
 	{
-		// TODO: Remove this check. It is checked in MetadataLibrary.
-		if (this.types.has(typeInfo.typeReference.id))
-		{
-			context.log.warn(`ModuleMetadata.addType(): The type '${typeInfo.typeReference.id}' is already in the module.`);
-			return;
-		}
-
 		context.log.trace("Adding type", typeInfo.typeReference.id, "to", this.moduleProperties.id);
 
 		this.types.set(typeInfo.typeReference.id, typeInfo);
 
 		typeInfo.properties = getTypeProperties(typeInfo.type, symbol, context) as TypePropertiesWithId;
 		typeInfo.properties!.id = typeInfo.typeReference.id;
+
+		// TODO: Uncomment when implemented in ID
+		// if (typeInfo.nullable)
+		// {
+		// 	typeInfo.properties!.nullable = true;
+		// }
 	}
 
 	private static getChildrenReferences(sourceFile: ts.SourceFile)

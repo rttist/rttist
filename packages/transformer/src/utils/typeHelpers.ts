@@ -67,9 +67,9 @@ export function getMajorTypeFlag(type: ts.Type)
 	return type.flags;
 }
 
-export function getTypeId(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker): TypeIdentifier
+export function getTypeId(type: ts.Type, nullable: boolean, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker): TypeIdentifier
 {
-	return getTypeRef(type, symbol, typeChecker).id || TypeIds.Invalid;
+	return getTypeRef(type, nullable, symbol, typeChecker).id || TypeIds.Invalid;
 }
 
 export function isInvalidType(type: ts.Type | undefined | { intrinsicName: "error" }): type is (undefined | { intrinsicName: "error" })

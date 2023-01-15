@@ -58,6 +58,7 @@ export function directTypeCallsiteReferenceFactory(
 
 			return context.metadata.referenceType(
 				type,
+				false,
 				symbol,
 				undefined,
 				context

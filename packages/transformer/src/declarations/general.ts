@@ -39,6 +39,7 @@ export type TypeInfo = {
 	typeReference: TransformerTypeReference;
 	type: ts.Type;
 	properties?: TypePropertiesWithId;
+	nullable: boolean;
 };
 
 /**

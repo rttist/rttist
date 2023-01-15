@@ -26,6 +26,7 @@ export function functionVisitor(
 	{
 		const typeReference = context.metadata.referenceType(
 			context.typeChecker.getTypeAtLocation(declaration),
+			false,
 			context.typeChecker.getSymbolAtLocation(declaration),
 			undefined,
 			context
@@ -69,6 +70,7 @@ export function functionVisitor(
 	{
 		const typeReference = context.metadata.referenceType(
 			context.typeChecker.getTypeAtLocation(declaration),
+			false,
 			context.typeChecker.getSymbolAtLocation(declaration),
 			undefined,
 			context

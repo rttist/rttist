@@ -47,6 +47,7 @@ export function getHeritageClauses(
 		{
 			result.extends = ext.types.map(t => context.metadata.referenceType(
 				context.typeChecker.getTypeFromTypeNode(t),
+				false,
 				context.typeChecker.getSymbolAtLocation(ext),
 				undefined,
 				context
@@ -59,6 +60,7 @@ export function getHeritageClauses(
 		{
 			result.implements = impl.types.map(t => context.metadata.referenceType(
 				context.typeChecker.getTypeFromTypeNode(t),
+				false,
 				context.typeChecker.getSymbolAtLocation(impl),
 				undefined,
 				context

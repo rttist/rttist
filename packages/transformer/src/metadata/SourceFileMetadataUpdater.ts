@@ -1,8 +1,9 @@
+import path                 from "path";
+import * as ts              from "typescript";
 import { createImport }     from "../ast-utils/createImport";
 import type { Config }      from "../config/Config";
-import * as ts              from "typescript";
-import path                 from "path";
 import { updateSourceFile } from "../transformers/updateSourceFile";
+import { getRelativePath }  from "../utils/getRelativePath";
 
 export class SourceFileMetadataUpdater
 {
@@ -16,16 +17,7 @@ export class SourceFileMetadataUpdater
 	{
 		// TODO: Handle access to in-file not exported constructors.
 
-		let tsLibPath = path.relative(
-			path.dirname(sourceFile.fileName),
-			this.config.metadataTypelibVirtualPath
-		)
-			.replace(/\\/g, "/");
-
-		if (tsLibPath.charAt(0) !== ".")
-		{
-			tsLibPath = "./" + tsLibPath;
-		}
+		const tsLibPath = getRelativePath(path.dirname(sourceFile.fileName), this.config.metadataTypelibVirtualPath);
 
 		return updateSourceFile(
 			sourceFile,

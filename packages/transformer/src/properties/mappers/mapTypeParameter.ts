@@ -20,12 +20,14 @@ export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, c
 				name: declaration.name.escapedText as string,
 				constraint: declaration.constraint && context.metadata.referenceType(
 					context.typeChecker.getTypeAtLocation(declaration.constraint),
+					false,
 					undefined,
 					undefined,
 					context
 				) || undefined,
 				default: declaration.default && context.metadata.referenceType(
 					context.typeChecker.getTypeAtLocation(declaration.default),
+					false,
 					undefined,
 					undefined,
 					context

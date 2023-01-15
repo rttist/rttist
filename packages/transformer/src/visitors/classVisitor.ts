@@ -14,6 +14,7 @@ export function classVisitor(
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 	const typeReference = context.metadata.referenceType(
 		type,
+		false,
 		context.typeChecker.getSymbolAtLocation(declaration),
 		undefined, // context.typeChecker.typeToTypeNode(type, declaration, NodeBuilderFlags.None)
 		context
@@ -71,6 +72,7 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 				);
 				const typeReference = context.metadata.referenceType(
 					type,
+					false,
 					symbol,
 					undefined,
 					context

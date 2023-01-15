@@ -95,6 +95,7 @@ export class MetadataLibrary
 	/**
 	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
 	 * @param type
+	 * @param nullable Type should be nullable. Eg. it is the type of OPTIONAL property or parameter.
 	 * @param symbol Symbol which should be used to generate name of the type.
 	 * Is used for TypeAliases and Anonymous types (variables and properties their assigned to gives them name).
 	 * @param typeNode
@@ -102,13 +103,14 @@ export class MetadataLibrary
 	 */
 	referenceType(
 		type: ts.Type,
+		nullable: boolean, // TODO: Implement
 		symbol: ts.Symbol | undefined,
 		typeNode: ts.TypeNode | undefined,
 		context: Context
 	): TransformerTypeReference
 	{
 		// Get the type reference before further processing.
-		const typeRef: TransformerTypeReference = getTypeRef(type, symbol, context.typeChecker);
+		const typeRef: TransformerTypeReference = getTypeRef(type, nullable, symbol, context.typeChecker);
 
 		// If it's native type 
 		if (
@@ -130,6 +132,7 @@ export class MetadataLibrary
 		const typeInfo: TypeInfo = {
 			typeReference: typeRef,
 			type: type,
+			nullable: nullable,
 			properties: undefined
 		};
 

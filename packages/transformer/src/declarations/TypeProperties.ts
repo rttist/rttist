@@ -24,7 +24,8 @@
 	EnumTypeMetadata,
 	EnumLiteralTypeMetadata,
 	FunctionTypeMetadata
-} from "rttist";
+}                                   from "rttist";
+import ts                           from "typescript";
 import { TransformerTypeReference } from "./TransformerTypeReference";
 
 /**
@@ -71,6 +72,7 @@ export type ModuleProperties = {
 	id: ModuleIdentifier;
 	name: string;
 	path: string;
+	import?: ts.CallExpression;
 	children?: ModuleReference[];
 	types?: TypePropertiesWithId[];
 };

@@ -27,13 +27,15 @@ import {
 /**
  * Returns id of given type
  * @param type
+ * @param nullable Type is nullable
  * @param symbol
  * @param typeChecker
  */
 export function getTypeRef(
 	type: ts.Type,
+	nullable: boolean, // TODO: Implement
 	symbol: ts.Symbol | undefined,
-	typeChecker: ts.TypeChecker
+	typeChecker: ts.TypeChecker,
 ): TransformerTypeReference
 {
 	if (isInvalidType(type))
@@ -97,7 +99,7 @@ export function getTypeRef(
 	// If it's type parameter
 	if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
 	{
-		typeReference = getTypeRefOfTypeParameter(type, symbol, declaration, sourceFile, sourceFileId, typeChecker);
+		typeReference = getTypeRefOfTypeParameter(type, nullable, symbol, declaration, sourceFile, sourceFileId, typeChecker);
 	}
 	// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
 	else if (declaration.kind === SyntaxKind.TypeLiteral)
@@ -122,7 +124,7 @@ export function getTypeRef(
 		// TODO: It is important to distinguish Generic type definition and generic type
 		const typeArguments = (type as ts.GenericType).typeArguments
 			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
-			.map(typeArg => getTypeRef(typeArg, undefined, typeChecker).id) || [];
+			.map(typeArg => getTypeRef(typeArg, false, undefined, typeChecker).id) || [];
 
 		// It has no type arguments and it is native type
 		if (typeArguments.length === 0 && sourceFileId === ModuleIds.Native)
@@ -210,6 +212,7 @@ export function getTypeRef(
 
 function getTypeRefOfTypeParameter(
 	type: ts.Type,
+	nullable: boolean,
 	symbol: ts.Symbol,
 	declaration: ts.Declaration,
 	sourceFile: ts.SourceFile,
@@ -222,7 +225,7 @@ function getTypeRefOfTypeParameter(
 
 	if (parentType)
 	{
-		const parentRef = getTypeRef(parentType, parentSymbol, typeChecker);
+		const parentRef = getTypeRef(parentType, nullable, parentSymbol, typeChecker);
 
 		return new TransformerTypeReference(
 			parentRef.moduleIdentifier,
@@ -303,7 +306,7 @@ function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefi
 			ModuleIds.Native,
 			"|",
 			undefined,
-			type.types.map(t => getTypeId(t, symbol, typeChecker))
+			type.types.map(t => getTypeId(t, false, symbol, typeChecker))
 		);
 	}
 
@@ -313,7 +316,7 @@ function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefi
 			ModuleIds.Native,
 			"&",
 			undefined,
-			type.types.map(t => getTypeId(t, symbol, typeChecker))
+			type.types.map(t => getTypeId(t, false, symbol, typeChecker))
 		);
 	}
 

@@ -39,7 +39,7 @@ export function getSignatureParametersProperties(
 			name: parameterSymbol.getName(),
 			type: type === undefined
 				? TransformerTypeReference.Any
-				: context.metadata.referenceType(type, undefined, undefined, context),
+				: context.metadata.referenceType(type, optional, undefined, undefined, context),
 			flags: (
 					optional
 						? ParameterFlags.Optional

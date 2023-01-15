@@ -58,6 +58,7 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 
 			const ref = context.metadata.referenceType(
 				type,
+				optional,
 				provideSymbol ? memberSymbol : undefined,
 				undefined,
 				context

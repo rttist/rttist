@@ -10,6 +10,7 @@ export function mapUnion(type: ts.UnionType, symbol: ts.Symbol | undefined, cont
 		kind: TypeKind.Union,
 		types: type.types.map(type => context.metadata.referenceType(
 			type,
+			false,
 			undefined,
 			undefined,
 			context
