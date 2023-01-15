@@ -180,7 +180,7 @@ function createClassStaticBlockDeclaration(
 					ts.factory.createBinaryExpression(
 						ts.factory.createElementAccessExpression(
 							ts.factory.createPropertyAccessExpression(
-								ts.factory.createThis(),
+								className ?? ts.factory.createThis(),
 								"prototype"
 							),
 							ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
