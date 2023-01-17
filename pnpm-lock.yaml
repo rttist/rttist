@@ -106,6 +106,7 @@ importers:
       base32768: ^3.0.1
       deasync: ^0.1.28
       minimatch: ^5.0.1
+      rimraf: ^3.0.2
       rttist: workspace:*
       typescript: ^4.8.0
     dependencies:
@@ -120,6 +121,7 @@ importers:
       '@types/deasync': 0.1.2
       '@types/minimatch': 3.0.5
       '@types/node': 16.11.58
+      rimraf: 3.0.2
 
   tests:
     specifiers:

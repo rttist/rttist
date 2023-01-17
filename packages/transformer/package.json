@@ -29,15 +29,16 @@
 	"devDependencies": {
 		"@types/deasync": "^0.1.2",
 		"@types/minimatch": "^3.0.5",
-		"@types/node": "^16.0.0"
+		"@types/node": "^16.0.0",
+		"rimraf": "^3.0.2"
 	},
 	"dependencies": {
 		"@netleaf/extensions-configuration": "0.4.1",
-		"rttist": "workspace:*",
 		"@rttist/core": "workspace:*",
 		"base32768": "^3.0.1",
 		"deasync": "^0.1.28",
 		"minimatch": "^5.0.1",
+		"rttist": "workspace:*",
 		"typescript": "^4.8.0"
 	},
 	"repository": {
