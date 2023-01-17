@@ -3,7 +3,7 @@ import {
 	IConfigurationBuilder,
 	IRootConfiguration
 }                                  from "@netleaf/extensions-configuration";
-import * as deasync                from "deasync";
+import {awaitSync}                from "@kaciras/deasync";
 import type { Plugin }             from "../plugins";
 import fs                          from "fs";
 import path                        from "path";
@@ -117,18 +117,7 @@ export class Config
 	): IRootConfiguration<ConfigReflectionSection>
 	{
 		const configBuilder: IConfigurationBuilder = this.createBuilder(projectRoot, transformerConfigSection);
-
-		let done = false;
-		let configuration: IRootConfiguration<ConfigReflectionSection>;
-
-		configBuilder.build().then(config => {
-			configuration = config;
-			done = true;
-		});
-
-		deasync.loopWhile(() => !done);
-
-		return configuration!;
+		return awaitSync(configBuilder.build());
 	}
 
 	/**
