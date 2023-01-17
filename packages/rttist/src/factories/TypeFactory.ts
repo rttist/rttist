@@ -55,13 +55,7 @@ type TypeKindToTypeMap = {
 	[TypeKind.Enum]: EnumType;
 	[TypeKind.EnumLiteral]: EnumLiteralType;
 	[TypeKind.Promise]: PromiseType;
-	[TypeKind.Array]: ArrayType;
-	[TypeKind.ReadonlyArray]: ReadonlyArrayType;
 	[TypeKind.Tuple]: TupleType;
-	[TypeKind.Map]: MapType;
-	[TypeKind.WeakMap]: WeakMapType;
-	[TypeKind.Set]: SetType;
-	[TypeKind.WeakSet]: WeakSetType;
 	// TODO: Add the rest
 }
 
@@ -114,20 +108,6 @@ function createType(metadata: AnyTypeMetadata)
 			return new EnumLiteralType(metadata);
 		case TypeKind.Promise:
 			return new PromiseType([TypeKind.PromiseDefinition], metadata);
-		case TypeKind.Array:
-			return new ArrayType([TypeKind.ArrayDefinition], metadata);
-		case TypeKind.ReadonlyArray:
-			return new ReadonlyArrayType([TypeKind.ReadonlyArrayDefinition], metadata);
-		case TypeKind.Tuple:
-			return new TupleType([TypeKind.ArrayDefinition], metadata);
-		case TypeKind.Map:
-			return new MapType([TypeKind.MapDefinition], metadata);
-		case TypeKind.WeakMap:
-			return new WeakMapType([TypeKind.WeakMapDefinition], metadata);
-		case TypeKind.Set:
-			return new SetType([TypeKind.SetDefinition], metadata);
-		case TypeKind.WeakSet:
-			return new WeakSetType([TypeKind.WeakSetDefinition], metadata);
 		// TODO: Create the rest
 		// case TypeKind.Generator:
 		// 	return new Type();

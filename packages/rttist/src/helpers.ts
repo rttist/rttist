@@ -24,7 +24,7 @@ export function resolveSingletonInstance<T>(key: string, Class: { new(): T }): T
  * @internal
  */
 export const AnyArray = new Type({
-	kind: TypeKind.Array,
+	kind: TypeKind.Interface,
 	name: "Array",
 	id: ModuleIds.Native + "::Array{" + TypeIds.Any + "}",
 	module: ModuleIds.Native,

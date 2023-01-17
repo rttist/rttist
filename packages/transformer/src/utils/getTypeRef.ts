@@ -62,7 +62,7 @@ export function getTypeRef(
 	// const useProvidedSymbol = isAnonymous || isTypeAlias;
 
 	// Use symbol always when provided.
-	const useProvidedSymbol = symbol !== undefined;
+	const useProvidedSymbol = symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0;
 
 	// In case of TypeAlias ignore the stored ref on type, instead try to find the ref on the symbol.
 	if (useProvidedSymbol && hasReflectedTypeReference(symbol!))
@@ -123,11 +123,12 @@ export function getTypeRef(
 
 		// TODO: It is important to distinguish Generic type definition and generic type
 		const typeArguments = (type as ts.GenericType).typeArguments
-			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
-			.map(typeArg => getTypeRef(typeArg, false, undefined, typeChecker).id) || [];
+			?.filter(t => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol) || []; // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
 
-		// It has no type arguments and it is native type
-		if (typeArguments.length === 0 && sourceFileId === ModuleIds.Native)
+		const isGenericTypeDefinition = typeArguments.length !== 0 && (type as ts.GenericType).target == type;
+
+		// It has no type arguments or it's generic type definition and it is native type
+		if ((isGenericTypeDefinition || typeArguments.length === 0) && sourceFileId === ModuleIds.Native)
 		{
 			if ((type.flags & ts.TypeFlags.UniqueESSymbol) !== 0)
 			{
@@ -186,7 +187,7 @@ export function getTypeRef(
 					sourceFileId,
 					typeName,
 					undefined,
-					typeArguments,
+					typeArguments.map(typeArg => getTypeRef(typeArg, false, undefined, typeChecker).id),
 					sourceFile
 				);
 			}

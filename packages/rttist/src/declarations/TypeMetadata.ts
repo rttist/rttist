@@ -165,39 +165,9 @@ export interface IndexedAccessTypeMetadata extends TypeMetadata
 	indexType: TypeReference;
 }
 
-export interface ArrayTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.Array;
-}
-
-export interface ReadonlyArrayTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.ReadonlyArray;
-}
-
 export interface TupleTypeMetadata extends TypeMetadata
 {
 	kind: TypeKind.Tuple;
-}
-
-export interface SetTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.Set;
-}
-
-export interface WeakSetTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.WeakSet;
-}
-
-export interface MapTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.Map;
-}
-
-export interface WeakMapTypeMetadata extends TypeMetadata
-{
-	kind: TypeKind.WeakMap;
 }
 
 export interface PromiseTypeMetadata extends TypeMetadata
@@ -285,13 +255,7 @@ export type AnyTypeMetadata =
 	| FunctionTypeMetadata
 	| GeneratorFunctionTypeMetadata
 	| IndexedAccessTypeMetadata
-	| ArrayTypeMetadata
-	| ReadonlyArrayTypeMetadata
 	| TupleTypeMetadata
-	| SetTypeMetadata
-	| WeakSetTypeMetadata
-	| MapTypeMetadata
-	| WeakMapTypeMetadata
 	| PromiseTypeMetadata
 	| NamespaceTypeMetadata
 	| ModuleTypeMetadata

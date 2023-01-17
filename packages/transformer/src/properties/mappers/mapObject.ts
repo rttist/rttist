@@ -1,38 +1,39 @@
+import type { TransformerTypeReference } from "../../declarations/TransformerTypeReference";
 import {
 	PropertyFlags,
 	TypeKind
-}                                  from "rttist";
-import { ModuleIds }               from "@rttist/core";
-import * as ts                     from "typescript";
-import { Context }                 from "../../contexts/Context";
+}                                        from "rttist";
+import { ModuleIds }                     from "@rttist/core";
+import * as ts                           from "typescript";
+import { Context }                       from "../../contexts/Context";
 import {
 	TypeMapper,
 	TypeMapperResult
-}                                  from "../../declarations/mappers";
+}                                        from "../../declarations/mappers";
 import {
 	ClassProperties,
 	InterfaceProperties
-}                                  from "../../declarations/TypeProperties";
-import { printTypeDebugInfo }      from "../../tracers/printTypeDebugInfo";
+}                                        from "../../declarations/TypeProperties";
+import { printTypeDebugInfo }            from "../../tracers/printTypeDebugInfo";
 import {
 	getClassModifiers,
 	getHeritageClauses
-}                                  from "../../utils/declarationHelpers";
-import { getTypeRef }              from "../../utils/getTypeRef";
-import { isExported }              from "../../utils/isExported";
-import { getDeclaration }          from "../../utils/symbolHelpers";
+}                                        from "../../utils/declarationHelpers";
+import { getTypeRef }                    from "../../utils/getTypeRef";
+import { isExported }                    from "../../utils/isExported";
+import { getDeclaration }                from "../../utils/symbolHelpers";
 import {
 	getSymbol,
 	isReference
-}                                  from "../../utils/typeHelpers";
-import { getConstructors }         from "../getConstructors";
-import { getDecoratorsProperties } from "../getDecoratorsProperties";
-import { mapIndexes }              from "../mapIndexes";
-import { mapMethods }              from "../mapMethods";
-import { mapProperties }           from "../mapProperties";
-import { mapFunction }             from "./mapFunction";
-import { mapObjectLiteral }        from "./mapObjectLiteral";
-import { mapTuple }                from "./mapTuple";
+}                                        from "../../utils/typeHelpers";
+import { getConstructors }               from "../getConstructors";
+import { getDecoratorsProperties }       from "../getDecoratorsProperties";
+import { mapIndexes }                    from "../mapIndexes";
+import { mapMethods }                    from "../mapMethods";
+import { mapProperties }                 from "../mapProperties";
+import { mapFunction }                   from "./mapFunction";
+import { mapObjectLiteral }              from "./mapObjectLiteral";
+import { mapTuple }                      from "./mapTuple";
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
@@ -41,7 +42,7 @@ const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 };
 
 // TODO: Move
-function getTypeArgumentsReference(type: ts.ObjectType, context: Context)
+function getTypeArgumentsReference(type: ts.ObjectType, context: Context): TransformerTypeReference[] | undefined
 {
 	let typeArguments = (type as ts.TypeReference).typeArguments
 		?.map(typeArg => context.metadata.referenceType(typeArg, false, undefined, undefined, context));

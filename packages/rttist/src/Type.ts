@@ -24,16 +24,16 @@ import type {
 	TypeAliasType,
 	UniqueSymbolType
 }                                                    from "./types";
-import type { Module }   from "./Module";
-import { ModuleIds }     from "@rttist/core";
-import { LazyModule }    from "./utils/LazyModule";
-import { LazyType }      from "./utils/LazyType";
-import { LazyTypeArray } from "./utils/LazyTypeArray";
+import type { Module }                               from "./Module";
+import { ModuleIds }                                 from "@rttist/core";
+import { LazyModule }                                from "./utils/LazyModule";
+import { LazyType }                                  from "./utils/LazyType";
+import { LazyTypeArray }                             from "./utils/LazyTypeArray";
 import {
 	LiteralTypeKinds,
 	PrimitiveTypeKinds,
 	TypeKind
-}                        from "./enums";
+}                                                    from "./enums";
 
 const createdWellKnownTypes = new Set();
 
@@ -262,7 +262,7 @@ export class Type
 			const [targetTypeReference] = getFunctionCallsiteTypeArgumentsOrInvalid(this.is);
 			target = Reflect.resolveType(targetTypeReference);
 		}
-		
+
 		if (this.isComparableByKind())
 		{
 			return this._kind === target._kind;
@@ -363,18 +363,20 @@ export class Type
 	}
 
 	/**
-	 * Check if this type is an array.
+	 * Check if this type is an Array.
 	 */
-	isArray(): this is GenericType<ClassType>
+	isArray(): this is GenericType<InterfaceType>
 	{
-		return this._kind === TypeKind.Array || this._kind === TypeKind.Tuple;
-		// return (this.isNative() || this._kind == TypeKind.LiteralType) && this.name == "Array";
+		return this.isGenericType() && (
+			this.genericTypeDefinition === Type.ArrayDefinition
+			|| this.genericTypeDefinition === Type.ReadonlyArrayDefinition
+		);
 	}
 
 	/**
 	 * Check if this type is a Tuple.
 	 */
-	isTuple(): this is GenericType<ClassType>
+	isTuple(): this is GenericType<InterfaceType>
 	{
 		return this._kind === TypeKind.Tuple;
 	}
@@ -602,4 +604,19 @@ export const NativeTypes: { [typeKind: number]: Type } = {
 	[TypeKind.SharedArrayBuffer]: Type.SharedArrayBuffer,
 	[TypeKind.Atomics]: Type.Atomics,
 	[TypeKind.DataView]: Type.DataView,
+	[TypeKind.ArrayDefinition]: Type.ArrayDefinition,
+	[TypeKind.ReadonlyArrayDefinition]: Type.ReadonlyArrayDefinition,
+	[TypeKind.MapDefinition]: Type.MapDefinition,
+	[TypeKind.WeakMapDefinition]: Type.WeakMapDefinition,
+	[TypeKind.SetDefinition]: Type.SetDefinition,
+	[TypeKind.WeakSetDefinition]: Type.WeakSetDefinition,
+	[TypeKind.PromiseDefinition]: Type.PromiseDefinition,
+	[TypeKind.GeneratorDefinition]: Type.GeneratorDefinition,
+	[TypeKind.AsyncGeneratorDefinition]: Type.AsyncGeneratorDefinition,
+	[TypeKind.IteratorDefinition]: Type.IteratorDefinition,
+	[TypeKind.IterableDefinition]: Type.IterableDefinition,
+	[TypeKind.IterableIteratorDefinition]: Type.IterableIteratorDefinition,
+	[TypeKind.AsyncIteratorDefinition]: Type.AsyncIteratorDefinition,
+	[TypeKind.AsyncIterableDefinition]: Type.AsyncIterableDefinition,
+	[TypeKind.AsyncIterableIteratorDefinition]: Type.AsyncIterableIteratorDefinition,
 } as const;
