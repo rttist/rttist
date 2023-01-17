@@ -1,6 +1,6 @@
 import { PACKAGE_ID } from "../consts";
 import { LogColor }   from "./LogColor";
-import { LogLevel }   from "./logLevel";
+import { LogLevel }   from "./LogLevel";
 
 const LEVEL_MAP = {
 	[LogLevel.None]: 0,
