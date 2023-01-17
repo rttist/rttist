@@ -185,8 +185,16 @@ test("Optional class method", () => {
 });
 
 test("sub-class", () => {
-	// TODO: Write tests 
-	expect(true).toBeTruthy();
+	class Parent {
+		static Child = class {
+			
+		}
+	}
+	
+	const childType = getType(Parent.Child);
+
+	expect(childType.isClass()).toBeTruthy();
+	expect(childType.name).toBe("Child");
 });
 
 test("Generic class", () => {

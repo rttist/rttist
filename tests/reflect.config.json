@@ -2,5 +2,6 @@
 	"metadata": {
 		"encode": false
 	},
+	"devMode": true,
 	"logLevel": "Warning"
 }
