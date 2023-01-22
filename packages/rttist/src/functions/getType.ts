@@ -1,9 +1,7 @@
+import { getCallsiteTypeArguments } from "@rttist/core";
 import { getGlobalThis }            from "../utils/getGlobalThis";
-import {
-	getTypeOfRuntimeValue
-}                                   from "../helpers";
+import { getTypeOfRuntimeValue }    from "../helpers";
 import { Type }                     from "../Type";
-import { getCallsiteTypeArguments } from "./getCallsiteTypeArguments";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
@@ -18,10 +16,11 @@ export function getType<T>(...args: any[]): Type
 
 	if (callsiteArgs !== undefined)
 	{
-		if (callsiteArgs.length === 0 || callsiteArgs[0] === undefined) {
+		if (callsiteArgs.length === 0 || callsiteArgs[0] === undefined)
+		{
 			return Type.Invalid;
 		}
-		
+
 		return Reflect.resolveType(callsiteArgs[0]);
 	}
 

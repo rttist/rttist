@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-alpha.3",
+	"version": "1.0.0-alpha.4",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"dependencies": {
-		"@rttist/core": "workspace:*"
+		"@rttist/core": "workspace:^"
 	},
 	"devDependencies": {
 		"typescript": "4.8.x",
