@@ -2,25 +2,24 @@ import {
 	ConfigurationBuilder,
 	IConfigurationBuilder,
 	IRootConfiguration
-}                                  from "@netleaf/extensions-configuration";
-import {awaitSync}                from "@kaciras/deasync";
-import type { Plugin }             from "../plugins";
-import fs                          from "fs";
-import path                        from "path";
-import * as ts                     from "typescript";
-import { makeRe }                  from "minimatch";
+}                      from "@netleaf/extensions-configuration";
+import type { Plugin } from "../plugins";
+import fs              from "fs";
+import path            from "path";
+import * as ts         from "typescript";
+import { makeRe }      from "minimatch";
 import {
 	PackageInfo,
 	PackageJson
-}                                  from "../declarations/general";
+}                      from "../declarations/general";
 import {
 	log,
 	LogLevel
-}                                  from "../logging";
+}                      from "../logging";
 import {
 	ConfigReflectionSection,
 	OptionalConfigReflectionSection
-}                                  from "./ConfigReflectionSection";
+}                      from "./ConfigReflectionSection";
 
 const UNKNOWN_PACKAGE_NAME = "@@this";
 
@@ -86,7 +85,7 @@ export class Config
 		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
 
 		this.compilerOptions = compilerOptions;
-		this.strictNullChecks = (ts as any).getStrictOptionValue?.(compilerOptions, "strictNullChecks") 
+		this.strictNullChecks = (ts as any).getStrictOptionValue?.(compilerOptions, "strictNullChecks")
 			?? compilerOptions.strictNullChecks === true;
 		this.moduleResolution = this.getModuleResolutionKind(compilerOptions);
 		this.parsedCommandLine = ts.getParsedCommandLineOfConfigFile(
@@ -117,7 +116,7 @@ export class Config
 	): IRootConfiguration<ConfigReflectionSection>
 	{
 		const configBuilder: IConfigurationBuilder = this.createBuilder(projectRoot, transformerConfigSection);
-		return awaitSync(configBuilder.build());
+		return configBuilder.buildSync();
 	}
 
 	/**
@@ -209,8 +208,8 @@ export class Config
 			.setRootDirectory(projectRoot)
 			.addObject(DefaultConfiguration)
 			.addObject(transformerConfigSection)
-			.addJsonFile("reflect.config.json", { optional: true })
-			.addJsFile("reflect.config.js", { optional: true });
+			.addJsonFile("reflect.config.json", { optional: true, synchronous: true })
+			.addJsFile("reflect.config.js", { optional: true, synchronous: true });
 	}
 
 	private getModuleResolutionKind(options: ts.CompilerOptions)
