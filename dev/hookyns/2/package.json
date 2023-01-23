@@ -1,11 +1,13 @@
 {
 	"private": true,
 	"name": "simple-tests",
+	"type": "commonjs",
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"
 	},
 	"dependencies": {
+		"hyper-express": "^6.5.5",
 		"rttist": "workspace:*"
 	},
 	"devDependencies": {

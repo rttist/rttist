@@ -24,7 +24,7 @@ export function createSourceFileVisitor(transformationContext: ts.Transformation
 		}
 
 		// Skip if it is external SourceFile or if file is not included by config.
-		if (program.isSourceFileFromExternalLibrary(sourceFileNode) || !canIncludeSourceFile(sourceFileNode, config))
+		if (program.isSourceFileFromExternalLibrary(sourceFileNode) || !canIncludeSourceFile(sourceFileNode.fileName, config))
 		{
 			return sourceFileNode;
 		}

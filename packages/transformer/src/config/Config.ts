@@ -33,7 +33,7 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		metadataTypelibPath: "metadata.typelib.js",
 		metadataIndexPath: "metadata.index.json",
 		include: ["**/*"],
-		exclude: []
+		exclude: ["**/@types/node/**"]
 	}
 };
 
@@ -187,7 +187,7 @@ export class Config
 
 	private toRegex(pattern: string): RegExp
 	{
-		const regex = makeRe(pattern);
+		const regex = makeRe(pattern, { partial: true, dot: true });
 
 		if (!regex)
 		{

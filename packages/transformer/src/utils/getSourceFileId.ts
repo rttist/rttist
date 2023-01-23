@@ -17,6 +17,11 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 		return sourceFile._reflectId;
 	}
 
+	if (sourceFile.fileName === undefined)
+	{
+		return ModuleIds.Invalid;
+	}
+
 	if (sourceFile.fileName.includes(TS_LIB_PATTERN))
 	{
 		return ModuleIds.Native;
@@ -39,6 +44,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 		}
 	}
 
+	// TODO: There will be issue with packages which have strange .d.ts locations.
 	const filePath = getOutPathForSourceFile(sourceFile.fileName);
 	const nodeModulesIndex = filePath.lastIndexOf(NODE_MODULES_PATTERN);
 
@@ -55,6 +61,11 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 
 function getOutPathForSourceFile(sourceFileName: string): string
 {
+	if (sourceFileName.slice(-5) === ".d.ts")
+	{
+		return sourceFileName;
+	}
+
 	const config = TransformerContext.instance.config;
 
 	return ts.getOutputFileNames({

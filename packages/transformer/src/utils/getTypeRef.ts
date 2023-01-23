@@ -14,6 +14,7 @@ import { getLiteralTypeReference }   from "../properties/getLiteralTypeReference
 import { getPrimitiveTypeReference } from "../properties/getPrimitiveTypeReference";
 import { getWellKnownTypeRef }       from "../properties/getWellKnownTypeRef";
 import { printTypeDebugInfo }        from "../tracers/printTypeDebugInfo";
+import { canIncludeSourceFile }      from "./canIncludeSourceFile";
 import { getSourceFileId }           from "./getSourceFileId";
 import { isExported }                from "./isExported";
 import { getDeclaration }            from "./symbolHelpers";
@@ -94,12 +95,27 @@ export function getTypeRef(
 	}
 
 	const sourceFile = declaration.getSourceFile();
+
+	if (sourceFile.fileName !== undefined
+		&& !canIncludeSourceFile(sourceFile.fileName, TransformerContext.instance.config))
+	{
+		return TransformerTypeReference.Invalid;
+	}
+
 	const sourceFileId = getSourceFileId(sourceFile);
 
 	// If it's type parameter
 	if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
 	{
-		typeReference = getTypeRefOfTypeParameter(type, nullable, symbol, declaration, sourceFile, sourceFileId, typeChecker);
+		typeReference = getTypeRefOfTypeParameter(
+			type,
+			nullable,
+			symbol,
+			declaration,
+			sourceFile,
+			sourceFileId,
+			typeChecker
+		);
 	}
 	// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
 	else if (declaration.kind === SyntaxKind.TypeLiteral)

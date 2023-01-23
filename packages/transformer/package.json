@@ -1,6 +1,6 @@
 {
 	"name": "tst-reflect-transformer",
-	"version": "1.0.0-alpha.5",
+	"version": "1.0.0-alpha.6",
 	"description": "TypeScript Transformer for Runtime Types & Reflection",
 	"main": "dist/index.js",
 	"scripts": {
@@ -34,7 +34,7 @@
 		"@netleaf/extensions-configuration": "^0.5.2",
 		"@rttist/core": "workspace:^",
 		"base32768": "^3.0.1",
-		"minimatch": "^5.0.1",
+		"minimatch": "^6.1.6",
 		"rttist": "workspace:^",
 		"typescript": "^4.8.0"
 	},

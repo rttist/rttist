@@ -17,12 +17,12 @@ export function newExpressionVisitor(expression: ts.NewExpression, context: Cont
 	{
 		typeArgTypes = getArgumentsTypes(expression, context);
 	}
-	// Myabe be something like const Ctor: typeof Foo<number> = Foo; return new Ctor();, so the type has the args
+	// Myabe it's something like const Ctor: typeof Foo<number> = Foo; return new Ctor();, so the type has the args
 	else
 	{
 		const type = context.typeChecker.getTypeAtLocation(expression);
 
-		if (!isInvalidType(type) && hasTypeArguments(type))
+		if (!isInvalidType(type) && hasTypeArguments(type) && type.resolvedTypeArguments.length !== 0)
 		{
 			typeArgTypes = type.resolvedTypeArguments.map(ta => [ta, undefined]);
 		}
@@ -46,21 +46,5 @@ export function newExpressionVisitor(expression: ts.NewExpression, context: Cont
 		);
 	}
 
-
-	// const type = context.typeChecker.getTypeAtLocation(expression.expression);
-	//
-	// // Add interface's type to the metadata.
-	// const ref = context.metadata.referenceType(
-	// 	type,
-	// 	context.typeChecker.getSymbolAtLocation(expression.expression),
-	// 	undefined,
-	// 	context
-	// );
-
 	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
 }
-
-// function visitInterfaceDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node>
-// {
-// 	return node;
-// }

@@ -16,28 +16,7 @@ export function createConstructGenericClassExpression(
 	context: Context
 )
 {
-	// // If there are no arguments, we cannot pass any generic type info 
-	// // so we will skip generation of callsite to same performance.
-	// if ((expression.arguments === undefined || expression.arguments.length === 0) 
-	// 	&& (expression.typeArguments === undefined || expression.typeArguments.length === 0))
-	// {
-	// 	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
-	// }
-
-	// if (typeArgTypes.length === 0 || typeArgTypes.every(ta => ta === null))
-	// {
-	// 	return ts.visitEachChild(expression, context.visitor, context.transformationContext);
-	// }
-
 	const callsiteReferences = directTypeCallsiteReferenceFactory(typeArgTypes, context);
-
-	// if (typeArgTypes.length !== 0)
-	// {
-	// 	return createCallsiteCallExpression(
-	// 		expression,
-	// 		directTypeCallsiteReferenceFactory(typeArgTypes, context)
-	// 	);
-	// }
 
 	const constructGenericArgs = [
 		// Class

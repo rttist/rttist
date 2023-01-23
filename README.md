@@ -33,40 +33,6 @@ There still may be some major changes, but no changes are expected.
 
 If you participate in Alpha, you can use our [discord](https://discord.gg/74qn6KPAUP).
 
-
-[//]: # (## Features)
-
-[//]: # ()
-[//]: # (- Regular TypeScript, no annotations required to use the reflection,)
-
-[//]: # (- generate metadata of modules and types,)
-
-[//]: # (- dynamic imports of reflected types,)
-
-[//]: # (- no problem with types from 3rd party packages,)
-
-[//]: # (- reflection over classes, interfaces, type aliases, unions, intersections, just all of that,)
-
-[//]: # (- reflection over runtime values &#40;eg. get type of class' instance&#41;,)
-
-[//]: # (- reflection over type parameters &#40;function, method and class type parameters supported&#41;)
-
-[//]: # (- overloads of constructors, methods and functions supported,)
-
-[//]: # (- reflection inside custom decorators,)
-
-[//]: # (- static type checking &#40;check if one type is derived from another without instances of those type&#41;,)
-
-[//]: # (- static metadata library to lookup types and modules,)
-
-[//]: # (- Plugins! You can write custom transformer plugin which will be executed in our context so you will have access to all the types. You can change them or just use them for own purposes,)
-
-[//]: # (- browser usage,)
-
-[//]: # (- CJS & ESM,)
-
-[//]: # (- but no pre-implemented features like validators or automatic type-guards!)
-
 ## Showcase
 [//]: # (TODO: List of StackBlitz examples)
 
@@ -80,7 +46,7 @@ interface Employee {
     sayHello(toSomebody: string);
 }
 
-const type: Type = getType&lt;Employee>();
+const type: Type = getType<Employee>();
 
 if (type.isInterface()) {
     const properties = type.getProperties().map((prop: PropertyInfo) => prop.name);
