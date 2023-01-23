@@ -58,11 +58,16 @@ function getTypeArgumentsReference(type: ts.ObjectType, context: Context): Trans
 export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult
 {
 	// Anonymous object, functions, ...
-	if (type.objectFlags & ts.ObjectFlags.Anonymous)
+	if ((type.objectFlags & ts.ObjectFlags.Anonymous) !== 0)
 	{
 		if ((type.symbol.flags & ts.SymbolFlags.Function) !== 0)
 		{
 			return mapFunction(type, symbol, context);
+		}
+
+		if ((type.symbol.flags & ts.SymbolFlags.TypeLiteral) !== 0)
+		{
+			return mapObjectLiteral(type, symbol, context);
 		}
 	}
 

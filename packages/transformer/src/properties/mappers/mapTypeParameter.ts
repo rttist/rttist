@@ -37,5 +37,5 @@ export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, c
 	}
 
 	log.warn("Unhandled TypeParameter.\n\t" + printTypeDebugInfo(type, context.typeChecker));
-	return InvalidTypeProperties;
+	return { ...InvalidTypeProperties };
 }
