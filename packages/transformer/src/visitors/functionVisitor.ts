@@ -45,9 +45,7 @@ export function functionVisitor(
 
 		return [
 			declaration,
-
-			// EMIT: Function.prototype[REFLECTED_TYPE_ID] = typeId;
-			createPrototypeTypeIdAssignment(functionName as ts.Identifier, typeReference)
+			createTypeIdAssignmentExpressionStatement(declaration, functionName as ts.Identifier, typeReference)
 		];
 	}
 
@@ -113,8 +111,7 @@ export function functionVisitor(
 								ts.NodeFlags.Const
 							)
 						),
-						// EMIT: Function.prototype[REFLECTED_TYPE_ID] = typeId;
-						createPrototypeTypeIdAssignment(localFnName, typeReference),
+						createTypeIdAssignmentExpressionStatement(declaration, localFnName, typeReference),
 						ts.factory.createReturnStatement(localFnName)
 					])
 				)
@@ -147,6 +144,20 @@ function recreateBody(
 	);
 }
 
+function createTypeIdAssignmentExpressionStatement(
+	declaration: ts.FunctionLikeDeclarationBase,
+	functionName: ts.Identifier,
+	typeReference: TransformerTypeReference
+): ts.ExpressionStatement
+{
+	const modifiers = ts.canHaveModifiers(declaration) && ts.getModifiers(declaration);
+
+	// EMIT: Function.prototype[REFLECTED_TYPE_ID] = typeId; or Function[REFLECTED_TYPE_ID] = typeId; for async functions (they have no prototype)
+	return modifiers && modifiers.some(token => token.kind === ts.SyntaxKind.AsyncKeyword)
+		? createAsyncFunctionTypeIdAssignment(functionName, typeReference)
+		: createPrototypeTypeIdAssignment(functionName, typeReference);
+}
+
 function createPrototypeTypeIdAssignment(
 	identifier: ts.Identifier,
 	typeReference: TransformerTypeReference
@@ -159,6 +170,23 @@ function createPrototypeTypeIdAssignment(
 					identifier,
 					"prototype"
 				),
+				ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
+			),
+			ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+			toExpression(typeReference)
+		)
+	);
+}
+
+function createAsyncFunctionTypeIdAssignment(
+	identifier: ts.Identifier,
+	typeReference: TransformerTypeReference
+)
+{
+	return ts.factory.createExpressionStatement(
+		ts.factory.createBinaryExpression(
+			ts.factory.createElementAccessExpression(
+				identifier,
 				ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 			),
 			ts.factory.createToken(ts.SyntaxKind.EqualsToken),

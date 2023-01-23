@@ -22,13 +22,18 @@ class Test
 test("Symbols resolved correctly", () => {
 	const t: Type = getType<Test>();
 
-	const prop: { [propName: string | number | symbol ]: PropertyInfo } = t.isClass() && t.getProperties().reduce((obj, prop) => {
-		obj[prop.name.name] = prop;
-		return obj;
-	}, {} as { [propName: string | number | symbol ]: PropertyInfo }) || {};
-
 	expect(t.isClass()).toBeTruthy();
-	
+
+	const prop: { [propName: string | number | symbol]: PropertyInfo } = t.isClass()
+		? t.getProperties().reduce(
+			(obj, prop) => {
+				obj[prop.name.name] = prop;
+				return obj;
+			},
+			{} as { [propName: string | number | symbol]: PropertyInfo }
+		)
+		: {};
+
 	expect(prop.a.type.is(Type.Symbol)).toBeTruthy();
 
 	expect(prop.b.type.is(Type.Symbol) && prop.b.type.nullable).toBeTruthy();
