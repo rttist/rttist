@@ -2,7 +2,7 @@ import * as ts                from "typescript";
 import { TransformerContext } from "../contexts/TransformerContext";
 
 export function createImport(
-	identifier: ts.Identifier | undefined,
+	identifier: ts.Identifier,
 	moduleSpecifier: string
 ): ts.ImportDeclaration | ts.Statement
 {
@@ -26,20 +26,18 @@ export function createImport(
 		[ts.factory.createStringLiteral(moduleSpecifier)]
 	);
 
-	return identifier === undefined
-		? ts.factory.createExpressionStatement(callExpression)
-		: ts.factory.createVariableStatement(
-			undefined,
-			ts.factory.createVariableDeclarationList(
-				[
-					ts.factory.createVariableDeclaration(
-						identifier,
-						undefined,
-						undefined,
-						callExpression
-					)
-				],
-				ts.NodeFlags.Const
-			)
-		);
+	return ts.factory.createVariableStatement(
+		undefined,
+		ts.factory.createVariableDeclarationList(
+			[
+				ts.factory.createVariableDeclaration(
+					identifier,
+					undefined,
+					undefined,
+					callExpression
+				)
+			],
+			ts.NodeFlags.Const
+		)
+	);
 }

@@ -130,7 +130,9 @@ export class MetadataFilesEmitter
 						]
 					)
 				),
-				...metadataStatements
+				...metadataStatements,
+				// Empty default export because of nodenext/esm combination.
+				ts.factory.createExportDefault(ts.factory.createObjectLiteralExpression())
 			],
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
 			ts.NodeFlags.None

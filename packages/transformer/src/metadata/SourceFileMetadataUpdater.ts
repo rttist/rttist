@@ -22,7 +22,9 @@ export class SourceFileMetadataUpdater
 		return updateSourceFile(
 			sourceFile,
 			[
-				createImport(undefined, tsLibPath)
+				// We don't use the import, it's just side-effect, 
+				// but it is required by TS to have named import for NodeNext; it fails otherwise.
+				createImport(ts.factory.createIdentifier("___metadataImport___"), tsLibPath)
 			]
 		);
 	}

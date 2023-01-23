@@ -84,17 +84,15 @@ export function getTypeOfRuntimeValue(value: any): Type
 	if (value.constructor === Object) return Type.NonPrimitiveObject;
 	if (value.constructor === Array) return AnyArray;
 
-	if (typeof value === "function"
-		&& (
-			value.prototype === undefined
-			|| Object.getOwnPropertyDescriptor(value, "prototype")?.writable === true
-		)
-	)
+	const typeRef = value.prototype?.[PROTOTYPE_TYPE_PROPERTY]
+		|| value.constructor.prototype[PROTOTYPE_TYPE_PROPERTY]
+		|| value[PROTOTYPE_TYPE_PROPERTY]
+		|| undefined;
+
+	if (typeRef !== undefined)
 	{
-		return UnknownFunction;
+		return Metadata.resolveType(typeRef);
 	}
 
-	return Metadata.resolveType(
-		(typeof value === "function" && value.prototype?.[PROTOTYPE_TYPE_PROPERTY]) || value.constructor.prototype[PROTOTYPE_TYPE_PROPERTY]
-	);
+	return typeof value === "function" ? UnknownFunction : Type.Unknown;
 }

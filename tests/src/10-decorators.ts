@@ -13,21 +13,21 @@ function decorate(target: Function) {
 
 
 let decoratePropType: PropertyInfo | undefined;
-function decorateProp(target: any, prop: string) {
-	const type = getType(target);
+function decorateProp(targetPrototype: any, prop: string) {
+	const type = getType(targetPrototype);
 	decoratePropType = type.isClass() && type.getProperty(prop);
 }
 
 
 let decorateMethodType: MethodInfo | undefined;
-function decorateMethod(target: any, method: string) {
-	const type = getType(target);
+function decorateMethod(targetPrototype: any, method: string) {
+	const type = getType(targetPrototype);
 	decorateMethodType = type.isClass() && type.getMethod(method);
 }
 
 let decorateParamType: ParameterInfo | undefined;
-function decorateParam(target: any, method: string, parameterIndex: number) {
-	const type = getType(target);
+function decorateParam(targetPrototype: any, method: string, parameterIndex: number) {
+	const type = getType(targetPrototype);
 	const methodInfo = type.isClass() && type.getMethod(method);
 	decorateParamType = methodInfo.getSignatures()[0].getParameters()[parameterIndex];
 }
