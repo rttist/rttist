@@ -88,7 +88,8 @@ export class Module
 	/**
 	 * Imports module and returns exported object.
 	 */
-	import(): Promise<object | undefined> {
+	import(): Promise<undefined | { [exportName: string]: any }>
+	{
 		return this._import();
 	}
 }

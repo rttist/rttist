@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-alpha.5",
+	"version": "1.0.0-alpha.6",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
