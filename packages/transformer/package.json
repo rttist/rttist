@@ -38,7 +38,7 @@
 		"rttist": "workspace:^",
 		"typescript": "^4.8.0"
 	},
-	"peerDependencies": {
+	"optionalDependencies": {
 		"deasync": "^0.1.28"
 	},
 	"repository": {
