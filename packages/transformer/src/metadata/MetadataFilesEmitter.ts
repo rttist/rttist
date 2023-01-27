@@ -1,15 +1,23 @@
-import { Config }            from "../config/Config";
 import {
-	writeFileSync,
-	mkdirSync
-}                            from "fs";
-import { dirname }           from "path";
-import * as ts               from "typescript";
-import { MetadataSource }    from "../declarations/TypeProperties";
-import { DependencyManager } from "../dependencies/DependencyManager";
-import { MetadataContext }   from "../plugins";
-import { toExpression }      from "../utils/toExpression";
-import { MetadataLibrary }   from "./MetadataLibrary";
+	mkdirSync,
+	writeFileSync
+}                             from "fs";
+import { dirname }            from "path";
+import * as ts                from "typescript";
+import {
+	ModuleKind,
+	ModuleResolutionKind,
+	ScriptTarget
+}                             from "typescript";
+import { Config }             from "../config/Config";
+import { TransformerContext } from "../contexts/TransformerContext";
+import { MetadataSource }     from "../declarations/TypeProperties";
+import { DependencyManager }  from "../dependencies/DependencyManager";
+import { MetadataContext }    from "../plugins";
+import { toExpression }       from "../utils/toExpression";
+import { MetadataLibrary }    from "./MetadataLibrary";
+
+let generated = false;
 
 /**
  * Emitter used for creating metadata typelib and index file.
@@ -23,9 +31,13 @@ export class MetadataFilesEmitter
 	)
 	{
 	}
-
+	
 	emit(metadata: MetadataSource): Promise<void>
 	{
+		if (generated) {
+			return Promise.resolve();
+		}
+		
 		// Create MetadataContext for plugins
 		const metadataContext: MetadataContext = {
 			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
@@ -33,6 +45,52 @@ export class MetadataFilesEmitter
 			typeClassIdentifier: ts.factory.createIdentifier("Type"),
 		};
 
+		// const sourceFile = this.createSourceFile(metadata, metadataContext);
+		const fileName = this.config.metadataTypelibVirtualPath.replace(".js", ".ts");
+// 		sourceFile.fileName = fileName;
+//		
+// 		const source = this.printToTypeScriptCode(sourceFile);
+// 		const sourceCode = ts.transpileModule(source, {
+// 			fileName: fileName,
+// 			compilerOptions: {
+// 				target: ScriptTarget.Latest,
+// 				moduleResolution: ModuleResolutionKind.NodeNext, //,TransformerContext.instance.config.moduleResolution,
+// 				module: ModuleKind.ESNext,//TransformerContext.instance.config.compilerOptions.module,
+// 				allowJs: true,
+// 				declaration: false,
+// 				strict: false,
+// 				sourceMap: false,
+// 				importHelpers: false,
+// 				skipLibCheck: true,
+// 				skipDefaultLibCheck: true,
+// 				noImplicitAny: false,
+// 			}
+// 		}).outputText
+//		
+//		
+// // 		const sourceCode = `
+// // Object.defineProperty(exports, "__esModule", { value: true });
+// // `;
+//		
+		const finalsf =  ts.createSourceFile(
+			fileName,
+			"", //sourceCode, //`console.log("foooo");`,//this.transpile(sf, filename),
+			/*TransformerContext.instance.config.compilerOptions.target ?? */ts.ScriptTarget.ES5,// ts.ScriptTarget.ES5,
+			true,
+			ts.ScriptKind.TS
+		);
+		
+		// (sf as any).transformFlags=1;
+		this.config.parsedCommandLine?.fileNames.push(fileName);
+		
+		TransformerContext.instance.program.emit(
+			finalsf
+		);
+
+		generated = true;
+		
+		return Promise.resolve();
+		
 		const typelibOutputPath = this.config.metadataTypelibPath;
 
 		return this.write(
@@ -69,6 +127,74 @@ export class MetadataFilesEmitter
 	{
 		const tsPrinter = ts.createPrinter();
 		return tsPrinter.printFile(sourceFile);
+	}
+	
+	updateTypeLibSourceFile(sourceFile: ts.SourceFile, metadata: MetadataSource): ts.SourceFile {
+
+		const plugins = this.config.plugins;
+		
+		const context: MetadataContext = {
+			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
+			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+			typeClassIdentifier: ts.factory.createIdentifier("Type"),
+		};
+
+		// Find a first plugin implementing 'createModuleRegistrars'
+		const firstCreateModuleRegistrars = plugins.find(p => p.createModuleRegistrars !== undefined);
+		const metadataStatements = firstCreateModuleRegistrars?.createModuleRegistrars?.(metadata, context) || [];
+
+		// Imports from plugins
+		const pluginsImports = plugins.flatMap(plugin => plugin.getImports?.() || []);
+		
+		return ts.factory.updateSourceFile(
+			sourceFile,
+			[
+				ts.factory.createImportDeclaration( // TODO: Generate import or require(), based on tsconfig
+					undefined,
+					ts.factory.createImportClause(
+						false,
+						undefined,
+						ts.factory.createNamedImports([
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.metadataIdentifier
+							),
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.moduleClassIdentifier
+							),
+							ts.factory.createImportSpecifier(
+								false,
+								undefined,
+								context.typeClassIdentifier
+							),
+						])
+					),
+					ts.factory.createStringLiteral("rttist")
+				),
+				...pluginsImports,
+				...this.createDependantTypeLibsImports(),
+				ts.factory.createExpressionStatement(
+					ts.factory.createCallExpression(
+						ts.factory.createPropertyAccessExpression(
+							context.typeClassIdentifier,
+							ts.factory.createIdentifier("configure")
+						),
+						undefined,
+						[
+							toExpression({
+								nullability: !this.config.strictNullChecks
+							})
+						]
+					)
+				),
+				...metadataStatements,
+				// Empty default export because of nodenext/esm combination.
+				ts.factory.createExportDefault(ts.factory.createObjectLiteralExpression())
+			]
+		);
 	}
 
 	/**
@@ -154,7 +280,7 @@ export class MetadataFilesEmitter
 				skipLibCheck: true,
 				skipDefaultLibCheck: true
 			}
-		}).outputText + this.config.plugins.map(p => p.getEndScripts?.() ?? "").join("\n");
+		}).outputText/* + this.config.plugins.map(p => p.getEndScripts?.() ?? "").join("\n")*/;
 
 		// if (this.config.encode)
 		// {

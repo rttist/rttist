@@ -2,6 +2,7 @@ import * as ts                             from "typescript";
 import { Config }                          from "./config/Config";
 import { OptionalConfigReflectionSection } from "./config/ConfigReflectionSection";
 import { TransformerContext }              from "./contexts/TransformerContext";
+import { MetadataSource }                  from "./declarations/TypeProperties";
 import { Logger }                          from "./logging";
 import { DefaultPlugin }                   from "./plugins";
 import { createSourceFileVisitor }         from "./visitors/sourceFileVisitor";
@@ -11,6 +12,24 @@ export default function transform(
 	configParams?: { reflection?: OptionalConfigReflectionSection }
 ): ts.TransformerFactory<ts.SourceFile>
 {
+	if (TransformerContext.instance !== undefined)
+	{
+		return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
+		{
+			return sourceFile => {
+				if (sourceFile.fileName == TransformerContext.instance.config.metadataTypelibVirtualPath.replace(".js", ".ts").replace(/\\/g, "/")) {
+					const modules = Array.from(TransformerContext.instance.metadata.getModules())
+						.map(moduleMetadata => moduleMetadata.getModuleProperties());
+					const source: MetadataSource = { modules };
+					
+					return TransformerContext.instance.metadataManager.libraryFileEmitter.updateTypeLibSourceFile(sourceFile, source);
+				}
+				
+				return sourceFile;
+			}
+		};
+	}
+
 	// Create configuration object
 	const config = new Config(program, configParams?.reflection || {});
 

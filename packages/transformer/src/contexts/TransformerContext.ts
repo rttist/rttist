@@ -28,7 +28,7 @@ export class TransformerContext
 	 * Metadata manager use to work with metadata.
 	 * @internal
 	 */
-	private readonly metadataManager: MetadataManager;
+	public readonly metadataManager: MetadataManager;
 
 	/**
 	 * SourceFile context set for each visiting SourceFile.
@@ -81,10 +81,10 @@ export class TransformerContext
 	 */
 	static get instance(): TransformerContext
 	{
-		if (!instance)
-		{
-			throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
-		}
+		// if (!instance)
+		// {
+		// 	throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
+		// }
 
 		return instance;
 	}

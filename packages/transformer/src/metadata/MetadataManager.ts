@@ -13,7 +13,7 @@ import {
 
 export class MetadataManager
 {
-	private readonly libraryFileEmitter: MetadataFilesEmitter;
+	public readonly libraryFileEmitter: MetadataFilesEmitter;
 	private readonly sourceFileMetadataUpdater: SourceFileMetadataUpdater;
 
 	constructor(

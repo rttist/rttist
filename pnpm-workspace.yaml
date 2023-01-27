@@ -6,5 +6,6 @@
     - 'tests/'
     - 'dev/hookyns/1'
     - 'dev/hookyns/2'
+    - 'dev/hookyns/webpack'
     - 'dev-packages/pkg1'
     - 'dev-packages/pkg2-mjs'

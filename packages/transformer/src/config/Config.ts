@@ -30,7 +30,7 @@ const DefaultConfiguration: ConfigReflectionSection = {
 	plugins: [],
 	metadata: {
 		encode: true,
-		metadataTypelibPath: "metadata.typelib.js",
+		metadataTypelibPath: "metadata.typelib.ts",
 		metadataIndexPath: "metadata.index.json",
 		include: ["**/*"],
 		exclude: ["**/@types/node/**"]
