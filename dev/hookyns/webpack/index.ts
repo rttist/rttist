@@ -1,3 +1,4 @@
+import "rttist/typelib";
 import { getType, InterfaceType } from 'rttist';
 
 function printTypeProperties<TType>() {

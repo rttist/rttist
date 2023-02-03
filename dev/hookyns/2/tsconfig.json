@@ -1,22 +1,19 @@
 {
 	"compilerOptions": {
 		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
+//		"moduleResolution": "NodeNext",
 		"target": "ESNext",
 //		"module": "CommonJS",
 //		"target": "ESNext",
-		"removeComments": false,
-		"declaration": true,
+		"removeComments": true,
+		"declaration": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": ".",
 		"outDir": "dist",
 		"plugins": [
 			{
-				"transform": "tst-reflect-transformer",
-				"reflection": {
-					"devMode": true
-				}
+				"transform": "tst-reflect-transformer"
 			}
 		]
 	},

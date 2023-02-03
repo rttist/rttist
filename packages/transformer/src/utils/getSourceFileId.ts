@@ -4,7 +4,7 @@ import { ModuleIdentifier }                 from "rttist";
 import * as ts                              from "typescript";
 import { TransformerContext }               from "../contexts/TransformerContext";
 import { ReflectedSourceFileWithReference } from "../declarations/general";
-import { removeExtensions }                 from "./removeExtensions";
+import { removeExtension }                  from "./removeExtension";
 
 const PATH_SEPARATOR_REGEX = /\\/g;
 const NODE_MODULES_PATTERN = "/node_modules/";
@@ -36,7 +36,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 
 		if (dependencyInfo !== undefined)
 		{
-			const sourceFileId = removeExtensions(
+			const sourceFileId = removeExtension(
 				"@" + dependencyInfo.packageName + sourceFile.fileName.slice(dependencyInfo.packageRoot.length)
 			);
 			setSourceFileReflectId(sourceFile, sourceFileId);
@@ -48,7 +48,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	const filePath = getOutPathForSourceFile(sourceFile.fileName);
 	const nodeModulesIndex = filePath.lastIndexOf(NODE_MODULES_PATTERN);
 
-	const sourceFileId = removeExtensions(
+	const sourceFileId = removeExtension(
 		nodeModulesIndex !== -1
 			? "@" + filePath.slice(nodeModulesIndex + NODE_MODULES_PATTERN.length)
 			: "@" + packageInfo.name + "/" + path.relative(projectDir, filePath).replace(PATH_SEPARATOR_REGEX, "/")

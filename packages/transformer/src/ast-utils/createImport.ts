@@ -1,11 +1,14 @@
-import * as ts                from "typescript";
-import { TransformerContext } from "../contexts/TransformerContext";
+import * as ts                      from "typescript";
+import { TransformerContext }       from "../contexts/TransformerContext";
+import { changeExtensionForOutput } from "../utils/changeExtensionForOutput";
 
 export function createImport(
 	identifier: ts.Identifier,
 	moduleSpecifier: string
 ): ts.ImportDeclaration | ts.Statement
 {
+	moduleSpecifier = changeExtensionForOutput(moduleSpecifier);
+
 	if (TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.Node16
 		|| TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.NodeNext)
 	{

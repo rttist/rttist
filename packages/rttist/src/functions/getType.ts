@@ -5,6 +5,17 @@ import { Type }                     from "../Type";
 
 const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 
+/**
+ * Returns Type object for passed generic type parameter or function parameter.
+ * @param [args] Optional parameter for cases when you want to get Type object from runtime value.
+ * Always use generic type parameter if you can statically access the type.
+ * Use this runtime function argument only if you have no other option.
+ * It is reliable only for classes, functions and primitives (such as undefined, true, false, numbers, strings).
+ * @example
+ * getType<MyInterface>() // returns Type object for `MyInterface` interface.
+ * getType<MyClass>() // returns Type object for `MyClass` class.
+ * getType(someClassCtor) // returns Type object corresponding to class stored in `someClassCtor` variable.
+ */
 export function getType<T>(...args: any[]): Type
 {
 	if (args.length)

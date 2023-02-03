@@ -1,6 +1,8 @@
 {
 	"metadata": {
-		"encode": false
+		"encode": false,
+		"emit": "ts",
+		"path": "dist/metadata.typelib.js"
 	},
 	"devMode": true,
 	"logLevel": "Trace"

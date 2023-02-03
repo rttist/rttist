@@ -9,6 +9,7 @@ import {
 }                            from "../logging";
 import { MetadataLibrary }   from "../metadata/MetadataLibrary";
 import { MetadataManager }   from "../metadata/MetadataManager";
+import { normalizePath }     from "../utils/normalizePath";
 import { mainVisitor }       from "../visitors/mainVisitor";
 import { Context }           from "./Context";
 
@@ -77,14 +78,22 @@ export class TransformerContext
 	public readonly dependencyManager: DependencyManager;
 
 	/**
+	 * Returns TRUE if the TransformerContext has been initiated already; FALSE otherwise.
+	 */
+	static get initiated(): boolean
+	{
+		return !!instance;
+	}
+
+	/**
 	 * Get singleton instance of TransformerContext.
 	 */
 	static get instance(): TransformerContext
 	{
-		// if (!instance)
-		// {
-		// 	throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
-		// }
+		if (!instance)
+		{
+			throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
+		}
 
 		return instance;
 	}
@@ -111,7 +120,7 @@ export class TransformerContext
 		this.config = config;
 		this.program = program;
 		this.typeChecker = program.getTypeChecker();
-		this.rootFileNames = new Set(program.getRootFileNames());
+		this.rootFileNames = new Set(program.getRootFileNames().map(normalizePath));
 
 		this.dependencyManager = new DependencyManager(config);
 		this.metadata = MetadataLibrary.init(this.dependencyManager);

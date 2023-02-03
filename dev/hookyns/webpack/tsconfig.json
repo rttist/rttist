@@ -6,21 +6,18 @@
 //		"module": "CommonJS",
 //		"target": "ESNext",
 		"removeComments": false,
-		"declaration": true,
+		"declaration": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": ".",
 		"outDir": "dist",
 		"plugins": [
 			{
-				"transform": "tst-reflect-transformer",
-				"reflection": {
-					"devMode": true
-				}
+				"transform": "tst-reflect-transformer"
 			}
 		]
 	},
-	"include": [
-		"index.ts"
+	"exclude": [
+		"dist"
 	]
 }

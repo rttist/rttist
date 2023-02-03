@@ -1,6 +1,9 @@
 {
 	"metadata": {
-		"encode": false
+		"encode": false,
+		"exclude": [
+			"./test.ts"
+		]
 	},
 	"devMode": true,
 	"logLevel": "Trace"

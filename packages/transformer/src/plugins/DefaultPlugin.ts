@@ -23,14 +23,14 @@ export class DefaultPlugin implements Plugin
 	 */
 	getImports?(): Array<ts.ImportDeclaration | ts.Statement>
 	{
-		// In case the encoding is enabled, import tst-reflect runtime which is able to decode it.
-		// Otherwise we'll use rttist directly.
-		if (TransformerContext.instance.config.encode)
-		{
-			return [
-				createImport(this.tstReflectIdentifier, "tst-reflect")
-			];
-		}
+		// // In case the encoding is enabled, import tst-reflect runtime which is able to decode it.
+		// // Otherwise we'll use rttist directly.
+		// if (TransformerContext.instance.config.encode)
+		// {
+		// 	return [
+		// 		createImport(this.tstReflectIdentifier, "tst-reflect")
+		// 	];
+		// }
 
 		return [];
 	}
@@ -61,7 +61,10 @@ export class DefaultPlugin implements Plugin
 					context.moduleClassIdentifier,
 					undefined,
 					[
-						toExpression(moduleMetadata)
+						ts.factory.createAsExpression(
+							toExpression(moduleMetadata),
+							ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
+						)
 					]
 				)
 			])

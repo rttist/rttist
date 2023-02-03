@@ -8,6 +8,10 @@ module.exports = {
 	},
 	resolve: {
 		extensions: ['.tsx', '.ts', '.js', 'jsx'],
+		extensionAlias: {
+			'.js': ['.ts', '.js'],
+			'.mjs': ['.mts', '.mjs'],
+		}
 	},
 	output: {
 		filename: '[name].js',
@@ -39,23 +43,23 @@ module.exports = {
 	// 		resourceRegExp: /metadata\.typelib\./,
 	// 	})
 	// ],
-	externals: [
-		{
-			rttist: 'rttist',
-			typelib: /metadata\.typelib\./,
-		},
-		function ({ context, request }, callback) {
-			// if (/^yourregex$/.test(request)) {
-			// 	return callback(null, 'commonjs ' + request);
-			// }
-			
-			console.log(context, request);
-			
-			if (request.includes("metadata")) {
-				return callback(null, "commonjs-module " + request);
-			}
-			
-			callback();
-		},
-	],
+	// externals: [
+	// 	{
+	// 		rttist: 'rttist',
+	// 		typelib: /metadata\.typelib\./,
+	// 	},
+	// 	function ({ context, request }, callback) {
+	// 		// if (/^yourregex$/.test(request)) {
+	// 		// 	return callback(null, 'commonjs ' + request);
+	// 		// }
+	//
+	// 		console.log(context, request);
+	//
+	// 		if (request.includes("metadata")) {
+	// 			return callback(null, "commonjs-module " + request);
+	// 		}
+	//
+	// 		callback();
+	// 	},
+	// ],
 };

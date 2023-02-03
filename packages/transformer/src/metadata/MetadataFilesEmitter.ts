@@ -4,13 +4,9 @@ import {
 }                             from "fs";
 import { dirname }            from "path";
 import * as ts                from "typescript";
-import {
-	ModuleKind,
-	ModuleResolutionKind,
-	ScriptTarget
-}                             from "typescript";
 import { Config }             from "../config/Config";
 import { TransformerContext } from "../contexts/TransformerContext";
+import { EmitType }           from "../declarations/EmitType";
 import { MetadataSource }     from "../declarations/TypeProperties";
 import { DependencyManager }  from "../dependencies/DependencyManager";
 import { MetadataContext }    from "../plugins";
@@ -31,78 +27,65 @@ export class MetadataFilesEmitter
 	)
 	{
 	}
-	
-	emit(metadata: MetadataSource): Promise<void>
-	{
-		if (generated) {
-			return Promise.resolve();
-		}
-		
-		// Create MetadataContext for plugins
-		const metadataContext: MetadataContext = {
-			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
-			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
-			typeClassIdentifier: ts.factory.createIdentifier("Type"),
-		};
 
-		// const sourceFile = this.createSourceFile(metadata, metadataContext);
-		const fileName = this.config.metadataTypelibVirtualPath.replace(".js", ".ts");
-// 		sourceFile.fileName = fileName;
-//		
-// 		const source = this.printToTypeScriptCode(sourceFile);
-// 		const sourceCode = ts.transpileModule(source, {
-// 			fileName: fileName,
-// 			compilerOptions: {
-// 				target: ScriptTarget.Latest,
-// 				moduleResolution: ModuleResolutionKind.NodeNext, //,TransformerContext.instance.config.moduleResolution,
-// 				module: ModuleKind.ESNext,//TransformerContext.instance.config.compilerOptions.module,
-// 				allowJs: true,
-// 				declaration: false,
-// 				strict: false,
-// 				sourceMap: false,
-// 				importHelpers: false,
-// 				skipLibCheck: true,
-// 				skipDefaultLibCheck: true,
-// 				noImplicitAny: false,
-// 			}
-// 		}).outputText
-//		
-//		
-// // 		const sourceCode = `
-// // Object.defineProperty(exports, "__esModule", { value: true });
-// // `;
-//		
-		const finalsf =  ts.createSourceFile(
-			fileName,
-			"", //sourceCode, //`console.log("foooo");`,//this.transpile(sf, filename),
-			/*TransformerContext.instance.config.compilerOptions.target ?? */ts.ScriptTarget.ES5,// ts.ScriptTarget.ES5,
-			true,
-			ts.ScriptKind.TS
-		);
-		
-		// (sf as any).transformFlags=1;
-		this.config.parsedCommandLine?.fileNames.push(fileName);
-		
+	emit(metadata: MetadataSource)
+	{
+		if (generated)
+		{
+			return;
+		}
+
+		// EMIT: TS
+		if (this.config.emit === EmitType.TypeScript)
+		{
+			// Create MetadataContext for plugins
+			const metadataContext: MetadataContext = {
+				metadataIdentifier: ts.factory.createIdentifier("Metadata"),
+				moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+				typeClassIdentifier: ts.factory.createIdentifier("Type"),
+			};
+
+			const typescriptTypelib = this.printToTypeScriptCode(
+				this.createSourceFile(metadata, metadataContext)
+			);
+
+			this.write(
+				typescriptTypelib,
+				this.config.metadataTypelibSourcePath
+			);
+			return;
+		}
+
+		// EMIT: JS
+
+		const fileName = this.config.metadataTypelibSourcePath;
+
+
 		TransformerContext.instance.program.emit(
-			finalsf
+			ts.createSourceFile(
+				fileName,
+				// TODO: Emit metadata right here; But there is some issue, because it will fail for complex TS.
+				"",
+				ts.ScriptTarget.ES5,
+				true,
+				ts.ScriptKind.TS
+			)
 		);
 
 		generated = true;
-		
-		return Promise.resolve();
-		
-		const typelibOutputPath = this.config.metadataTypelibPath;
 
-		return this.write(
-			this.transpile(
-				this.createSourceFile(metadata, metadataContext),
-				typelibOutputPath
-			),
-			typelibOutputPath
-		);
+		// const typelibOutputPath = this.config.metadataTypelibPath;
+		//
+		// this.write(
+		// 	this.transpile(
+		// 		this.createSourceFile(metadata, metadataContext),
+		// 		typelibOutputPath
+		// 	),
+		// 	typelibOutputPath
+		// );
 	}
 
-	private write(typelibText: string, typelibOutputPath: string): Promise<void>
+	private write(typelibText: string, typelibOutputPath: string)
 	{
 		// Write typelib
 		mkdirSync(dirname(typelibOutputPath), { recursive: true });
@@ -112,10 +95,6 @@ export class MetadataFilesEmitter
 		const indexOutputPath = this.config.metadataIndexPath;
 		mkdirSync(dirname(indexOutputPath), { recursive: true });
 		writeFileSync(indexOutputPath, this.getIndex(), { encoding: "utf8", flag: "w" });
-
-		return Promise.resolve();
-		// TODO: Use async write. Currently I have issue with it. Node exists before its Promise is resolved so file is usually created but empty and no .then() nor .catch() is executed.
-		// await writeFile(fileName, transpiledSource.outputText, { encoding: "utf8", flag: "w" });
 	}
 
 	/**
@@ -128,72 +107,23 @@ export class MetadataFilesEmitter
 		const tsPrinter = ts.createPrinter();
 		return tsPrinter.printFile(sourceFile);
 	}
-	
-	updateTypeLibSourceFile(sourceFile: ts.SourceFile, metadata: MetadataSource): ts.SourceFile {
 
-		const plugins = this.config.plugins;
-		
+	/**
+	 * Update existing dummy typelib SourceFile.
+	 * @param sourceFile
+	 * @param metadata
+	 */
+	updateTypeLibSourceFile(sourceFile: ts.SourceFile, metadata: MetadataSource): ts.SourceFile
+	{
 		const context: MetadataContext = {
 			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
 			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
 			typeClassIdentifier: ts.factory.createIdentifier("Type"),
 		};
 
-		// Find a first plugin implementing 'createModuleRegistrars'
-		const firstCreateModuleRegistrars = plugins.find(p => p.createModuleRegistrars !== undefined);
-		const metadataStatements = firstCreateModuleRegistrars?.createModuleRegistrars?.(metadata, context) || [];
-
-		// Imports from plugins
-		const pluginsImports = plugins.flatMap(plugin => plugin.getImports?.() || []);
-		
 		return ts.factory.updateSourceFile(
 			sourceFile,
-			[
-				ts.factory.createImportDeclaration( // TODO: Generate import or require(), based on tsconfig
-					undefined,
-					ts.factory.createImportClause(
-						false,
-						undefined,
-						ts.factory.createNamedImports([
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.metadataIdentifier
-							),
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.moduleClassIdentifier
-							),
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.typeClassIdentifier
-							),
-						])
-					),
-					ts.factory.createStringLiteral("rttist")
-				),
-				...pluginsImports,
-				...this.createDependantTypeLibsImports(),
-				ts.factory.createExpressionStatement(
-					ts.factory.createCallExpression(
-						ts.factory.createPropertyAccessExpression(
-							context.typeClassIdentifier,
-							ts.factory.createIdentifier("configure")
-						),
-						undefined,
-						[
-							toExpression({
-								nullability: !this.config.strictNullChecks
-							})
-						]
-					)
-				),
-				...metadataStatements,
-				// Empty default export because of nodenext/esm combination.
-				ts.factory.createExportDefault(ts.factory.createObjectLiteralExpression())
-			]
+			this.createTypeLibStatements(metadata, context)
 		);
 	}
 
@@ -204,6 +134,15 @@ export class MetadataFilesEmitter
 	 */
 	private createSourceFile(metadata: MetadataSource, context: MetadataContext)
 	{
+		return ts.factory.createSourceFile(
+			this.createTypeLibStatements(metadata, context),
+			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
+			ts.NodeFlags.None
+		);
+	}
+
+	private createTypeLibStatements(metadata: MetadataSource, context: MetadataContext)
+	{
 		const plugins = this.config.plugins;
 
 		// Find a first plugin implementing 'createModuleRegistrars'
@@ -213,56 +152,52 @@ export class MetadataFilesEmitter
 		// Imports from plugins
 		const pluginsImports = plugins.flatMap(plugin => plugin.getImports?.() || []);
 
-		return ts.factory.createSourceFile(
-			[
-				ts.factory.createImportDeclaration( // TODO: Generate import or require(), based on tsconfig
+		return [
+			ts.factory.createImportDeclaration( // TODO: Generate import or require(), based on tsconfig
+				undefined,
+				ts.factory.createImportClause(
+					false,
 					undefined,
-					ts.factory.createImportClause(
-						false,
-						undefined,
-						ts.factory.createNamedImports([
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.metadataIdentifier
-							),
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.moduleClassIdentifier
-							),
-							ts.factory.createImportSpecifier(
-								false,
-								undefined,
-								context.typeClassIdentifier
-							),
-						])
-					),
-					ts.factory.createStringLiteral("rttist")
-				),
-				...pluginsImports,
-				...this.createDependantTypeLibsImports(),
-				ts.factory.createExpressionStatement(
-					ts.factory.createCallExpression(
-						ts.factory.createPropertyAccessExpression(
-							context.typeClassIdentifier,
-							ts.factory.createIdentifier("configure")
+					ts.factory.createNamedImports([
+						ts.factory.createImportSpecifier(
+							false,
+							undefined,
+							context.metadataIdentifier
 						),
-						undefined,
-						[
-							toExpression({
-								nullability: !this.config.strictNullChecks
-							})
-						]
-					)
+						ts.factory.createImportSpecifier(
+							false,
+							undefined,
+							context.moduleClassIdentifier
+						),
+						ts.factory.createImportSpecifier(
+							false,
+							undefined,
+							context.typeClassIdentifier
+						),
+					])
 				),
-				...metadataStatements,
-				// Empty default export because of nodenext/esm combination.
-				ts.factory.createExportDefault(ts.factory.createObjectLiteralExpression())
-			],
-			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
-			ts.NodeFlags.None
-		);
+				ts.factory.createStringLiteral("rttist")
+			),
+			...pluginsImports,
+			...this.createDependantTypeLibsImports(),
+			ts.factory.createExpressionStatement(
+				ts.factory.createCallExpression(
+					ts.factory.createPropertyAccessExpression(
+						context.typeClassIdentifier,
+						ts.factory.createIdentifier("configure")
+					),
+					undefined,
+					[
+						toExpression({
+							nullability: !this.config.strictNullChecks
+						})
+					]
+				)
+			),
+			...metadataStatements,
+			// Empty default export because of nodenext/esm combination.
+			ts.factory.createExportDefault(ts.factory.createObjectLiteralExpression())
+		];
 	}
 
 	private transpile(sourceFile: ts.SourceFile, fileName: string): string
@@ -281,17 +216,6 @@ export class MetadataFilesEmitter
 				skipDefaultLibCheck: true
 			}
 		}).outputText/* + this.config.plugins.map(p => p.getEndScripts?.() ?? "").join("\n")*/;
-
-		// if (this.config.encode)
-		// {
-		// 	const stub = readFileSync(
-		// 		join(__dirname, "..", "..", "templates", "typelib.template.ts"),
-		// 		{ encoding: "utf-8" }
-		// 	);
-		// 	transpiledTypelib = transpiledTypelib + stub;
-		// }
-		//
-		// return transpiledTypelib;
 	}
 
 	private getIndex()

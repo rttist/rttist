@@ -12,12 +12,15 @@ export default function transform(
 	configParams?: { reflection?: OptionalConfigReflectionSection }
 ): ts.TransformerFactory<ts.SourceFile>
 {
-	if (TransformerContext.instance !== undefined)
+	// If the transformerFactory is called more than once, it means the program has been modified before finish.
+	// We modify the Program because of emit() of typelib, so it will only occurs for typelib file.
+	// In other cases we don't know what happened, so we just return our typelib sourcefile visitor.
+	if (TransformerContext.initiated)
 	{
 		return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
 		{
 			return sourceFile => {
-				if (sourceFile.fileName == TransformerContext.instance.config.metadataTypelibVirtualPath.replace(".js", ".ts").replace(/\\/g, "/")) {
+				if (sourceFile.fileName == TransformerContext.instance.config.metadataTypelibSourcePath.replace(/\\/g, "/")) {
 					const modules = Array.from(TransformerContext.instance.metadata.getModules())
 						.map(moduleMetadata => moduleMetadata.getModuleProperties());
 					const source: MetadataSource = { modules };
@@ -32,6 +35,10 @@ export default function transform(
 
 	// Create configuration object
 	const config = new Config(program, configParams?.reflection || {});
+
+
+	// Add typelib to filenames.
+	config.parsedCommandLine?.fileNames.push(config.metadataTypelibSourcePath);
 
 	// Add default plugin
 	config.plugins.unshift(new DefaultPlugin());
