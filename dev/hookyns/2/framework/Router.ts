@@ -37,7 +37,7 @@ export class Router
 			}))
 			.filter(x => x.routeDecorator !== undefined);
 
-		controllers.map(async controllerInfo => {
+		await Promise.all(controllers.map(async controllerInfo => {
 			const module = await controllerInfo.type.module.import();
 			const ClassCtor: { new(): IController } = (module as any)[controllerInfo.type.name];
 
@@ -81,7 +81,7 @@ export class Router
 					this.respond(ctor.get!(...args), res);
 				});
 			}
-		});
+		}));
 	}
 
 	private respond(value: any, response: Response)

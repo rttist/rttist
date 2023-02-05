@@ -1,4 +1,4 @@
-export function route(route: string) {
+export function route(path: string) {
 	return function(target: Function) {
 		
 	}
