@@ -64,6 +64,7 @@ export class Config
 	public readonly compilerOptions: ts.CompilerOptions;
 	public readonly parsedCommandLine?: ts.ParsedCommandLine;
 	public readonly moduleResolution: ts.ModuleResolutionKind;
+	public readonly module: ts.ModuleKind;
 	public readonly strictNullChecks: boolean;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
@@ -81,6 +82,7 @@ export class Config
 			undefined,
 			ts.sys as any
 		);
+		this.module = this.getModuleKind();
 
 		const projectRoot = path.dirname(tsConfigPath || compilerOptions.rootDir);
 		const reflectionConfig = this.getRootConfiguration(projectRoot, configSection);
@@ -217,5 +219,14 @@ export class Config
 		return (ts as any).getEmitModuleResolutionKind?.(options)
 			?? options.moduleResolution
 			?? ts.ModuleResolutionKind.Classic;
+	}
+
+	private getModuleKind()
+	{
+		const target = this.compilerOptions.target ?? this.parsedCommandLine?.options.target ?? ts.ScriptTarget.ES5;
+
+		return this.compilerOptions.module ?? this.parsedCommandLine?.options.module ?? (
+			[ts.ScriptTarget.ES3, ts.ScriptTarget.ES5].includes(target) ? ts.ModuleKind.CommonJS : ts.ModuleKind.ES2015
+		);
 	}
 }

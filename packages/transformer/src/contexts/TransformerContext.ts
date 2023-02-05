@@ -98,14 +98,6 @@ export class TransformerContext
 		return instance;
 	}
 
-	// /**
-	//  * Accessor to currently visiting SourceFile.
-	//  */
-	// get currentSourceFileContext(): SourceFileContext | undefined
-	// {
-	// 	return this.sourceFileContext;
-	// }
-
 	/**
 	 * Protected constructor.
 	 * @protected

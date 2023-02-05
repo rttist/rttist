@@ -1,8 +1,8 @@
+import "rttist/typelib";
 import {
 	Type,
 	PropertyInfo,
-	getType,
-	UnionType
+	getType
 } from "rttist";
 
 const Symbol1 = Symbol.for("key");

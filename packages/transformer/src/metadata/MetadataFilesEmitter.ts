@@ -5,15 +5,12 @@ import {
 import { dirname }            from "path";
 import * as ts                from "typescript";
 import { Config }             from "../config/Config";
-import { TransformerContext } from "../contexts/TransformerContext";
 import { EmitType }           from "../declarations/EmitType";
 import { MetadataSource }     from "../declarations/TypeProperties";
 import { DependencyManager }  from "../dependencies/DependencyManager";
 import { MetadataContext }    from "../plugins";
 import { toExpression }       from "../utils/toExpression";
 import { MetadataLibrary }    from "./MetadataLibrary";
-
-let generated = false;
 
 /**
  * Emitter used for creating metadata typelib and index file.
@@ -30,24 +27,24 @@ export class MetadataFilesEmitter
 
 	emit(metadata: MetadataSource)
 	{
-		if (generated)
-		{
-			return;
-		}
+		// if (generated)
+		// {
+		// 	return;
+		// }
+
+		// Create MetadataContext for plugins
+		const metadataContext: MetadataContext = {
+			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
+			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+			typeClassIdentifier: ts.factory.createIdentifier("Type"),
+		};
+
+		const sourceFile = this.createSourceFile(metadata, metadataContext);
 
 		// EMIT: TS
 		if (this.config.emit === EmitType.TypeScript)
 		{
-			// Create MetadataContext for plugins
-			const metadataContext: MetadataContext = {
-				metadataIdentifier: ts.factory.createIdentifier("Metadata"),
-				moduleClassIdentifier: ts.factory.createIdentifier("Module"),
-				typeClassIdentifier: ts.factory.createIdentifier("Type"),
-			};
-
-			const typescriptTypelib = this.printToTypeScriptCode(
-				this.createSourceFile(metadata, metadataContext)
-			);
+			const typescriptTypelib = this.printToTypeScriptCode(sourceFile);
 
 			this.write(
 				typescriptTypelib,
@@ -58,31 +55,30 @@ export class MetadataFilesEmitter
 
 		// EMIT: JS
 
-		const fileName = this.config.metadataTypelibSourcePath;
+		// const fileName = this.config.metadataTypelibSourcePath;
 
+		// // Add typelib to filenames.
+		// this.config.parsedCommandLine?.fileNames.push(this.config.metadataTypelibSourcePath);
 
-		TransformerContext.instance.program.emit(
-			ts.createSourceFile(
-				fileName,
-				// TODO: Emit metadata right here; But there is some issue, because it will fail for complex TS.
-				"",
-				ts.ScriptTarget.ES5,
-				true,
-				ts.ScriptKind.TS
-			)
-		);
-
-		generated = true;
-
-		// const typelibOutputPath = this.config.metadataTypelibPath;
-		//
-		// this.write(
-		// 	this.transpile(
-		// 		this.createSourceFile(metadata, metadataContext),
-		// 		typelibOutputPath
-		// 	),
-		// 	typelibOutputPath
+		// TransformerContext.instance.program.emit(
+		// 	ts.createSourceFile(
+		// 		fileName,
+		// 		// TODO: Emit metadata right here; But there is some issue, because it will fail for complex TS.
+		// 		"",
+		// 		ts.ScriptTarget.ES5,
+		// 		true,
+		// 		ts.ScriptKind.TS
+		// 	)
 		// );
+
+		// generated = true;
+
+		const typelibOutputPath = this.config.metadataTypelibPath;
+
+		this.write(
+			this.transpile(sourceFile, typelibOutputPath),
+			typelibOutputPath
+		);
 	}
 
 	private write(typelibText: string, typelibOutputPath: string)
@@ -123,7 +119,7 @@ export class MetadataFilesEmitter
 
 		return ts.factory.updateSourceFile(
 			sourceFile,
-			this.createTypeLibStatements(metadata, context)
+			this.createMetadataStatements(metadata, context)
 		);
 	}
 
@@ -135,13 +131,13 @@ export class MetadataFilesEmitter
 	private createSourceFile(metadata: MetadataSource, context: MetadataContext)
 	{
 		return ts.factory.createSourceFile(
-			this.createTypeLibStatements(metadata, context),
+			this.createMetadataStatements(metadata, context),
 			ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
 			ts.NodeFlags.None
 		);
 	}
 
-	private createTypeLibStatements(metadata: MetadataSource, context: MetadataContext)
+	private createMetadataStatements(metadata: MetadataSource, context: MetadataContext): ts.Statement[]
 	{
 		const plugins = this.config.plugins;
 
@@ -207,6 +203,8 @@ export class MetadataFilesEmitter
 		return ts.transpileModule(source, {
 			fileName: fileName,
 			compilerOptions: {
+				moduleResolution: this.config.moduleResolution,
+				module: this.config.module,
 				...this.config.compilerOptions,
 				declaration: false,
 				strict: false,

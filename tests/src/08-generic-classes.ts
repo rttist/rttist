@@ -1,3 +1,4 @@
+import "rttist/typelib";
 import { Type, getType } from "rttist";
 
 class A<TNumber extends number | bigint> {

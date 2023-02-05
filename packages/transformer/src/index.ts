@@ -36,10 +36,6 @@ export default function transform(
 	// Create configuration object
 	const config = new Config(program, configParams?.reflection || {});
 
-
-	// Add typelib to filenames.
-	config.parsedCommandLine?.fileNames.push(config.metadataTypelibSourcePath);
-
 	// Add default plugin
 	config.plugins.unshift(new DefaultPlugin());
 

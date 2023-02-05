@@ -1,3 +1,5 @@
+import "rttist/typelib";
+
 test("class", () => {
 
 	// TODO: Write tests 
