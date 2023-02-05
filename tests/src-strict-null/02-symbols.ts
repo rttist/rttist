@@ -1,3 +1,5 @@
+import "rttist/typelib";
+
 import {
 	Type,
 	PropertyInfo

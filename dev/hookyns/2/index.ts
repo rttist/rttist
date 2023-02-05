@@ -1,11 +1,7 @@
-﻿import {
-	getType,
-	Type
-} from "rttist";
+﻿import { Application } from "./framework/Application";
 
-
-// expect(getType<any>()).toBe(Type.Any);
-
-const arr = getType<Array<number>>();
-console.log(arr.isArray());
-getType<number[]>();
+new Application()
+	.run({ port: 8080 })
+	.catch(err => {
+		console.error(err);
+	});

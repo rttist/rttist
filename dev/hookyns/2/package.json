@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"name": "simple-tests",
-	"type": "commonjs",
+	"type": "module",
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"

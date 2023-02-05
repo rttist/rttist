@@ -1,32 +1,31 @@
-import path                   from "path";
-import ts                     from "typescript";
-import { TransformerContext } from "../contexts/TransformerContext";
-import { removeExtensions }   from "./removeExtensions";
+import { isFileExtensionRequired } from "./isFileExtensionRequired";
+import { removeExtension }         from "./removeExtension";
 
 export function changeExtensionForOutput(sourceFilePath: string): string
 {
-	const filePath = removeExtensions(sourceFilePath);
+	const filePath = removeExtension(sourceFilePath);
 
-	if (TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.Node16
-		|| TransformerContext.instance.config.moduleResolution === ts.ModuleResolutionKind.NodeNext)
+	if (isFileExtensionRequired())
 	{
-		const ext = path.extname(sourceFilePath);
+		let ext = sourceFilePath.slice(-3);
 
-		if (ext === ".ts")
+		if (ext === ".ts" || ext === ".js")
 		{
 			return filePath + ".js";
 		}
 
-		if (ext === ".tsx")
+		ext = sourceFilePath.slice(-4);
+
+		if (ext === ".tsx" || ext === ".jsx")
 		{
 			return filePath + ".jsx";
 		}
 
-		if (ext === ".mts")
+		if (ext === ".mts" || ext === ".mjs")
 		{
 			return filePath + ".mjs";
 		}
 	}
-	
+
 	return filePath;
 }

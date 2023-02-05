@@ -1,0 +1,17 @@
+{
+	"private": true,
+	"name": "webpack-tests",
+	"scripts": {
+		"start": "npx webpack && echo \"\n-----------\n\" && node dist/index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"dependencies": {
+		"rttist": "workspace:*"
+	},
+	"devDependencies": {
+		"ts-loader": "^9.4.1",
+		"tst-reflect-transformer": "workspace:*",
+		"webpack": "^5.74.0",
+		"webpack-cli": "^4.10.0"
+	}
+}

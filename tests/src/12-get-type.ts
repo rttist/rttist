@@ -1,16 +1,22 @@
-import {
-	getType,
-	Type
-} from "rttist";
+import "rttist/typelib";
+import { getType } from "rttist";
 
-function fn1() {}
-async function asyncFn1() {}
-class Class1 {}
+function fn1()
+{
+}
+
+async function asyncFn1()
+{
+}
+
+class Class1
+{
+}
 
 
 test("Get type of function from runtime value", () => {
 	const type = getType(fn1);
-	
+
 	expect(type.isFunction()).toBeTruthy();
 	expect(type.name).toBe("fn1");
 });

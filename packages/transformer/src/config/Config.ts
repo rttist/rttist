@@ -2,26 +2,23 @@ import {
 	ConfigurationBuilder,
 	IConfigurationBuilder,
 	IRootConfiguration
-}                      from "@netleaf/extensions-configuration";
-import type { Plugin } from "../plugins";
-import fs              from "fs";
-import path            from "path";
-import * as ts         from "typescript";
-import { makeRe }      from "minimatch";
-import {
-	PackageInfo,
-	PackageJson
-}                      from "../declarations/general";
+}                           from "@netleaf/extensions-configuration";
+import { makeRe }           from "minimatch";
+import path                 from "path";
+import * as ts              from "typescript";
+import { EmitType }         from "../declarations/EmitType";
+import type { PackageInfo } from "../declarations/general";
 import {
 	log,
 	LogLevel
-}                      from "../logging";
+}                           from "../logging";
+import type { Plugin }      from "../plugins";
+import { normalizePath }    from "../utils/normalizePath";
 import {
 	ConfigReflectionSection,
 	OptionalConfigReflectionSection
-}                      from "./ConfigReflectionSection";
-
-const UNKNOWN_PACKAGE_NAME = "@@this";
+}                           from "./ConfigReflectionSection";
+import { getPackageInfo }   from "./getPackageInfo";
 
 const DefaultConfiguration: ConfigReflectionSection = {
 	devMode: false,
@@ -30,10 +27,11 @@ const DefaultConfiguration: ConfigReflectionSection = {
 	plugins: [],
 	metadata: {
 		encode: true,
-		metadataTypelibPath: "metadata.typelib.js",
-		metadataIndexPath: "metadata.index.json",
+		path: "metadata.typelib.js",
+		indexPath: "metadata.index.json",
 		include: ["**/*"],
-		exclude: ["**/@types/node/**"]
+		exclude: ["**/@types/node/**"],
+		emit: "js"
 	}
 };
 
@@ -53,37 +51,28 @@ export class Config
 	public readonly outDir: string;
 	public readonly packageInfo: PackageInfo;
 	public readonly encode: boolean;
+	public readonly emit: EmitType;
 
 	public readonly metadataIndexPath: string;
 	public readonly metadataTypelibPath: string;
 
 	/**
-	 * Virtual path (TS context) from rootDir.
-	 * There will never exists any typelib file. It's just a path, where its TS file would be.
+	 * "Virtual" for the TypeScript source of typelib metadata from rootDir.
 	 */
-	public readonly metadataTypelibVirtualPath: string;
+	public readonly metadataTypelibSourcePath: string;
 
 	public readonly compilerOptions: ts.CompilerOptions;
 	public readonly parsedCommandLine?: ts.ParsedCommandLine;
 	public readonly moduleResolution: ts.ModuleResolutionKind;
+	public readonly module: ts.ModuleKind;
 	public readonly strictNullChecks: boolean;
 
 	constructor(program: ts.Program, configSection: OptionalConfigReflectionSection)
 	{
-		// const options = this.ensure(configSection);
 		const compilerOptions = program.getCompilerOptions();
 		const tsConfigPath = (compilerOptions as any).configFilePath;
-		const projectRoot = path.dirname(tsConfigPath || compilerOptions.rootDir);
-		const packageInfo = this.getPackage(projectRoot);
 
-		const reflectionConfig = this.getRootConfiguration(projectRoot, configSection);
-		const metadataConfig = reflectionConfig.getSection("metadata");
-		const typeLibPath = metadataConfig.get("metadataTypelibPath")!;
-
-		this.devMode = ["true", true].includes(reflectionConfig.get("devMode")!);
-		this.logLevel = LogLevel[reflectionConfig.get("logLevel")! ?? (this.devMode ? "Debug" : "Warning")];
-		this.dependencyResolution = reflectionConfig.get("dependencyResolution")!;
-
+		// TS OPTIONS
 		this.compilerOptions = compilerOptions;
 		this.strictNullChecks = (ts as any).getStrictOptionValue?.(compilerOptions, "strictNullChecks")
 			?? compilerOptions.strictNullChecks === true;
@@ -93,24 +82,76 @@ export class Config
 			undefined,
 			ts.sys as any
 		);
+		this.module = this.getModuleKind();
 
-		this.include = metadataConfig.get("include")!.map(pattern => this.toRegex(pattern));
-		this.exclude = metadataConfig.get("exclude")!.map(pattern => this.toRegex(pattern));
+		const projectRoot = path.dirname(tsConfigPath || compilerOptions.rootDir);
+		const reflectionConfig = this.getRootConfiguration(projectRoot, configSection);
+		const metadataConfig = reflectionConfig.getSection("metadata");
 
-		this.plugins = reflectionConfig.get("plugins")!.map(plugin => this.getPlugin(plugin, projectRoot));
+		this.devMode = ["true", true].includes(reflectionConfig.get("devMode") ?? DefaultConfiguration.devMode);
+		this.logLevel = LogLevel[reflectionConfig.get("logLevel") ?? (this.devMode ? "Debug" : "Warning")];
+		this.dependencyResolution = reflectionConfig.get("dependencyResolution") ?? DefaultConfiguration.dependencyResolution;
+		this.plugins = (reflectionConfig.get("plugins") ?? DefaultConfiguration.plugins)
+			.map(plugin => this.getPlugin(plugin, projectRoot));
 
 		this.projectDir = projectRoot;
 		this.rootDir = compilerOptions.rootDir || projectRoot;
 		this.outDir = compilerOptions.outDir || projectRoot;
-		this.packageInfo = packageInfo;
+		this.packageInfo = getPackageInfo(projectRoot);
 		this.encode = ["true", true].includes(metadataConfig.get("encode")!);
+		this.emit = (metadataConfig.get("emit") || DefaultConfiguration.metadata.emit) === EmitType.TypeScript
+			? EmitType.TypeScript
+			: EmitType.JavaScript;
 
-		this.metadataIndexPath = path.join(this.outDir, metadataConfig.get("metadataIndexPath")!);
+		// INDEX path
+		this.metadataIndexPath = path.join(
+			this.outDir,
+			metadataConfig.get("indexPath") ?? DefaultConfiguration.metadata.indexPath
+		);
+
+		// TYPELIB path
+		const typeLibPath = metadataConfig.get("path")!;
 		this.metadataTypelibPath = path.join(this.outDir, typeLibPath);
-		this.metadataTypelibVirtualPath = path.join(this.rootDir, typeLibPath);
+		this.metadataTypelibSourcePath = path.join(this.rootDir, typeLibPath).replace(/\.js$/, ".ts");
+
+		// INCLUDE / EXCLUDE
+		this.include = (metadataConfig.get("include") ?? []).map(pattern => this.toRegex(pattern));
+		this.exclude = this.createExcludePatterns(metadataConfig.get("exclude"), projectRoot);
 	}
 
-	getRootConfiguration(
+	/**
+	 * Returns a list of exclude regexes.
+	 * @param excludes
+	 * @param projectRoot
+	 * @private
+	 */
+	private createExcludePatterns<TConfig, TVal, TSection>(
+		excludes: string[] | undefined,
+		projectRoot: string
+	): RegExp[]
+	{
+		return (excludes ?? [])
+			.map(pattern => {
+				if (pattern.startsWith("./"))
+				{
+					pattern = (projectRoot.endsWith("/")
+							? projectRoot.slice(0, -1)
+							: projectRoot
+					) + "/" + pattern.slice(2);
+				}
+
+				return this.toRegex(pattern);
+			})
+			.concat([this.getTypelibSourceRegex()]);
+	}
+
+	/**
+	 * Builds and returns root configuration.
+	 * @param projectRoot
+	 * @param transformerConfigSection
+	 * @private
+	 */
+	private getRootConfiguration(
 		projectRoot: string,
 		transformerConfigSection: OptionalConfigReflectionSection
 	): IRootConfiguration<ConfigReflectionSection>
@@ -120,52 +161,13 @@ export class Config
 	}
 
 	/**
-	 * Get name and root directory of the package.
-	 * @description If no package found, original root and unknown name (@@this) is returned.
-	 * @return {string}
-	 * @private
+	 * Returns Regex matching metadata.typelib file.
 	 */
-	private getPackage(root: string, recursiveCheck: boolean = false): PackageInfo
+	private getTypelibSourceRegex()
 	{
-		try
-		{
-			const packageJson = fs.readFileSync(path.join(root, "package.json"), "utf-8");
-			const parsed: PackageJson = JSON.parse(packageJson);
-			return {
-				packageRoot: root,
-				name: parsed.name || UNKNOWN_PACKAGE_NAME,
-				packageJson: parsed
-			};
-		}
-		catch (e)
-		{
-			if (path.parse(root).root === root)
-			{
-				// as any -> internal
-				return {
-					packageRoot: undefined as any,
-					name: UNKNOWN_PACKAGE_NAME,
-					packageJson: {}
-				};
-			}
-
-			// Try to get parent folder package
-			const packageInfo = this.getPackage(path.normalize(path.join(root, "..")), true);
-
-			if (packageInfo.packageRoot === undefined)
-			{
-				// If this is recursive check, return undefined root as received from parent folder check
-				if (recursiveCheck)
-				{
-					return packageInfo;
-				}
-
-				// This is top level check; return original root passed as argument
-				return { packageRoot: root, name: packageInfo.name, packageJson: packageInfo.packageJson };
-			}
-
-			return packageInfo;
-		}
+		return new RegExp(
+			"^" + normalizePath(this.metadataTypelibSourcePath) + "$"
+		);
 	}
 
 	private getPlugin(pluginPath: string, projectRoot: string): Plugin
@@ -217,5 +219,14 @@ export class Config
 		return (ts as any).getEmitModuleResolutionKind?.(options)
 			?? options.moduleResolution
 			?? ts.ModuleResolutionKind.Classic;
+	}
+
+	private getModuleKind()
+	{
+		const target = this.compilerOptions.target ?? this.parsedCommandLine?.options.target ?? ts.ScriptTarget.ES5;
+
+		return this.compilerOptions.module ?? this.parsedCommandLine?.options.module ?? (
+			[ts.ScriptTarget.ES3, ts.ScriptTarget.ES5].includes(target) ? ts.ModuleKind.CommonJS : ts.ModuleKind.ES2015
+		);
 	}
 }

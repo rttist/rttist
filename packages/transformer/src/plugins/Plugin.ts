@@ -26,9 +26,9 @@ export interface Plugin
 	 * Create expression registering
 	 */
 	createModuleRegistrars?(metadata: MetadataSource, context: MetadataContext): ts.Statement[];
-
-	/**
-	 * Returns JS code which will be appended to the end of the typelib..
-	 */
-	getEndScripts?(): string;
+	//
+	// /**
+	//  * Returns JS code which will be appended to the end of the typelib..
+	//  */
+	// getEndScripts?(): string;
 }

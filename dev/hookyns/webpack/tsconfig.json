@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ESNext",
+//		"module": "CommonJS",
+//		"target": "ESNext",
+		"removeComments": false,
+		"declaration": false,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"rootDir": ".",
+		"outDir": "dist",
+		"plugins": [
+			{
+				"transform": "tst-reflect-transformer"
+			}
+		]
+	},
+	"exclude": [
+		"dist"
+	]
+}

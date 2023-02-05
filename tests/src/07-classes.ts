@@ -1,3 +1,4 @@
+import "rttist/typelib";
 import {
 	AccessModifier,
 	Accessor,

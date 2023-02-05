@@ -1,19 +1,20 @@
 import * as ts                       from "typescript";
 import type { Config }               from "../config/Config";
+import { EmitType }                  from "../declarations/EmitType";
 import type { MetadataSource }       from "../declarations/TypeProperties";
 import type { DependencyManager }    from "../dependencies/DependencyManager";
-import type { MetadataLibrary }      from "./MetadataLibrary";
-import { MetadataFilesEmitter }      from "./MetadataFilesEmitter";
-import { SourceFileMetadataUpdater } from "./SourceFileMetadataUpdater";
 import {
-	LogColor,
 	log,
+	LogColor,
 	LogLevel
 }                                    from "../logging";
+import { MetadataFilesEmitter }      from "./MetadataFilesEmitter";
+import type { MetadataLibrary }      from "./MetadataLibrary";
+import { SourceFileMetadataUpdater } from "./SourceFileMetadataUpdater";
 
 export class MetadataManager
 {
-	private readonly libraryFileEmitter: MetadataFilesEmitter;
+	public readonly libraryFileEmitter: MetadataFilesEmitter;
 	private readonly sourceFileMetadataUpdater: SourceFileMetadataUpdater;
 
 	constructor(
@@ -28,7 +29,7 @@ export class MetadataManager
 
 	updateSourceFile(sourceFile: ts.SourceFile): ts.SourceFile
 	{
-		return this.sourceFileMetadataUpdater.addMetadataToSourceFile(sourceFile);
+		return this.sourceFileMetadataUpdater.addMetadataToSourceFileIfRequired(sourceFile);
 	}
 
 	emitMetadataLibrary()
@@ -37,16 +38,23 @@ export class MetadataManager
 			.map(moduleMetadata => moduleMetadata.getModuleProperties());
 		const source: MetadataSource = { modules };
 
-		this.libraryFileEmitter.emit(source)
-			.then(() => {
-				log.log(
-					LogLevel.Trace,
-					LogColor.cyan,
-					`Typelib file generated: '${this.config.metadataTypelibPath}'`
-				);
-			})
-			.catch(error => {
-				log.error(error);
-			});
+		try
+		{
+			this.libraryFileEmitter.emit(source);
+
+			log.log(
+				LogLevel.Trace,
+				LogColor.blue,
+				`Typelib file generated: '${
+					this.config.emit === EmitType.TypeScript
+						? this.config.metadataTypelibSourcePath
+						: this.config.metadataTypelibPath
+				}'`
+			);
+		}
+		catch (error)
+		{
+			log.error(error);
+		}
 	}
 }

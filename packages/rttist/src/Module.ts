@@ -1,7 +1,8 @@
 import type {
+	AnyTypeMetadata,
 	ModuleIdentifier,
 	ModuleMetadata
-}                          from "./declarations";
+} from "./declarations";
 import { TypeFactory }     from "./factories";
 import type { Type }       from "./Type";
 import { ModuleIds }       from "@rttist/core";
@@ -63,8 +64,8 @@ export class Module
 		this.path = initializer.path;
 		this._childrenRefs = new LazyModuleArray(initializer.children || []);
 		this._types = Object.freeze((initializer.types || []).map(typeMetadata => {
-			typeMetadata.module = initializer.id;
-			return TypeFactory.create(typeMetadata);
+			(typeMetadata as any).module = initializer.id;
+			return TypeFactory.create(typeMetadata as AnyTypeMetadata);
 		}));
 	}
 

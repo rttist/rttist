@@ -1,7 +1,7 @@
-import path                   from "path";
-import type { Context }       from "../contexts/Context";
-import { TransformerContext } from "../contexts/TransformerContext";
-import type { TypeInfo }      from "../declarations/general";
+import path                         from "path";
+import type { Context }             from "../contexts/Context";
+import { TransformerContext }       from "../contexts/TransformerContext";
+import type { TypeInfo }            from "../declarations/general";
 import type {
 	ModuleMetadataProperties,
 	ModuleProperties,
@@ -88,11 +88,11 @@ export class ModuleMetadata
 	{
 		const modulePath = changeExtensionForOutput(
 			getRelativePath(
-				path.dirname(TransformerContext.instance.config.metadataTypelibVirtualPath), 
+				path.dirname(TransformerContext.instance.config.metadataTypelibSourcePath),
 				this.moduleProperties.path
 			)
 		);
-		
+
 		return {
 			...this.moduleProperties,
 			import: (
@@ -111,7 +111,9 @@ export class ModuleMetadata
 						ts.factory.createIdentifier("import"),
 						undefined,
 						[
-							ts.factory.createStringLiteral(modulePath)
+							ts.factory.createStringLiteral(
+								changeExtensionForOutput(modulePath)
+							)
 						]
 					)
 				),
