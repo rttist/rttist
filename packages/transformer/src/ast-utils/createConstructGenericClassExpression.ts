@@ -23,7 +23,7 @@ export function createConstructGenericClassExpression(
 		classObject,
 		// List of type parameter references
 		ts.factory.createArrayLiteralExpression(
-			createReferenceExpressions(callsiteReferences),
+			createReferenceExpressions(callsiteReferences, undefined, context),
 			false
 		),
 		// arguments

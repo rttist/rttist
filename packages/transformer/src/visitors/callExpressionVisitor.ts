@@ -35,7 +35,8 @@ export function callExpressionVisitor(node: ts.CallExpression | ts.NewExpression
 
 	return createCallsiteCallExpression(
 		ts.visitEachChild(node, context.visitor, context.transformationContext),
-		directTypeCallsiteReferenceFactory(typeArgTypes, context)
+		directTypeCallsiteReferenceFactory(typeArgTypes, context),
+		context
 	);
 }
 
@@ -71,7 +72,7 @@ function handleReflectConstructCalls(node: ts.CallExpression | ts.NewExpression,
 		if (declaration)
 		{
 			const sourceFile = declaration.getSourceFile();
-			const sourceFileId = getSourceFileId(sourceFile);
+			const sourceFileId = getSourceFileId(sourceFile, context.transformerContext);
 
 			if (sourceFileId === ModuleIds.Native)
 			{

@@ -98,7 +98,7 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 
 		const declaration = getDeclaration(symbol);
 		const typeArguments = getTypeArgumentsReference(type, context);
-		const typeRef = getTypeRef(type, false, symbol, context.typeChecker); // TODO: This is used just to check it is native; is it OK? (perf)
+		const typeRef = getTypeRef(type, false, symbol, context.transformerContext); // TODO: This is used just to check it is native; is it OK? (perf)
 
 		const properties: ClassProperties & InterfaceProperties = {
 			kind: kind,

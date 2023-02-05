@@ -11,9 +11,12 @@ import { canIncludeSourceFile } from "../utils/canIncludeSourceFile";
 /**
  * Factory of SourceFile visitor.
  */
-export function createSourceFileVisitor(transformationContext: ts.TransformationContext)
+export function createSourceFileVisitor(
+	transformationContext: ts.TransformationContext,
+	transformerContext: TransformerContext
+)
 {
-	const { program, config, visitSourceFile } = TransformerContext.instance;
+	const { program, config, visitSourceFile } = transformerContext;
 
 	return function handleSourceFile(sourceFileNode: ts.SourceFile): ts.SourceFile
 	{

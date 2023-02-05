@@ -1,7 +1,10 @@
-import * as ts                from "typescript";
-import { TransformerContext } from "../contexts/TransformerContext";
+import type { TransformerContext } from "../contexts/TransformerContext";
+import * as ts                     from "typescript";
 
-export function getSourceFile(importDeclaration: ts.ImportDeclaration): ts.SourceFile | undefined
+export function getSourceFile(
+	importDeclaration: ts.ImportDeclaration,
+	transformerContext: TransformerContext
+): ts.SourceFile | undefined
 {
-	return TransformerContext.instance.typeChecker.getSymbolAtLocation(importDeclaration.moduleSpecifier)?.valueDeclaration as ts.SourceFile;
+	return transformerContext.typeChecker.getSymbolAtLocation(importDeclaration.moduleSpecifier)?.valueDeclaration as ts.SourceFile;
 }

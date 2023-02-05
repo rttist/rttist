@@ -1,6 +1,5 @@
-import path                         from "path";
+import type { Config }              from "../config/Config";
 import type { Context }             from "../contexts/Context";
-import { TransformerContext }       from "../contexts/TransformerContext";
 import type { TypeInfo }            from "../declarations/general";
 import type {
 	ModuleMetadataProperties,
@@ -12,6 +11,7 @@ import type {
 	ModuleReference,
 	TypeIdentifier
 }                                   from "rttist";
+import path                         from "path";
 import { ModuleIds }                from "@rttist/core";
 import * as ts                      from "typescript";
 import { log }                      from "../logging";
@@ -66,17 +66,18 @@ export class ModuleMetadata
 	/**
 	 * Create ModuleMetadata object from SourceFile.
 	 * @param sourceFile
+	 * @param context
 	 */
-	public static createFromSourceFile(sourceFile: ts.SourceFile): ModuleMetadata
+	public static createFromSourceFile(sourceFile: ts.SourceFile, context: Context): ModuleMetadata
 	{
 		const name = sourceFile.moduleName === undefined ? "" : sourceFile.moduleName;
 
 		return new ModuleMetadata(
 			{
 				name,
-				id: getSourceFileId(sourceFile),
+				id: getSourceFileId(sourceFile, context.transformerContext),
 				path: sourceFile.fileName,
-				children: this.getChildrenReferences(sourceFile)
+				children: this.getChildrenReferences(sourceFile, context)
 			}
 		);
 	}
@@ -84,13 +85,17 @@ export class ModuleMetadata
 	/**
 	 * Returns properties of this module.
 	 */
-	getModuleProperties({ withoutTypes = false }: { withoutTypes?: boolean } = { withoutTypes: false }): ModuleProperties
+	getModuleProperties(
+		config: Config,
+		{ withoutTypes = false }: { withoutTypes?: boolean } = { withoutTypes: false }
+	): ModuleProperties
 	{
 		const modulePath = changeExtensionForOutput(
 			getRelativePath(
-				path.dirname(TransformerContext.instance.config.metadataTypelibSourcePath),
+				path.dirname(config.metadataTypelibSourcePath),
 				this.moduleProperties.path
-			)
+			),
+			config
 		);
 
 		return {
@@ -112,7 +117,7 @@ export class ModuleMetadata
 						undefined,
 						[
 							ts.factory.createStringLiteral(
-								changeExtensionForOutput(modulePath)
+								changeExtensionForOutput(modulePath, config)
 							)
 						]
 					)
@@ -147,7 +152,7 @@ export class ModuleMetadata
 		// }
 	}
 
-	private static getChildrenReferences(sourceFile: ts.SourceFile)
+	private static getChildrenReferences(sourceFile: ts.SourceFile, context: Context)
 	{
 		const index = sourceFile.statements.findIndex(s => !ts.isImportDeclaration(s));
 		const references: Array<ModuleReference> = [];
@@ -162,11 +167,11 @@ export class ModuleMetadata
 				continue;
 			}
 
-			const childSourceFile = getSourceFile(importDeclaration);
+			const childSourceFile = getSourceFile(importDeclaration, context.transformerContext);
 
 			if (childSourceFile)
 			{
-				references.push(getSourceFileId(childSourceFile));
+				references.push(getSourceFileId(childSourceFile, context.transformerContext));
 			}
 			else
 			{

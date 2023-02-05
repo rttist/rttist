@@ -34,6 +34,7 @@ export class MetadataFilesEmitter
 
 		// Create MetadataContext for plugins
 		const metadataContext: MetadataContext = {
+			config: this.config,
 			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
 			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
 			typeClassIdentifier: ts.factory.createIdentifier("Type"),
@@ -104,24 +105,24 @@ export class MetadataFilesEmitter
 		return tsPrinter.printFile(sourceFile);
 	}
 
-	/**
-	 * Update existing dummy typelib SourceFile.
-	 * @param sourceFile
-	 * @param metadata
-	 */
-	updateTypeLibSourceFile(sourceFile: ts.SourceFile, metadata: MetadataSource): ts.SourceFile
-	{
-		const context: MetadataContext = {
-			metadataIdentifier: ts.factory.createIdentifier("Metadata"),
-			moduleClassIdentifier: ts.factory.createIdentifier("Module"),
-			typeClassIdentifier: ts.factory.createIdentifier("Type"),
-		};
-
-		return ts.factory.updateSourceFile(
-			sourceFile,
-			this.createMetadataStatements(metadata, context)
-		);
-	}
+	// /**
+	//  * Update existing dummy typelib SourceFile.
+	//  * @param sourceFile
+	//  * @param metadata
+	//  */
+	// updateTypeLibSourceFile(sourceFile: ts.SourceFile, metadata: MetadataSource): ts.SourceFile
+	// {
+	// 	const context: MetadataContext = {
+	// 		metadataIdentifier: ts.factory.createIdentifier("Metadata"),
+	// 		moduleClassIdentifier: ts.factory.createIdentifier("Module"),
+	// 		typeClassIdentifier: ts.factory.createIdentifier("Type"),
+	// 	};
+	//
+	// 	return ts.factory.updateSourceFile(
+	// 		sourceFile,
+	// 		this.createMetadataStatements(metadata, context)
+	// 	);
+	// }
 
 	/**
 	 * Create SourceFile node with metadata library.
@@ -186,7 +187,7 @@ export class MetadataFilesEmitter
 					[
 						toExpression({
 							nullability: !this.config.strictNullChecks
-						})
+						}, context.config)
 					]
 				)
 			),
@@ -219,7 +220,7 @@ export class MetadataFilesEmitter
 	private getIndex()
 	{
 		const modules = Array.from(this.metadataLibrary.getModules()).map(module => {
-			const props = module.getModuleProperties();
+			const props = module.getModuleProperties(this.config);
 			const types = (props.types || [])
 				?.filter(type => type.id !== undefined)
 				.map(type => `"${type.id}"`);

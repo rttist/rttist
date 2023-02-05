@@ -1,10 +1,11 @@
-import { PROTOTYPE_TYPE_PROPERTY }                          from "@rttist/core";
-import * as ts                                              from "typescript";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
+import * as ts from "typescript";
 import { createCallsiteTypeArgumentsReadVariableStatement } from "../ast-utils/createCallsiteTypeArgumentsReadVariableStatement";
-import { Context }                                          from "../contexts/Context";
-import { TransformerTypeReference }                         from "../declarations/TransformerTypeReference";
-import { toExpression }                                     from "../utils/toExpression";
-import { mainVisitor }                                      from "./mainVisitor";
+import { Config } from "../config/Config";
+import { Context } from "../contexts/Context";
+import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { toExpression } from "../utils/toExpression";
+import { mainVisitor } from "./mainVisitor";
 
 export function functionVisitor(
 	declaration: ts.FunctionLikeDeclarationBase,
@@ -45,7 +46,12 @@ export function functionVisitor(
 
 		return [
 			declaration,
-			createTypeIdAssignmentExpressionStatement(declaration, functionName as ts.Identifier, typeReference)
+			createTypeIdAssignmentExpressionStatement(
+				declaration,
+				functionName as ts.Identifier,
+				typeReference,
+				context.config
+			)
 		];
 	}
 
@@ -111,7 +117,12 @@ export function functionVisitor(
 								ts.NodeFlags.Const
 							)
 						),
-						createTypeIdAssignmentExpressionStatement(declaration, localFnName, typeReference),
+						createTypeIdAssignmentExpressionStatement(
+							declaration,
+							localFnName,
+							typeReference,
+							context.config
+						),
 						ts.factory.createReturnStatement(localFnName)
 					])
 				)
@@ -147,20 +158,22 @@ function recreateBody(
 function createTypeIdAssignmentExpressionStatement(
 	declaration: ts.FunctionLikeDeclarationBase,
 	functionName: ts.Identifier,
-	typeReference: TransformerTypeReference
+	typeReference: TransformerTypeReference,
+	config: Config
 ): ts.ExpressionStatement
 {
 	const modifiers = ts.canHaveModifiers(declaration) && ts.getModifiers(declaration);
 
 	// EMIT: Function.prototype[REFLECTED_TYPE_ID] = typeId; or Function[REFLECTED_TYPE_ID] = typeId; for async functions (they have no prototype)
 	return modifiers && modifiers.some(token => token.kind === ts.SyntaxKind.AsyncKeyword)
-		? createAsyncFunctionTypeIdAssignment(functionName, typeReference)
-		: createPrototypeTypeIdAssignment(functionName, typeReference);
+		? createAsyncFunctionTypeIdAssignment(functionName, typeReference, config)
+		: createPrototypeTypeIdAssignment(functionName, typeReference, config);
 }
 
 function createPrototypeTypeIdAssignment(
 	identifier: ts.Identifier,
-	typeReference: TransformerTypeReference
+	typeReference: TransformerTypeReference,
+	config: Config
 )
 {
 	return ts.factory.createExpressionStatement(
@@ -173,14 +186,15 @@ function createPrototypeTypeIdAssignment(
 				ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 			),
 			ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-			toExpression(typeReference)
+			toExpression(typeReference, config)
 		)
 	);
 }
 
 function createAsyncFunctionTypeIdAssignment(
 	identifier: ts.Identifier,
-	typeReference: TransformerTypeReference
+	typeReference: TransformerTypeReference,
+	config: Config
 )
 {
 	return ts.factory.createExpressionStatement(
@@ -190,7 +204,7 @@ function createAsyncFunctionTypeIdAssignment(
 				ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 			),
 			ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-			toExpression(typeReference)
+			toExpression(typeReference, config)
 		)
 	);
 }

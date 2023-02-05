@@ -1,3 +1,4 @@
+import type { Config }                   from "../config/Config";
 import type { Context }                  from "../contexts/Context";
 import type { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 import { PROTOTYPE_TYPE_PROPERTY }       from "@rttist/core";
@@ -35,7 +36,7 @@ export function classVisitor(
 			visitedDeclaration.heritageClauses,
 			visitedDeclaration.members.concat([
 				// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name)
+				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name, context.config)
 			])
 		);
 	}
@@ -50,7 +51,7 @@ export function classVisitor(
 			visitedDeclaration.heritageClauses,
 			visitedDeclaration.members.concat([
 				// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
-				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name)
+				createClassStaticBlockDeclaration(typeReference, visitedDeclaration.name, context.config)
 			])
 		);
 	}
@@ -118,7 +119,8 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 												// static { this.prototype[REFLECTED_TYPE_ID] = typeId; }
 												createClassStaticBlockDeclaration(
 													typeReference,
-													updatedDeclaration.name
+													updatedDeclaration.name,
+													context.config
 												)
 											)
 										)
@@ -171,7 +173,8 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 
 function createClassStaticBlockDeclaration(
 	typeReference: TransformerTypeReference,
-	className: ts.Identifier | undefined
+	className: ts.Identifier | undefined,
+	config: Config
 )
 {
 	return ts.factory.createClassStaticBlockDeclaration(
@@ -186,7 +189,7 @@ function createClassStaticBlockDeclaration(
 							ts.factory.createStringLiteral(PROTOTYPE_TYPE_PROPERTY)
 						),
 						ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-						toExpression(typeReference)
+						toExpression(typeReference, config)
 					)
 				)
 			]

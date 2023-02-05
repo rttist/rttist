@@ -1,10 +1,10 @@
+import type { Config }              from "../config/Config";
 import * as ts                      from "typescript";
 import { TypeKind }                 from "rttist";
 import { SyntaxKind }               from "typescript";
-import { TransformerContext }       from "../contexts/TransformerContext";
 import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
 
-export function toExpression(value: any): ts.Expression
+export function toExpression(value: any, config: Config): ts.Expression
 {
 	if (value != undefined)
 	{
@@ -23,7 +23,7 @@ export function toExpression(value: any): ts.Expression
 		// noinspection SuspiciousTypeOfGuard
 		if (value instanceof Array)
 		{
-			return ts.factory.createArrayLiteralExpression(value.map(val => toExpression(val)));
+			return ts.factory.createArrayLiteralExpression(value.map(val => toExpression(val, config)));
 		}
 
 		// noinspection SuspiciousTypeOfGuard
@@ -35,7 +35,7 @@ export function toExpression(value: any): ts.Expression
 					ts.factory.createNumericLiteral(value.nativeReference.kind)
 				];
 
-				if (TransformerContext.instance.config.devMode)
+				if (config.devMode)
 				{
 					ts.addSyntheticTrailingComment(
 						ref[0],
@@ -61,7 +61,7 @@ export function toExpression(value: any): ts.Expression
 				{
 					propertyAssignments.push(ts.factory.createPropertyAssignment(
 						prop,
-						toExpression(value[prop])
+						toExpression(value[prop], config)
 					));
 				}
 			}

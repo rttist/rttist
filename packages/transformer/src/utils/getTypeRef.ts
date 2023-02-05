@@ -2,11 +2,11 @@ import type {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference
 }                                    from "../declarations/general";
+import type { TransformerContext }   from "../contexts/TransformerContext";
 import { ModuleIds }                 from "@rttist/core";
 import * as ts                       from "typescript";
 import { SyntaxKind }                from "typescript/lib/tsserverlibrary";
 import { ESSymbols }                 from "../consts";
-import { TransformerContext }        from "../contexts/TransformerContext";
 import { TransformerTypeReference }  from "../declarations/TransformerTypeReference";
 import { log }                       from "../logging";
 import { getComplexNativeTypeRef }   from "../properties/getComplexNativeTypeRef";
@@ -30,13 +30,13 @@ import {
  * @param type
  * @param nullable Type is nullable
  * @param symbol
- * @param typeChecker
+ * @param transformerContext
  */
 export function getTypeRef(
 	type: ts.Type,
 	nullable: boolean, // TODO: Implement
 	symbol: ts.Symbol | undefined,
-	typeChecker: ts.TypeChecker,
+	transformerContext: TransformerContext
 ): TransformerTypeReference
 {
 	if (isInvalidType(type))
@@ -78,6 +78,7 @@ export function getTypeRef(
 		return type._typeReference;
 	}
 
+	const typeChecker = transformerContext.typeChecker;
 	let typeReference: TransformerTypeReference | undefined = undefined;
 
 	// If no symbol defined, take it from type
@@ -91,18 +92,18 @@ export function getTypeRef(
 	// If there is no declaration and/or symbol
 	if (!declaration || !symbol)
 	{
-		return getTypeRefWithoutDeclaration(type, symbol, typeChecker);
+		return getTypeRefWithoutDeclaration(type, symbol, transformerContext);
 	}
 
 	const sourceFile = declaration.getSourceFile();
 
 	if (sourceFile.fileName !== undefined
-		&& !canIncludeSourceFile(sourceFile.fileName, TransformerContext.instance.config))
+		&& !canIncludeSourceFile(sourceFile.fileName, transformerContext.config))
 	{
 		return TransformerTypeReference.Invalid;
 	}
 
-	const sourceFileId = getSourceFileId(sourceFile);
+	const sourceFileId = getSourceFileId(sourceFile, transformerContext);
 
 	// If it's type parameter
 	if ((type.flags & ts.TypeFlags.TypeParameter) !== 0)
@@ -114,7 +115,7 @@ export function getTypeRef(
 			declaration,
 			sourceFile,
 			sourceFileId,
-			typeChecker
+			transformerContext
 		);
 	}
 	// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
@@ -163,7 +164,7 @@ export function getTypeRef(
 
 			if (typeReference === undefined)
 			{
-				if (TransformerContext.instance.config.devMode)
+				if (transformerContext.config.devMode)
 				{
 					log.warn("Unhandled complex native type.", printTypeDebugInfo(type, typeChecker));
 				}
@@ -173,7 +174,7 @@ export function getTypeRef(
 		}
 		else
 		{
-			typeReference = getUnionOrIntersectionTypeRef(type, symbol, typeChecker);
+			typeReference = getUnionOrIntersectionTypeRef(type, symbol, transformerContext);
 
 			if (typeReference === undefined)
 			{
@@ -203,7 +204,7 @@ export function getTypeRef(
 					sourceFileId,
 					typeName,
 					undefined,
-					typeArguments.map(typeArg => getTypeRef(typeArg, false, undefined, typeChecker).id),
+					typeArguments.map(typeArg => getTypeRef(typeArg, false, undefined, transformerContext).id),
 					sourceFile
 				);
 			}
@@ -234,15 +235,15 @@ function getTypeRefOfTypeParameter(
 	declaration: ts.Declaration,
 	sourceFile: ts.SourceFile,
 	sourceFileId: string,
-	typeChecker: ts.TypeChecker
+	transformerContext: TransformerContext
 )
 {
 	const parentSymbol = (type.symbol as any)?.parent; // TODO: WHy type.symbol and not just symbol?
-	const parentType = parentSymbol && typeChecker.getDeclaredTypeOfSymbol(parentSymbol);
+	const parentType = parentSymbol && transformerContext.typeChecker.getDeclaredTypeOfSymbol(parentSymbol);
 
 	if (parentType)
 	{
-		const parentRef = getTypeRef(parentType, nullable, parentSymbol, typeChecker);
+		const parentRef = getTypeRef(parentType, nullable, parentSymbol, transformerContext);
 
 		return new TransformerTypeReference(
 			parentRef.moduleIdentifier,
@@ -255,7 +256,7 @@ function getTypeRefOfTypeParameter(
 
 	log.ifWarn(() => [
 		"Unable to properly generate Id for a TypeParameter because parent type is unknown.",
-		printTypeDebugInfo(type, typeChecker)
+		printTypeDebugInfo(type, transformerContext.typeChecker)
 	]);
 
 	return new TransformerTypeReference(
@@ -270,7 +271,7 @@ function getTypeRefOfTypeParameter(
 function getTypeRefWithoutDeclaration(
 	type: ts.Type,
 	symbol: ts.Symbol | undefined,
-	typeChecker: ts.TypeChecker
+	transformerContext: TransformerContext
 ): TransformerTypeReference
 {
 	// // try to check if it's primitive type
@@ -280,13 +281,13 @@ function getTypeRefWithoutDeclaration(
 	// {
 
 	// Some system union or intersection.
-	let typeReference = getUnionOrIntersectionTypeRef(type, symbol, typeChecker);
+	let typeReference = getUnionOrIntersectionTypeRef(type, symbol, transformerContext);
 
 	if (typeReference === undefined)
 	{
 		log.ifWarn(() => [
 			`Unable to generate Id for type without ${!symbol ? "symbol" : "declaration"}.`,
-			printTypeDebugInfo(type, typeChecker)
+			printTypeDebugInfo(type, transformerContext.typeChecker)
 		]);
 
 		typeReference = TransformerTypeReference.Invalid;
@@ -310,7 +311,7 @@ function getTypeRefWithoutDeclaration(
 	return typeReference;
 }
 
-function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker)
+function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefined, transformerContext: TransformerContext)
 {
 	if ((type.flags & ts.TypeFlags.EnumLike) !== 0)
 	{
@@ -323,7 +324,7 @@ function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefi
 			ModuleIds.Native,
 			"|",
 			undefined,
-			type.types.map(t => getTypeId(t, false, symbol, typeChecker))
+			type.types.map(t => getTypeId(t, false, symbol, transformerContext))
 		);
 	}
 
@@ -333,7 +334,7 @@ function getUnionOrIntersectionTypeRef(type: ts.Type, symbol: ts.Symbol | undefi
 			ModuleIds.Native,
 			"&",
 			undefined,
-			type.types.map(t => getTypeId(t, false, symbol, typeChecker))
+			type.types.map(t => getTypeId(t, false, symbol, transformerContext))
 		);
 	}
 

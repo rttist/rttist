@@ -7,6 +7,7 @@ import {
 	SELF_VAR_NAME,
 	TYPE_PARAMS_VAR_NAME
 }                                    from "../consts";
+import { Context }                   from "../contexts/Context";
 import { ClassContextTypeReference } from "../declarations/ClassContextTypeReference";
 import { ClassTypeReference }        from "../declarations/ClassTypeReference";
 import { ContextTypeReference }      from "../declarations/ContextTypeReference";
@@ -15,7 +16,8 @@ import { toExpression }              from "../utils/toExpression";
 
 export function createReferenceExpressions(
 	callsiteReferences: Array<TransformerTypeReference | ContextTypeReference | ClassTypeReference | null>,
-	thisContext?: ts.Identifier
+	thisContext: ts.Identifier | undefined,
+	context: Context
 )
 {
 	return callsiteReferences.map(reference => {
@@ -54,6 +56,6 @@ export function createReferenceExpressions(
 			);
 		}
 
-		return toExpression(reference);
+		return toExpression(reference, context.config);
 	});
 }

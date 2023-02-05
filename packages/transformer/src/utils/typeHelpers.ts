@@ -1,7 +1,8 @@
-import * as ts            from "typescript";
-import { TypeIds }        from "@rttist/core";
-import { TypeIdentifier } from "rttist";
-import { getTypeRef }     from "./getTypeRef";
+import * as ts                from "typescript";
+import { TypeIds }            from "@rttist/core";
+import { TypeIdentifier }     from "rttist";
+import { TransformerContext } from "../contexts/TransformerContext";
+import { getTypeRef }         from "./getTypeRef";
 
 /**
  * If the given type is some kind of alias or something which we don't want to reflect, find the right type.
@@ -67,9 +68,9 @@ export function getMajorTypeFlag(type: ts.Type)
 	return type.flags;
 }
 
-export function getTypeId(type: ts.Type, nullable: boolean, symbol: ts.Symbol | undefined, typeChecker: ts.TypeChecker): TypeIdentifier
+export function getTypeId(type: ts.Type, nullable: boolean, symbol: ts.Symbol | undefined, transformerContext: TransformerContext): TypeIdentifier
 {
-	return getTypeRef(type, nullable, symbol, typeChecker).id || TypeIds.Invalid;
+	return getTypeRef(type, nullable, symbol, transformerContext).id || TypeIds.Invalid;
 }
 
 export function isInvalidType(type: ts.Type | undefined | { intrinsicName: "error" }): type is (undefined | { intrinsicName: "error" })

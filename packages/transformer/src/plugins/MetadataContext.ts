@@ -1,6 +1,9 @@
-import * as ts from "typescript";
+import type { Config } from "../config/Config";
+import * as ts         from "typescript";
 
 export type MetadataContext = {
+	config: Config;
+
 	/**
 	 * Identifier of the imported Metadata object from the "rttist" package.
 	 */

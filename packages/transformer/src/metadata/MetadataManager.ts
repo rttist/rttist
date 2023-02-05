@@ -35,7 +35,7 @@ export class MetadataManager
 	emitMetadataLibrary()
 	{
 		const modules = Array.from(this.metadataLibrary.getModules())
-			.map(moduleMetadata => moduleMetadata.getModuleProperties());
+			.map(moduleMetadata => moduleMetadata.getModuleProperties(this.config));
 		const source: MetadataSource = { modules };
 
 		try

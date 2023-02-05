@@ -40,7 +40,7 @@ export class DefaultPlugin implements Plugin
 	 */
 	createModuleRegistrars?(metadata: MetadataSource, context: MetadataContext): ts.Statement[]
 	{
-		if (TransformerContext.instance.config.encode)
+		if (context.config.encode)
 		{
 			log.warn("Implementation of the metadata encoding is not finished yet.");
 
@@ -62,7 +62,7 @@ export class DefaultPlugin implements Plugin
 					undefined,
 					[
 						ts.factory.createAsExpression(
-							toExpression(moduleMetadata),
+							toExpression(moduleMetadata, context.config),
 							ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
 						)
 					]

@@ -1,6 +1,5 @@
 import * as ts               from "typescript";
 import { Config }            from "../config/Config";
-import { PACKAGE_ID }        from "../consts";
 import { DependencyManager } from "../dependencies/DependencyManager";
 import {
 	log,
@@ -13,10 +12,7 @@ import { normalizePath }     from "../utils/normalizePath";
 import { mainVisitor }       from "../visitors/mainVisitor";
 import { Context }           from "./Context";
 
-const InstanceKey: symbol = Symbol.for("tst-reflect.TransformerContext");
-let instance: TransformerContext = (global as any)[InstanceKey] || undefined;
-
-const perfProgramStart = performance.now();
+const perfProgramStart = performance.now(); // TODO: What will this do when transformer instantiated multiple time in one process?
 
 export class TransformerContext
 {
@@ -77,38 +73,8 @@ export class TransformerContext
 	 */
 	public readonly dependencyManager: DependencyManager;
 
-	/**
-	 * Returns TRUE if the TransformerContext has been initiated already; FALSE otherwise.
-	 */
-	static get initiated(): boolean
+	constructor(program: ts.Program, config: Config)
 	{
-		return !!instance;
-	}
-
-	/**
-	 * Get singleton instance of TransformerContext.
-	 */
-	static get instance(): TransformerContext
-	{
-		if (!instance)
-		{
-			throw new Error(PACKAGE_ID + ": TransformerContext has not been initiated yet!");
-		}
-
-		return instance;
-	}
-
-	/**
-	 * Protected constructor.
-	 * @protected
-	 */
-	protected constructor(program: ts.Program, config: Config)
-	{
-		if (new.target !== Activator)
-		{
-			throw new Error("This constructor is protected.");
-		}
-
 		this.config = config;
 		this.program = program;
 		this.typeChecker = program.getTypeChecker();
@@ -120,29 +86,9 @@ export class TransformerContext
 
 		// This will allow deconstruction of the context.
 		this.visitSourceFile = this.visitSourceFile.bind(this);
-	}
-
-	/**
-	 * Init context.
-	 * @param program
-	 * @param config
-	 */
-	static init(program: ts.Program, config: Config)
-	{
-		if (instance !== undefined)
-		{
-			throw new Error("TransformerContext.init called twice!");
-		}
-
-		instance = Reflect.construct(TransformerContext, [
-			program,
-			config
-		], Activator);
-
-		log.log(LogLevel.Info, LogColor.blue, "Detected project root: " + config.projectDir);
 
 		// Write INIT performance
-		instance.perfEntries[0] = performance.now() - perfProgramStart;
+		this.perfEntries[0] = performance.now() - perfProgramStart;
 	}
 
 	/**
@@ -216,10 +162,6 @@ export class TransformerContext
 
 		return visitedSourceFile;
 	}
-}
-
-class Activator extends TransformerContext
-{
 }
 
 function roundPerfTime(time: number)

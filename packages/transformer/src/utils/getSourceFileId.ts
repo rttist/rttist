@@ -2,6 +2,7 @@ import { ModuleIds }                        from "@rttist/core";
 import path                                 from "path";
 import { ModuleIdentifier }                 from "rttist";
 import * as ts                              from "typescript";
+import { Config }                           from "../config/Config";
 import { TransformerContext }               from "../contexts/TransformerContext";
 import { ReflectedSourceFileWithReference } from "../declarations/general";
 import { removeExtension }                  from "./removeExtension";
@@ -10,7 +11,7 @@ const PATH_SEPARATOR_REGEX = /\\/g;
 const NODE_MODULES_PATTERN = "/node_modules/";
 const TS_LIB_PATTERN = "/node_modules/typescript/lib/lib.";
 
-export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
+export function getSourceFileId(sourceFile: ts.SourceFile, transformerContext: TransformerContext): ModuleIdentifier
 {
 	if (isReflectedSourceFile(sourceFile))
 	{
@@ -27,12 +28,12 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 		return ModuleIds.Native;
 	}
 
-	const { packageInfo, projectDir } = TransformerContext.instance.config;
-	const isExternal = TransformerContext.instance.program.isSourceFileFromExternalLibrary(sourceFile);
+	const { packageInfo, projectDir } = transformerContext.config;
+	const isExternal = transformerContext.program.isSourceFileFromExternalLibrary(sourceFile);
 
 	if (isExternal)
 	{
-		const dependencyInfo = TransformerContext.instance.dependencyManager.getDependencyInfo(sourceFile.fileName);
+		const dependencyInfo = transformerContext.dependencyManager.getDependencyInfo(sourceFile.fileName);
 
 		if (dependencyInfo !== undefined)
 		{
@@ -45,7 +46,7 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	}
 
 	// TODO: There will be issue with packages which have strange .d.ts locations.
-	const filePath = getOutPathForSourceFile(sourceFile.fileName);
+	const filePath = getOutPathForSourceFile(sourceFile.fileName, transformerContext.config);
 	const nodeModulesIndex = filePath.lastIndexOf(NODE_MODULES_PATTERN);
 
 	const sourceFileId = removeExtension(
@@ -59,14 +60,12 @@ export function getSourceFileId(sourceFile: ts.SourceFile): ModuleIdentifier
 	return sourceFileId;
 }
 
-function getOutPathForSourceFile(sourceFileName: string): string
+function getOutPathForSourceFile(sourceFileName: string, config: Config): string
 {
 	if (sourceFileName.slice(-5) === ".d.ts")
 	{
 		return sourceFileName;
 	}
-
-	const config = TransformerContext.instance.config;
 
 	return ts.getOutputFileNames({
 		fileNames: [sourceFileName],

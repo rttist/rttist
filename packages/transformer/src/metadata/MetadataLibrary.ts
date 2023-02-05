@@ -9,7 +9,6 @@ import * as ts                           from "typescript";
 import { DependencyManager }             from "../dependencies/DependencyManager";
 import { printTypeDebugInfo }            from "../tracers/printTypeDebugInfo";
 import { getTypeRef }                    from "../utils/getTypeRef";
-import { MetadataNodeFactory }           from "./MetadataNodeFactory";
 import { ModuleMetadata }                from "./ModuleMetadata";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
@@ -24,11 +23,6 @@ export class MetadataLibrary
 		[ModuleMetadata.Native.id, ModuleMetadata.Native],
 		[ModuleMetadata.Invalid.id, ModuleMetadata.Invalid]
 	]);
-
-	/**
-	 * Metadata factory.
-	 */
-	public readonly nodeFactory: MetadataNodeFactory;
 
 	/**
 	 * Manager of package dependencies.
@@ -51,7 +45,6 @@ export class MetadataLibrary
 		}
 
 		this.dependencyManager = dependencyManager;
-		this.nodeFactory = new MetadataNodeFactory();
 	}
 
 	/**
@@ -110,7 +103,7 @@ export class MetadataLibrary
 	): TransformerTypeReference
 	{
 		// Get the type reference before further processing.
-		const typeRef: TransformerTypeReference = getTypeRef(type, nullable, symbol, context.typeChecker);
+		const typeRef: TransformerTypeReference = getTypeRef(type, nullable, symbol, context.transformerContext);
 
 		// If it's native type 
 		if (
@@ -169,7 +162,7 @@ export class MetadataLibrary
 				// return typeRef; // TODO: Test if we can do this -> do not return here but add it to Unknown module.
 			}
 
-			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile);
+			existingModule = ModuleMetadata.createFromSourceFile(typeRef.sourceFile, context);
 			this.modules.set(typeRef.moduleIdentifier, existingModule);
 		}
 

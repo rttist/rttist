@@ -37,7 +37,11 @@ export type ConfigReflectionSection = {
 		encode: "true" | "false" | boolean;
 
 		/**
-		 * Choo
+		 * Choose EmitType.
+		 * @description This options change metadata typelib emit behavior. Typelib will be emitted as TS or JS file.
+		 * Emit type "ts" is usable for Webpack, Angular (which use Webpack) etc.
+		 * It will generate TS file to project root which can be imported and processed as any other TS src file.
+		 * @default js
 		 */
 		emit: "ts" | "js";
 	};
