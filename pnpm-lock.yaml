@@ -63,11 +63,11 @@ importers:
 
   dev/hookyns/2:
     specifiers:
-      hyper-express: ^6.5.5
+      hyper-express: ^6.5.6
       rttist: workspace:*
       tst-reflect-transformer: workspace:*
     dependencies:
-      hyper-express: 6.5.5
+      hyper-express: 6.5.6
       rttist: link:../../../packages/rttist
     devDependencies:
       tst-reflect-transformer: link:../../../packages/transformer
@@ -2054,8 +2054,8 @@ packages:
     engines: {node: '>=10.17.0'}
     dev: true
 
-  /hyper-express/6.5.5:
-    resolution: {integrity: sha512-yXYUiAOo+VdC+qthiXGJcrBFnu1XA79I6k/2SaJg2VW/gKVA84mkF3bXGtt55CAVFmHm97LblT/KV8ZuWTfgxg==}
+  /hyper-express/6.5.6:
+    resolution: {integrity: sha512-ux+9S8tMOyKzjjfjVOhkMZrABvCr05ZLJ9R7rfzvkOl7RqU0NTDhpEnOMNa4YwOyN1t6lm2uqq3DI/qDomMJkQ==}
     dependencies:
       '@types/busboy': 0.3.2
       '@types/express': 4.17.15
