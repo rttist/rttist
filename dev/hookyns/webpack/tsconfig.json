@@ -17,6 +17,12 @@
 			}
 		]
 	},
+	"files": [
+		"index.ts"
+	],
+	"include": [
+		"declarations.d.ts"
+	],
 	"exclude": [
 		"dist"
 	]

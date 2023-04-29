@@ -16,23 +16,23 @@ export default function transform(
 	configParams?: { reflection?: OptionalConfigReflectionSection }
 ): ts.TransformerFactory<ts.SourceFile>
 {
-	// Create configuration object
-	const config = new Config(program, configParams?.reflection || {});
-
-	// Add default plugin
-	config.plugins.unshift(new DefaultPlugin());
-
-	// Set logging level
-	Logger.setLevel(config.logLevel);
-
-	// Log detected project root
-	log.log(LogLevel.Info, LogColor.blue, "Detected project root: " + config.projectDir);
-
-	// Initiate TransformerContext
-	const transformerContext = new TransformerContext(program, config);
-
 	return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> =>
 	{
+		// Create configuration object
+		const config = new Config(program, configParams?.reflection || {});
+
+		// Add default plugin
+		config.plugins.unshift(new DefaultPlugin());
+
+		// Set logging level
+		Logger.setLevel(config.logLevel);
+
+		// Log detected project root
+		log.log(LogLevel.Info, LogColor.blue, "Detected project root: " + config.projectDir);
+
+		// Initiate TransformerContext
+		const transformerContext = new TransformerContext(program, config);
+
 		return createSourceFileVisitor(context, transformerContext);
 	};
 }

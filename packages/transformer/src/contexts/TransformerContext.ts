@@ -78,14 +78,19 @@ export class TransformerContext
 		this.config = config;
 		this.program = program;
 		this.typeChecker = program.getTypeChecker();
-		this.rootFileNames = new Set(program.getRootFileNames().map(normalizePath));
+		
+		const rootFilenames = program.getRootFileNames()
+			.map(normalizePath)
+			.filter(fn => !fn.endsWith(".d.ts"));
+		
+		this.rootFileNames = new Set(rootFilenames);
 
 		this.dependencyManager = new DependencyManager(config);
 		this.metadata = MetadataLibrary.init(this.dependencyManager);
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
 
 		if (config.devMode) {
-			log.debug("Root filenames:\n", ...program.getRootFileNames().map(normalizePath).map(fn => "\t- " + fn));
+			log.debug("Root filenames:", ...rootFilenames.map(fn => "\n\t- " + fn));
 		}
 
 		// This will allow deconstruction of the context.
@@ -132,7 +137,7 @@ export class TransformerContext
 			this._numberOfVisitedRootFileNames++;
 			
 			if (this.config.devMode) {
-				log.debug("number of visited root filenames:", this._numberOfVisitedRootFileNames);
+				log.debug("This is an nth root filename:", this._numberOfVisitedRootFileNames);
 			}
 
 			// If it is last root SourceFile.
