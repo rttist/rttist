@@ -84,6 +84,10 @@ export class TransformerContext
 		this.metadata = MetadataLibrary.init(this.dependencyManager);
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
 
+		if (config.devMode) {
+			log.debug("Root filenames:\n", ...program.getRootFileNames().map(normalizePath).map(fn => "\t- " + fn));
+		}
+
 		// This will allow deconstruction of the context.
 		this.visitSourceFile = this.visitSourceFile.bind(this);
 
@@ -126,6 +130,10 @@ export class TransformerContext
 		if (this.rootFileNames.has(sourceFileNode.fileName))
 		{
 			this._numberOfVisitedRootFileNames++;
+			
+			if (this.config.devMode) {
+				log.debug("number of visited root filenames:", this._numberOfVisitedRootFileNames);
+			}
 
 			// If it is last root SourceFile.
 			if (this._numberOfVisitedRootFileNames === this.rootFileNames.size)
