@@ -29,7 +29,7 @@
 		"rttist": "workspace:*"
 	},
 	"devDependencies": {
-		"@types/node": "^16.0.0",
+		"@types/node": "^18.0.0",
 		"typescript": "^4.8.0"
 	},
 	"repository": {

@@ -22,8 +22,8 @@
 		"rttist": "workspace:*"
 	},
 	"devDependencies": {
-		"tst-reflect-transformer": "workspace:*",
-		"typescript": "^4.8.3",
+		"@rttist/typegen": "workspace:*",
+		"typescript": "4.8.3",
 		"ttypescript": "1.x"
 	}
 }

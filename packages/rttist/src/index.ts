@@ -1,32 +1,27 @@
 // keep order of imports & exports - there are circular dependencies
-import { LazyType }   from "./utils/LazyType";
+import { LazyType } from "./utils/LazyType";
 import { LazyModule } from "./utils/LazyModule";
-import { Type }       from "./Type";
-import { Module }     from "./Module";
-import { Metadata }   from "./Metadata";
+import { Type } from "./Type";
+import { Module } from "./Module";
+import { Metadata } from "./Metadata";
 import "./Reflect";
 
 /** @internal*/
-import {
-	AnyArray,
-	UnknownFunction
-}                     from "./helpers";
+import { AnyArray, UnknownFunction } from "./helpers";
 
-export *                                  from "./enums";
-export *                                  from "./declarations";
-export { Module }                         from "./Module";
-export {
-	Type,
-	NativeTypes
-}                                         from "./Type";
-export *                                  from "./infos";
-export *                                  from "./types";
-export { Metadata }                       from "./Metadata";
-export { getType }                        from "./functions/getType";
+export * from "./enums";
+export * from "./declarations";
+export { Module } from "./Module";
+export { Type, NativeTypes } from "./Type";
+export * from "./infos";
+export * from "./types";
+export { Metadata } from "./Metadata";
+export { getType } from "./functions/getType";
 export { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
-export { constructGeneric }               from "./functions/constructGeneric";
-export { getGenericClass }                from "./functions/getGenericClass";
-export *                                  from "./factories";
+export { constructGeneric } from "./functions/constructGeneric";
+export { getGenericClass } from "./functions/getGenericClass";
+export * from "./factories";
+export * from "./symbols";
 
 LazyType.resolver = Metadata.resolveType.bind(Metadata);
 LazyModule.resolver = Metadata.resolveModule.bind(Metadata);
@@ -70,8 +65,4 @@ Metadata.addType(
 	UnknownFunction
 );
 
-Metadata.addModule(
-	Module.Native,
-	Module.Invalid,
-	Module.Dynamic
-);
+Metadata.addModule(Module.Native, Module.Invalid, Module.Dynamic);

@@ -11,6 +11,6 @@
 		"rttist": "workspace:*"
 	},
 	"devDependencies": {
-		"tst-reflect-transformer": "workspace:*"
+		"@rttist/typegen": "workspace:*"
 	}
 }

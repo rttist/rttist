@@ -1,0 +1,49 @@
+{
+	"name": "@rttist/typegen-plugins-ttypescript",
+	"version": "5.0.0-alpha.0",
+	"description": "Rttist typegen plugin adding support for ttypescript",
+	"main": "dist/index.js",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "tsc",
+		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc",
+		"watch": "tsc --watch"
+	},
+	"files": [
+		"dist/**/*"
+	],
+	"keywords": [
+		"runtime",
+		"types",
+		"reflection",
+		"reflective",
+		"reflect",
+		"typescript",
+		"gettype",
+		"typeof",
+		"typegen",
+		"metadata",
+		"typelib"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^18.0.0",
+		"rimraf": "^3.0.2"
+	},
+	"dependencies": {
+		"@rttist/core": "workspace:^",
+		"@rttist/typegen": "workspace:^",
+		"typescript": "5.x"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rttist/rttist.git",
+		"directory": "packages/plugins/ttypescript"
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
+}

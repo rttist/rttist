@@ -1,11 +1,12 @@
 ﻿packages:
     - 'packages/core'
     - 'packages/rttist'
-    - 'packages/runtime'
-    - 'packages/transformer'
+#    - 'packages/runtime' TODO: This is new thin tst-reflect on top of Rttist
+    - 'packages/typegen'
+#    - 'packages/transformer' TODO: Remove
     - 'tests/'
-    - 'dev/hookyns/1'
+#    - 'dev/hookyns/1'
     - 'dev/hookyns/2'
     - 'dev/hookyns/webpack'
-    - 'dev-packages/pkg1'
-    - 'dev-packages/pkg2-mjs'
+#    - 'dev-packages/pkg1'
+#    - 'dev-packages/pkg2-mjs'

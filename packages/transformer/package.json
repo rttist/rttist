@@ -27,7 +27,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/minimatch": "^3.0.5",
-		"@types/node": "^16.0.0",
+		"@types/node": "^18.0.0",
 		"rimraf": "^3.0.2"
 	},
 	"dependencies": {

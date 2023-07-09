@@ -1,23 +1,31 @@
 {
+	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"module": "NodeNext",
-//		"moduleResolution": "NodeNext",
+		"module": "CommonJS",
+		"moduleResolution": "node",
 		"target": "ESNext",
+		"lib": ["ESNext"],
 //		"module": "CommonJS",
 //		"target": "ESNext",
 		"removeComments": true,
-		"declaration": false,
+//		"declaration": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": ".",
 		"outDir": "dist",
 		"plugins": [
-			{
-				"transform": "tst-reflect-transformer"
-			}
-		]
+//			{
+//				"transform": "tst-reflect-transformer"
+//			}
+		],
+		"types": []
 	},
+	"files": ["index.ts"],
 	"include": [
-		"index.ts"
+		"framework"
+	],
+	"exclude": [
+		"node_modules/**/*",
+		"node_modules"
 	]
 }

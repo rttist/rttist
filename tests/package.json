@@ -5,9 +5,9 @@
 	"scripts": {},
 	"devDependencies": {
 		"@types/jest": "^27.4.0",
-		"@types/node": "^16.0.0",
+		"@types/node": "^18.0.0",
 		"jest": "^27.5.1",
 		"rttist": "workspace:*",
-		"tst-reflect-transformer": "workspace:*"
+		"@rttist/typegen": "workspace:*"
 	}
 }

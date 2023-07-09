@@ -1,24 +1,20 @@
-import type { TypeReference }      from "./declarations";
-import type { Type }                                 from "./Type";
+import type { TypeReference } from "./declarations";
+import { Symbols } from "./symbols";
+import type { Type } from "./Type";
 import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
-import { resolveMethodCallsite }                     from "./functions/resolveMethodCallsite";
-import { invalidTypeGenerator }  from "./functions/invalidTypeGenerator";
-import {
-	FncNames,
-	RTTIST_NAMESPACE
-}                                from "@rttist/core";
-import { createCallsite }          from "./functions/createCallsite";
-import { constructGeneric }               from "./functions/constructGeneric";
+import { resolveMethodCallsite } from "./functions/resolveMethodCallsite";
+import { invalidTypeGenerator } from "./functions/invalidTypeGenerator";
+import { FncNames, RTTIST_NAMESPACE } from "@rttist/core";
+import { createCallsite } from "./functions/createCallsite";
+import { constructGeneric } from "./functions/constructGeneric";
 import { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
-import { getGenericClass }                from "./functions/getGenericClass";
-import { getType }                 from "./functions/getType";
-import { Metadata }                from "./Metadata";
-import { getGlobalThis }           from "./utils/getGlobalThis";
+import { getGenericClass } from "./functions/getGenericClass";
+import { getType } from "./functions/getType";
+import { Metadata } from "./Metadata";
+import { getGlobalThis } from "./utils/getGlobalThis";
 
-declare global
-{
-	namespace Reflect
-	{
+declare global {
+	namespace Reflect {
 		/**
 		 * The static Reflect.construct() method acts like the new operator, but as a function.
 		 * It is equivalent to calling new target(...args). It gives also the added option to specify a different prototype.
@@ -28,7 +24,7 @@ declare global
 		 * @returns A new instance of target (or newTarget, if present), initialized by target as a constructor with the given argumentsList.
 		 */
 		export function construct<TType>(
-			target: { new(...args: any): TType } | Function,
+			target: { new (...args: any): TType } | Function,
 			argumentsList: ArrayLike<any>,
 			newTarget?: Function
 		): TType;
@@ -46,7 +42,7 @@ declare global
 		 * initialized by target as a constructor with the given argumentsList.
 		 */
 		export function constructGeneric<TType = any>(
-			target: { new(...args: any): TType } | Function,
+			target: { new (...args: any): TType } | Function,
 			typeParameters: Array<Type | TypeReference>,
 			argumentsList: ArrayLike<any>,
 			newTarget?: Function
@@ -74,10 +70,7 @@ declare global
 		 * @param classCtor
 		 * @param typeParameters
 		 */
-		export function getGenericClass<T>(
-			classCtor: Function,
-			...typeParameters: Type[]
-		): Function;
+		export function getGenericClass<T>(classCtor: Function, ...typeParameters: Type[]): Function;
 
 		// /**
 		//  * @internal
@@ -103,6 +96,7 @@ let RttistObj;
 getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	getType: getType,
 	resolveType: Metadata.resolveType.bind(Metadata),
+	symbols: Symbols.metadata,
 	[FncNames.getGenericClass]: getGenericClass,
 	[FncNames.constructGeneric]: constructGeneric,
 	[FncNames.getClassTypeParameter]: getClassTypeParameterReference,
@@ -112,7 +106,6 @@ getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	[FncNames.resolveMethodCallsite]: resolveMethodCallsite,
 };
 
-for (let key of Object.keys(RttistObj))
-{
+for (let key of Object.keys(RttistObj)) {
 	(Reflect as any)[key] = RttistObj[key];
 }

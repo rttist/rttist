@@ -1,5 +1,5 @@
 # RTTIST
-<sup><i>Pronounce /ˈɑː(r)tɪst/ the same as Artist.</i> Means Run-Time Type Information System for Typescript.</sup>
+<sup><i>Pronounce /ˈɑː(r)tɪst/ the same like "Artist".</i> Means Run-Time Type Information System for Typescript.</sup>
 
 > Advanced TypeScript runtime reflection system, inspired by the C#'s reflection.
 

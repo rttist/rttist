@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"module": "NodeNext",
+		"target": "es2022",
+		"moduleResolution": "NodeNext",
+		"sourceMap": true,
+		"declaration": false,
+		"stripInternal": true,
+		"strict": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"baseUrl": ".",
+		"isolatedModules": true,
+		"forceConsistentCasingInFileNames": true,
+		"lib": [
+			"es2022"
+		],
+	},
+	"files": [
+		"src/globals.ts",
+		"src/bin.ts",
+		"src/worker.ts"
+	],
+//	"include": [
+//		"src/**/*.ts"
+//	]
+}

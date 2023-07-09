@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"properties": {
+		"metadata": {
+			"description": "Configuration section for the metadata",
+			"type": "object",
+			"properties": {
+				"outDir": {
+					"description": "Path where the metadata should be written to.",
+					"default": "dist/",
+					"type": "string"
+				},
+				"include": {
+					"description": "List of glob patterns matching modules which should be included in metadata.",
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"exclude": {
+					"description": "List of glob patterns matching modules which should be excluded from metadata.",
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"encode": {
+					"description": "Enable metadata encoding. Currently, the base32768 UTF-16 encoding will be used.",
+					"default": "utf8",
+					"type": "boolean"
+				}
+			},
+			"required": ["include"]
+		},
+		"devMode": {
+			"description": "Enable or disable DEBUG mode (progress logging and extra warnings).",
+			"default": false,
+			"type": "boolean"
+		},
+		"logLevel": {
+			"description": "Level of logging.",
+			"default": "info",
+			"type": "string",
+			"enum": ["None", "Trace", "Debug", "Info", "Warning", "Error", "Dev"]
+		}
+	},
+	"required": ["metadata"],
+	"type": "object"
+}

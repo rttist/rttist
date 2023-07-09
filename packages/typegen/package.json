@@ -1,0 +1,61 @@
+{
+	"name": "@rttist/typegen",
+	"version": "0.1.0",
+	"description": "Type generator for RTTIST",
+	"bin": {
+		"typegen": "dist/bin.js"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "tsc",
+		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc"
+	},
+	"files": [
+		"LICENSE",
+		"README.md",
+		"dist/**/*.js"
+	],
+	"keywords": [
+		"type",
+		"types",
+		"declaration",
+		"generator",
+		"runtime",
+		"reflection",
+		"reflective",
+		"reflect",
+		"typescript",
+		"gettype",
+		"typeof",
+		"system",
+		"typegen"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"dependencies": {
+		"@netleaf/extensions-configuration": "^0.5.2",
+		"@rttist/core": "workspace:^",
+		"@swc/core": "^1.3.68",
+		"chokidar": "^3.5.3",
+		"cli-progress": "^3.12.0",
+		"commander": "^11.0.0",
+		"fast-glob": "^3.3.0",
+		"minimatch": "^9.0.3",
+		"typescript": "5.1.6"
+	},
+	"devDependencies": {
+		"@types/cli-progress": "^3.11.0",
+		"@types/micromatch": "^4.0.2",
+		"@types/node": "^18.0.0",
+		"rimraf": "^3.0.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rttist/rttist.git",
+		"directory": "packages/typegen"
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
+}

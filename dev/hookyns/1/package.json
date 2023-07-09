@@ -7,10 +7,9 @@
 	},
 	"dependencies": {
 		"rttist": "workspace:*",
-		"tst-reflect": "workspace:*",
 		"@rttist/dev-pkg1": "workspace:*"
 	},
 	"devDependencies": {
-		"tst-reflect-transformer": "workspace:*"
+		"@rttist/typegen": "workspace:*"
 	}
 }
