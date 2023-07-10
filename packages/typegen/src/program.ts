@@ -1,14 +1,18 @@
+import { FSWatcher } from "chokidar";
 import type { CLI } from "./cli";
 import { cpus } from "os";
 import * as fs from "fs/promises";
 import { Worker } from "worker_threads";
 import { Config, getParsedConfig } from "./config/config";
+import { CacheStats } from "./declarations/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { LogColor, Logger, LogLevel } from "./logging";
 import { resolvePath } from "./utils/path";
 import * as fastGlob from "fast-glob";
 import * as cliProgress from "cli-progress";
 import { MessageType } from "./workers-messaging";
+import * as chokidar from "chokidar";
+import PromiseSource from "promise-cs";
 
 export class Program {
 	// private readonly cliArgs: CommandLineArguments;
@@ -22,6 +26,9 @@ export class Program {
 		start: performance.now(),
 	};
 	// private readonly config: ProgramConfig;
+	private stats: CacheStats = {
+		lastGeneration: new Date(0, 0),
+	};
 
 	constructor(private readonly cli: CLI) {
 		Logger.setGlobalPrefix("@rttist/typegen");
@@ -51,18 +58,24 @@ export class Program {
 		// Make sure that metadata cache directory exists
 		await this.ensureCacheDirectoryExists(config);
 
-		// Get all the source files
-		const fileNames = await this.getFilesNames(config);
+		const completed = new PromiseSource();
+		this.setupWatch(config, completed);
+		await this.loadCachedStats(config);
+		const files = await this.getFilesToRegenerate(config);
 
 		// SPAWN workers
-		const workers = this.spawnWorkers(fileNames, config);
+		const workers = this.spawnWorkers(files, config);
 
 		// Progress bar
 		const progressBar = new cliProgress.SingleBar(
-			{ stream: process.stdout, clearOnComplete: false },
+			{
+				stream: process.stdout,
+				clearOnComplete: false,
+				format: "processing files [{bar}] {percentage}% | {value}/{total}",
+			},
 			cliProgress.Presets.legacy
 		);
-		progressBar.start(fileNames.length, 0);
+		progressBar.start(files.length, 0);
 
 		// Capture initialization time
 		this.performanceEntries.initialization = performance.now();
@@ -81,12 +94,25 @@ export class Program {
 		);
 
 		progressBar.stop();
-
 		this.performanceEntries.completed = performance.now();
-
 		this.logPerformanceInfo(config);
 
-		// await new Promise((resolve) => setTimeout(resolve, 3000));
+		this.stats.lastGeneration = new Date();
+		await this.persistStats(config);
+
+		completed.resolve();
+	}
+
+	private async getFilesToRegenerate(config: Config) {
+		// Get all the source files
+		const allFiles = await this.getSourceFiles(config);
+
+		// Filter out files that have not been modified since last generation
+		const files = config.force
+			? allFiles
+			: allFiles.filter((entry) => !entry.stats || entry.stats.mtime > this.stats.lastGeneration);
+
+		return files.map((entry) => entry.path);
 	}
 
 	private spawnWorkers(fileNames: string[], config: Config) {
@@ -94,10 +120,9 @@ export class Program {
 		const workerFileCount = Math.floor(fileNames.length / cpuCount) || 1;
 
 		const workers = [];
-		// let workersFinished = 0;
 
 		// Visit every sourceFile in the program
-		for (let filesOffset = 0, cpu = 1; filesOffset < fileNames.length; filesOffset += workerFileCount, cpu++) {
+		for (let filesOffset = 0, cpu = 1; filesOffset < fileNames.length; cpu++) {
 			// Get given number of files for this worker; or take the rest if this is the last worker.
 			const files = fileNames.slice(filesOffset, cpu === cpuCount ? undefined : filesOffset + workerFileCount);
 
@@ -105,13 +130,14 @@ export class Program {
 				break;
 			}
 
+			filesOffset += files.length;
+
 			const worker = this.spawn(config, files, this.logger);
 
 			worker.promise
-				.then(() => {
-					// console.log("Worker finished");
-					// workersFinished++;
-				})
+				// .then(() => {
+				// 	// console.log("Worker finished");
+				// })
 				.catch((error) => {
 					this.logger.error("Worker failed.", error);
 				});
@@ -169,13 +195,15 @@ export class Program {
 	 * @param config
 	 * @private
 	 */
-	private async getFilesNames(config: Config) {
+	private async getSourceFiles(config: Config) {
 		return await fastGlob.glob(config.include, {
 			cwd: config.projectRoot,
 			dot: false,
 			onlyFiles: true,
 			ignore: config.exclude,
 			absolute: false,
+			stats: true,
+			followSymbolicLinks: true,
 		});
 	}
 
@@ -184,15 +212,11 @@ export class Program {
 			logger.trace("Spawning worker for files", files);
 		}
 
-		const args = {
-			files: files,
-			config: config,
-			// partName: partName,
-			// compilerOptions: config.compilerOptions,
-		} satisfies WorkerArguments;
-
 		const worker = new Worker(resolvePath(__dirname, "worker.js"), {
-			workerData: args,
+			workerData: {
+				files: files,
+				config: config,
+			} satisfies WorkerArguments,
 		});
 
 		return {
@@ -212,5 +236,91 @@ export class Program {
 				}
 			}),
 		};
+	}
+
+	private setupWatch(config: Config, completedPS: PromiseSource<void>) {
+		if (!config.watch) {
+			return false;
+		}
+
+		const watcher = chokidar.watch(config.include, { ignored: config.exclude, cwd: config.projectRoot });
+		const filesTouchedWhileInitialGeneration = new Set<string>();
+		const state = {
+			completed: false,
+			ready: false,
+		};
+
+		this.registerEventHandlers(watcher, state, filesTouchedWhileInitialGeneration);
+		this.closeOnKill(watcher);
+
+		completedPS.promise.then(() => {
+			state.completed = true;
+
+			this.logger.info("Watching for file changes...");
+
+			if (filesTouchedWhileInitialGeneration.size > 0) {
+				this.logger.info("Files change detected...", filesTouchedWhileInitialGeneration);
+				// TODO: Regenerate metadata for these files
+			}
+		});
+	}
+
+	private registerEventHandlers(
+		watcher: FSWatcher,
+		state: { ready: boolean; completed: boolean },
+		filesTouchedWhileInitialGeneration: Set<string>
+	) {
+		watcher
+			.on("add", (path) => {
+				// Check ready status; all files are "added" on start; maybe bug of chokidar?
+				if (!state.ready) {
+					return;
+				}
+
+				if (!state.completed) {
+					filesTouchedWhileInitialGeneration.add(path);
+					return;
+				}
+
+				// TODO: Regenerate metadata for this file
+			})
+			.on("change", (path) => {
+				if (!state.completed) {
+					filesTouchedWhileInitialGeneration.add(path);
+					return;
+				}
+
+				// TODO: Regenerate metadata for this file
+			})
+			.on("ready", () => {
+				state.ready = true;
+			});
+	}
+
+	private closeOnKill(watcher: FSWatcher) {
+		process.on("SIGINT", () => {
+			watcher.close().catch(() => {});
+		});
+
+		process.on("SIGTERM", () => {
+			watcher.close().catch(() => {});
+		});
+	}
+
+	private async persistStats(config: Config) {
+		const statsPath = resolvePath(config.projectRoot, ".metadata", "stats.json");
+		await fs.writeFile(statsPath, JSON.stringify(this.stats, null, 4), "utf-8");
+	}
+
+	private async loadCachedStats(config: Config): Promise<void> {
+		const statsPath = resolvePath(config.projectRoot, ".metadata", "stats.json");
+		const stats = await fs.readFile(statsPath, "utf-8");
+
+		try {
+			this.stats = JSON.parse(stats) as CacheStats;
+		} catch (error) {
+			this.logger.error("Failed to parse stats file.", error);
+			throw error;
+		}
 	}
 }

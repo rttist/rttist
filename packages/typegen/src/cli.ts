@@ -11,6 +11,8 @@ export class CLI {
 			"path to project root directory where the reflect config and the tsconfig.json files are. Path can be absolute or relative to cwd.",
 			"."
 		);
+
+		program.option("-f, --force", "force generation of all file.");
 		// program.option(
 		// 	"-c, --config <path>",
 		// 	"path to Rttist config file. Can be absolute or relative to tsconfig.json.",
@@ -29,6 +31,7 @@ export class CLI {
 			projectRoot: projectDir,
 			// config: resolvePath(dirname(tsconfigPath), opts.config),
 			watch: opts?.watch ?? false,
+			force: opts?.force ?? false,
 		};
 	}
 }

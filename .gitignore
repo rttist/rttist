@@ -11,6 +11,7 @@ packages/*/dist
 **/tsconfig.tsbuildinfo
 reflection.meta.js
 reflection.meta.ts
+.metadata
 
 !jest.config.js
 

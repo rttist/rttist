@@ -119,6 +119,9 @@ importers:
       minimatch:
         specifier: ^9.0.3
         version: 9.0.3
+      promise-cs:
+        specifier: ^1.0.2
+        version: 1.0.2
       typescript:
         specifier: 5.1.6
         version: 5.1.6
@@ -3831,6 +3834,10 @@ packages:
   /process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
     dev: true
+
+  /promise-cs@1.0.2:
+    resolution: {integrity: sha512-1bPffb88F+KSi2K7fJN4ZFkS74yDyf8CJAXNiiPx9D5MpR2p1m36ULoYIA3k3fMibsGJJILJZxfL7yRbwLwhcg==}
+    dev: false
 
   /prompts@2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}

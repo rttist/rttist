@@ -21,31 +21,5 @@ export function getPackageInfo(root: string /*, recursiveCheck: boolean = false*
 		};
 	} catch (e) {
 		throw new Error(`Unable to read package.json in ${root}.\n${e instanceof Error ? e.message : e}`);
-		// if (path.parse(root).root === root)
-		// {
-		// 	// as any -> internal
-		// 	return {
-		// 		packageRoot: undefined as any,
-		// 		name: UNKNOWN_PACKAGE_NAME,
-		// 		packageJson: {}
-		// 	};
-		// }
-		//
-		// // Try to get parent folder package
-		// const packageInfo = getPackageInfo(path.normalize(path.join(root, "..")), true);
-		//
-		// if (packageInfo.packageRoot === undefined)
-		// {
-		// 	// If this is recursive check, return undefined root as received from parent folder check
-		// 	if (recursiveCheck)
-		// 	{
-		// 		return packageInfo;
-		// 	}
-		//
-		// 	// This is top level check; return original root passed as argument
-		// 	return { packageRoot: root, name: packageInfo.name, packageJson: packageInfo.packageJson };
-		// }
-		//
-		// return packageInfo;
 	}
 }
