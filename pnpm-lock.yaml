@@ -116,12 +116,18 @@ importers:
       fast-glob:
         specifier: ^3.3.0
         version: 3.3.0
+      micromatch:
+        specifier: ^4.0.5
+        version: 4.0.5
       minimatch:
         specifier: ^9.0.3
         version: 9.0.3
       promise-cs:
         specifier: ^1.0.2
         version: 1.0.2
+      rttist:
+        specifier: workspace:^
+        version: link:../rttist
       typescript:
         specifier: 5.1.6
         version: 5.1.6

@@ -1,9 +1,7 @@
-import * as ts         from "typescript";
+import * as ts from "typescript";
 
-export function getDecorators(node: ts.Declaration): readonly ts.Decorator[] | undefined
-{
-	if (!ts.canHaveDecorators(node))
-	{
+export function getDecorators(node: ts.Declaration): readonly ts.Decorator[] | undefined {
+	if (!ts.canHaveDecorators(node)) {
 		return undefined;
 	}
 

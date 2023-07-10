@@ -1,9 +1,6 @@
 import * as ts from "typescript";
-import {
-	TypeKind,
-	NativeTypeKind
-} from "rttist";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import { TypeKind, NativeTypeKind } from "rttist";
+import { TransformerTypeReference } from "../metadata/transformer-type-reference";
 
 /**
  * @param sourceFileId
@@ -14,13 +11,11 @@ export function getWellKnownTypeRef(
 	sourceFileId: string,
 	type: ts.Type,
 	symbol: ts.Symbol
-): TransformerTypeReference | undefined
-{
+): TransformerTypeReference | undefined {
 	return NameMap[sourceFileId + ":" + symbol.escapedName];
 }
 
-function ct(module: string, name: string, kind: NativeTypeKind)
-{
+function ct(module: string, name: string, kind: NativeTypeKind) {
 	return new TransformerTypeReference(module, name, kind);
 }
 

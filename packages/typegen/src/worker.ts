@@ -2,6 +2,8 @@ import * as ts from "typescript";
 import { workerData, parentPort } from "worker_threads";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { Logger } from "./logging";
+import { TransformerContext } from "./transformer/contexts/transformer-context";
+import { createSourceFileVisitor } from "./transformer/visitors/sourcefile-visitor";
 import { resolvePath } from "./utils/path";
 import { MessageType } from "./workers-messaging";
 // import { Config }          from "./transformer/config/Config";
@@ -30,6 +32,9 @@ const options: ts.CompilerOptions = {
 	isolatedModules: true,
 	noLib: true,
 	noResolve: true,
+	declaration: false,
+	declarationMap: false,
+	sourceMap: false,
 
 	// skipLibCheck: true,
 	// skipDefaultLibCheck: true,
@@ -46,10 +51,22 @@ host.writeFile = (fileName: string, contents: string) => {
 // Prepare and emit the d.ts files
 const program = ts.createProgram(files, options, host);
 
+// let checker = program.getTypeChecker();
+
+const transformerContext = new TransformerContext(program, workerArguments.config);
 // console.log(program.getSourceFiles().map((f) => f.fileName));
 
-program.emit(undefined, undefined, undefined, true, {
-	before: [],
+program.emit(undefined, undefined, undefined, false, {
+	before: [
+		(context) => {
+			return createSourceFileVisitor(context, transformerContext);
+
+			// return (sourceFile: ts.SourceFile) => {
+			// 	console.log("Before sourceFile", sourceFile.fileName);
+			// 	return sourceFile;
+			// };
+		},
+	],
 	// after: [
 	//
 	// ],
@@ -57,6 +74,8 @@ program.emit(undefined, undefined, undefined, true, {
 	//
 	// ]
 });
+
+console.log("Worker finished...");
 
 // // Create configuration object
 // const config = new Config(program, {});
@@ -75,36 +94,35 @@ program.emit(undefined, undefined, undefined, true, {
 
 // const visitor = createSourceFileVisitor(context, transformerContext);
 
-const sourceFiles = program.getSourceFiles();
-let checker = program.getTypeChecker();
-
-// const projectFilesSet = program.getRootFileNames().reduce(
-// 	(set, fileName) => {
-// 		set.add(fileName);
-// 		return set;
-// 	},
-// 	new Set<string>
-// );
-const projectFilesSet = new Set<string>(workerArguments.files);
-
-// console.log("Source files: ", sourceFiles.length);
-
-for (let sourceFile of sourceFiles) {
-	if (projectFilesSet.has(sourceFile.fileName)) {
-		// console.log("Worker processing file:", sourceFile.fileName);
-
-		// ts.visitNode(sourceFile, node => {
-		//
-		//
-		// 	return node;
-		// });
-
-		if (sourceFile.isDeclarationFile) {
-		} else {
-			// ts.create
-		}
-	}
-}
+// const sourceFiles = program.getSourceFiles();
+//
+// // const projectFilesSet = program.getRootFileNames().reduce(
+// // 	(set, fileName) => {
+// // 		set.add(fileName);
+// // 		return set;
+// // 	},
+// // 	new Set<string>
+// // );
+// const projectFilesSet = new Set<string>(workerArguments.files);
+//
+// // console.log("Source files: ", sourceFiles.length);
+//
+// for (let sourceFile of sourceFiles) {
+// 	if (projectFilesSet.has(sourceFile.fileName)) {
+// 		// console.log("Worker processing file:", sourceFile.fileName);
+//
+// 		// ts.visitNode(sourceFile, node => {
+// 		//
+// 		//
+// 		// 	return node;
+// 		// });
+//
+// 		if (sourceFile.isDeclarationFile) {
+// 		} else {
+// 			// ts.create
+// 		}
+// 	}
+// }
 
 // const voidCallback = () => {};
 // const emptyFunction = (...args: any[]) => {};

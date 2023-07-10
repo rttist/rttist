@@ -1,23 +1,18 @@
-import * as ts                      from "typescript";
-import {
-	TypeKind,
-	NativeTypeKind
-}                                   from "rttist";
-import { ModuleIds }                from "@rttist/core";
-import { TransformerTypeReference } from "../declarations/TransformerTypeReference";
+import * as ts from "typescript";
+import { TypeKind, NativeTypeKind } from "rttist";
+import { ModuleIds } from "@rttist/core";
+import { TransformerTypeReference } from "../metadata/transformer-type-reference";
 
 /**
  * Return TypeProperties whether the type is a complex native type, such as Uint8Array etc.
  * @param type
  * @param symbol
  */
-export function getComplexNativeTypeRef(type: ts.Type, symbol: ts.Symbol): TransformerTypeReference | undefined
-{
-	return NameMap[symbol.escapedName!];
+export function getComplexNativeTypeRef(type: ts.Type, symbol: ts.Symbol): TransformerTypeReference | undefined {
+	return NameMap[symbol.escapedName.toString()];
 }
 
-function ct(name: string, kind: NativeTypeKind)
-{
+function ct(name: string, kind: NativeTypeKind) {
 	return new TransformerTypeReference(ModuleIds.Native, name, kind);
 }
 

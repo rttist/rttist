@@ -14,6 +14,8 @@ import { MessageType } from "./workers-messaging";
 import * as chokidar from "chokidar";
 import PromiseSource from "promise-cs";
 
+const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
+
 export class Program {
 	// private readonly cliArgs: CommandLineArguments;
 	// private readonly tsConfig: ts.ParsedCommandLine;
@@ -317,7 +319,16 @@ export class Program {
 		const stats = await fs.readFile(statsPath, "utf-8");
 
 		try {
-			this.stats = JSON.parse(stats) as CacheStats;
+			this.stats = JSON.parse(stats, function (key, value) {
+				if (typeof value === "string") {
+					let match = value.match(JSON_DATE_REGEX);
+
+					if (match) {
+						return new Date(match[0]);
+					}
+				}
+				return value;
+			}) as CacheStats;
 		} catch (error) {
 			this.logger.error("Failed to parse stats file.", error);
 			throw error;

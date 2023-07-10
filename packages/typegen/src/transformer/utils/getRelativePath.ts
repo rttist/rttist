@@ -1,11 +1,9 @@
-import path from "path";
+import * as path from "path";
 
-export function getRelativePath(source: string, destination: string): string
-{
+export function getRelativePath(source: string, destination: string): string {
 	let relativePath = path.relative(source, destination).replace(/\\/g, "/");
 
-	if (relativePath.charAt(0) !== ".")
-	{
+	if (relativePath.charAt(0) !== ".") {
 		relativePath = "./" + relativePath;
 	}
 

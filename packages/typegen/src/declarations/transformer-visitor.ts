@@ -1,0 +1,7 @@
+import * as ts from "typescript";
+import { Context } from "../transformer/contexts/context";
+
+/**
+ * @internal
+ */
+export type TransformerVisitor = (node: ts.Node, context: Context) => ts.VisitResult<ts.Node>;
