@@ -31,19 +31,16 @@ export type Config = {
 
 	readonly include: string[];
 	readonly exclude: string[];
-	// readonly include: RegExp[];
-	// readonly exclude: RegExp[];
+
 	readonly dependencyResolution: ConfigReflectionSection["dependencyResolution"];
 
 	// public readonly plugins: Plugin[];
-
-	// public readonly projectDir: string;
-	// public readonly rootDir: string;
+	readonly tsRootDir: string;
 	readonly projectRoot: string;
 	readonly outDir: string;
+	readonly cacheDir: string;
 	readonly packageInfo: PackageInfo;
 	readonly encode: boolean;
-	// public readonly emit: EmitType;
 
 	// public readonly metadataIndexPath: string;
 	// public readonly metadataTypelibPath: string;
@@ -54,7 +51,6 @@ export type Config = {
 	// public readonly metadataTypelibSourcePath: string;
 
 	readonly compilerOptions: ts.CompilerOptions;
-	// public readonly parsedCommandLine?: ts.ParsedCommandLine;
 	readonly moduleResolution: ts.ModuleResolutionKind;
 	readonly module: ts.ModuleKind;
 	readonly strictNullChecks: boolean;
@@ -62,7 +58,7 @@ export type Config = {
 
 export async function getParsedConfig(cliArguments: CommandLineArguments) {
 	const root: IRootConfiguration<ConfigReflectionSection> = await createBuilder(cliArguments.projectRoot).build();
-	return createConfig(new Logger("Config"), cliArguments, root, getPackageInfo(cliArguments.projectRoot));
+	return createConfig(cliArguments, root, getPackageInfo(cliArguments.projectRoot));
 }
 
 function createBuilder(configRoot: string /*, transformerConfigSection: OptionalConfigReflectionSection*/) {
@@ -77,7 +73,6 @@ function createBuilder(configRoot: string /*, transformerConfigSection: Optional
 }
 
 function createConfig(
-	logger: Logger,
 	commandLineArguments: CommandLineArguments,
 	reflectionConfig: IRootConfiguration<ConfigReflectionSection>,
 	packageInfo: PackageInfo
@@ -89,14 +84,18 @@ function createConfig(
 
 	return {
 		packageInfo: packageInfo,
-		projectRoot: projectRoot,
+
+		projectRoot: resolvePath(projectRoot),
+		tsRootDir: resolvePath(tsParsedCommandLine.options.rootDir ?? projectRoot),
+		cacheDir: resolvePath(commandLineArguments.projectRoot, ".metadata"),
+		outDir: resolvePath(commandLineArguments.projectRoot, metadataConfig.get("outDir")!),
 
 		watch: commandLineArguments.watch,
 		force: commandLineArguments.force,
 
-		outDir: resolvePath(commandLineArguments.projectRoot, metadataConfig.get("outDir")!),
 		include: metadataConfig.get("include")!,
-		exclude: metadataConfig.get("exclude") ?? [], // TODO: Check if it must be fixed because of relative paths
+		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata"]), // TODO: Check if it must be fixed because of relative paths
+
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
 
 		// TS OPTIONS
@@ -120,12 +119,6 @@ function createConfig(
 		// 		? EmitType.TypeScript
 		// 		: EmitType.JavaScript;
 
-		// INDEX path
-		// this.metadataIndexPath = path.join(
-		// 	this.outDir,
-		// 	metadataConfig.get("indexPath") ?? DefaultConfiguration.metadata.indexPath
-		// );
-
 		// TYPELIB path
 		// const typeLibPath = metadataConfig.get("path")!;
 		// this.metadataTypelibPath = path.join(this.outDir, typeLibPath);
@@ -145,27 +138,27 @@ function toRegex(pattern: string, logger: Logger): RegExp {
 	return regex;
 }
 
-/**
- * Returns a list of exclude regexes.
- * @param excludes
- * @param projectRoot
- * @param logger
- */
-function createExcludePatterns<TConfig, TVal, TSection>(
-	excludes: string[] | undefined,
-	projectRoot: string,
-	logger: Logger
-): RegExp[] {
-	return (excludes ?? []).map((pattern) => {
-		if (pattern.startsWith("./")) {
-			pattern = (projectRoot.endsWith("/") ? projectRoot.slice(0, -1) : projectRoot) + "/" + pattern.slice(2);
-		}
-
-		return toRegex(pattern, logger);
-	});
-	// Exclude typelib from sources.
-	// .concat([this.getTypelibSourceRegex()])
-}
+// /**
+//  * Returns a list of exclude regexes.
+//  * @param excludes
+//  * @param projectRoot
+//  * @param logger
+//  */
+// function createExcludePatterns<TConfig, TVal, TSection>(
+// 	excludes: string[] | undefined,
+// 	projectRoot: string,
+// 	logger: Logger
+// ): RegExp[] {
+// 	return (excludes ?? []).map((pattern) => {
+// 		if (pattern.startsWith("./")) {
+// 			pattern = (projectRoot.endsWith("/") ? projectRoot.slice(0, -1) : projectRoot) + "/" + pattern.slice(2);
+// 		}
+//
+// 		return toRegex(pattern, logger);
+// 	});
+// 	// Exclude typelib from sources.
+// 	// .concat([this.getTypelibSourceRegex()])
+// }
 
 function getModuleResolutionKind(options: ts.CompilerOptions) {
 	return (

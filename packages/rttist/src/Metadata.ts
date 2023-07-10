@@ -1,42 +1,33 @@
-import type {
-	ModuleIdentifier,
-	ModuleReference,
-	TypeIdentifier,
-	TypeReference
-}                                   from "./declarations";
-import { ModuleIds }                from "@rttist/core";
+import { ModuleMetadata } from "./declarations";
+import type { ModuleIdentifier, ModuleReference, TypeIdentifier, TypeReference } from "./declarations";
+import { ModuleIds } from "@rttist/core";
 import { resolveSingletonInstance } from "./helpers";
-import { Module }                   from "./Module";
-import {
-	NativeTypes,
-	Type
-}                                   from "./Type";
+import { Module } from "./Module";
+import { NativeTypes, Type } from "./Type";
 
-class MetadataLibrary
-{
+export class MetadataLibrary {
 	private readonly modules: Map<ModuleIdentifier, Module> = new Map<ModuleIdentifier, Module>();
 	private readonly types: Map<TypeIdentifier, Type> = new Map<TypeIdentifier, Type>();
+
+	addMetadata(moduleMetadata: ModuleMetadata, stripInternals: boolean) {
+		// TODO: Implement stripping of internals
+		this.addModule(new Module(moduleMetadata));
+	}
 
 	/**
 	 * Add Module with its Types to the Metadata.
 	 * @param modules
 	 */
-	addModule(...modules: Module[]): void
-	{
-		for (let module of modules)
-		{
+	addModule(...modules: Module[]): void {
+		for (let module of modules) {
 			// noinspection SuspiciousTypeOfGuard
-			if (!(module instanceof Module))
-			{
+			if (!(module instanceof Module)) {
 				throw new Error("Given module is not an instance of the Module class.");
 			}
 
-			if (module.id !== ModuleIds.Native && module.id !== ModuleIds.Invalid && this.modules.has(module.id))
-			{
+			if (module.id !== ModuleIds.Native && module.id !== ModuleIds.Invalid && this.modules.has(module.id)) {
 				throw new Error(`Module with id '${module.id}' already exists.`);
-			}
-			else
-			{
+			} else {
 				this.modules.set(module.id, module);
 			}
 
@@ -49,25 +40,19 @@ class MetadataLibrary
 	 * Add Types to the Metadata.
 	 * @param types
 	 */
-	addType(...types: Type[]): void
-	{
-		for (let type of types)
-		{
+	addType(...types: Type[]): void {
+		for (let type of types) {
 			// noinspection SuspiciousTypeOfGuard
-			if (!(type instanceof Type))
-			{
+			if (!(type instanceof Type)) {
 				throw new Error("Given type is not an instance of the Type class.");
 			}
 
-			if (!type.id)
-			{
+			if (!type.id) {
 				throw new Error("Given type has invalid id.");
 			}
 
-			if (this.types.has(type.id))
-			{
-				if (type.id.slice(0, ModuleIds.Native.length) === ModuleIds.Native)
-				{
+			if (this.types.has(type.id)) {
+				if (type.id.slice(0, ModuleIds.Native.length) === ModuleIds.Native) {
 					continue;
 				}
 
@@ -84,12 +69,9 @@ class MetadataLibrary
 	 * @param predicate
 	 * @returns {Type | undefined}
 	 */
-	findType(predicate: (type: Type) => boolean): Type | undefined
-	{
-		for (const [_, type] of this.types)
-		{
-			if (predicate(type))
-			{
+	findType(predicate: (type: Type) => boolean): Type | undefined {
+		for (const [_, type] of this.types) {
+			if (predicate(type)) {
 				return type;
 			}
 		}
@@ -100,8 +82,7 @@ class MetadataLibrary
 	/**
 	 * Returns all the Types contained in the Metadata.
 	 */
-	getTypes(): Type[]
-	{
+	getTypes(): Type[] {
 		return Array.from(this.types.values());
 	}
 
@@ -111,12 +92,9 @@ class MetadataLibrary
 	 * @param predicate
 	 * @returns {Module | undefined}
 	 */
-	findModule(predicate: (module: Module) => boolean): Module | undefined
-	{
-		for (const [_, module] of this.modules)
-		{
-			if (predicate(module))
-			{
+	findModule(predicate: (module: Module) => boolean): Module | undefined {
+		for (const [_, module] of this.modules) {
+			if (predicate(module)) {
 				return module;
 			}
 		}
@@ -127,8 +105,7 @@ class MetadataLibrary
 	/**
 	 * Returns all Modules contained in Metadata.
 	 */
-	getModules(): Module[]
-	{
+	getModules(): Module[] {
 		return Array.from(this.modules.values());
 	}
 
@@ -136,19 +113,15 @@ class MetadataLibrary
 	 * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
 	 * @param reference
 	 */
-	resolveType(reference: TypeReference): Type
-	{
-		if (!reference)
-		{
+	resolveType(reference: TypeReference): Type {
+		if (!reference) {
 			throw new Error("Invalid type reference.");
 		}
 
-		if (typeof (reference) === "object")
-		{
+		if (typeof reference === "object") {
 			const nativeType: Type | undefined = NativeTypes[reference[0]];
 
-			if (nativeType)
-			{
+			if (nativeType) {
 				return nativeType;
 			}
 
@@ -163,10 +136,8 @@ class MetadataLibrary
 	 * Returns a Module instance identified by the reference. Returns Module.Unknown if no Module found.
 	 * @param reference
 	 */
-	resolveModule(reference: ModuleReference): Module
-	{
-		if (!reference)
-		{
+	resolveModule(reference: ModuleReference): Module {
+		if (!reference) {
 			throw new Error("Invalid module reference.");
 		}
 

@@ -15,7 +15,7 @@ export { Module } from "./Module";
 export { Type, NativeTypes } from "./Type";
 export * from "./infos";
 export * from "./types";
-export { Metadata } from "./Metadata";
+export { Metadata, MetadataLibrary } from "./Metadata";
 export { getType } from "./functions/getType";
 export { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
 export { constructGeneric } from "./functions/constructGeneric";

@@ -2,7 +2,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as ts from "typescript";
 import { Config } from "../../config/config";
-import { dirname, resolvePath } from "../../utils/path";
+import { dirname, normalizePath, relativePath, resolvePath } from "../../utils/path";
+import { resolveSourceFileCachePath } from "../../utils/resolve-sourcefile-cache-path";
 import { DependencyManager } from "../dependencies/dependency-manager";
 import { getSourceFileId } from "../getSourceFileId";
 import { MetadataLibrary } from "../metadata/metadata-library";
@@ -52,15 +53,15 @@ export class TransformerContext {
 	//  */
 	// private _numberOfVisitedRootFileNames = 0;
 
-	/**
-	 * TypeScript Program.
-	 */
-	public readonly program: ts.Program;
-
-	/**
-	 * Configuration object.
-	 */
-	public readonly config: Config;
+	// /**
+	//  * TypeScript Program.
+	//  */
+	// public readonly program: ts.Program;
+	//
+	// /**
+	//  * Configuration object.
+	//  */
+	// public readonly config: Config;
 
 	/**
 	 * TypeScript type checker.
@@ -77,9 +78,13 @@ export class TransformerContext {
 	 */
 	public readonly dependencyManager: DependencyManager;
 
-	constructor(program: ts.Program, config: Config) {
-		this.config = config;
-		this.program = program;
+	constructor(
+		public readonly program: ts.Program,
+		public readonly config: Config,
+		private readonly writeFileCallback: (filename: string) => void
+	) {
+		// this.config = config;
+		// this.program = program;
 		this.typeChecker = program.getTypeChecker();
 
 		// const rootFilenames = program.getRootFileNames()
@@ -128,23 +133,28 @@ export class TransformerContext {
 
 		this.perfEntries.sourceFiles.push(performance.now() - sourceFileStart);
 
-		const relativeFilePath = path.relative(this.config.projectRoot, sourceFileNode.fileName);
-		const filePath = resolvePath(this.config.projectRoot, ".metadata", relativeFilePath);
+		// const relativeFilePath = path.relative(this.config.projectRoot, sourceFileNode.fileName); // TODO: Should be probably relative to TS rootDir
+		// const filePath = resolvePath(this.config.cacheDir, relativeFilePath);
+		const filePath = resolveSourceFileCachePath(sourceFileNode.fileName, this.config);
+		const fileMetadataDirname = dirname(filePath);
 
-		fs.mkdirSync(dirname(filePath), { recursive: true });
+		fs.mkdirSync(fileMetadataDirname, { recursive: true });
 		fs.writeFileSync(
 			filePath,
-			`
-export function addMetadata(library: any) {
-	library.addModule(
-		"${getSourceFileId(sourceFileNode, this)}",
-		[
-		
-		]
-	);
+			`import { MetadataLibrary } from "rttist";
+export function add(library: MetadataLibrary, stripInternals: boolean = false) {
+	library.addMetadata({
+		id: "${getSourceFileId(sourceFileNode, this)}",
+		name: "${sourceFileNode.moduleName ?? "undefined"}",
+		path: "",
+		import: () => import("${normalizePath(relativePath(fileMetadataDirname, sourceFileNode.fileName))}"),
+		types: [],
+	}, stripInternals);
 }`,
 			"utf8"
 		);
+
+		this.writeFileCallback(sourceFileNode.fileName);
 
 		return sourceFileNode;
 	}

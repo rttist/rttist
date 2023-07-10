@@ -43,7 +43,7 @@ function writeToConsole(
 export class Logger {
 	private readonly contextSuffix: string;
 	private static logLevel: number;
-	private static globalPrefix: string;
+	private static globalPrefix?: string;
 
 	constructor(
 		private readonly prefix: string,
@@ -76,7 +76,7 @@ export class Logger {
 		writeToConsole(
 			level,
 			COLOR_MAP[level],
-			`(${Logger.globalPrefix}) ${this.prefix} -`,
+			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,
 			this.contextSuffix,
 			argsCallback()
 		);
@@ -93,7 +93,13 @@ export class Logger {
 			return;
 		}
 
-		writeToConsole(level, color, `(${Logger.globalPrefix}) ${this.prefix} -`, this.contextSuffix, args);
+		writeToConsole(
+			level,
+			color,
+			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,
+			this.contextSuffix,
+			args
+		);
 	}
 
 	/**

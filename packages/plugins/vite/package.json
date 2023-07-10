@@ -30,7 +30,7 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^18.0.0",
+		"@types/node": "^16.0.0",
 		"rimraf": "^3.0.2"
 	},
 	"dependencies": {

@@ -1,4 +1,3 @@
-import path from "path";
 import * as $path from "path";
 
 export function dirname(path: string) {
@@ -10,5 +9,9 @@ export function resolvePath(...paths: string[]) {
 }
 
 export function normalizePath(pathToNormalize: string) {
-	return path.normalize(pathToNormalize).replace(/\\/g, "/");
+	return $path.normalize(pathToNormalize).replace(/\\/g, "/");
+}
+
+export function relativePath(from: string, to: string) {
+	return $path.relative(from, to);
 }

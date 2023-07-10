@@ -3,6 +3,7 @@
     - 'packages/rttist'
 #    - 'packages/runtime' TODO: This is new thin tst-reflect on top of Rttist
     - 'packages/typegen'
+    - 'packages/plugins/vite'
 #    - 'packages/transformer' TODO: Remove
     - 'tests/'
 #    - 'dev/hookyns/1'
