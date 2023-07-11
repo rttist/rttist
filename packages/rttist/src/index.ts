@@ -22,6 +22,7 @@ export { constructGeneric } from "./functions/constructGeneric";
 export { getGenericClass } from "./functions/getGenericClass";
 export * from "./factories";
 export * from "./symbols";
+export { ModuleImporter } from "./ModuleImporter";
 
 LazyType.resolver = Metadata.resolveType.bind(Metadata);
 LazyModule.resolver = Metadata.resolveModule.bind(Metadata);

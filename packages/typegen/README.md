@@ -23,3 +23,4 @@ Use `--help` for more information.
     ```
     So we can call it multiple times and it will add the metadata only to the given library, so there can be more libraries at runtime with different scopes.
     This is required for solving `stripInternals`. End-user project and every package will have custom library excluding internals of 3rd parties.
+- To speed thinks up, keep list of all TS files and its moduleIds in memory.

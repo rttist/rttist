@@ -1,15 +1,11 @@
-import type {
-	AnyTypeMetadata,
-	ModuleIdentifier,
-	ModuleMetadata
-} from "./declarations";
-import { TypeFactory }     from "./factories";
-import type { Type }       from "./Type";
-import { ModuleIds }       from "@rttist/core";
+import type { AnyTypeMetadata, ModuleIdentifier, ModuleMetadata } from "./declarations";
+import { TypeFactory } from "./factories";
+import { ModuleImporter } from "./ModuleImporter";
+import type { Type } from "./Type";
+import { ModuleIds } from "@rttist/core";
 import { LazyModuleArray } from "./utils/LazyModuleArray";
 
-export class Module
-{
+export class Module {
 	/**
 	 * Module for all the native types.
 	 */
@@ -48,49 +44,46 @@ export class Module
 	/**
 	 * Module identifier.
 	 */
-	get id(): ModuleIdentifier
-	{
+	get id(): ModuleIdentifier {
 		return this._id;
 	}
 
 	/**
 	 * @param initializer
 	 */
-	constructor(initializer: ModuleMetadata)
-	{
+	constructor(initializer: ModuleMetadata) {
 		this._id = initializer.id;
-		this._import = initializer.import ?? (() => Promise.resolve(undefined));
+		this._import = initializer.import ?? (() => ModuleImporter.import(initializer.id));
 		this.name = initializer.name;
 		this.path = initializer.path;
 		this._childrenRefs = new LazyModuleArray(initializer.children || []);
-		this._types = Object.freeze((initializer.types || []).map(typeMetadata => {
-			(typeMetadata as any).module = initializer.id;
-			return TypeFactory.create(typeMetadata as AnyTypeMetadata);
-		}));
+		this._types = Object.freeze(
+			(initializer.types || []).map((typeMetadata) => {
+				(typeMetadata as any).module = initializer.id;
+				return TypeFactory.create(typeMetadata as AnyTypeMetadata);
+			})
+		);
 	}
 
 	/**
 	 * Returns array of modules required by this Module.
 	 * @description These are all the imported modules.
 	 */
-	getChildren(): ReadonlyArray<Module>
-	{
+	getChildren(): ReadonlyArray<Module> {
 		return this._childrenRefs.modules;
 	}
 
 	/**
 	 * Returns array of types from the module.
 	 */
-	getTypes(): ReadonlyArray<Type>
-	{
+	getTypes(): ReadonlyArray<Type> {
 		return this._types;
 	}
 
 	/**
 	 * Imports module and returns exported object.
 	 */
-	import(): Promise<undefined | { [exportName: string]: any }>
-	{
+	import(): Promise<undefined | { [exportName: string]: any }> {
 		return this._import();
 	}
 }
