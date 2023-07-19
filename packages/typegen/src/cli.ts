@@ -1,6 +1,6 @@
 import { program } from "commander";
 import { CommandLineArguments } from "./declarations/command-line-arguments";
-import { dirname, resolvePath } from "./utils/path";
+import { resolvePath } from "./lib/utils/path";
 
 export class CLI {
 	constructor() {

@@ -6,8 +6,14 @@ import { Module } from "./Module";
 import { NativeTypes, Type } from "./Type";
 
 export class MetadataLibrary {
-	private readonly modules: Map<ModuleIdentifier, Module> = new Map<ModuleIdentifier, Module>();
-	private readonly types: Map<TypeIdentifier, Type> = new Map<TypeIdentifier, Type>();
+	private readonly modules = new Map<ModuleIdentifier, Module>();
+	private readonly types = new Map<TypeIdentifier, Type>();
+
+	/**
+	 * Map of aliases - mapping type identifiers to type identifiers.
+	 * Aliases here means different identifier for the same type because of reexports; it's not TS aliases.
+	 */
+	private readonly aliases = new Map<TypeIdentifier, TypeIdentifier>();
 
 	addMetadata(moduleMetadata: ModuleMetadata, stripInternals: boolean) {
 		// TODO: Implement stripping of internals
@@ -61,6 +67,14 @@ export class MetadataLibrary {
 
 			this.types.set(type.id, type);
 		}
+	}
+
+	addAliases(aliases: { [alias: TypeIdentifier]: TypeIdentifier }) {
+		Object.entries(aliases).forEach(([alias, target]) => {
+			this.aliases.set(alias, target);
+		});
+
+		// TODO: maybe we can resolve aliases here? Always store alias and final type; not alias to alias. But it will cost startup time.
 	}
 
 	/**
@@ -128,6 +142,8 @@ export class MetadataLibrary {
 			console.error("Type referenced by", reference, "not found.");
 			return Type.Invalid;
 		}
+
+		// TODO: Resolve aliases
 
 		return this.types.get(reference) ?? Type.Invalid;
 	}

@@ -35,10 +35,10 @@
 	"dependencies": {
 		"@netleaf/extensions-configuration": "^0.5.2",
 		"@rttist/core": "workspace:^",
-		"@swc/core": "^1.3.68",
 		"chokidar": "^3.5.3",
 		"cli-progress": "^3.12.0",
 		"commander": "^11.0.0",
+		"esbuild": "^0.18.11",
 		"fast-glob": "^3.3.0",
 		"micromatch": "^4.0.5",
 		"minimatch": "^9.0.3",

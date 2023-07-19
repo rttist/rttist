@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { Context } from "../transformer/contexts/context";
+import { Context } from "../lib/transformer/contexts/context";
 
 /**
  * @internal

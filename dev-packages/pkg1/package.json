@@ -4,8 +4,7 @@
 	"version": "1.0.0-dev20220901",
 	"description": "@rttist/dev-pkg1",
 	"reflection": {
-		"index": "dist/metadata.index.json",
-		"typelib": "dist/metadata.typelib.js"
+		"metadata": "dist/@metadata"
 	},
 	"main": "dist/index.js",
 	"scripts": {

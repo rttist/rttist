@@ -1,9 +1,11 @@
 import { parentPort, workerData } from "worker_threads";
 import { WorkerArguments } from "./declarations/worker-arguments";
-import { generateModulesMetadata } from "./generator/generate-modules-metadata";
-import { Logger } from "./logging";
-import { resolvePath } from "./utils/path";
-import { MessageType } from "./workers-messaging";
+import { generateModulesMetadata } from "./lib/generator/generate-modules-metadata";
+import { Logger } from "./lib/logging";
+import { resolvePath } from "./lib/utils/path";
+import { WorkerMessageType } from "./declarations/worker-message-type";
+
+console.log(); // TODO: Required for debugging, idk why.
 
 const workerArguments = workerData as WorkerArguments;
 const files = workerArguments.files.map((filePath) => resolvePath(workerArguments.config.projectRoot, filePath));
@@ -13,6 +15,6 @@ Logger.setLevel(workerArguments.config.logLevel);
 
 generateModulesMetadata(files, workerArguments.config, (filename) => {
 	parentPort?.postMessage({
-		type: MessageType.FileFinished,
+		type: WorkerMessageType.FileFinished,
 	});
 });

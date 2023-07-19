@@ -3,16 +3,16 @@ import type { CLI } from "./cli";
 import { cpus } from "os";
 import * as fs from "fs/promises";
 import { Worker } from "worker_threads";
-import { Config, getParsedConfig } from "./config/config";
+import { Config, getParsedConfig } from "./lib/config/config";
 import { CacheStats } from "./declarations/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
-import { generateTypelibFiles } from "./generator/generate-typelib-files";
-import { LogColor, Logger, LogLevel } from "./logging";
-import { resolvePath } from "./utils/path";
+import { LogColor, Logger, LogLevel } from "./lib/logging";
+import { TypelibGenerator } from "./lib/typelib-generator";
+import { resolvePath } from "./lib/utils/path";
 import * as fastGlob from "fast-glob";
 import * as cliProgress from "cli-progress";
-import { Watcher } from "./watcher";
-import { MessageType } from "./workers-messaging";
+import { Watcher } from "./lib/watcher";
+import { WorkerMessageType } from "./declarations/worker-message-type";
 import PromiseSource from "promise-cs";
 
 const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
@@ -20,7 +20,7 @@ const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
 // TODO: Refactor this file. Separate base build, spawning and watching.
 
 export class Program {
-	private readonly logger: Logger;
+	private readonly logger = new Logger("Program");
 	private readonly performanceEntries: {
 		start: number;
 		initialization?: number;
@@ -32,12 +32,10 @@ export class Program {
 		lastGeneration: new Date(0, 0),
 	};
 
-	constructor(private readonly cli: CLI) {
-		this.logger = new Logger("Program");
-	}
+	constructor(private readonly cli: CLI) {}
 
-	private getConfig(): Promise<Config> {
-		return getParsedConfig(this.cli.getCommandLineArguments());
+	private async getConfig(): Promise<Config> {
+		return await getParsedConfig(this.cli.getCommandLineArguments());
 	}
 
 	public async run(): Promise<void> {
@@ -50,22 +48,24 @@ export class Program {
 		this.logger.log(LogLevel.Info, LogColor.blue, "TypeScript root directory: " + config.tsRootDir);
 
 		const allFiles = await this.getSourceFilesWithStats(config);
+		const allFilesPath = allFiles.map((x) => x.path);
 		const completedPS = new PromiseSource();
+		const typelibGenerator = new TypelibGenerator(config, allFilesPath);
 
 		// Watch files in case the watch mode is enabled.
 		if (config.watch) {
-			const watcher = new Watcher(config, completedPS);
-			watcher.watch(allFiles.map((x) => x.path));
+			const watcher = new Watcher(config, typelibGenerator, completedPS);
+			watcher.watch(allFilesPath);
 		}
 
 		await this.loadCachedStats(config);
 
 		// Filter files to regenerate (files with changes after last generation).
-		const files = await this.getFilesToRegenerate(allFiles, config);
+		const filesToProcess = await this.getFilesToRegenerate(allFiles, config);
 		// SPAWN workers
-		const workers = this.spawnWorkers(files, config);
+		const workers = this.spawnWorkers(filesToProcess, config);
 		// Progress bar
-		const progressBar = this.createProgressBar(files);
+		const progressBar = this.createProgressBar(filesToProcess);
 
 		// Capture initialization time
 		this.performanceEntries.initialization = performance.now();
@@ -74,7 +74,7 @@ export class Program {
 		await Promise.all(
 			workers.map((entry) => {
 				entry.worker.on("message", (message) => {
-					if (message.type === MessageType.FileFinished) {
+					if (message.type === WorkerMessageType.FileFinished) {
 						progressBar.increment();
 					}
 				});
@@ -85,17 +85,19 @@ export class Program {
 
 		progressBar.stop();
 
-		if (files.length > 0) {
-			await generateTypelibFiles(
-				allFiles.map((x) => x.path),
-				config
-			);
+		if (filesToProcess.length > 0) {
+			// await generateTypelibFiles(
+			// 	allFiles.map((x) => x.path),
+			// 	config
+			// );
+			await typelibGenerator.generate();
+			// TODO generate bundles too
 		}
 
 		this.performanceEntries.completed = performance.now();
 		this.logPerformanceInfo(config);
 
-		if (files.length > 0) {
+		if (filesToProcess.length > 0) {
 			this.stats.lastGeneration = new Date();
 			await this.persistStats(config);
 		}
@@ -127,7 +129,9 @@ export class Program {
 
 	private spawnWorkers(fileNames: string[], config: Config) {
 		const cpuCount = cpus().length;
-		const workerFileCount = Math.floor(fileNames.length / cpuCount) || 1;
+		// Find out how many files each worker should process; If it's less than 5 per worker, use only one worker.
+		const workerFileCount =
+			fileNames.length < cpuCount * 5 ? fileNames.length : Math.floor(fileNames.length / cpuCount) || 1;
 
 		const workers = [];
 

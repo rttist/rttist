@@ -6,7 +6,6 @@ export type PackageJson = {
 	dependencies?: string[];
 	devDependencies?: string[];
 	reflection?: {
-		index?: string;
-		typelib?: string;
+		metadata?: string;
 	};
 };

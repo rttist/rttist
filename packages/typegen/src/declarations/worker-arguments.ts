@@ -1,4 +1,4 @@
-import { Config } from "../config/config";
+import { Config } from "../lib/config/config";
 
 export type WorkerArguments = {
 	// /**

@@ -26,7 +26,7 @@
 	FunctionTypeMetadata,
 } from "rttist";
 import * as ts from "typescript";
-import { TransformerTypeReference } from "../transformer/metadata/transformer-type-reference";
+import { TransformerTypeReference } from "../lib/metadata/transformer-type-reference";
 
 /**
  * Request given keys to exist in type.

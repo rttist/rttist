@@ -17,7 +17,7 @@
 		],
 	},
 	"files": [
-		"src/globals.ts",
+		"src/declarations/globals.ts",
 		"src/bin.ts",
 		"src/worker.ts"
 	],
