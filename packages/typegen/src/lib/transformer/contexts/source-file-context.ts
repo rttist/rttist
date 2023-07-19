@@ -1,7 +1,10 @@
+import { ModuleIdentifier } from "rttist";
 import * as ts from "typescript";
 import { Config } from "../../config/config";
 import { ModuleMetadata } from "../../metadata/module-metadata";
-import { Scope } from "../scopes/scope";
+import { generateImportedModuleId } from "../id-generators";
+import { ModuleScope } from "../scopes/module-scope";
+import { ImportDeclarationInfo, InfoKind, Scope } from "../scopes/scope";
 import { ScopeRegistry } from "../scopes/scope-registry";
 import { isDeclaration } from "../utils/is-declaration";
 import { isNamedDeclaration } from "../utils/is-named-declaration";
@@ -31,16 +34,98 @@ export class SourceFileContext {
 	 * Analyze and register semantic scopes of the source file.
 	 */
 	analyzeScopes() {
-		this.generateScopes(this.sourceFile, undefined);
+		const imports: Map<string, ImportDeclarationInfo> = this.parseImports();
+		const moduleScope = new ModuleScope(this.sourceFile);
+
+		for (const [name, info] of imports) {
+			moduleScope.addImportDeclaration(name, {
+				kind: InfoKind.ImportDeclaration,
+				moduleId: info.moduleId,
+				declaredName: (info as any).declaredName,
+				declaration: info.declaration,
+				namespaceImport: info.namespaceImport as false,
+			});
+		}
+
+		this.generateScopes(this.sourceFile, moduleScope);
 	}
 
-	private generateScopes = (node: ts.Node, parentScope?: Scope) => {
+	private parseImports() {
+		// TODO: This is parsing and generating IDs for imported modules for second time; ModuleMetadata has references!
+
+		const index = this.sourceFile.statements.findIndex((s) => !ts.isImportDeclaration(s));
+		const imports = new Map<string, ImportDeclarationInfo>();
+		let importDeclaration: ts.ImportDeclaration;
+
+		for (let i = 0; i < index; i++) {
+			importDeclaration = this.sourceFile.statements[i] as ts.ImportDeclaration;
+
+			const moduleId: ModuleIdentifier = generateImportedModuleId(
+				this.sourceFile.fileName,
+				importDeclaration,
+				this.config
+			);
+
+			if (importDeclaration.importClause) {
+				// import x from ""; -> import default export
+				if (importDeclaration.importClause.name) {
+					imports.set(importDeclaration.importClause.name.text, {
+						kind: InfoKind.ImportDeclaration,
+						moduleId,
+						namespaceImport: false,
+						declaration: importDeclaration,
+						declaredName: "default",
+					});
+				}
+
+				if (importDeclaration.importClause.namedBindings) {
+					// import { ... } from ""; -> named imports
+					if (ts.isNamedImports(importDeclaration.importClause.namedBindings)) {
+						for (const element of importDeclaration.importClause.namedBindings.elements) {
+							imports.set(element.name.text, {
+								kind: InfoKind.ImportDeclaration,
+								moduleId,
+								namespaceImport: false,
+								declaration: importDeclaration,
+								declaredName: element.propertyName ? element.propertyName.text : element.name.text,
+							});
+						}
+					}
+					// import * as x from ""; -> namespace import
+					else if (ts.isNamespaceImport(importDeclaration.importClause.namedBindings)) {
+						imports.set(importDeclaration.importClause.namedBindings.name.text, {
+							kind: InfoKind.ImportDeclaration,
+							moduleId,
+							namespaceImport: true,
+							declaration: importDeclaration,
+						});
+					} else {
+						// TODO: What else it can be?
+						// imports.set(importDeclaration.importClause.namedBindings.name.text, {
+						// 	moduleId,
+						// 	declaration: importDeclaration,
+						// });
+					}
+				}
+			}
+		}
+
+		return imports;
+	}
+
+	private generateScopes = (node: ts.Node, parentScope: Scope) => {
 		let scope = parentScope;
 
-		if (this.scopeRegistry.doesCreateScope(node)) {
+		if (!ts.isSourceFile(node) && this.scopeRegistry.doesCreateScope(node)) {
 			scope = this.scopeRegistry.createScope(node, parentScope);
-		} else if (scope && isDeclaration(node) && isNamedDeclaration(node)) {
-			scope.addDeclaration(node);
+		} else if (isDeclaration(node)) {
+			if (isNamedDeclaration(node)) {
+				scope.addDeclaration(node.getText(), {
+					kind: InfoKind.NamedDeclaration,
+					declaration: node,
+				});
+			} /*else if (ts.isImportDeclaration(node)) {
+			}*/
 		}
 
 		ts.visitEachChild(

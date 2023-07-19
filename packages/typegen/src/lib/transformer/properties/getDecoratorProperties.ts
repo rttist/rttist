@@ -1,7 +1,8 @@
 import * as ts from "typescript";
 import { DecoratorProperties } from "../../../declarations/type-properties";
+import { ERROR_PLACEHOLDER_STRING } from "../consts";
 import { Context } from "../contexts/context";
-import { getSymbol } from "../utils/typeHelpers";
+import { generateTypeId } from "../id-generators";
 import { getConstantValue } from "./getConstantValue";
 
 export function getDecoratorProperties(decorator: ts.Decorator, context: Context): DecoratorProperties {
@@ -10,12 +11,11 @@ export function getDecoratorProperties(decorator: ts.Decorator, context: Context
 		? decorator.expression.expression
 		: decorator.expression;
 
-	const type = context.typeChecker.getTypeAtLocation(expression);
-	const symbol = getSymbol(type, context.typeChecker);
-
 	return {
 		// id: getTypeId(type, false, symbol, context.transformerContext),
-		name: symbol!.escapedName,
+		// TODO: Review
+		id: generateTypeId(expression, "", context.sourceFileContext.scopeRegistry.getClosestScope(decorator)),
+		name: ts.isIdentifier(expression) ? expression.text : ERROR_PLACEHOLDER_STRING,
 		args: callExpression
 			? (decorator.expression as ts.CallExpression).arguments.map((argument) =>
 					getConstantValue(argument, context)

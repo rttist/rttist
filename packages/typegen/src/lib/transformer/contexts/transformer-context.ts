@@ -4,9 +4,9 @@ import { Config } from "../../config/config";
 import { DependencyManager } from "../../dependencies/dependency-manager";
 import { MetadataLibrary } from "../../metadata/metadata-library";
 import { MetadataManager } from "../../metadata/metadata-manager";
+import { MetadataPrinter } from "../../metadata/metadata-printer";
 import { dirname } from "../../utils/path";
 import { resolveSourceFileCachePath } from "../../utils/resolve-sourcefile-cache-path";
-import { generateSourceFileModuleId } from "../id-generators";
 import { mainVisitor } from "../visitors/main-visitor";
 import { Context } from "./context";
 import { SourceFileContext } from "./source-file-context";
@@ -43,6 +43,11 @@ export class TransformerContext {
 	 */
 	public readonly dependencyManager: DependencyManager;
 
+	private readonly metadataPrinter: MetadataPrinter;
+
+	// TODO: implement
+	public readonly writePromises: Promise<void>[] = [];
+
 	constructor(
 		public readonly program: ts.Program,
 		public readonly config: Config,
@@ -52,6 +57,7 @@ export class TransformerContext {
 		this.dependencyManager = new DependencyManager(config);
 		this.metadata = MetadataLibrary.init(this.dependencyManager);
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
+		this.metadataPrinter = new MetadataPrinter(config);
 
 		// This will allow deconstruction of the context.
 		this.visitSourceFile = this.visitSourceFile.bind(this);
@@ -74,15 +80,6 @@ export class TransformerContext {
 		const sourceFileContext = new SourceFileContext(sourceFileNode, this.config, transformationContext);
 		sourceFileContext.analyzeScopes();
 
-		// // Create SourceFile context and register it.
-		// const sourceFileContext = (this.sourceFileContext = new Context(
-		// 	undefined,
-		// 	this,
-		// 	transformationContext,
-		// 	sourceFileNode,
-		// 	mainVisitor
-		// ));
-		// Create SourceFile context and register it.
 		const context = new Context(
 			undefined,
 			this,
@@ -102,15 +99,9 @@ export class TransformerContext {
 		const filePath = resolveSourceFileCachePath(sourceFileNode.fileName, this.config);
 		const fileMetadataDirname = dirname(filePath);
 
+		// TODO: Make it async
 		fs.mkdirSync(fileMetadataDirname, { recursive: true });
-		fs.writeFileSync(
-			filePath,
-			`import { MetadataLibrary } from "rttist";
-export function add(library: MetadataLibrary, stripInternals: boolean = false) {
-	library.addMetadata(${JSON.stringify(sourceFileContext.metadata.getModuleProperties(this.config))}, stripInternals);
-}`,
-			"utf8"
-		);
+		fs.writeFileSync(filePath, this.metadataPrinter.printMetadata(sourceFileContext.metadata), "utf8");
 
 		this.writeFileCallback(sourceFileNode.fileName);
 

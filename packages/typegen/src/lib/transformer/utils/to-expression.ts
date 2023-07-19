@@ -1,8 +1,8 @@
-import * as ts from "typescript";
 import { TypeKind } from "rttist";
 import { SyntaxKind } from "typescript";
+import * as ts from "typescript";
 import type { Config } from "../../config/config";
-import { TransformerTypeReference } from "../metadata/transformer-type-reference";
+import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 
 export function toExpression(value: any, config: Config): ts.Expression {
 	if (value != undefined) {
@@ -22,19 +22,19 @@ export function toExpression(value: any, config: Config): ts.Expression {
 
 		// noinspection SuspiciousTypeOfGuard
 		if (value instanceof TransformerTypeReference) {
-			if (value.isKindOnly()) {
-				const ref = [ts.factory.createNumericLiteral(value.nativeReference.kind)];
-
-				if (config.devMode) {
-					ts.addSyntheticTrailingComment(
-						ref[0],
-						SyntaxKind.MultiLineCommentTrivia,
-						TypeKind[value.nativeReference.kind]
-					);
-				}
-
-				return ts.factory.createArrayLiteralExpression(ref);
-			}
+			// if (value.isKindOnly()) {
+			// 	const ref = [ts.factory.createNumericLiteral(value.nativeReference.kind)];
+			//
+			// 	if (config.devMode) {
+			// 		ts.addSyntheticTrailingComment(
+			// 			ref[0],
+			// 			SyntaxKind.MultiLineCommentTrivia,
+			// 			TypeKind[value.nativeReference.kind]
+			// 		);
+			// 	}
+			//
+			// 	return ts.factory.createArrayLiteralExpression(ref);
+			// }
 
 			return ts.factory.createStringLiteral(value.id);
 		}
@@ -45,9 +45,12 @@ export function toExpression(value: any, config: Config): ts.Expression {
 			for (let prop in value) {
 				// Ignoring properties assigned to undefined
 				if (value.hasOwnProperty(prop) && value[prop] !== undefined) {
-					propertyAssignments.push(
-						ts.factory.createPropertyAssignment(prop, toExpression(value[prop], config))
-					);
+					const expr = toExpression(value[prop], config);
+					propertyAssignments.push(ts.factory.createPropertyAssignment(prop, expr));
+
+					if (prop === "kind" && config.devMode && value.hasOwnProperty("id")) {
+						ts.addSyntheticTrailingComment(expr, SyntaxKind.MultiLineCommentTrivia, TypeKind[value[prop]]);
+					}
 				}
 			}
 

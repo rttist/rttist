@@ -1,14 +1,14 @@
-import { ModuleIds, TypeIds } from "@rttist/core";
+import { TypeIds } from "@rttist/core";
 import { ModuleIdentifier, TypeIdentifier } from "rttist";
-import { NamedDeclaration } from "typescript";
 import * as ts from "typescript";
 import { Config } from "../config/config";
-import { normalizePath, resolvePath } from "../utils/path";
-import { Scope } from "./scopes/scope";
+import { dirname, normalizePath, resolvePath } from "../utils/path";
+import { DeclarationInfo, ImportDeclarationInfo, InfoKind, Scope, TypeDeclarationInfo } from "./scopes/scope";
+import { getTopLevelIdentifier } from "./utils/get-top-level-identifier";
+import { getTopLevelTypeName } from "./utils/get-top-level-type-name";
 import { isDeclaration } from "./utils/is-declaration";
 import { isNamedDeclaration } from "./utils/is-named-declaration";
 import { getModifiers } from "./utils/modifier-helpers";
-import { isLiteral } from "./utils/typeHelpers";
 
 /**
  * Generate a module id for a given module path.
@@ -33,29 +33,31 @@ export function generateSourceFileModuleId(
 /**
  * Generate a module id for a given module path.
  * @param sourceFilePath
- * @param importSpecifier
+ * @param importDeclaration
  * @param config
  */
 export function generateImportedModuleId(
 	sourceFilePath: string,
-	importSpecifier: string,
+	importDeclaration: ts.ImportDeclaration,
 	config: Config
 ): ModuleIdentifier {
+	const specifier = (importDeclaration.moduleSpecifier as unknown as ts.StringLiteral).text;
+
 	// Local file
-	if (importSpecifier[0] === ".") {
+	if (specifier[0] === ".") {
 		return generateSourceFileModuleId(
-			resolvePath(sourceFilePath, importSpecifier),
+			resolvePath(dirname(sourceFilePath), specifier),
 			config.tsRootDir,
 			config.packageInfo.name
 		);
 	}
 	// Probably alias
-	else if (importSpecifier[0] === "@") {
+	else if (specifier[0] === "@") {
 		// TODO: Handle alias
 	}
 
 	// else Package
-	return "@" + normalizePath(removeExtension(importSpecifier));
+	return "@" + normalizePath(removeExtension(specifier));
 }
 
 // Mapping name of types and TS node kinds to Typ identifiers
@@ -137,6 +139,11 @@ export function generateTypeId(node: ts.Node, moduleId: ModuleIdentifier, scope:
 		return knownType;
 	}
 
+	// if (ts.isIdentifier(node)) {
+	// 	const declaration = scope.getDeclaration(node.text);
+	// 	console.log("GenerateTypeId for identifier from scope:");
+	// }
+
 	// other well-known
 
 	// literals,
@@ -145,13 +152,37 @@ export function generateTypeId(node: ts.Node, moduleId: ModuleIdentifier, scope:
 		return literalType;
 	}
 
-	// // variables from scope
-	// if (ts.isTypeReferenceNode(node)) {
-	// 	const identifier = scope.getDeclaration(node.typeName.getText());
-	// 	if (identifier) {
-	//
-	// 	}
-	// }
+	// Type referenced from scope
+	if (ts.isTypeReferenceNode(node)) {
+		const topLevelIdentifier = getTopLevelTypeName(node.typeName);
+
+		if (topLevelIdentifier) {
+			const declaration = scope.getTypeDeclaration(topLevelIdentifier.text);
+
+			if (declaration) {
+				return createTypeNameDeclarationTypeId(node.typeName, moduleId, declaration);
+			}
+		}
+
+		return TypeIds.Invalid;
+	}
+
+	// Identifier from scope
+	if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
+		const topLevelIdentifier = ts.isIdentifier(node) ? node : getTopLevelIdentifier(node);
+
+		if (topLevelIdentifier) {
+			const declaration = scope.getDeclaration(topLevelIdentifier.text);
+
+			// console.log("generateTypeId for identifier from scope:", declaration);
+
+			if (declaration) {
+				return createIdentifierDeclarationTypeId(node, moduleId, declaration);
+			}
+		}
+
+		return TypeIds.Invalid;
+	}
 	//
 	// // variables from scope
 	// if (ts.isIdentifier(node)) {
@@ -190,21 +221,95 @@ export function generateTypeId(node: ts.Node, moduleId: ModuleIdentifier, scope:
 	return undefined;
 }
 
-export const MainConst = class {
-	prop: number = 0;
-
-	static readonly StaticFiled = class ClassUnderStaticFiled {
-		prop: number = 0;
-
-		constructor() {
-			console.log(ClassUnderStaticFiled, MainConst.StaticFiled);
-		}
-	};
-
-	constructor() {
-		console.log(MainConst.StaticFiled);
+function createIdentifierDeclarationTypeId(
+	node: ts.Identifier | ts.PropertyAccessExpression,
+	moduleId: ModuleIdentifier,
+	declaration: DeclarationInfo | ImportDeclarationInfo
+): TypeIdentifier | undefined {
+	switch (declaration.kind) {
+		case InfoKind.NamedDeclaration:
+			return moduleId + ":" + serializePath(node, false);
+		case InfoKind.ImportDeclaration:
+			if (declaration.namespaceImport) {
+				return declaration.moduleId + ":" + serializePath(node, true);
+			} else {
+				return declaration.moduleId + ":" + declaration.declaredName;
+			}
 	}
-};
+
+	return undefined;
+}
+
+function createTypeNameDeclarationTypeId(
+	node: ts.Identifier | ts.QualifiedName,
+	moduleId: ModuleIdentifier,
+	declaration: TypeDeclarationInfo | ImportDeclarationInfo
+): TypeIdentifier | undefined {
+	switch (declaration.kind) {
+		case InfoKind.TypeParameterDeclaration:
+			return moduleId + ":" + serializeTypePath(node, false);
+		case InfoKind.ImportDeclaration:
+			if (declaration.namespaceImport) {
+				return declaration.moduleId + ":" + serializeTypePath(node, true);
+			} else {
+				return declaration.moduleId + ":" + declaration.declaredName;
+			}
+	}
+
+	return undefined;
+}
+
+function serializePath(node: ts.Identifier | ts.PropertyAccessExpression, skipRootIdentifier: boolean): string {
+	let path = "";
+	let nested: ts.LeftHandSideExpression = node;
+
+	while (ts.isPropertyAccessExpression(nested)) {
+		path = nested.name.text + "." + path;
+
+		if (!skipRootIdentifier && ts.isIdentifier(nested.expression)) {
+			path = nested.expression.text + "." + path;
+			break;
+		}
+
+		nested = nested.expression;
+	}
+
+	return path + (ts.isIdentifier(node) ? node.text : node.name.text);
+}
+
+function serializeTypePath(node: ts.Identifier | ts.QualifiedName, skipRootIdentifier: boolean): string {
+	let path = "";
+	let nested: ts.EntityName = node;
+
+	while (ts.isQualifiedName(nested)) {
+		path = nested.right.text + "." + path;
+
+		if (!skipRootIdentifier && ts.isIdentifier(nested.left)) {
+			path = nested.left.text + "." + path;
+			break;
+		}
+
+		nested = nested.left;
+	}
+
+	return path + (ts.isIdentifier(node) ? node.text : node.right.text);
+}
+
+// export const MainConst = class {
+// 	prop: number = 0;
+//
+// 	static readonly StaticFiled = class ClassUnderStaticFiled {
+// 		prop: number = 0;
+//
+// 		constructor() {
+// 			console.log(ClassUnderStaticFiled, MainConst.StaticFiled);
+// 		}
+// 	};
+//
+// 	constructor() {
+// 		console.log(MainConst.StaticFiled);
+// 	}
+// };
 
 // function getPathToSourceFile(node: ts.Node) {}
 
@@ -226,9 +331,9 @@ function getLiteralTypeIdentifier(node: ts.Node): TypeIdentifier | undefined {
 	return `#Literal(${val})`;
 }
 
-function toBigIntLiteral(value: ts.PseudoBigInt) {
-	return (value.negative ? "-" : "") + value.base10Value + "n";
-}
+// function toBigIntLiteral(value: ts.PseudoBigInt) {
+// 	return (value.negative ? "-" : "") + value.base10Value + "n";
+// }
 
 function removeExtension(filePath: string) {
 	if (filePath.slice(-5) === ".d.ts") {

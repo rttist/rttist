@@ -23,7 +23,6 @@ export class ModuleMetadata {
 	public static Native = new ModuleMetadata({
 		id: ModuleIds.Native,
 		name: "",
-		path: "typescript",
 	});
 
 	/**
@@ -33,7 +32,6 @@ export class ModuleMetadata {
 	public static Invalid = new ModuleMetadata({
 		id: ModuleIds.Invalid,
 		name: "",
-		path: "",
 	});
 
 	private readonly moduleProperties: ModuleMetadataProperties;
@@ -61,7 +59,7 @@ export class ModuleMetadata {
 		return new ModuleMetadata({
 			name,
 			id: generateSourceFileModuleId(sourceFile.fileName, config.tsRootDir, config.packageInfo.name),
-			path: sourceFile.fileName,
+			// path: sourceFile.fileName,
 			children: this.getChildrenReferences(sourceFile, config),
 		});
 	}
@@ -133,9 +131,7 @@ export class ModuleMetadata {
 				continue;
 			}
 
-			references.push(
-				generateImportedModuleId(sourceFile.fileName, importDeclaration.moduleSpecifier.toString(), config)
-			);
+			references.push(generateImportedModuleId(sourceFile.fileName, importDeclaration, config));
 		}
 
 		return references;

@@ -22,6 +22,8 @@ export const SELF_VAR_NAME = "_self$";
  */
 export const PACKAGE_ID = "tst-reflect-transformer";
 
+export const ERROR_PLACEHOLDER_STRING = "#error-01";
+
 export const ESSymbols = new Set([
 	"iterator",
 	"asyncIterator",

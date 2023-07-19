@@ -1,37 +1,105 @@
+import type { ModuleScope } from "./module-scope";
 import * as ts from "typescript";
+import { ModuleIdentifier } from "rttist";
+
+export enum InfoKind {
+	NamedDeclaration,
+	ImportDeclaration,
+	TypeParameterDeclaration,
+}
+
+export type ImportDeclarationInfo =
+	| {
+			kind: InfoKind.ImportDeclaration;
+			namespaceImport: false;
+			declaredName: string;
+			moduleId: ModuleIdentifier;
+			declaration: ts.ImportDeclaration;
+	  }
+	| {
+			kind: InfoKind.ImportDeclaration;
+			namespaceImport: true;
+			moduleId: ModuleIdentifier;
+			declaration: ts.ImportDeclaration;
+	  };
+
+export type NamedDeclarationInfo = {
+	kind: InfoKind.NamedDeclaration;
+	declaration: ts.NamedDeclaration;
+};
+
+export type TypeParameterDeclarationInfo = {
+	kind: InfoKind.TypeParameterDeclaration;
+	declaration: ts.TypeParameterDeclaration;
+};
+
+export type DeclarationInfo = NamedDeclarationInfo;
+export type TypeDeclarationInfo = TypeParameterDeclarationInfo;
 
 export class Scope {
-	private readonly declarations = new Map<string, ts.NamedDeclaration>();
-	private readonly genericParameters?: Map<string, ts.TypeParameterDeclaration>;
+	protected readonly declarations = new Map<string, DeclarationInfo>();
+	protected readonly typeDeclarations: Map<string, TypeDeclarationInfo>;
+
+	/**
+	 * It's not exactly module scope; it's the top scope that is tracked.
+	 * It should be scope of the SourceFile (so module scope).
+	 */
+	public readonly moduleScope: ModuleScope;
 
 	/**
 	 *
 	 * @param originator Node that created this scope.
 	 * @param parent Parent scope.
 	 */
+	constructor(originator: ts.Node, parent: Scope);
 	constructor(
 		private readonly originator: ts.Node,
-		private readonly parent?: Scope
+		protected readonly parent?: Scope
 	) {
-		if (hasTypeParameters(originator)) {
-			this.genericParameters = new Map(originator.typeParameters.map((tp) => [tp.name.getText(), tp]));
-		}
+		this.typeDeclarations = hasTypeParameters(originator)
+			? new Map(
+					originator.typeParameters.map((tp) => [
+						tp.name.getText(),
+						{
+							kind: InfoKind.TypeParameterDeclaration,
+							declaration: tp,
+						},
+					])
+			  )
+			: new Map();
+
+		this.moduleScope = (parent?.moduleScope ?? this) as ModuleScope;
 	}
 
-	addDeclaration(node: ts.NamedDeclaration): void {
-		this.declarations.set(node.getText(), node);
+	addDeclaration(name: string, declaration: DeclarationInfo): void {
+		this.declarations.set(name, declaration);
+	}
+
+	/**
+	 * Return type declaration by name.
+	 * @param name
+	 */
+	getTypeDeclaration(name: string): TypeDeclarationInfo | ImportDeclarationInfo | undefined {
+		return (
+			this.typeDeclarations?.get(name) ||
+			this.parent?.getTypeDeclaration(name) ||
+			this.moduleScope.getImportDeclaration(name)
+		);
 	}
 
 	/**
 	 * Return declaration by name.
 	 * @param name
 	 */
-	getDeclaration(name: string): ts.NamedDeclaration | undefined {
+	getDeclaration(name: string): NamedDeclarationInfo | ImportDeclarationInfo | undefined {
 		if (name === "this") {
-			return this.getContextScope()?.originator as ts.NamedDeclaration;
+			return {
+				kind: InfoKind.NamedDeclaration,
+				declaration: this.getContextScope()?.originator as ts.NamedDeclaration,
+			};
 		}
 
-		return this.declarations.get(name) || this.genericParameters?.get(name) || this.parent?.getDeclaration(name);
+		return this.declarations.get(name) || this.parent?.getDeclaration(name);
 	}
 
 	private getContextScope(): Scope | undefined {

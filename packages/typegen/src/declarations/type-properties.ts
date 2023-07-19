@@ -78,7 +78,7 @@ export type NonNativeBaseTypeProperties = Match<
 export type ModuleProperties = {
 	id: ModuleIdentifier;
 	name: string;
-	path: string;
+	// path: string;
 	import?: ts.FunctionLikeDeclarationBase;
 	children?: ModuleReference[];
 	types?: TypePropertiesWithId[];

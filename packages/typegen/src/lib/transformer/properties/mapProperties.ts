@@ -1,8 +1,10 @@
+import { TypeIds } from "@rttist/core";
 import { AccessModifier, Accessor, PropertyFlags } from "rttist";
 import * as ts from "typescript";
 import { PropertyProperties } from "../../../declarations/type-properties";
 import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 import { Context } from "../contexts/context";
+import { generateTypeId } from "../id-generators";
 import { getModifiers } from "../utils/modifier-helpers";
 import { getMemberName } from "./getMemberName";
 import { getDeclaration, getType } from "../utils/symbolHelpers";
@@ -67,7 +69,15 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 
 			return {
 				name: getMemberName(memberSymbol, context),
-				type: new TransformerTypeReference("invalid"),
+				type: new TransformerTypeReference(
+					(declaration?.type &&
+						generateTypeId(
+							declaration.type,
+							"",
+							context.sourceFileContext.scopeRegistry.getClosestScope(declaration)
+						)) ||
+						TypeIds.Invalid
+				),
 				decorators: declaration === undefined ? undefined : getDecoratorsProperties(declaration, context),
 				flags:
 					(modifiers.readonly || accessor === Accessor.Getter ? PropertyFlags.Readonly : PropertyFlags.None) |

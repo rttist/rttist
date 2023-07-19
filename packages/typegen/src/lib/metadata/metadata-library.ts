@@ -115,8 +115,6 @@ export class MetadataLibrary {
 			return;
 		}
 
-		console.log("class");
-
 		const typeInfo: TypeInfo = {
 			typeId: typeId,
 			type: type,

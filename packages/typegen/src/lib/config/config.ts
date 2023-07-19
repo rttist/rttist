@@ -163,7 +163,7 @@ function createConfig(
 		force: commandLineArguments.force,
 
 		include: metadataConfig.get("include")!,
-		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata"]), // TODO: Check if it must be fixed because of relative paths
+		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "metadata.typelib.ts"]), // TODO: Check if it must be fixed because of relative paths
 
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
 

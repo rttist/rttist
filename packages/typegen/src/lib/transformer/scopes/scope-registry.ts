@@ -29,7 +29,7 @@ export class ScopeRegistry {
 		return scopedSyntaxKinds.has(node.kind);
 	}
 
-	createScope(originator: ts.Node, parent?: Scope): Scope {
+	createScope(originator: ts.Node, parent: Scope): Scope {
 		const scope = new Scope(originator, parent);
 		this.map.set(originator, scope);
 		return scope;
@@ -47,6 +47,6 @@ export class ScopeRegistry {
 		} while (node !== undefined);
 
 		// Should never happen. At least SourceFile has Scope.
-		return new Scope(node);
+		return new Scope(node, null!);
 	}
 }
