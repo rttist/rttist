@@ -1,20 +1,15 @@
 import * as fs from "fs";
-import * as path from "path";
 import * as ts from "typescript";
 import { Config } from "../../config/config";
-import { dirname, normalizePath, relativePath, resolvePath } from "../../utils/path";
+import { DependencyManager } from "../../dependencies/dependency-manager";
+import { MetadataLibrary } from "../../metadata/metadata-library";
+import { MetadataManager } from "../../metadata/metadata-manager";
+import { dirname } from "../../utils/path";
 import { resolveSourceFileCachePath } from "../../utils/resolve-sourcefile-cache-path";
-import { DependencyManager } from "../dependencies/dependency-manager";
-import { getSourceFileId } from "../getSourceFileId";
-import { generateModuleId } from "../id-generators";
-import { MetadataLibrary } from "../metadata/metadata-library";
-import { MetadataManager } from "../metadata/metadata-manager";
-import { getRelativePath } from "../utils/getRelativePath";
-// import { DependencyManager } from "../dependencies/DependencyManager";
-// import { MetadataLibrary } from "../metadata/MetadataLibrary";
-// import { MetadataManager } from "../metadata/MetadataManager";
+import { generateSourceFileModuleId } from "../id-generators";
 import { mainVisitor } from "../visitors/main-visitor";
 import { Context } from "./context";
+import { SourceFileContext } from "./source-file-context";
 
 const perfProgramStart = performance.now(); // TODO: What will this do when transformer instantiated multiple time in one process?
 
@@ -32,37 +27,6 @@ export class TransformerContext {
 	 * @internal
 	 */
 	public readonly metadataManager: MetadataManager;
-
-	/**
-	 * SourceFile context set for each visiting SourceFile.
-	 * @internal
-	 */
-	private sourceFileContext?: Context;
-
-	// /**
-	//  * List of root filenames.
-	//  * @internal
-	//  * @description Paths of all TS files matched by "include" (not in "exclude") from tsconfig.
-	//  * It is preferred to include only one root file and let other files be included by imports.
-	//  * Root files are transformer as last.
-	//  * If no include is defied in tsconfig, default rule is applied which are all files in directory.
-	//  */
-	// private readonly rootFileNames: ReadonlySet<string>;
-	//
-	// /**
-	//  * @internal
-	//  */
-	// private _numberOfVisitedRootFileNames = 0;
-
-	// /**
-	//  * TypeScript Program.
-	//  */
-	// public readonly program: ts.Program;
-	//
-	// /**
-	//  * Configuration object.
-	//  */
-	// public readonly config: Config;
 
 	/**
 	 * TypeScript type checker.
@@ -84,23 +48,10 @@ export class TransformerContext {
 		public readonly config: Config,
 		private readonly writeFileCallback: (filename: string) => void
 	) {
-		// this.config = config;
-		// this.program = program;
 		this.typeChecker = program.getTypeChecker();
-
-		// const rootFilenames = program.getRootFileNames()
-		// 	.map(normalizePath)
-		// 	.filter(fn => !fn.endsWith(".d.ts"));
-		//
-		// this.rootFileNames = new Set(rootFilenames);
-
 		this.dependencyManager = new DependencyManager(config);
 		this.metadata = MetadataLibrary.init(this.dependencyManager);
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
-
-		// if (config.devMode) {
-		// 	log.debug("Root filenames:", ...rootFilenames.map(fn => "\n\t- " + fn));
-		// }
 
 		// This will allow deconstruction of the context.
 		this.visitSourceFile = this.visitSourceFile.bind(this);
@@ -120,17 +71,29 @@ export class TransformerContext {
 	): ts.SourceFile {
 		const sourceFileStart = performance.now();
 
+		const sourceFileContext = new SourceFileContext(sourceFileNode, this.config, transformationContext);
+		sourceFileContext.analyzeScopes();
+
+		// // Create SourceFile context and register it.
+		// const sourceFileContext = (this.sourceFileContext = new Context(
+		// 	undefined,
+		// 	this,
+		// 	transformationContext,
+		// 	sourceFileNode,
+		// 	mainVisitor
+		// ));
 		// Create SourceFile context and register it.
-		const sourceFileContext = (this.sourceFileContext = new Context(
+		const context = new Context(
 			undefined,
 			this,
 			transformationContext,
+			sourceFileContext,
 			sourceFileNode,
 			mainVisitor
-		));
+		);
 
 		// Visit SourceFile
-		visitor(sourceFileNode, sourceFileContext);
+		visitor(sourceFileNode, context);
 
 		this.perfEntries.sourceFiles.push(performance.now() - sourceFileStart);
 
@@ -144,12 +107,7 @@ export class TransformerContext {
 			filePath,
 			`import { MetadataLibrary } from "rttist";
 export function add(library: MetadataLibrary, stripInternals: boolean = false) {
-	library.addMetadata({
-		id: "${generateModuleId(sourceFileNode.fileName, this.config.tsRootDir, this.config.packageInfo.name)}",
-		name: "${sourceFileNode.moduleName ?? "undefined"}",
-		path: "",
-		types: [],
-	}, stripInternals);
+	library.addMetadata(${JSON.stringify(sourceFileContext.metadata.getModuleProperties(this.config))}, stripInternals);
 }`,
 			"utf8"
 		);

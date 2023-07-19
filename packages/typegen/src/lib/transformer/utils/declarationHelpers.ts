@@ -1,6 +1,6 @@
 import * as ts from "typescript";
+import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 import { Context } from "../contexts/context";
-import { TransformerTypeReference } from "../metadata/transformer-type-reference";
 
 export type ClassFlags = {
 	abstract?: true;
@@ -34,35 +34,35 @@ export function getHeritageClauses(
 ): DeclarationHeritageClauses {
 	const result: DeclarationHeritageClauses = {};
 
-	if (declaration.heritageClauses) {
-		const ext = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ExtendsKeyword)[0];
-
-		if (ext) {
-			result.extends = ext.types.map((t) =>
-				context.metadata.referenceType(
-					context.typeChecker.getTypeFromTypeNode(t),
-					false,
-					context.typeChecker.getSymbolAtLocation(ext),
-					undefined,
-					context
-				)
-			);
-		}
-
-		const impl = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword)[0];
-
-		if (impl) {
-			result.implements = impl.types.map((t) =>
-				context.metadata.referenceType(
-					context.typeChecker.getTypeFromTypeNode(t),
-					false,
-					context.typeChecker.getSymbolAtLocation(impl),
-					undefined,
-					context
-				)
-			);
-		}
-	}
+	// if (declaration.heritageClauses) {
+	// 	const ext = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ExtendsKeyword)[0];
+	//
+	// 	if (ext) {
+	// 		result.extends = ext.types.map((t) =>
+	// 			context.metadata.addType(
+	// 				context.typeChecker.getTypeFromTypeNode(t),
+	// 				false,
+	// 				context.typeChecker.getSymbolAtLocation(ext),
+	// 				undefined,
+	// 				context
+	// 			)
+	// 		);
+	// 	}
+	//
+	// 	const impl = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword)[0];
+	//
+	// 	if (impl) {
+	// 		result.implements = impl.types.map((t) =>
+	// 			context.metadata.addType(
+	// 				context.typeChecker.getTypeFromTypeNode(t),
+	// 				false,
+	// 				context.typeChecker.getSymbolAtLocation(impl),
+	// 				undefined,
+	// 				context
+	// 			)
+	// 		);
+	// 	}
+	// }
 
 	return result;
 }

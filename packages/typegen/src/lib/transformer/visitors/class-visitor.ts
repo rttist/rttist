@@ -1,5 +1,6 @@
 import type { Context } from "../contexts/context";
 import * as ts from "typescript";
+import { generateTypeId } from "../id-generators";
 import { functionVisitor } from "./function-visitor";
 
 export function classVisitor(
@@ -8,7 +9,8 @@ export function classVisitor(
 ): ts.VisitResult<ts.Node> {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
-	context.metadata.referenceType(
+	context.metadata.addType(
+		declaration,
 		type,
 		false,
 		context.typeChecker.getSymbolAtLocation(declaration),

@@ -1,5 +1,6 @@
 import * as ts from "typescript";
 import { Context } from "../contexts/context";
+import { generateTypeId } from "../id-generators";
 import { mainVisitor } from "./main-visitor";
 
 export function functionVisitor(
@@ -9,7 +10,8 @@ export function functionVisitor(
 	context.visitWithNewContext(declaration, visitFunctionDeclaration);
 
 	if (ts.isFunctionDeclaration(declaration)) {
-		context.metadata.referenceType(
+		context.metadata.addType(
+			declaration,
 			context.typeChecker.getTypeAtLocation(declaration),
 			false,
 			context.typeChecker.getSymbolAtLocation(declaration),
@@ -21,7 +23,8 @@ export function functionVisitor(
 	}
 
 	if (ts.isFunctionExpression(declaration)) {
-		context.metadata.referenceType(
+		context.metadata.addType(
+			declaration,
 			context.typeChecker.getTypeAtLocation(declaration),
 			false,
 			context.typeChecker.getSymbolAtLocation(declaration),

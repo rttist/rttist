@@ -8,7 +8,7 @@ import {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference,
 	TransformerTypeReference,
-} from "./metadata/transformer-type-reference";
+} from "../metadata/transformer-type-reference";
 import { getComplexNativeTypeRef } from "./properties/getComplexNativeTypeRef";
 import { getLiteralTypeReference } from "./properties/getLiteralTypeReference";
 import { getPrimitiveTypeReference } from "./properties/getPrimitiveTypeReference";

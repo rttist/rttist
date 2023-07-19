@@ -1,9 +1,10 @@
 // import type { TransformerVisitor }            from "../declarations/general";
 import * as ts from "typescript";
-import type { TransformerVisitor } from "../../declarations/transformer-visitor";
+import type { TransformerVisitor } from "../../../declarations/transformer-visitor";
 import { Logger } from "../../logging";
-import type { MetadataLibrary } from "../metadata/metadata-library";
+import type { MetadataLibrary } from "../../metadata/metadata-library";
 import { getNodeLocationText } from "../tracers/getNodeLocationText";
+import { SourceFileContext } from "./source-file-context";
 import type { TransformerContext } from "./transformer-context";
 
 /**
@@ -28,6 +29,7 @@ export class Context {
 		parent: Context | undefined,
 		transformerContext: TransformerContext,
 		transformationContext: ts.TransformationContext,
+		public readonly sourceFileContext: SourceFileContext,
 		node: ts.Node,
 		visitor: TransformerVisitor
 	) {
@@ -47,7 +49,14 @@ export class Context {
 	}
 
 	visitWithNewContext(node: ts.Node, visitor: TransformerVisitor): ts.Node {
-		const context = new Context(this, this.transformerContext, this.transformationContext, node, visitor);
+		const context = new Context(
+			this,
+			this.transformerContext,
+			this.transformationContext,
+			this.sourceFileContext,
+			node,
+			visitor
+		);
 
 		return ts.visitEachChild(node, context.visitor, context.transformationContext);
 	}

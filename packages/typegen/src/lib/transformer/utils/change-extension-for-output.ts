@@ -1,5 +1,5 @@
 import type { Config } from "../../config/config";
-import { isFileExtensionRequired } from "./isFileExtensionRequired";
+import { isFileExtensionRequired } from "./is-file-extension-required";
 import { removeExtension } from "./removeExtension";
 
 export function changeExtensionForOutput(sourceFilePath: string, config: Config): string {

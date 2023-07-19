@@ -1,6 +1,6 @@
 import * as ts from "typescript";
-import { Context } from "../../contexts/Context";
-import { TypeMapperResult } from "../../../declarations/mappers";
+import { TypeMapperResult } from "../../../../declarations/mappers";
+import { Context } from "../../contexts/context";
 
 export function mapTemplateLiteral(
 	type: ts.TemplateLiteralType,

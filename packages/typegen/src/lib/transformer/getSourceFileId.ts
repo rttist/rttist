@@ -4,7 +4,7 @@ import { ModuleIdentifier } from "rttist";
 import * as ts from "typescript";
 import { Config } from "../config/config";
 import { TransformerContext } from "./contexts/transformer-context";
-import { ReflectedSourceFileWithReference } from "./metadata/transformer-type-reference";
+import { ReflectedSourceFileWithReference } from "../metadata/transformer-type-reference";
 import { removeExtension } from "./utils/removeExtension";
 
 const PATH_SEPARATOR_REGEX = /\\/g;

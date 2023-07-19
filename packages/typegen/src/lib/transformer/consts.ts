@@ -1,5 +1,5 @@
 ﻿import { TypeKind } from "rttist";
-import { TypeProperties } from "../declarations/type-properties";
+import { TypeProperties } from "../../declarations/type-properties";
 
 /**
  * The Invalid type properties.
