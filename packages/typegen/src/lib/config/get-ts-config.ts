@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { CommandLineArguments } from "../declarations/command-line-arguments";
+import { CommandLineArguments } from "../../declarations/command-line-arguments";
 import { resolvePath } from "../utils/path";
 
 export function getTsConfig(cliArgs: CommandLineArguments): ts.ParsedCommandLine {

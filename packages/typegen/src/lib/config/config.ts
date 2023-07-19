@@ -1,10 +1,14 @@
 import { ConfigurationBuilder, IRootConfiguration } from "@netleaf/extensions-configuration";
+import fs from "fs/promises";
 import { makeRe } from "minimatch";
+import path from "path";
 import * as ts from "typescript";
-import { CommandLineArguments } from "../declarations/command-line-arguments";
-import type { PackageInfo } from "../declarations/package-info";
+import { CommandLineArguments } from "../../declarations/command-line-arguments";
+import { DependencyInfo } from "../../declarations/dependency-info";
+import type { PackageInfo } from "../../declarations/package-info";
+import { PackageJson } from "../../declarations/package-json";
 import { Logger, LogLevel } from "../logging";
-import { resolvePath } from "../utils/path";
+import { joinPaths, normalizePath, resolvePath } from "../utils/path";
 import { ConfigReflectionSection } from "./config-reflection-section";
 import { getPackageInfo } from "./get-package-info";
 import { getTsConfig } from "./get-ts-config";
@@ -40,6 +44,7 @@ export type Config = {
 	readonly outDir: string;
 	readonly cacheDir: string;
 	readonly packageInfo: PackageInfo;
+	readonly dependenciesInfo: DependencyInfo[];
 	readonly encode: boolean;
 
 	// public readonly metadataIndexPath: string;
@@ -56,9 +61,71 @@ export type Config = {
 	readonly strictNullChecks: boolean;
 };
 
-export async function getParsedConfig(cliArguments: CommandLineArguments) {
+async function getDependenciesInfo(packageInfo: PackageInfo, logger: Logger): Promise<DependencyInfo[]> {
+	const dependenciesInfo: DependencyInfo[] = [];
+	const dependencies = Object.keys(packageInfo.packageJson.dependencies ?? {}).concat(
+		Object.keys(packageInfo.packageJson.devDependencies ?? [])
+	);
+	const promises = [];
+
+	for (const packageName of dependencies) {
+		const joinedPath = resolvePath(packageInfo.packageRoot, "node_modules", packageName);
+
+		promises.push(
+			new Promise<void>(async (resolve, reject) => {
+				try {
+					// Resolves realpath - removing symlinks.
+					const realDirPath = normalizePath(await fs.realpath(joinedPath));
+
+					const dependencyInfo: DependencyInfo = {
+						packageName,
+						packageRoot: realDirPath,
+						pathRegex: new RegExp("^" + realDirPath),
+						metadataPath: undefined,
+					};
+
+					const packageJson = await readPackageJson(joinedPath, packageName, logger);
+
+					if (packageJson.reflection) {
+						if (packageJson.reflection.metadata) {
+							dependencyInfo.metadataPath = normalizePath(
+								joinPaths(dependencyInfo.packageRoot, packageJson.reflection.metadata)
+							);
+						}
+					}
+
+					dependenciesInfo.push(dependencyInfo);
+				} catch (e) {
+					logger.warn(`Unable to read package.json of package '${packageName}'\n\t${joinedPath}\n\t`, e);
+				}
+				resolve();
+			})
+		);
+	}
+
+	await Promise.all(promises);
+
+	return dependenciesInfo;
+}
+
+async function readPackageJson(joinedPath: string, packageName: any, logger: Logger): Promise<PackageJson> {
+	const packageJsonPath = path.join(joinedPath, "package.json");
+
+	try {
+		const packageJson = await fs.readFile(packageJsonPath, { encoding: "utf-8" });
+		return JSON.parse(packageJson) as PackageJson;
+	} catch (e) {
+		logger.warn(`Unable to read package.json of package '${packageName}'\n\t${packageJsonPath}\n\t`, e);
+	}
+
+	return {};
+}
+
+export async function getParsedConfig(cliArguments: CommandLineArguments): Promise<Config> {
 	const root: IRootConfiguration<ConfigReflectionSection> = await createBuilder(cliArguments.projectRoot).build();
-	return createConfig(cliArguments, root, getPackageInfo(cliArguments.projectRoot));
+	const packageInfo = getPackageInfo(cliArguments.projectRoot);
+	const dependenciesInfo = await getDependenciesInfo(packageInfo, new Logger("Config"));
+	return createConfig(cliArguments, root, packageInfo, dependenciesInfo);
 }
 
 function createBuilder(configRoot: string /*, transformerConfigSection: OptionalConfigReflectionSection*/) {
@@ -75,7 +142,8 @@ function createBuilder(configRoot: string /*, transformerConfigSection: Optional
 function createConfig(
 	commandLineArguments: CommandLineArguments,
 	reflectionConfig: IRootConfiguration<ConfigReflectionSection>,
-	packageInfo: PackageInfo
+	packageInfo: PackageInfo,
+	dependenciesInfo: DependencyInfo[]
 ): Config {
 	const projectRoot = commandLineArguments.projectRoot;
 	const tsParsedCommandLine = getTsConfig(commandLineArguments);
@@ -84,6 +152,7 @@ function createConfig(
 
 	return {
 		packageInfo: packageInfo,
+		dependenciesInfo: dependenciesInfo,
 
 		projectRoot: resolvePath(projectRoot),
 		tsRootDir: resolvePath(tsParsedCommandLine.options.rootDir ?? projectRoot),
