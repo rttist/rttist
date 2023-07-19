@@ -1,10 +1,9 @@
 import type { TypeIdentifier } from "rttist";
-import { TypeInfo } from "../../../declarations/type-info";
-import type { Context } from "../contexts/context";
+import { TypeInfo } from "../../declarations/type-info";
+import type { Context } from "../transformer/contexts/context";
 import * as ts from "typescript";
 import { DependencyManager } from "../dependencies/dependency-manager";
-import { getTypeRef } from "../getTypeRef";
-import { TransformerTypeReference } from "./transformer-type-reference";
+import { generateTypeId } from "../transformer/id-generators";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -74,6 +73,7 @@ export class MetadataLibrary {
 
 	/**
 	 * Add type to the metadata library, in case it is not there yet, and return reference to the type.
+	 * @param node
 	 * @param type
 	 * @param nullable Type should be nullable. Eg. it is the type of OPTIONAL property or parameter.
 	 * @param symbol Symbol which should be used to generate name of the type.
@@ -81,44 +81,56 @@ export class MetadataLibrary {
 	 * @param typeNode
 	 * @param context
 	 */
-	referenceType(
+	addType(
+		node: ts.Node,
 		type: ts.Type,
 		nullable: boolean, // TODO: Implement
 		symbol: ts.Symbol | undefined,
 		typeNode: ts.TypeNode | undefined,
 		context: Context
 	) {
-		// Get the type reference before further processing.
-		const typeRef: TransformerTypeReference = getTypeRef(type, nullable, symbol, context.transformerContext);
+		// // Get the type reference before further processing.
+		// const typeRef: TransformerTypeReference = getTypeRef(type, nullable, symbol, context.transformerContext);
+		//
+		// // If it's native type
+		// if (
+		// 	typeRef.isKindOnly() ||
+		// 	// or already processed type
+		// 	this.processedTypes.has(typeRef.id) ||
+		// 	// or it's external SourceFile with custom typelib.
+		// 	(typeRef.sourceFile &&
+		// 		this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.metadataPath) ||
+		// 	typeRef.id === "@rttist/dist/Type" ||
+		// 	typeRef.id === "@rttist/dist/Module"
+		// ) {
+		// 	return;
+		// 	// return typeRef;
+		// }
 
-		// If it's native type
-		if (
-			typeRef.isKindOnly() ||
-			// or already processed type
-			this.processedTypes.has(typeRef.id) ||
-			// or it external SourceFile with custom typelib.
-			(typeRef.sourceFile &&
-				this.dependencyManager.getDependencyInfo(typeRef.sourceFile.fileName)?.typelibPath) ||
-			typeRef.id === "@rttist/dist/Type" ||
-			typeRef.id === "@rttist/dist/Module"
-		) {
-			return typeRef;
+		const moduleId = context.sourceFileContext.metadata.id;
+		const typeId = generateTypeId(node, moduleId, context.sourceFileContext.scopeRegistry.getClosestScope(node));
+
+		if (typeId === undefined) {
+			// TODO: Log - unable to generate type id.
+			return;
 		}
 
+		console.log("class");
+
 		const typeInfo: TypeInfo = {
-			typeReference: typeRef,
+			typeId: typeId,
 			type: type,
 			nullable: nullable,
 			properties: undefined,
 		};
 
-		// Store TypeInfo it before adding to MetadataLibrary which gather types, so this will prevent recursive issues.
-		this.processedTypes.set(typeRef.id, typeInfo);
+		// Store TypeInfo before adding to MetadataLibrary which gather types, so this will prevent recursive issues.
+		this.processedTypes.set(typeId, typeInfo);
 
-		// // Add type to Module
-		// this.getModule(typeRef, context, type).addType(typeInfo, symbol, context);
+		// Add type to Module
+		context.sourceFileContext.metadata.addType(typeInfo, symbol, context);
 
-		return typeRef;
+		// return typeRef;
 	}
 
 	// /**

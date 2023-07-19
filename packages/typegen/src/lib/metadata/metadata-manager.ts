@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import type { Config } from "../../config/config";
+import type { Config } from "../config/config";
 import { DependencyManager } from "../dependencies/dependency-manager";
 import { MetadataLibrary } from "./metadata-library";
 
