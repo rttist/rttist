@@ -1,0 +1,53 @@
+{
+	"name": "tst-reflect-transformer",
+	"version": "1.0.0-alpha.11",
+	"description": "TypeScript Transformer for Runtime Types & Reflection",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "tsc",
+		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc",
+		"watch": "tsc --watch"
+	},
+	"files": [
+		"dist/**/*"
+	],
+	"keywords": [
+		"runtime",
+		"types",
+		"reflection",
+		"reflective",
+		"reflect",
+		"typescript",
+		"gettype",
+		"typeof",
+		"transformer"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/minimatch": "^3.0.5",
+		"@types/node": "^18.0.0",
+		"rimraf": "^3.0.2"
+	},
+	"dependencies": {
+		"@netleaf/extensions-configuration": "^0.5.2",
+		"@rttist/core": "workspace:^",
+		"base32768": "^3.0.1",
+		"minimatch": "^6.1.6",
+		"rttist": "workspace:^",
+		"typescript": "^4.8.0"
+	},
+	"optionalDependencies": {
+		"deasync": "^0.1.28"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Hookyns/tst-reflect.git",
+		"directory": "packages/transformer"
+	},
+	"bugs": {
+		"url": "https://github.com/Hookyns/tst-reflect/issues"
+	},
+	"homepage": "https://github.com/Hookyns/tst-reflect#readme"
+}

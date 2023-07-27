@@ -11,4 +11,9 @@ export type CommandLineArguments = {
 	 * Force generation of all files.
 	 */
 	force: boolean;
+
+	/**
+	 * Use type checking to have more accurate metadata.
+	 */
+	typecheck: boolean;
 };

@@ -32,6 +32,7 @@ export type Config = {
 	readonly logLevel: LogLevel;
 	readonly watch: boolean;
 	readonly force: boolean;
+	readonly typecheck: boolean;
 
 	readonly include: string[];
 	readonly exclude: string[];
@@ -161,6 +162,7 @@ function createConfig(
 
 		watch: commandLineArguments.watch,
 		force: commandLineArguments.force,
+		typecheck: commandLineArguments.typecheck,
 
 		include: metadataConfig.get("include")!,
 		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "metadata.typelib.ts"]), // TODO: Check if it must be fixed because of relative paths

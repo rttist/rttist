@@ -37,7 +37,7 @@ function getCompilerOptions(config: Config) {
 	const options: ts.CompilerOptions = {
 		...config.compilerOptions,
 		isolatedModules: true,
-		noLib: true,
+		// noLib: true,
 		noResolve: true,
 		declaration: false,
 		declarationMap: false,

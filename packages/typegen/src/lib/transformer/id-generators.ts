@@ -167,22 +167,39 @@ export function generateTypeId(node: ts.Node, moduleId: ModuleIdentifier, scope:
 		return TypeIds.Invalid;
 	}
 
-	// Identifier from scope
-	if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
-		const topLevelIdentifier = ts.isIdentifier(node) ? node : getTopLevelIdentifier(node);
+	// If it's typeof something
+	if (ts.isTypeQueryNode(node)) {
+		const topLevelIdentifier = getTopLevelTypeName(node.exprName);
 
 		if (topLevelIdentifier) {
-			const declaration = scope.getDeclaration(topLevelIdentifier.text);
-
-			// console.log("generateTypeId for identifier from scope:", declaration);
+			const declaration = scope.getTypeDeclaration(topLevelIdentifier.text);
 
 			if (declaration) {
-				return createIdentifierDeclarationTypeId(node, moduleId, declaration);
+				return createTypeNameDeclarationTypeId(node.exprName, moduleId, declaration);
 			}
 		}
 
 		return TypeIds.Invalid;
 	}
+
+	// TODO: Check if this can even get here. Seems like in type context it can be only TypeReference or TypeQuery
+	// // Identifier from scope
+	// if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
+	// 	const topLevelIdentifier = ts.isIdentifier(node) ? node : getTopLevelIdentifier(node);
+	//
+	// 	if (topLevelIdentifier) {
+	// 		const declaration = scope.getDeclaration(topLevelIdentifier.text);
+	//
+	// 		// console.log("generateTypeId for identifier from scope:", declaration);
+	//
+	// 		if (declaration) {
+	// 			return createIdentifierDeclarationTypeId(node, moduleId, declaration);
+	// 		}
+	// 	}
+	//
+	// 	return TypeIds.Invalid;
+	// }
+
 	//
 	// // variables from scope
 	// if (ts.isIdentifier(node)) {

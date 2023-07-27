@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ES2020",
+		"removeComments": true,
+		"sourceMap": true,
+		"stripInternal": true,
+		"strictNullChecks": true,
+		"strict": true,
+		"rootDir": "src",
+		"outDir": "dist",
+		"composite": true,
+		"esModuleInterop": true
+	},
+	"include": [
+		"./src/**/*.ts"
+	]
+}

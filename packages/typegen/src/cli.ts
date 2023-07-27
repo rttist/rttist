@@ -19,6 +19,10 @@ export class CLI {
 		// 	"./reflect.config.json"
 		// );
 		program.option("-w, --watch", "enable watch mode.");
+		program.option(
+			"-t, --typecheck",
+			"enable type-checking - metadata will be more accurate but it will be much slower and it will consume much more memory."
+		);
 
 		program.parse();
 	}
@@ -32,6 +36,7 @@ export class CLI {
 			// config: resolvePath(dirname(tsconfigPath), opts.config),
 			watch: opts?.watch ?? false,
 			force: opts?.force ?? false,
+			typecheck: opts?.typecheck ?? false,
 		};
 	}
 }
