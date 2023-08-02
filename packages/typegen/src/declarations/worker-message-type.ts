@@ -1,3 +1,6 @@
-export enum WorkerMessageType {
+export enum WorkerMessageType
+{
 	FileFinished,
+	FlushLogBuffer,
+	GenerationCompleted,
 }

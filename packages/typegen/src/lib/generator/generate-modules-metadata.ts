@@ -1,4 +1,7 @@
+// import { createClient } from "memory-mapped-files";
+import type { Client } from "memory-mapped-files";
 import * as ts from "typescript";
+import * as fs from "fs";
 import { Config } from "../config/config";
 import { TransformerContext } from "../transformer/contexts/transformer-context";
 import { createSourceFileVisitor } from "../transformer/visitors/sourcefile-visitor";
@@ -8,10 +11,10 @@ export function generateModulesMetadata(
 	config: Config,
 	writeFileCallback: (filename: string) => void
 ) {
+	const mmfClient = undefined; //createClient();
 	const options = getCompilerOptions(config);
-	const host = createCompilerHost(options);
+	const host = createCompilerHost(options, config, mmfClient);
 	const program = ts.createProgram(sourceFiles, options, host);
-
 	const transformerContext = new TransformerContext(program, config, writeFileCallback);
 
 	program.emit(undefined, undefined, undefined, false, {
@@ -21,14 +24,28 @@ export function generateModulesMetadata(
 			},
 		],
 	});
+
+	// mmfClient.dispose();
 }
 
-function createCompilerHost(options: ts.CompilerOptions /*, writeFileCallback: (filename: string) => void*/) {
+function createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClient?: Client) {
 	const host = ts.createCompilerHost(options);
 
 	host.writeFile = (fileName: string, contents: string) => {
 		// writeFileCallback(fileName);
 	};
+
+	if (mmfClient) {
+		host.readFile = (fileName) => {
+			const file = mmfClient.getFile(fileName.replace(config.tsRootDir, ""));
+
+			if (file) {
+				return file;
+			}
+
+			return fs.readFileSync(fileName, "utf-8");
+		};
+	}
 
 	return host;
 }
@@ -38,7 +55,8 @@ function getCompilerOptions(config: Config) {
 		...config.compilerOptions,
 		isolatedModules: true,
 		// noLib: true,
-		noResolve: true,
+		skipDefaultLibCheck: config.typecheck,
+		noResolve: !config.typecheck,
 		declaration: false,
 		declarationMap: false,
 		sourceMap: false,

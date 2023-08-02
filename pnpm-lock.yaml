@@ -139,6 +139,9 @@ importers:
       fast-glob:
         specifier: ^3.3.0
         version: 3.3.0
+      memory-mapped-files:
+        specifier: ^0.1.0
+        version: 0.1.0
       micromatch:
         specifier: ^4.0.5
         version: 4.0.5
@@ -3987,6 +3990,12 @@ packages:
       fs-monkey: 1.0.4
     dev: true
 
+  /memory-mapped-files@0.1.0:
+    resolution: {integrity: sha512-sNSUiHAice6tf5QqcPkohzJE3fWUA4fy1ShPwaazS29ThTYprc/KETsyJ+A4HXOXhvuv/3v5YJbqEXRvBJJVJw==}
+    dependencies:
+      node-api-dotnet: 0.4.4
+    dev: false
+
   /merge-descriptors@1.0.1:
     resolution: {integrity: sha512-cCi6g3/Zr1iqQi6ySbseM1Xvooa98N0w31jzUYrXPX2xqObmFGHJ0tQ5u74H3mVh7wLouTseZyYIq39g8cNp1w==}
     dev: true
@@ -4103,6 +4112,10 @@ packages:
 
   /node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
+    dev: false
+
+  /node-api-dotnet@0.4.4:
+    resolution: {integrity: sha512-wrDOZ0xKVtTcXGjT2CCqkLPAdmNJcfw/lXeb43m+WVivLN8hMBvkxtiNNzd5/Fns+RPhnzw1x296Ol8mZcfacg==}
     dev: false
 
   /node-fetch@2.6.12:

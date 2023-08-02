@@ -1,5 +1,9 @@
-import { LogColor } from "./log-color";
-import { LogLevel } from "./log-level";
+import {
+	logBuffer,
+	LogBuffer
+} from "./log-buffer";
+import { LogColor }  from "./log-color";
+import { LogLevel }  from "./log-level";
 
 const LEVEL_MAP = {
 	[LogLevel.None]: 0,
@@ -22,6 +26,7 @@ const COLOR_MAP = {
 };
 
 function writeToConsole(
+	logBuffer: LogBuffer,
 	level: LogLevel,
 	color: number | undefined,
 	prefix: string,
@@ -29,14 +34,14 @@ function writeToConsole(
 	args: any[]
 ) {
 	if (color) {
-		console.log.apply(undefined, [
+		logBuffer.log(
 			`\x1b[${color}m[${level}] ${prefix}`,
 			...args.flatMap((arg) => (typeof arg !== "string" ? ["\x1b[0m", arg, `\x1b[${color}m`] : [arg])),
 			contextSuffix,
-			"\x1b[0m",
-		]);
+			"\x1b[0m"
+		);
 	} else {
-		console.log.apply(undefined, [`[${level}] ${prefix}`, ...args, contextSuffix]);
+		logBuffer.log(`[${level}] ${prefix}`, ...args, contextSuffix);
 	}
 }
 
@@ -47,7 +52,8 @@ export class Logger {
 
 	constructor(
 		private readonly prefix: string,
-		context?: string
+		context?: string,
+		private readonly buffer: LogBuffer = logBuffer
 	) {
 		this.contextSuffix = context ? "\n\tContext: " + context : "";
 	}
@@ -74,6 +80,7 @@ export class Logger {
 		}
 
 		writeToConsole(
+			this.buffer,
 			level,
 			COLOR_MAP[level],
 			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,
@@ -94,6 +101,7 @@ export class Logger {
 		}
 
 		writeToConsole(
+			this.buffer,
 			level,
 			color,
 			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,

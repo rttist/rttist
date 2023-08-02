@@ -1,12 +1,16 @@
+import { startTime } from "./performance-import-time-start"; // Keep first
 import { Entry } from "fast-glob";
+import { startCacheServer } from "memory-mapped-files";
 import type { CLI } from "./cli";
 import { cpus } from "os";
 import * as fs from "fs/promises";
 import { Worker } from "worker_threads";
+import { WorkerMessage } from "./declarations/worker-message";
 import { Config, getParsedConfig } from "./lib/config/config";
 import { CacheStats } from "./declarations/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { LogColor, Logger, LogLevel } from "./lib/logging";
+import { LogBuffer } from "./lib/logging/log-buffer";
 import { TypelibGenerator } from "./lib/typelib-generator";
 import { resolvePath } from "./lib/utils/path";
 import * as fastGlob from "fast-glob";
@@ -20,12 +24,14 @@ const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
 // TODO: Refactor this file. Separate base build, spawning and watching.
 
 export class Program {
-	private readonly logger = new Logger("Program");
+	private readonly logger = new Logger("Program", undefined, new LogBuffer(true));
 	private readonly performanceEntries: {
+		parseStart: number;
 		start: number;
 		initialization?: number;
 		completed?: number;
 	} = {
+		parseStart: startTime,
 		start: performance.now(),
 	};
 	private stats: CacheStats = {
@@ -46,6 +52,9 @@ export class Program {
 
 		this.logger.log(LogLevel.Info, LogColor.blue, "Project root: " + config.projectRoot);
 		this.logger.log(LogLevel.Info, LogColor.blue, "TypeScript root directory: " + config.tsRootDir);
+
+		// run MMF cache server
+		// startCacheServer(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
 
 		const allFiles = await this.getSourceFilesWithStats(config);
 		const allFilesPath = allFiles.map((x) => x.path);
@@ -70,7 +79,7 @@ export class Program {
 		// Capture initialization time
 		this.performanceEntries.initialization = performance.now();
 
-		// Wait for workers to finish
+		// Wait for workers to finish generation
 		await Promise.all(
 			workers.map((entry) => {
 				entry.worker.on("message", (message) => {
@@ -79,11 +88,19 @@ export class Program {
 					}
 				});
 
-				return entry.promise;
+				return entry.generationCompletedPromise;
 			})
 		);
 
 		progressBar.stop();
+
+		// Flush workers log buffers
+		workers.forEach((worker) => {
+			worker.worker.postMessage({ type: WorkerMessageType.FlushLogBuffer });
+		});
+
+		// Wait for workers to exit
+		await Promise.all(workers.map((entry) => entry.workerExitedPromise));
 
 		if (filesToProcess.length > 0) {
 			// await generateTypelibFiles(
@@ -95,7 +112,7 @@ export class Program {
 		}
 
 		this.performanceEntries.completed = performance.now();
-		this.logPerformanceInfo(config);
+		this.printPerformanceInfo(config);
 
 		if (filesToProcess.length > 0) {
 			this.stats.lastGeneration = new Date();
@@ -128,7 +145,7 @@ export class Program {
 	}
 
 	private spawnWorkers(fileNames: string[], config: Config) {
-		const cpuCount = cpus().length;
+		const cpuCount = Math.round(cpus().length / 3);
 		// Find out how many files each worker should process; If it's less than 5 per worker, use only one worker.
 		const workerFileCount =
 			fileNames.length < cpuCount * 5 ? fileNames.length : Math.floor(fileNames.length / cpuCount) || 1;
@@ -148,7 +165,7 @@ export class Program {
 
 			const worker = this.spawn(config, files, this.logger);
 
-			worker.promise
+			worker.workerExitedPromise
 				// .then(() => {
 				// 	// console.log("Worker finished");
 				// })
@@ -159,14 +176,21 @@ export class Program {
 			workers.push(worker);
 		}
 
+		this.logger.info("Workers spawned:", workers.length);
+
 		return workers;
 	}
 
-	private logPerformanceInfo(config: Config) {
+	private printPerformanceInfo(config: Config) {
 		this.logger.log(
 			config.devMode ? LogLevel.Dev : LogLevel.Debug,
 			LogColor.magenta,
 			"Completed!",
+
+			"\n\tImporting modules:",
+			roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart),
+			"sec.",
+
 			"\n\tInitialization:",
 			roundPerfTime(this.performanceEntries.initialization ?? 0 - this.performanceEntries.start),
 			"sec.",
@@ -180,7 +204,7 @@ export class Program {
 			// "sec.",
 
 			"\n\tTotal time:",
-			roundPerfTime(this.performanceEntries.completed ?? 0 - this.performanceEntries.start),
+			roundPerfTime(this.performanceEntries.completed ?? 0 - this.performanceEntries.parseStart),
 			"sec."
 
 			// "\n\tProcessed",
@@ -236,21 +260,38 @@ export class Program {
 
 		return {
 			worker: worker,
-			promise: new Promise((resolve, reject) => {
+			workerExitedPromise: new Promise((resolve, reject) => {
+				this.finalizeOnWorkerExit(worker, resolve, reject);
+			}),
+			generationCompletedPromise: new Promise((resolve, reject) => {
 				try {
-					// worker.on("message", resolve);
-					worker.on("error", reject);
-					worker.on("exit", (code) => {
-						if (code !== 0) {
-							reject(new Error(`Worker stopped with exit code ${code}`));
+					this.finalizeOnWorkerExit(worker, resolve, reject);
+
+					worker.on("message", (message: WorkerMessage) => {
+						if (message.type === WorkerMessageType.GenerationCompleted) {
+							resolve(undefined);
 						}
-						resolve(undefined);
 					});
 				} catch (error) {
 					reject(error);
 				}
 			}),
 		};
+	}
+
+	private finalizeOnWorkerExit(
+		worker: Worker,
+		resolve: (value: PromiseLike<unknown> | unknown) => void,
+		reject: (reason?: any) => void
+	) {
+		worker.on("error", reject);
+		worker.on("exit", (code) => {
+			if (code !== 0) {
+				reject(new Error(`Worker stopped with exit code ${code}`));
+			}
+
+			resolve(undefined);
+		});
 	}
 
 	private async persistStats(config: Config) {
