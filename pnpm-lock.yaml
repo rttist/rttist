@@ -140,8 +140,8 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0
       memory-mapped-files:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.1.1
+        version: 0.1.1
       micromatch:
         specifier: ^4.0.5
         version: 4.0.5
@@ -3990,8 +3990,8 @@ packages:
       fs-monkey: 1.0.4
     dev: true
 
-  /memory-mapped-files@0.1.0:
-    resolution: {integrity: sha512-sNSUiHAice6tf5QqcPkohzJE3fWUA4fy1ShPwaazS29ThTYprc/KETsyJ+A4HXOXhvuv/3v5YJbqEXRvBJJVJw==}
+  /memory-mapped-files@0.1.1:
+    resolution: {integrity: sha512-pbn/YEf8LK6S2yrJtEuJn/j1q89a+AkJvb6/qK44mow50r9bRhB7qJo1Y1jsXImFwVydE56k/2tHv0kEDLWEqw==}
     dependencies:
       node-api-dotnet: 0.4.4
     dev: false
