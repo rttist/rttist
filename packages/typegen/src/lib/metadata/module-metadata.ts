@@ -9,8 +9,8 @@ import * as ts from "typescript";
 import { ModuleIds } from "@rttist/core";
 import { Config } from "../config/config";
 import { Context } from "../transformer/contexts/context";
-import { generateImportedModuleId, generateSourceFileModuleId } from "../transformer/id-generators";
 import { getTypeProperties } from "../transformer/properties/get-type-properties";
+import { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -52,15 +52,16 @@ export class ModuleMetadata {
 	 * Create ModuleMetadata object from SourceFile.
 	 * @param sourceFile
 	 * @param config
+	 * @param scope
 	 */
-	public static createFromSourceFile(sourceFile: ts.SourceFile, config: Config): ModuleMetadata {
+	public static createFromSourceFile(sourceFile: ts.SourceFile, config: Config, scope: ModuleScope): ModuleMetadata {
 		const name = sourceFile.moduleName === undefined ? "" : sourceFile.moduleName;
 
 		return new ModuleMetadata({
 			name,
-			id: generateSourceFileModuleId(sourceFile.fileName, config.tsRootDir, config.packageInfo.name),
+			id: scope.id, //generateSourceFileModuleId(sourceFile.fileName, config.tsRootDir, config.packageInfo.name),
 			// path: sourceFile.fileName,
-			children: this.getChildrenReferences(sourceFile, config),
+			children: scope.getImportedModuleIdentifiers(), //this.getChildrenReferences(sourceFile, config),
 		});
 	}
 
@@ -119,21 +120,21 @@ export class ModuleMetadata {
 		// }
 	}
 
-	private static getChildrenReferences(sourceFile: ts.SourceFile, config: Config) {
-		const index = sourceFile.statements.findIndex((s) => !ts.isImportDeclaration(s));
-		const references: Array<ModuleReference> = [];
-		let importDeclaration: ts.ImportDeclaration;
-
-		for (let i = 0; i < index; i++) {
-			importDeclaration = sourceFile.statements[i] as ts.ImportDeclaration;
-
-			if (importDeclaration.importClause?.isTypeOnly) {
-				continue;
-			}
-
-			references.push(generateImportedModuleId(sourceFile.fileName, importDeclaration, config));
-		}
-
-		return references;
-	}
+	// private static getChildrenReferences(sourceFile: ts.SourceFile, config: Config) {
+	// 	const index = sourceFile.statements.findIndex((s) => !ts.isImportDeclaration(s));
+	// 	const references: Array<ModuleReference> = [];
+	// 	let importDeclaration: ts.ImportDeclaration;
+	//
+	// 	for (let i = 0; i < index; i++) {
+	// 		importDeclaration = sourceFile.statements[i] as ts.ImportDeclaration;
+	//
+	// 		if (importDeclaration.importClause?.isTypeOnly) {
+	// 			continue;
+	// 		}
+	//
+	// 		references.push(generateImportedModuleId(sourceFile.fileName, importDeclaration, config));
+	// 	}
+	//
+	// 	return references;
+	// }
 }

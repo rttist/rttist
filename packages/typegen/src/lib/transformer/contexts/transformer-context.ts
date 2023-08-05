@@ -2,11 +2,19 @@ import * as fs from "fs";
 import * as ts from "typescript";
 import { Config } from "../../config/config";
 import { DependencyManager } from "../../dependencies/dependency-manager";
+import { Logger } from "../../logging";
+import { LogBuffer } from "../../logging/log-buffer";
 import { MetadataLibrary } from "../../metadata/metadata-library";
 import { MetadataManager } from "../../metadata/metadata-manager";
 import { MetadataPrinter } from "../../metadata/metadata-printer";
 import { dirname } from "../../utils/path";
 import { resolveSourceFileCachePath } from "../../utils/resolve-sourcefile-cache-path";
+import { ModuleIdentifierGenerator } from "../syntax-type-checker/identifier-generators/module-identifier-generator";
+import { TypeIdentifierGenerator } from "../syntax-type-checker/identifier-generators/type-identifier-generator";
+import { ScopeAnalyzer } from "../syntax-type-checker/scope-analyzer";
+import { ScopeManager } from "../syntax-type-checker/scopes/scope-manager";
+import { ScopeRegistry } from "../syntax-type-checker/scopes/scope-registry";
+import { SyntaxTypeChecker } from "../syntax-type-checker/syntax-type-checker";
 import { mainVisitor } from "../visitors/main-visitor";
 import { Context } from "./context";
 import { SourceFileContext } from "./source-file-context";
@@ -43,10 +51,23 @@ export class TransformerContext {
 	 */
 	public readonly dependencyManager: DependencyManager;
 
-	private readonly metadataPrinter: MetadataPrinter;
+	/**
+	 * Syntax type checker.
+	 */
+	public readonly syntaxTypeChecker: SyntaxTypeChecker;
+
+	/**
+	 * Scope manager.
+	 */
+	public readonly scopeManager: ScopeManager;
 
 	// TODO: implement
 	public readonly writePromises: Promise<void>[] = [];
+
+	private readonly metadataPrinter: MetadataPrinter;
+	private readonly scopeRegistry: ScopeRegistry;
+	private readonly moduleIdentifierGenerator: ModuleIdentifierGenerator;
+	private readonly scopeAnalyzer: ScopeAnalyzer;
 
 	constructor(
 		public readonly program: ts.Program,
@@ -58,6 +79,17 @@ export class TransformerContext {
 		this.metadata = MetadataLibrary.init(this.dependencyManager);
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
 		this.metadataPrinter = new MetadataPrinter(config);
+
+		this.scopeRegistry = new ScopeRegistry();
+		this.moduleIdentifierGenerator = new ModuleIdentifierGenerator(config);
+		this.scopeAnalyzer = new ScopeAnalyzer(config, this.scopeRegistry, this.moduleIdentifierGenerator);
+		this.scopeManager = new ScopeManager(this.scopeAnalyzer, this.scopeRegistry);
+		this.syntaxTypeChecker = new SyntaxTypeChecker(
+			// this.scopeAnalyzer,
+			// this.moduleIdentifierGenerator,
+			new TypeIdentifierGenerator(this.scopeManager),
+			new Logger("SyntaxTypeChecker", undefined, LogBuffer.default)
+		);
 
 		// This will allow deconstruction of the context.
 		this.visitSourceFile = this.visitSourceFile.bind(this);
@@ -77,8 +109,12 @@ export class TransformerContext {
 	): ts.SourceFile {
 		const sourceFileStart = performance.now();
 
-		const sourceFileContext = new SourceFileContext(sourceFileNode, this.config, transformationContext);
-		sourceFileContext.analyzeScopes();
+		const sourceFileContext = new SourceFileContext(
+			sourceFileNode,
+			this.config,
+			this.scopeAnalyzer.analyzeSourceFile(sourceFileNode, transformationContext)
+		);
+		// sourceFileContext.analyzeScopes();
 
 		const context = new Context(
 			undefined,

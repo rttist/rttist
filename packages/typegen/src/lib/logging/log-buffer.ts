@@ -1,4 +1,7 @@
 ﻿export class LogBuffer {
+	public static readonly default = new LogBuffer();
+	public static readonly autoFlush = new LogBuffer();
+	
 	private buffer: any[];
 
 	constructor(private readonly autoFlush = false) {
@@ -20,5 +23,3 @@
 		}
 	}
 }
-
-export const logBuffer = new LogBuffer();

@@ -11,11 +11,11 @@ import { getDeclaration } from "../../utils/symbolHelpers";
 import { getSymbol, isReference } from "../../utils/typeHelpers";
 import { getConstructors } from "../getConstructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
+import { mapProperties } from "../map-properties";
 import { mapIndexes } from "../mapIndexes";
 import { mapMethods } from "../mapMethods";
-import { mapProperties } from "../mapProperties";
+import { mapObjectLiteral } from "./map-object-literal";
 import { mapFunction } from "./mapFunction";
-import { mapObjectLiteral } from "./mapObjectLiteral";
 import { mapTuple } from "./mapTuple";
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {

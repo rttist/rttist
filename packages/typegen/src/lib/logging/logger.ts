@@ -1,9 +1,6 @@
-import {
-	logBuffer,
-	LogBuffer
-} from "./log-buffer";
-import { LogColor }  from "./log-color";
-import { LogLevel }  from "./log-level";
+import { LogBuffer } from "./log-buffer";
+import { LogColor } from "./log-color";
+import { LogLevel } from "./log-level";
 
 const LEVEL_MAP = {
 	[LogLevel.None]: 0,
@@ -53,7 +50,7 @@ export class Logger {
 	constructor(
 		private readonly prefix: string,
 		context?: string,
-		private readonly buffer: LogBuffer = logBuffer
+		private readonly buffer: LogBuffer = LogBuffer.default
 	) {
 		this.contextSuffix = context ? "\n\tContext: " + context : "";
 	}

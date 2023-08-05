@@ -3,9 +3,9 @@ import { TypeKind } from "rttist";
 import { TypeMapperResult } from "../../../../declarations/mappers";
 import { Context } from "../../contexts/context";
 import { getSymbol } from "../../utils/typeHelpers";
+import { mapProperties } from "../map-properties";
 import { mapIndexes } from "../mapIndexes";
 import { mapMethods } from "../mapMethods";
-import { mapProperties } from "../mapProperties";
 
 export function mapObjectLiteral(
 	type: ts.ObjectType,

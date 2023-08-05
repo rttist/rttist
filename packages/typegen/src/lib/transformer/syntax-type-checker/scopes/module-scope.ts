@@ -1,3 +1,4 @@
+import { ModuleIdentifier } from "rttist";
 import * as ts from "typescript";
 import { ImportDeclarationInfo, Scope } from "./scope";
 
@@ -7,8 +8,12 @@ export class ModuleScope extends Scope {
 	/**
 	 *
 	 * @param originator Node that created this scope.
+	 * @param id
 	 */
-	constructor(originator: ts.SourceFile) {
+	constructor(
+		originator: ts.SourceFile,
+		public readonly id: ModuleIdentifier
+	) {
 		super(originator, null!);
 	}
 
@@ -18,5 +23,9 @@ export class ModuleScope extends Scope {
 
 	getImportDeclaration(name: string) {
 		return this.importDeclarations.get(name);
+	}
+
+	getImportedModuleIdentifiers() {
+		return Array.from(this.importDeclarations.values()).map((x) => x.moduleId);
 	}
 }

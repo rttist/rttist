@@ -1,6 +1,5 @@
 import type { Context } from "../contexts/context";
 import * as ts from "typescript";
-import { generateTypeId } from "../id-generators";
 import { functionVisitor } from "./function-visitor";
 
 export function classVisitor(
