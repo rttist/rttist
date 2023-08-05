@@ -3,7 +3,7 @@ import { WorkerArguments } from "./declarations/worker-arguments";
 import { WorkerMessage } from "./declarations/worker-message";
 import { generateModulesMetadata } from "./lib/generator/generate-modules-metadata";
 import { Logger } from "./lib/logging";
-import { logBuffer } from "./lib/logging/log-buffer";
+import { LogBuffer } from "./lib/logging/log-buffer";
 import { resolvePath } from "./lib/utils/path";
 import { WorkerMessageType } from "./declarations/worker-message-type";
 
@@ -32,7 +32,7 @@ parentPort?.postMessage({
 function flushHandler(message: WorkerMessage) {
 	switch (message.type) {
 		case WorkerMessageType.FlushLogBuffer:
-			logBuffer.flush();
+			LogBuffer.default.flush();
 			parentPort?.removeListener("message", flushHandler);
 			break;
 	}

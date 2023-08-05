@@ -24,7 +24,7 @@ const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
 // TODO: Refactor this file. Separate base build, spawning and watching.
 
 export class Program {
-	private readonly logger = new Logger("Program", undefined, new LogBuffer(true));
+	private readonly logger = new Logger("Program", undefined, LogBuffer.autoFlush);
 	private readonly performanceEntries: {
 		parseStart: number;
 		start: number;
@@ -54,7 +54,7 @@ export class Program {
 		this.logger.log(LogLevel.Info, LogColor.blue, "TypeScript root directory: " + config.tsRootDir);
 
 		// run MMF cache server
-		// startCacheServer(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
+		startCacheServer(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
 
 		const allFiles = await this.getSourceFilesWithStats(config);
 		const allFilesPath = allFiles.map((x) => x.path);
