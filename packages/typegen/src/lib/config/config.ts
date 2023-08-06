@@ -7,6 +7,7 @@ import { CommandLineArguments } from "../../declarations/command-line-arguments"
 import { DependencyInfo } from "../../declarations/dependency-info";
 import type { PackageInfo } from "../../declarations/package-info";
 import { PackageJson } from "../../declarations/package-json";
+import { TargetPlatform } from "../../declarations/target-platform";
 import { Logger, LogLevel } from "../logging";
 import { joinPaths, normalizePath, resolvePath } from "../utils/path";
 import { ConfigReflectionSection } from "./config-reflection-section";
@@ -17,6 +18,7 @@ const DefaultConfiguration: ConfigReflectionSection = {
 	devMode: false,
 	logLevel: "Info",
 	dependencyResolution: "typelibs",
+	target: TargetPlatform[TargetPlatform.Universal] as keyof typeof TargetPlatform,
 	plugins: [],
 	metadata: {
 		encode: true,
@@ -33,6 +35,7 @@ export type Config = {
 	readonly watch: boolean;
 	readonly force: boolean;
 	readonly typecheck: boolean;
+	readonly target: TargetPlatform;
 
 	readonly include: string[];
 	readonly exclude: string[];
@@ -168,6 +171,7 @@ function createConfig(
 		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "metadata.typelib.ts"]), // TODO: Check if it must be fixed because of relative paths
 
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
+		target: TargetPlatform[reflectionConfig.get("target") as keyof typeof TargetPlatform],
 
 		// TS OPTIONS
 		compilerOptions: tsParsedCommandLine.options,

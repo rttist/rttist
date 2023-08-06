@@ -1,4 +1,5 @@
 import type { ModuleIdentifier, ModuleReference, TypeIdentifier } from "rttist";
+import { TargetPlatform } from "../../declarations/target-platform";
 import type { TypeInfo } from "../../declarations/type-info";
 import type {
 	ModuleMetadataProperties,
@@ -59,8 +60,8 @@ export class ModuleMetadata {
 
 		return new ModuleMetadata({
 			name,
-			id: scope.id, //generateSourceFileModuleId(sourceFile.fileName, config.tsRootDir, config.packageInfo.name),
-			// path: sourceFile.fileName,
+			id: scope.id,
+			path: (config.target === TargetPlatform.Server && sourceFile.fileName) || undefined,
 			children: scope.getImportedModuleIdentifiers(), //this.getChildrenReferences(sourceFile, config),
 		});
 	}
@@ -72,28 +73,8 @@ export class ModuleMetadata {
 		config: Config,
 		{ withoutTypes = false }: { withoutTypes?: boolean } = { withoutTypes: false }
 	): ModuleProperties {
-		// const modulePath = changeExtensionForOutput(
-		// 	relativePath(path.dirname(config.metadataTypelibSourcePath), this.moduleProperties.path),
-		// 	config
-		// );
-
 		return {
 			...this.moduleProperties,
-			// import:
-			// 	this.moduleProperties.id === ModuleIds.Native ||
-			// 	this.moduleProperties.id === ModuleIds.Invalid ||
-			// 	this.moduleProperties.id === ModuleIds.Dynamic
-			// 		? undefined
-			// 		: ts.factory.createArrowFunction(
-			// 				undefined,
-			// 				undefined,
-			// 				[],
-			// 				undefined,
-			// 				undefined,
-			// 				ts.factory.createCallExpression(ts.factory.createIdentifier("import"), undefined, [
-			// 					ts.factory.createStringLiteral(changeExtensionForOutput(modulePath, config)),
-			// 				])
-			// 		  ),
 			types: withoutTypes ? undefined : Array.from(this.types.values()).map((typeInfo) => typeInfo.properties!),
 		};
 	}
@@ -106,9 +87,8 @@ export class ModuleMetadata {
 		this.types.set(typeInfo.typeReference.id, typeInfo);
 
 		// TODO: Uncomment when implemented in ID
-		// if (typeInfo.nullable)
-		// {
-		// 	typeInfo.properties!.nullable = true;
+		// if (typeInfo.nullable) {
+		// 	typeInfo.properties.nullable = true;
 		// }
 	}
 

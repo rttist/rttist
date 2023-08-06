@@ -39,9 +39,15 @@
 		},
 		"logLevel": {
 			"description": "Level of logging.",
-			"default": "info",
+			"default": "Info",
 			"type": "string",
 			"enum": ["None", "Trace", "Debug", "Info", "Warning", "Error", "Dev"]
+		},
+		"target": {
+			"description": "Target platform.",
+			"default": "Universal",
+			"type": "string",
+			"enum": ["Universal", "Server"]
 		}
 	},
 	"required": ["metadata"],

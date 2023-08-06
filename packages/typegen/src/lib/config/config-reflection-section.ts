@@ -1,3 +1,4 @@
+import { TargetPlatform } from "../../declarations/target-platform";
 import { LogLevel } from "../logging";
 
 /**
@@ -60,6 +61,11 @@ export type ConfigReflectionSection = {
 	 * @default typelibs
 	 */
 	dependencyResolution: "typelibs" | "direct-dependencies" | "all";
+
+	/**
+	 * Target platform.
+	 */
+	target: keyof typeof TargetPlatform;
 
 	/**
 	 * List of plugins.
