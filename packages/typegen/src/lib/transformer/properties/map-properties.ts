@@ -29,16 +29,6 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 				(memberSymbol.flags & ts.SymbolFlags.Optional) !== 0 ||
 				(declaration !== undefined && declaration.questionToken !== undefined);
 
-			// const typeReferenceNode = declaration.type;
-			// let typeId;
-			//
-			// if (typeReferenceNode) {
-			// 	typeId = generateTypeId(typeReferenceNode, "", context.transformerContext.scopeRegistry.)
-			// }
-			//
-			// const context.typeChecker.getTypeAtLocation(typeReferenceNode);
-			//
-			//
 			let decorators: DecoratorProperties[] | undefined = undefined;
 			let type = TransformerTypeReference.Invalid;
 
@@ -48,30 +38,35 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 
 				if (declaration.type !== undefined) {
 					type = context.transformerContext.syntaxTypeChecker.getType(declaration.type);
-				} else if (declaration.initializer !== undefined) {
-					const initializerSymbol: ts.Symbol =
-						(declaration.initializer as any).symbol ??
-						context.typeChecker.getSymbolAtLocation(declaration.initializer);
+				}
+				// In case the type is not declared, we'll use TS's TypeChecker to get the type.
+				else if (declaration.initializer !== undefined) {
+					const initializerType = getType(memberSymbol, declaration, context.typeChecker);
+					type = context.transformerContext.tsTypeTypeChecker.getType(initializerType, undefined, false);
 
-					if (initializerSymbol === undefined) {
-						// TODO: In case that initializer has no symbol we have to use TypeChecker and generate type ID using the TS's Type.
-						const initializerType = getType(memberSymbol, declaration, context.typeChecker);
-
-						type = context.transformerContext.tsTypeTypeChecker.getType(initializerType, undefined, false);
-
-						// const s = initializerType.getSymbol();
-						// if (initializerType.isLiteral()) {
-						// 	type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer);
-						// } else {
-						// type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer, true);
-						// }
-					} else {
-						const initializerTypeDeclaration = getDeclaration(initializerSymbol);
-
-						if (initializerTypeDeclaration !== undefined) {
-							type = context.transformerContext.syntaxTypeChecker.getType(initializerTypeDeclaration);
-						}
-					}
+					// const initializerSymbol: ts.Symbol =
+					// 	(declaration.initializer as any).symbol ??
+					// 	context.typeChecker.getSymbolAtLocation(declaration.initializer);
+					//
+					// if (initializerSymbol === undefined) {
+					// 	// TODO: In case that initializer has no symbol we have to use TypeChecker and generate type ID using the TS's Type.
+					// 	const initializerType = getType(memberSymbol, declaration, context.typeChecker);
+					//
+					// 	type = context.transformerContext.tsTypeTypeChecker.getType(initializerType, undefined, false);
+					//
+					// 	// const s = initializerType.getSymbol();
+					// 	// if (initializerType.isLiteral()) {
+					// 	// 	type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer);
+					// 	// } else {
+					// 	// type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer, true);
+					// 	// }
+					// } else {
+					// 	const initializerTypeDeclaration = getDeclaration(initializerSymbol);
+					//
+					// 	if (initializerTypeDeclaration !== undefined) {
+					// 		type = context.transformerContext.syntaxTypeChecker.getType(initializerTypeDeclaration);
+					// 	}
+					// }
 				}
 
 				// type = new TransformerTypeReference(

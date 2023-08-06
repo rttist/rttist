@@ -6,6 +6,10 @@ export enum InfoKind {
 	NamedDeclaration,
 	ImportDeclaration,
 	TypeParameterDeclaration,
+	/**
+	 * Any declaration creating a type: interface, class, type alias etc.
+	 */
+	AnyTypeDeclaration,
 }
 
 export type ImportDeclarationInfo =
@@ -30,11 +34,16 @@ export type NamedDeclarationInfo = {
 
 export type TypeParameterDeclarationInfo = {
 	kind: InfoKind.TypeParameterDeclaration;
-	declaration: ts.TypeParameterDeclaration;
+	declaration: ts.TypeParameterDeclaration | ts.ClassDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
+};
+
+export type AnyTypeDeclarationInfo = {
+	kind: InfoKind.AnyTypeDeclaration;
+	declaration: ts.ClassDeclaration | ts.InterfaceDeclaration | ts.TypeAliasDeclaration;
 };
 
 export type DeclarationInfo = NamedDeclarationInfo;
-export type TypeDeclarationInfo = TypeParameterDeclarationInfo;
+export type TypeDeclarationInfo = TypeParameterDeclarationInfo | AnyTypeDeclarationInfo;
 
 export class Scope {
 	protected readonly declarations = new Map<string, DeclarationInfo>();
@@ -73,6 +82,10 @@ export class Scope {
 
 	addDeclaration(name: string, declaration: DeclarationInfo): void {
 		this.declarations.set(name, declaration);
+	}
+
+	addTypeDeclaration(name: string, declaration: TypeDeclarationInfo): void {
+		this.typeDeclarations.set(name, declaration);
 	}
 
 	/**

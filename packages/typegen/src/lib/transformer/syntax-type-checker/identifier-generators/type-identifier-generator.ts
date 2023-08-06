@@ -1,6 +1,5 @@
 ﻿import { TypeIds } from "@rttist/core";
 import { ModuleIdentifier, TypeIdentifier } from "rttist";
-import { BooleanLiteral, LiteralExpression, NullLiteral, PrefixUnaryExpression } from "typescript";
 import * as ts from "typescript";
 import { getTopLevelIdentifier } from "../../utils/get-top-level-identifier";
 import { getTopLevelTypeName } from "../../utils/get-top-level-type-name";
@@ -80,30 +79,20 @@ export const wellKnownType = new Map<string | number, string>([
 export class TypeIdentifierGenerator {
 	private readonly identifiersMap = new WeakMap<ts.Node, TypeIdentifier>();
 
-	constructor(
-		// private readonly scopeRegistry: ScopeRegistry
-		private readonly scopeManager: ScopeManager
-	) {}
+	constructor(private readonly scopeManager: ScopeManager) {}
 
 	generateTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
 		if (ts.isLiteralTypeNode(node)) {
 			node = node.literal;
 		}
 
-		// First keywords,
+		// Keywords
 		const knownType = wellKnownType.get(node.kind);
 		if (knownType) {
 			return knownType;
 		}
 
-		// if (ts.isIdentifier(node)) {
-		// 	const declaration = scope.getDeclaration(node.text);
-		// 	console.log("GenerateTypeId for identifier from scope:");
-		// }
-
-		// other well-known
-
-		// literals,
+		// Literals
 		const literalType = getLiteralTypeIdentifier(node, valueContext);
 		if (literalType) {
 			return literalType;
@@ -188,8 +177,6 @@ export class TypeIdentifierGenerator {
 			if (topLevelIdentifier) {
 				const declaration = scope.getDeclaration(topLevelIdentifier.text);
 
-				// console.log("generateTypeId for identifier from scope:", declaration);
-
 				if (declaration) {
 					const type = createIdentifierDeclarationTypeId(node, moduleId, declaration);
 					this.identifiersMap.set(node, type);
@@ -205,14 +192,6 @@ export class TypeIdentifierGenerator {
 
 			return TypeIds.Invalid;
 		}
-
-		//
-		// // variables from scope
-		// if (ts.isIdentifier(node)) {
-		// 	const identifier = scope.getDeclaration(node.text);
-		// 	if (identifier) {
-		// 	}
-		// }
 
 		// If it's named declaration, build the path up to the SourceFile
 		if (isDeclaration(node) || ts.isClassExpression(node) || ts.isFunctionExpression(node)) {
@@ -277,16 +256,6 @@ export class TypeIdentifierGenerator {
 	}
 }
 
-// // /**
-// //  * Return TypeIdentifier or undefined in case it is not possible to generate the name (eg. unsupported syntax; missing implementation).
-// //  * @param moduleId
-// //  * @param node
-// //  * @param scope
-// //  */
-// // export function generateTypeId(node: ts.Node, moduleId: ModuleIdentifier, scope: Scope): TypeIdentifier | undefined {
-// //
-// // }
-//
 function createIdentifierDeclarationTypeId(
 	node: ts.Identifier | ts.PropertyAccessExpression,
 	moduleId: ModuleIdentifier,
@@ -310,6 +279,7 @@ function createTypeNameDeclarationTypeId(
 	declaration: TypeDeclarationInfo | ImportDeclarationInfo
 ): TypeIdentifier {
 	switch (declaration.kind) {
+		case InfoKind.AnyTypeDeclaration:
 		case InfoKind.TypeParameterDeclaration:
 			return moduleId + ":" + serializeTypePath(node, false);
 		case InfoKind.ImportDeclaration:
@@ -357,28 +327,8 @@ function serializeTypePath(node: ts.Identifier | ts.QualifiedName, skipRootIdent
 	return path + (ts.isIdentifier(node) ? node.text : node.right.text);
 }
 
-// export const MainConst = class {
-// 	prop: number = 0;
-//
-// 	static readonly StaticFiled = class ClassUnderStaticFiled {
-// 		prop: number = 0;
-//
-// 		constructor() {
-// 			console.log(ClassUnderStaticFiled, MainConst.StaticFiled);
-// 		}
-// 	};
-//
-// 	constructor() {
-// 		console.log(MainConst.StaticFiled);
-// 	}
-// };
-
-// function getPathToSourceFile(node: ts.Node) {}
-
 function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
-	/*if (ts.isLiteralTypeNode(node)) {
-		node = node.literal;
-	} else */ if (!ts.isLiteralExpression(node)) {
+	if (!ts.isLiteralExpression(node)) {
 		return undefined;
 	}
 
@@ -398,12 +348,6 @@ function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIde
 				return TypeIds.RegExp;
 			case ts.SyntaxKind.NoSubstitutionTemplateLiteral: // TODO: Is this ok?
 				return TypeIds.String;
-			// case ts.SyntaxKind.NullKeyword:
-			// 	return TypeIds.Null;
-			// case ts.SyntaxKind.TrueKeyword:
-			// 	return TypeIds.True;
-			// case ts.SyntaxKind.FalseKeyword:
-			// 	return TypeIds.False;
 		}
 	}
 

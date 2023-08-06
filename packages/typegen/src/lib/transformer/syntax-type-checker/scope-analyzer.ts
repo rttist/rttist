@@ -3,7 +3,7 @@ import * as ts from "typescript";
 import { Config } from "../../config/config";
 import { ModuleIdentifierGenerator } from "./identifier-generators/module-identifier-generator";
 import { ModuleScope } from "./scopes/module-scope";
-import { ImportDeclarationInfo, InfoKind, Scope } from "./scopes/scope";
+import { AnyTypeDeclarationInfo, ImportDeclarationInfo, InfoKind, Scope } from "./scopes/scope";
 import { ScopeRegistry } from "./scopes/scope-registry";
 import { isDeclaration } from "../utils/is-declaration";
 import { isNamedDeclaration } from "../utils/is-named-declaration";
@@ -27,6 +27,12 @@ const scopedSyntaxKinds = new Set([
 	// [ts.SyntaxKind.IfStatement]: true,
 	// [ts.SyntaxKind.SwitchStatement]: true,
 	// [ts.SyntaxKind.WithStatement]: true,
+]);
+
+const typeDeclarationKinds = new Set([
+	ts.SyntaxKind.ClassDeclaration,
+	ts.SyntaxKind.InterfaceDeclaration,
+	ts.SyntaxKind.TypeAliasDeclaration,
 ]);
 
 export class ScopeAnalyzer {
@@ -57,24 +63,7 @@ export class ScopeAnalyzer {
 			return analyzedModuleScope;
 		}
 
-		const moduleScope = new ModuleScope(
-			sourceFile,
-			this.moduleIdentifierGenerator.generateModuleIdentifier(sourceFile.fileName)
-		);
-
-		const imports: Map<string, ImportDeclarationInfo> = this.parseImports(sourceFile);
-
-		for (const [name, info] of imports) {
-			moduleScope.addImportDeclaration(name, {
-				kind: InfoKind.ImportDeclaration,
-				moduleId: info.moduleId,
-				declaredName: (info as any).declaredName,
-				declaration: info.declaration,
-				namespaceImport: info.namespaceImport as false,
-			});
-		}
-
-		this.generateScopes(sourceFile, moduleScope, transformationContext);
+		const moduleScope = this.generateSourceFileScopes(sourceFile, transformationContext);
 
 		// Store the analyzed module
 		this.analyzedSourceFiles.set(sourceFile, moduleScope);
@@ -148,20 +137,60 @@ export class ScopeAnalyzer {
 		return imports;
 	}
 
-	private generateScopes = (node: ts.Node, parentScope: Scope, transformationContext: ts.TransformationContext) => {
-		let scope = parentScope;
+	private generateSourceFileScopes(
+		sourceFile: ts.SourceFile,
+		transformationContext: ts.TransformationContext
+	): ModuleScope {
+		const moduleScope = new ModuleScope(
+			sourceFile,
+			this.moduleIdentifierGenerator.generateModuleIdentifier(sourceFile.fileName)
+		);
 
-		if (!ts.isSourceFile(node) && this.doesCreateScope(node)) {
-			scope = this.scopeRegistry.createScope(node, parentScope);
-		} else if (isDeclaration(node)) {
+		const imports: Map<string, ImportDeclarationInfo> = this.parseImports(sourceFile);
+
+		for (const [name, info] of imports) {
+			moduleScope.addImportDeclaration(name, {
+				kind: InfoKind.ImportDeclaration,
+				moduleId: info.moduleId,
+				declaredName: (info as any).declaredName,
+				declaration: info.declaration,
+				namespaceImport: info.namespaceImport as false,
+			});
+		}
+
+		ts.visitEachChild(
+			sourceFile,
+			(child) => {
+				this.generateScopes(child, moduleScope, transformationContext);
+				return child;
+			},
+			transformationContext
+		);
+
+		return moduleScope;
+	}
+
+	private generateScopes(node: ts.Node, parentScope: Scope, transformationContext: ts.TransformationContext) {
+		if (isDeclaration(node)) {
 			if (isNamedDeclaration(node)) {
-				scope.addDeclaration(node.getText(), {
+				// TODO: Get the text differently
+				const name = node.name.getText();
+
+				parentScope.addDeclaration(name, {
 					kind: InfoKind.NamedDeclaration,
 					declaration: node,
 				});
-			} /*else if (ts.isImportDeclaration(node)) {
-			}*/
+
+				if (typeDeclarationKinds.has(node.kind)) {
+					parentScope.addTypeDeclaration(name, {
+						kind: InfoKind.AnyTypeDeclaration,
+						declaration: node as AnyTypeDeclarationInfo["declaration"],
+					});
+				}
+			}
 		}
+
+		let scope = this.doesCreateScope(node) ? this.scopeRegistry.createScope(node, parentScope) : parentScope;
 
 		ts.visitEachChild(
 			node,
@@ -171,5 +200,5 @@ export class ScopeAnalyzer {
 			},
 			transformationContext
 		);
-	};
+	}
 }

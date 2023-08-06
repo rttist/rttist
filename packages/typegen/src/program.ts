@@ -198,13 +198,6 @@ export class Program {
 			"\n\tGenerating metadata:",
 			roundPerfTime((this.performanceEntries.completed ?? 0) - (this.performanceEntries.initialization ?? 0)),
 			"sec.",
-			// "\n\tType discovery and transformations:",
-			// this.roundPerfTime(total - this.perfEntries[0] - this.perfEntries[1]),
-			// "sec.",
-
-			// "\n\tSerialization and emitting of metadata:",
-			// this.roundPerfTime(this.perfEntries[1]),
-			// "sec.",
 
 			"\n\tTotal time:",
 			roundPerfTime((this.performanceEntries.completed ?? 0) - this.performanceEntries.parseStart),
