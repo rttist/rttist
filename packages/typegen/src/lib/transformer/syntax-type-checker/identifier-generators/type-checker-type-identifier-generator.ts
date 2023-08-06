@@ -1,15 +1,13 @@
-﻿import { ModuleIds, TypeIds } from "@rttist/core";
-import { NativeTypeKind, TypeIdentifier, TypeKind } from "rttist";
+﻿import { TypeIds } from "@rttist/core";
+import { TypeIdentifier } from "rttist";
 import * as ts from "typescript";
+import { Logger } from "../../../logging";
 import {
 	ReflectedSymbolWithReference,
 	ReflectedTypeWithReference,
 	TransformerTypeReference,
 } from "../../../metadata/transformer-type-reference";
-import { ESSymbols } from "../../consts";
-import { TransformerContext } from "../../contexts/transformer-context";
 import { printTypeDebugInfo } from "../../tracers/printTypeDebugInfo";
-import { canIncludeSourceFile } from "../../utils/can-include-sourcefile";
 import { isExported } from "../../utils/isExported";
 import { getDeclaration } from "../../utils/symbolHelpers";
 import {
@@ -31,7 +29,8 @@ export class TypeCheckerTypeIdentifierGenerator {
 		private readonly scopeManager: ScopeManager,
 		private readonly moduleIdentifierGenerator: ModuleIdentifierGenerator,
 		private readonly config: Config,
-		private readonly typeChecker: ts.TypeChecker // private readonly transformerContext: TransformerContext
+		private readonly typeChecker: ts.TypeChecker, // private readonly transformerContext: TransformerContext
+		private readonly logger: Logger
 	) {}
 
 	getTypeCheckerTypeIdentifier(
@@ -97,7 +96,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 
 		// If it's type parameter
 		if ((type.flags & ts.TypeFlags.TypeParameter) !== 0) {
-			typeReference = getTypeRefOfTypeParameter(
+			typeReference = this.getTypeRefOfTypeParameter(
 				type,
 				nullable,
 				symbol,
@@ -262,10 +261,46 @@ export class TypeCheckerTypeIdentifierGenerator {
 
 		return undefined;
 	}
-}
 
-function getComplexNativeTypeRef(symbol: ts.Symbol): TypeIdentifier | undefined {
-	return wellKnownType.get(symbol.escapedName!);
+	private getTypeRefOfTypeParameter(
+		type: ts.Type,
+		nullable: boolean,
+		symbol: ts.Symbol,
+		declaration: ts.Declaration,
+		sourceFile: ts.SourceFile,
+		sourceFileId: string,
+		typeChecker: ts.TypeChecker
+		// transformerContext: TransformerContext
+	): TypeIdentifier {
+		const parentSymbol = (type.symbol as any)?.parent; // TODO: Why type.symbol and not just symbol?
+		const parentType = parentSymbol && typeChecker.getDeclaredTypeOfSymbol(parentSymbol);
+
+		if (parentType) {
+			const parentRef = this.getTypeCheckerTypeIdentifier(parentType, parentSymbol, nullable);
+			return (parentRef ? parentRef : sourceFileId) + ":" + symbol.escapedName;
+		} else {
+			const declaration = getDeclaration(symbol);
+
+			if (declaration) {
+				const parentRef = this.getTypeCheckerTypeIdentifier(
+					typeChecker.getTypeAtLocation(declaration.parent),
+					undefined,
+					nullable
+				);
+
+				if (parentRef) {
+					return parentRef + ":" + symbol.escapedName;
+				}
+			}
+		}
+
+		this.logger.ifWarn(() => [
+			"Unable to properly generate Id for a TypeParameter because parent type is unknown.",
+			printTypeDebugInfo(type, this.typeChecker),
+		]);
+
+		return sourceFileId + ":" + symbol.escapedName + declaration.pos.toString();
+	}
 }
 
 // function ct(name: string, kind: NativeTypeKind)
@@ -391,47 +426,6 @@ function getLiteralTypeReference(type: ts.Type) {
 // {
 //
 // }
-
-function getTypeRefOfTypeParameter(
-	type: ts.Type,
-	nullable: boolean,
-	symbol: ts.Symbol,
-	declaration: ts.Declaration,
-	sourceFile: ts.SourceFile,
-	sourceFileId: string,
-	typeChecker: ts.TypeChecker
-	// transformerContext: TransformerContext
-): TypeIdentifier {
-	const parentSymbol = (type.symbol as any)?.parent; // TODO: WHy type.symbol and not just symbol?
-	const parentType = parentSymbol && typeChecker.getDeclaredTypeOfSymbol(parentSymbol);
-
-	if (parentType) {
-		// const parentRef = getTypeRef(parentType, nullable, parentSymbol, transformerContext);
-		//
-		// return new TransformerTypeReference(
-		// 	parentRef.moduleIdentifier,
-		// 	parentRef.name + ":" + symbol.escapedName,
-		// 	undefined,
-		// 	undefined,
-		// 	parentRef.sourceFile
-		// );
-	}
-
-	// log.ifWarn(() => [
-	// 	"Unable to properly generate Id for a TypeParameter because parent type is unknown.",
-	// 	printTypeDebugInfo(type, transformerContext.typeChecker),
-	// ]);
-	//
-	// return new TransformerTypeReference(
-	// 	sourceFileId,
-	// 	symbol.escapedName + declaration.pos.toString(),
-	// 	undefined,
-	// 	undefined,
-	// 	sourceFile
-	// );
-
-	return TypeIds.Invalid;
-}
 
 function hasReflectedTypeReference(type: ts.Type): type is ReflectedTypeWithReference;
 function hasReflectedTypeReference(symbol: ts.Symbol): symbol is ReflectedSymbolWithReference;

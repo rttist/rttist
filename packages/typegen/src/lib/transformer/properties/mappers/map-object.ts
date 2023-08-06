@@ -13,9 +13,9 @@ import { getConstructors } from "../getConstructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
 import { mapProperties } from "../map-properties";
 import { mapIndexes } from "../mapIndexes";
-import { mapMethods } from "../mapMethods";
+import { mapMethods } from "../map-methods";
 import { mapObjectLiteral } from "./map-object-literal";
-import { mapFunction } from "./mapFunction";
+import { mapFunction } from "./map-function";
 import { mapTuple } from "./mapTuple";
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {

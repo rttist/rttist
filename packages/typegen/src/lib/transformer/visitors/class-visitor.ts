@@ -8,8 +8,8 @@ export function classVisitor(
 ): ts.VisitResult<ts.Node> {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
-	context.metadata.addType(
-		declaration,
+	context.metadata.generateMetadataForType(
+		context.transformerContext.syntaxTypeChecker.getType(declaration),
 		type,
 		false,
 		context.typeChecker.getSymbolAtLocation(declaration),

@@ -5,7 +5,7 @@ import { Context } from "../../contexts/context";
 import { getSymbol } from "../../utils/typeHelpers";
 import { mapProperties } from "../map-properties";
 import { mapIndexes } from "../mapIndexes";
-import { mapMethods } from "../mapMethods";
+import { mapMethods } from "../map-methods";
 
 export function mapObjectLiteral(
 	type: ts.ObjectType,

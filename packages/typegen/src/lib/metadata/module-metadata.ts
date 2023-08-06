@@ -101,17 +101,9 @@ export class ModuleMetadata {
 	/**
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
 	 * @param typeInfo
-	 * @param symbol
-	 * @param context
 	 */
-	addType(typeInfo: TypeInfo, symbol: ts.Symbol | undefined, context: Context): void {
-		context.log.trace("Adding type", typeInfo.typeReference, "to", this.moduleProperties.id);
-
+	addType(typeInfo: TypeInfo): void {
 		this.types.set(typeInfo.typeReference.id, typeInfo);
-
-		// TODO: Type properties
-		typeInfo.properties = getTypeProperties(typeInfo.type, symbol, context) as TypePropertiesWithId;
-		typeInfo.properties!.id = typeInfo.typeReference.id;
 
 		// TODO: Uncomment when implemented in ID
 		// if (typeInfo.nullable)

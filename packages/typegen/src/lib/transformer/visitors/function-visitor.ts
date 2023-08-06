@@ -8,9 +8,11 @@ export function functionVisitor(
 ): ts.VisitResult<ts.Node> {
 	context.visitWithNewContext(declaration, visitFunctionDeclaration);
 
+	const typeReference = context.transformerContext.syntaxTypeChecker.getType(declaration);
+
 	if (ts.isFunctionDeclaration(declaration)) {
-		context.metadata.addType(
-			declaration,
+		context.metadata.generateMetadataForType(
+			typeReference,
 			context.typeChecker.getTypeAtLocation(declaration),
 			false,
 			context.typeChecker.getSymbolAtLocation(declaration),
@@ -22,8 +24,8 @@ export function functionVisitor(
 	}
 
 	if (ts.isFunctionExpression(declaration)) {
-		context.metadata.addType(
-			declaration,
+		context.metadata.generateMetadataForType(
+			typeReference,
 			context.typeChecker.getTypeAtLocation(declaration),
 			false,
 			context.typeChecker.getSymbolAtLocation(declaration),

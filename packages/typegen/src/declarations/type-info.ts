@@ -12,6 +12,6 @@ export type TypeInfo = {
 	// typeId: TypeIdentifier;
 	// typeId: TypeIdentifier;
 	type: ts.Type;
-	properties?: TypePropertiesWithId;
+	properties: TypePropertiesWithId;
 	nullable: boolean;
 };

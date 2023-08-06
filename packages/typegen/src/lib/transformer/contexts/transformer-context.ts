@@ -100,7 +100,8 @@ export class TransformerContext {
 				this.scopeManager,
 				this.moduleIdentifierGenerator,
 				this.config,
-				this.typeChecker
+				this.typeChecker,
+				new Logger("TypeCheckerTypeIdentifierGenerator", undefined, LogBuffer.default)
 			)
 		);
 
