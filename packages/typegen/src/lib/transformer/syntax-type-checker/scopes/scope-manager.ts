@@ -21,8 +21,8 @@ export class ScopeManager {
 		}
 
 		const sourceFile = node.getSourceFile();
-		this.scopeAnalyzer.analyzeSourceFile(sourceFile, this.transformationContext);
+		const moduleScope = this.scopeAnalyzer.analyzeSourceFile(sourceFile, this.transformationContext);
 
-		return this.scopeRegistry.getClosestScope(node);
+		return this.scopeRegistry.getClosestScope(node) ?? moduleScope;
 	}
 }

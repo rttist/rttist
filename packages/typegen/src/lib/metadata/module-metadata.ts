@@ -105,13 +105,13 @@ export class ModuleMetadata {
 	 * @param context
 	 */
 	addType(typeInfo: TypeInfo, symbol: ts.Symbol | undefined, context: Context): void {
-		context.log.trace("Adding type", typeInfo.typeId, "to", this.moduleProperties.id);
+		context.log.trace("Adding type", typeInfo.typeReference, "to", this.moduleProperties.id);
 
-		this.types.set(typeInfo.typeId, typeInfo);
+		this.types.set(typeInfo.typeReference.id, typeInfo);
 
 		// TODO: Type properties
 		typeInfo.properties = getTypeProperties(typeInfo.type, symbol, context) as TypePropertiesWithId;
-		typeInfo.properties!.id = typeInfo.typeId;
+		typeInfo.properties!.id = typeInfo.typeReference.id;
 
 		// TODO: Uncomment when implemented in ID
 		// if (typeInfo.nullable)

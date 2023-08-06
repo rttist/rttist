@@ -1,6 +1,5 @@
-import { TypeIdentifier } from "rttist";
 import * as ts from "typescript";
-import { TransformerType } from "../lib/transformer/syntax-type-checker/transformer-type";
+import { TransformerTypeReference } from "../lib/metadata/transformer-type-reference";
 import { TypePropertiesWithId } from "./type-properties";
 
 /**
@@ -8,9 +7,9 @@ import { TypePropertiesWithId } from "./type-properties";
  * @internal
  */
 export type TypeInfo = {
-	// typeReference: TransformerTypeReference;
-	transformerType: TransformerType;
-	typeId: TypeIdentifier;
+	typeReference: TransformerTypeReference;
+	// transformerType: TransformerType;
+	// typeId: TypeIdentifier;
 	// typeId: TypeIdentifier;
 	type: ts.Type;
 	properties?: TypePropertiesWithId;

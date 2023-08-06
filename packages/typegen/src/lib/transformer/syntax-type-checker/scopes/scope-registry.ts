@@ -10,7 +10,7 @@ export class ScopeRegistry {
 		return scope;
 	}
 
-	getClosestScope(node: ts.Node): Scope {
+	getClosestScope(node: ts.Node): Scope | undefined {
 		let scope;
 		do {
 			scope = this.map.get(node);
@@ -18,10 +18,10 @@ export class ScopeRegistry {
 			if (scope !== undefined) {
 				return scope;
 			}
+
 			node = node.parent;
 		} while (node !== undefined);
 
-		// Should never happen. At least SourceFile has Scope.
-		return new Scope(node, null!);
+		return undefined;
 	}
 }

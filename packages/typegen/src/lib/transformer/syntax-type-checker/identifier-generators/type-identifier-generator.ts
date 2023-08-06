@@ -1,14 +1,13 @@
 ﻿import { TypeIds } from "@rttist/core";
 import { ModuleIdentifier, TypeIdentifier } from "rttist";
 import * as ts from "typescript";
+import { getTopLevelIdentifier } from "../../utils/get-top-level-identifier";
 import { getTopLevelTypeName } from "../../utils/get-top-level-type-name";
 import { isDeclaration } from "../../utils/is-declaration";
 import { isNamedDeclaration } from "../../utils/is-named-declaration";
 import { getModifiers } from "../../utils/modifier-helpers";
-import { ScopeAnalyzer } from "../scope-analyzer";
-import { ImportDeclarationInfo, InfoKind, TypeDeclarationInfo } from "../scopes/scope";
+import { DeclarationInfo, ImportDeclarationInfo, InfoKind, TypeDeclarationInfo } from "../scopes/scope";
 import { ScopeManager } from "../scopes/scope-manager";
-import { ScopeRegistry } from "../scopes/scope-registry";
 
 // Mapping name of types and TS node kinds to Typ identifiers
 const wellKnownType = new Map<string | number, string>([
@@ -82,7 +81,7 @@ export class TypeIdentifierGenerator {
 		private readonly scopeManager: ScopeManager
 	) {}
 
-	generateTypeIdentifier(node: ts.Node): TypeIdentifier | undefined {
+	generateTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
 		// First keywords,
 		const knownType = wellKnownType.get(node.kind);
 		if (knownType) {
@@ -97,7 +96,7 @@ export class TypeIdentifierGenerator {
 		// other well-known
 
 		// literals,
-		const literalType = getLiteralTypeIdentifier(node);
+		const literalType = getLiteralTypeIdentifier(node, valueContext);
 		if (literalType) {
 			return literalType;
 		}
@@ -112,9 +111,23 @@ export class TypeIdentifierGenerator {
 			if (topLevelIdentifier) {
 				// TODO: Change scope.getTypeDefinition. Make some kind of custom TypeChecker/Manager/registry that will return type and it's scope. Because it may be declaration from another file. Getting from another file from current scope seems weird. If the target module does not have scope, we have to create one, it means we have to parse that mdule and scope ModuleInfo on the SourceFile.
 				const declaration = scope.getTypeDeclaration(topLevelIdentifier.text);
+				let typeId: string | undefined;
 
 				if (declaration) {
-					return createTypeNameDeclarationTypeId(node.typeName, moduleId, declaration);
+					typeId = createTypeNameDeclarationTypeId(node.typeName, moduleId, declaration);
+				}
+
+				const knownType = wellKnownType.get((node.typeName as ts.Identifier).escapedText + "");
+				if (knownType) {
+					typeId = knownType;
+				}
+
+				if (typeId !== undefined) {
+					if (node.typeArguments !== undefined) {
+						return this.createTypeArgumentsTypeId(typeId, node.typeArguments, valueContext);
+					}
+
+					return typeId;
 				}
 			}
 
@@ -136,23 +149,27 @@ export class TypeIdentifierGenerator {
 			return TypeIds.Invalid;
 		}
 
-		// TODO: Check if this can even get here. Seems like in type context it can be only TypeReference or TypeQuery
-		// // Identifier from scope
-		// if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
-		// 	const topLevelIdentifier = ts.isIdentifier(node) ? node : getTopLevelIdentifier(node);
-		//
-		// 	if (topLevelIdentifier) {
-		// 		const declaration = scope.getDeclaration(topLevelIdentifier.text);
-		//
-		// 		// console.log("generateTypeId for identifier from scope:", declaration);
-		//
-		// 		if (declaration) {
-		// 			return createIdentifierDeclarationTypeId(node, moduleId, declaration);
-		// 		}
-		// 	}
-		//
-		// 	return TypeIds.Invalid;
-		// }
+		// Identifier from scope
+		if (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node)) {
+			const topLevelIdentifier = ts.isIdentifier(node) ? node : getTopLevelIdentifier(node);
+
+			if (topLevelIdentifier) {
+				const declaration = scope.getDeclaration(topLevelIdentifier.text);
+
+				// console.log("generateTypeId for identifier from scope:", declaration);
+
+				if (declaration) {
+					return createIdentifierDeclarationTypeId(node, moduleId, declaration);
+				}
+
+				const knownType = wellKnownType.get(topLevelIdentifier.escapedText + "");
+				if (knownType) {
+					return knownType;
+				}
+			}
+
+			return TypeIds.Invalid;
+		}
 
 		//
 		// // variables from scope
@@ -163,33 +180,63 @@ export class TypeIdentifierGenerator {
 		// }
 
 		// If it's named declaration, build the path up to the SourceFile
-		if (isDeclaration(node)) {
-			if (isNamedDeclaration(node)) {
-				let name = "";
-				let itNode: ts.Node | undefined = node;
+		if (isDeclaration(node) || ts.isClassExpression(node) || ts.isFunctionExpression(node)) {
+			// if (isNamedDeclaration(node)) {
+			let name = "";
+			let itNode: ts.Node | undefined = node;
 
-				do {
-					if (isDeclaration(itNode) && isNamedDeclaration(itNode)) {
-						let separator = ".";
+			do {
+				if (isDeclaration(itNode) && isNamedDeclaration(itNode)) {
+					let separator = ".";
 
-						if (ts.isClassLike(itNode.parent) && ts.canHaveModifiers(itNode)) {
-							const modifiers = getModifiers(itNode);
+					if (ts.isClassLike(itNode.parent) && ts.canHaveModifiers(itNode)) {
+						const modifiers = getModifiers(itNode);
 
-							if (modifiers.static) {
-								separator = "#";
-							}
+						if (modifiers.static) {
+							separator = "#";
 						}
-
-						name = (itNode.name.getText() ?? "") + (name ? "." + name : "");
 					}
-					itNode = itNode.parent;
-				} while (itNode && !ts.isSourceFile(itNode));
 
-				return moduleId + ":" + name;
+					name = (itNode.name.getText() ?? "") + (name ? "." + name : "");
+				}
+				itNode = itNode.parent;
+			} while (itNode && !ts.isSourceFile(itNode));
+
+			return moduleId + ":" + name;
+			// }
+		}
+
+		if (ts.isNewExpression(node)) {
+			return this.generateTypeIdentifier(node.expression, valueContext);
+		}
+
+		if (ts.isAsExpression(node)) {
+			// `x as const`
+			if (
+				ts.isTypeReferenceNode(node.type) &&
+				ts.isIdentifier(node.type.typeName) &&
+				node.type.typeName.escapedText === "const"
+			) {
+				return this.generateTypeIdentifier(node.expression, false);
 			}
+
+			return this.generateTypeIdentifier(node.type, valueContext);
 		}
 
 		return undefined;
+	}
+
+	private createTypeArgumentsTypeId(
+		typeId: string,
+		typeArguments: ts.NodeArray<ts.TypeNode>,
+		valueContext: boolean
+	): TypeIdentifier {
+		return (
+			typeId +
+			"{" +
+			typeArguments.map((typeArgument) => this.generateTypeIdentifier(typeArgument, valueContext)).join(",") +
+			"}"
+		);
 	}
 }
 
@@ -203,24 +250,24 @@ export class TypeIdentifierGenerator {
 // //
 // // }
 //
-// function createIdentifierDeclarationTypeId(
-// 	node: ts.Identifier | ts.PropertyAccessExpression,
-// 	moduleId: ModuleIdentifier,
-// 	declaration: DeclarationInfo | ImportDeclarationInfo
-// ): TypeIdentifier | undefined {
-// 	switch (declaration.kind) {
-// 		case InfoKind.NamedDeclaration:
-// 			return moduleId + ":" + serializePath(node, false);
-// 		case InfoKind.ImportDeclaration:
-// 			if (declaration.namespaceImport) {
-// 				return declaration.moduleId + ":" + serializePath(node, true);
-// 			} else {
-// 				return declaration.moduleId + ":" + declaration.declaredName;
-// 			}
-// 	}
-//
-// 	return undefined;
-// }
+function createIdentifierDeclarationTypeId(
+	node: ts.Identifier | ts.PropertyAccessExpression,
+	moduleId: ModuleIdentifier,
+	declaration: DeclarationInfo | ImportDeclarationInfo
+): TypeIdentifier | undefined {
+	switch (declaration.kind) {
+		case InfoKind.NamedDeclaration:
+			return moduleId + ":" + serializePath(node, false);
+		case InfoKind.ImportDeclaration:
+			if (declaration.namespaceImport) {
+				return declaration.moduleId + ":" + serializePath(node, true);
+			} else {
+				return declaration.moduleId + ":" + declaration.declaredName;
+			}
+	}
+
+	return undefined;
+}
 
 function createTypeNameDeclarationTypeId(
 	node: ts.Identifier | ts.QualifiedName,
@@ -295,9 +342,28 @@ function serializeTypePath(node: ts.Identifier | ts.QualifiedName, skipRootIdent
 
 // function getPathToSourceFile(node: ts.Node) {}
 
-function getLiteralTypeIdentifier(node: ts.Node): TypeIdentifier | undefined {
+function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
 	if (!ts.isLiteralExpression(node)) {
 		return undefined;
+	}
+
+	if (valueContext) {
+		switch (node.kind) {
+			case ts.SyntaxKind.StringLiteral:
+				return TypeIds.String;
+			case ts.SyntaxKind.NumericLiteral:
+				return TypeIds.Number;
+			case ts.SyntaxKind.BigIntLiteral:
+				return TypeIds.BigInt;
+			case ts.SyntaxKind.JsxText:
+				return TypeIds.String; // TODO: JSX
+			case ts.SyntaxKind.JsxTextAllWhiteSpaces:
+				return TypeIds.String; // TODO: JSX
+			case ts.SyntaxKind.RegularExpressionLiteral:
+				return TypeIds.RegExp;
+			case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+				return TypeIds.String;
+		}
 	}
 
 	let val;

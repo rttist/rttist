@@ -1,10 +1,8 @@
-import { TypeIds } from "@rttist/core";
 import { AccessModifier, Accessor, PropertyFlags } from "rttist";
 import * as ts from "typescript";
 import { DecoratorProperties, PropertyProperties } from "../../../declarations/type-properties";
 import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 import { Context } from "../contexts/context";
-import { TransformerType } from "../syntax-type-checker/transformer-type";
 import { getModifiers } from "../utils/modifier-helpers";
 import { getMemberName } from "./getMemberName";
 import { getDeclaration, getType } from "../utils/symbolHelpers";
@@ -41,7 +39,7 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 			//
 			//
 			let decorators: DecoratorProperties[] | undefined = undefined;
-			let type = TransformerType.Invalid;
+			let type = TransformerTypeReference.Invalid;
 
 			// It has type declaration
 			if (declaration) {
@@ -53,11 +51,16 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 					const initializerSymbol: ts.Symbol =
 						(declaration.initializer as any).symbol ??
 						context.typeChecker.getSymbolAtLocation(declaration.initializer);
-					// const initializerType = initializerSymbol === undefined
-					// 		? getType(memberSymbol, declaration, context.typeChecker)
-					// 		: context.typeChecker.getDeclaredTypeOfSymbol(initializerSymbol);
 
-					if (initializerSymbol !== undefined) {
+					if (initializerSymbol === undefined) {
+						const initializerType = getType(memberSymbol, declaration, context.typeChecker);
+						const s = initializerType.getSymbol();
+						// if (initializerType.isLiteral()) {
+						// 	type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer);
+						// } else {
+						type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer, true);
+						// }
+					} else {
 						const initializerTypeDeclaration = getDeclaration(initializerSymbol);
 
 						if (initializerTypeDeclaration !== undefined) {
@@ -114,6 +117,8 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 			// 		type = context.typeChecker.getNullableType(type, ts.TypeFlags.Null);
 			// 	}
 			// }
+
+			context.log.warn("prop: ", getMemberName(memberSymbol, context), type);
 
 			return {
 				name: getMemberName(memberSymbol, context),

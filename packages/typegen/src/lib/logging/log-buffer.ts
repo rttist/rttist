@@ -1,7 +1,7 @@
 ﻿export class LogBuffer {
 	public static readonly default = new LogBuffer();
-	public static readonly autoFlush = new LogBuffer();
-	
+	public static readonly autoFlush = new LogBuffer(true);
+
 	private buffer: any[];
 
 	constructor(private readonly autoFlush = false) {

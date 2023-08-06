@@ -3,6 +3,7 @@ import { TypeInfo } from "../../declarations/type-info";
 import type { Context } from "../transformer/contexts/context";
 import * as ts from "typescript";
 import { DependencyManager } from "../dependencies/dependency-manager";
+import { TransformerTypeReference } from "./transformer-type-reference";
 
 const InstanceKey: symbol = Symbol.for("tst-reflect.MetadataLibrary");
 let instance: MetadataLibrary = (global as any)[InstanceKey] || null;
@@ -108,18 +109,19 @@ export class MetadataLibrary {
 
 		// const moduleId = context.sourceFileContext.metadata.id;
 		// const typeId = generateTypeId(node, moduleId, context.sourceFileContext.scopeRegistry.getClosestScope(node));
-		const transformerType = context.transformerContext.syntaxTypeChecker.getType(node);
+		const typeReference = context.transformerContext.syntaxTypeChecker.getType(node);
 
 		const typeInfo: TypeInfo = {
-			transformerType: transformerType,
-			typeId: transformerType.id,
+			typeReference: typeReference,
+			// transformerType: transformerType,
+			// typeId: transformerType.id,
 			type: type,
 			nullable: nullable,
 			properties: undefined,
 		};
 
 		// Store TypeInfo before adding to MetadataLibrary which gather types, so this will prevent recursive issues.
-		this.processedTypes.set(transformerType.id, typeInfo);
+		this.processedTypes.set(typeReference.id, typeInfo);
 
 		// Add type to Module
 		context.sourceFileContext.metadata.addType(typeInfo, symbol, context);

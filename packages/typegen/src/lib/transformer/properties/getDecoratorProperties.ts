@@ -10,10 +10,12 @@ export function getDecoratorProperties(decorator: ts.Decorator, context: Context
 		? decorator.expression.expression
 		: decorator.expression;
 
+	// context.typeChecker
+
 	return {
 		// id: getTypeId(type, false, symbol, context.transformerContext),
 		// TODO: Review
-		id: context.transformerContext.syntaxTypeChecker.getType(decorator).id,
+		id: context.transformerContext.syntaxTypeChecker.getType(expression).id,
 		name: ts.isIdentifier(expression) ? expression.text : ERROR_PLACEHOLDER_STRING,
 		args: callExpression
 			? (decorator.expression as ts.CallExpression).arguments.map((argument) =>

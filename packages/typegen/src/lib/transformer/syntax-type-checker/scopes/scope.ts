@@ -99,7 +99,11 @@ export class Scope {
 			};
 		}
 
-		return this.declarations.get(name) || this.parent?.getDeclaration(name);
+		return (
+			this.declarations.get(name) ||
+			this.parent?.getDeclaration(name) ||
+			this.moduleScope.getImportDeclaration(name)
+		);
 	}
 
 	private getContextScope(): Scope | undefined {

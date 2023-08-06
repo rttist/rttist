@@ -93,8 +93,8 @@ export class TransformerTypeReference {
 	 */
 	constructor(
 		public readonly id: TypeIdentifier // typeName: string,
-		// nativeTypeKnd?: NativeTypeKind,
-	) // typeArguments?: string[],
+		// typeArguments?: string[],
+	) // nativeTypeKnd?: NativeTypeKind,
 	// sourceFile?: ts.SourceFile
 	{}
 
@@ -135,4 +135,8 @@ export class TransformerTypeReference {
 	//
 	// 	return id;
 	// }
+
+	toString(): string {
+		return this.id;
+	}
 }
