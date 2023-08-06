@@ -192,9 +192,12 @@ export class Program {
 			"sec.",
 
 			"\n\tInitialization:",
-			roundPerfTime(this.performanceEntries.initialization ?? 0 - this.performanceEntries.start),
+			roundPerfTime((this.performanceEntries.initialization ?? 0) - this.performanceEntries.start),
 			"sec.",
 
+			"\n\tGenerating metadata:",
+			roundPerfTime((this.performanceEntries.completed ?? 0) - (this.performanceEntries.initialization ?? 0)),
+			"sec.",
 			// "\n\tType discovery and transformations:",
 			// this.roundPerfTime(total - this.perfEntries[0] - this.perfEntries[1]),
 			// "sec.",
@@ -204,7 +207,7 @@ export class Program {
 			// "sec.",
 
 			"\n\tTotal time:",
-			roundPerfTime(this.performanceEntries.completed ?? 0 - this.performanceEntries.parseStart),
+			roundPerfTime((this.performanceEntries.completed ?? 0) - this.performanceEntries.parseStart),
 			"sec."
 
 			// "\n\tProcessed",
