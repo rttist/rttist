@@ -11,6 +11,12 @@ export class ModuleIdentifierGenerator {
 	 * @param modulePath
 	 */
 	generateModuleIdentifier(modulePath: string): ModuleIdentifier {
+		const nodeModulesIndex = modulePath.lastIndexOf("node_modules");
+
+		if (nodeModulesIndex !== -1) {
+			return "@" + modulePath.slice(nodeModulesIndex + 13).replace(/\\/g, "/");
+		}
+
 		let relativePath = removeExtension(modulePath.replace(/\\/g, "/")).replace(
 			this.config.tsRootDir.replace(/\\/g, "/"),
 			""
@@ -26,10 +32,11 @@ export class ModuleIdentifierGenerator {
 	/**
 	 * Generate a module id for a given module path.
 	 * @param modulePath
-	 * @param importDeclaration
+	 * @param moduleSpecifier
 	 */
-	generateImportedModuleIdentifier(modulePath: string, importDeclaration: ts.ImportDeclaration): ModuleIdentifier {
-		const specifier = (importDeclaration.moduleSpecifier as unknown as ts.StringLiteral).text;
+	generateImportedModuleIdentifier(modulePath: string, moduleSpecifier: ts.Expression | string): ModuleIdentifier {
+		const specifier =
+			typeof moduleSpecifier === "string" ? moduleSpecifier : (moduleSpecifier as ts.StringLiteral).text;
 
 		// Local file
 		if (specifier[0] === ".") {

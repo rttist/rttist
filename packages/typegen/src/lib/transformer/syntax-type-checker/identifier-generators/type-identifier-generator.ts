@@ -1,5 +1,6 @@
 ﻿import { TypeIds } from "@rttist/core";
 import { ModuleIdentifier, TypeIdentifier } from "rttist";
+import { BooleanLiteral, LiteralExpression, NullLiteral, PrefixUnaryExpression } from "typescript";
 import * as ts from "typescript";
 import { getTopLevelIdentifier } from "../../utils/get-top-level-identifier";
 import { getTopLevelTypeName } from "../../utils/get-top-level-type-name";
@@ -10,9 +11,10 @@ import { DeclarationInfo, ImportDeclarationInfo, InfoKind, TypeDeclarationInfo }
 import { ScopeManager } from "../scopes/scope-manager";
 
 // Mapping name of types and TS node kinds to Typ identifiers
-const wellKnownType = new Map<string | number, string>([
+export const wellKnownType = new Map<string | number, string>([
 	["object", TypeIds.NonPrimitiveObject],
 	[ts.SyntaxKind.ObjectKeyword, TypeIds.NonPrimitiveObject],
+	["Function", TypeIds.Function],
 	["any", TypeIds.Any],
 	[ts.SyntaxKind.AnyKeyword, TypeIds.Any],
 	["unknown", TypeIds.Unknown],
@@ -54,7 +56,7 @@ const wellKnownType = new Map<string | number, string>([
 	["Float64Array", TypeIds.Float64Array],
 	["BigInt64Array", TypeIds.BigInt64Array],
 	["BigUint64Array", TypeIds.BigUint64Array],
-	["ArrayDefinition", TypeIds.ArrayDefinition],
+	["Array", TypeIds.ArrayDefinition],
 	["ReadonlyArray", TypeIds.ReadonlyArrayDefinition],
 	["Map", TypeIds.MapDefinition],
 	["WeakMap", TypeIds.WeakMapDefinition],
@@ -76,12 +78,18 @@ const wellKnownType = new Map<string | number, string>([
 ]);
 
 export class TypeIdentifierGenerator {
+	private readonly identifiersMap = new WeakMap<ts.Node, TypeIdentifier>();
+
 	constructor(
 		// private readonly scopeRegistry: ScopeRegistry
 		private readonly scopeManager: ScopeManager
 	) {}
 
 	generateTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
+		if (ts.isLiteralTypeNode(node)) {
+			node = node.literal;
+		}
+
 		// First keywords,
 		const knownType = wellKnownType.get(node.kind);
 		if (knownType) {
@@ -99,6 +107,26 @@ export class TypeIdentifierGenerator {
 		const literalType = getLiteralTypeIdentifier(node, valueContext);
 		if (literalType) {
 			return literalType;
+		}
+
+		const existing = this.identifiersMap.get(node);
+
+		if (existing) {
+			return existing;
+		}
+
+		if (ts.isArrayTypeNode(node)) {
+			const type = this.createTypeArgumentsTypeId(TypeIds.ArrayDefinition, [node.elementType], valueContext);
+			this.identifiersMap.set(node, type);
+			return type;
+		}
+
+		if (ts.isUnionTypeNode(node)) {
+			return `#|{${node.types.map((typeNode) => this.generateTypeIdentifier(typeNode, false)).join(",")}}`;
+		}
+
+		if (ts.isIntersectionTypeNode(node)) {
+			return `#&{${node.types.map((typeNode) => this.generateTypeIdentifier(typeNode, false)).join(",")}}`;
 		}
 
 		const scope = this.scopeManager.getClosestScope(node);
@@ -124,9 +152,11 @@ export class TypeIdentifierGenerator {
 
 				if (typeId !== undefined) {
 					if (node.typeArguments !== undefined) {
-						return this.createTypeArgumentsTypeId(typeId, node.typeArguments, valueContext);
+						const type = this.createTypeArgumentsTypeId(typeId, node.typeArguments, valueContext);
+						this.identifiersMap.set(node, type);
+						return type;
 					}
-
+					this.identifiersMap.set(node, typeId);
 					return typeId;
 				}
 			}
@@ -142,7 +172,9 @@ export class TypeIdentifierGenerator {
 				const declaration = scope.getTypeDeclaration(topLevelIdentifier.text);
 
 				if (declaration) {
-					return createTypeNameDeclarationTypeId(node.exprName, moduleId, declaration);
+					const type = createTypeNameDeclarationTypeId(node.exprName, moduleId, declaration);
+					this.identifiersMap.set(node, type);
+					return type;
 				}
 			}
 
@@ -159,11 +191,14 @@ export class TypeIdentifierGenerator {
 				// console.log("generateTypeId for identifier from scope:", declaration);
 
 				if (declaration) {
-					return createIdentifierDeclarationTypeId(node, moduleId, declaration);
+					const type = createIdentifierDeclarationTypeId(node, moduleId, declaration);
+					this.identifiersMap.set(node, type);
+					return type;
 				}
 
 				const knownType = wellKnownType.get(topLevelIdentifier.escapedText + "");
 				if (knownType) {
+					this.identifiersMap.set(node, knownType);
 					return knownType;
 				}
 			}
@@ -202,7 +237,9 @@ export class TypeIdentifierGenerator {
 				itNode = itNode.parent;
 			} while (itNode && !ts.isSourceFile(itNode));
 
-			return moduleId + ":" + name;
+			const type = moduleId + ":" + name;
+			this.identifiersMap.set(node, type);
+			return type;
 			// }
 		}
 
@@ -228,7 +265,7 @@ export class TypeIdentifierGenerator {
 
 	private createTypeArgumentsTypeId(
 		typeId: string,
-		typeArguments: ts.NodeArray<ts.TypeNode>,
+		typeArguments: ts.NodeArray<ts.TypeNode> | Array<ts.TypeNode>,
 		valueContext: boolean
 	): TypeIdentifier {
 		return (
@@ -254,7 +291,7 @@ function createIdentifierDeclarationTypeId(
 	node: ts.Identifier | ts.PropertyAccessExpression,
 	moduleId: ModuleIdentifier,
 	declaration: DeclarationInfo | ImportDeclarationInfo
-): TypeIdentifier | undefined {
+): TypeIdentifier {
 	switch (declaration.kind) {
 		case InfoKind.NamedDeclaration:
 			return moduleId + ":" + serializePath(node, false);
@@ -265,15 +302,13 @@ function createIdentifierDeclarationTypeId(
 				return declaration.moduleId + ":" + declaration.declaredName;
 			}
 	}
-
-	return undefined;
 }
 
 function createTypeNameDeclarationTypeId(
 	node: ts.Identifier | ts.QualifiedName,
 	moduleId: ModuleIdentifier,
 	declaration: TypeDeclarationInfo | ImportDeclarationInfo
-): TypeIdentifier | undefined {
+): TypeIdentifier {
 	switch (declaration.kind) {
 		case InfoKind.TypeParameterDeclaration:
 			return moduleId + ":" + serializeTypePath(node, false);
@@ -284,8 +319,6 @@ function createTypeNameDeclarationTypeId(
 				return declaration.moduleId + ":" + declaration.declaredName;
 			}
 	}
-
-	return undefined;
 }
 
 function serializePath(node: ts.Identifier | ts.PropertyAccessExpression, skipRootIdentifier: boolean): string {
@@ -343,7 +376,9 @@ function serializeTypePath(node: ts.Identifier | ts.QualifiedName, skipRootIdent
 // function getPathToSourceFile(node: ts.Node) {}
 
 function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
-	if (!ts.isLiteralExpression(node)) {
+	/*if (ts.isLiteralTypeNode(node)) {
+		node = node.literal;
+	} else */ if (!ts.isLiteralExpression(node)) {
 		return undefined;
 	}
 
@@ -361,8 +396,14 @@ function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIde
 				return TypeIds.String; // TODO: JSX
 			case ts.SyntaxKind.RegularExpressionLiteral:
 				return TypeIds.RegExp;
-			case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
+			case ts.SyntaxKind.NoSubstitutionTemplateLiteral: // TODO: Is this ok?
 				return TypeIds.String;
+			// case ts.SyntaxKind.NullKeyword:
+			// 	return TypeIds.Null;
+			// case ts.SyntaxKind.TrueKeyword:
+			// 	return TypeIds.True;
+			// case ts.SyntaxKind.FalseKeyword:
+			// 	return TypeIds.False;
 		}
 	}
 
@@ -376,5 +417,5 @@ function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIde
 			break;
 	}
 
-	return `#Literal(${val})`;
+	return `#L(${val})`;
 }

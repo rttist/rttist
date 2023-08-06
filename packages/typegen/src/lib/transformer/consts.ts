@@ -38,4 +38,5 @@ export const ESSymbols = new Set([
 	"toStringTag",
 	"unscopables",
 	"matchAll",
+	"dispose",
 ]);

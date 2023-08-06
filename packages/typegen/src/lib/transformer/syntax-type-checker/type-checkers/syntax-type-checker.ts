@@ -1,8 +1,8 @@
 ﻿import * as ts from "typescript";
-import { Logger } from "../../logging";
-import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
-import { getNodeLocationText } from "../tracers/getNodeLocationText";
-import { TypeIdentifierGenerator } from "./identifier-generators/type-identifier-generator";
+import { Logger } from "../../../logging";
+import { TransformerTypeReference } from "../../../metadata/transformer-type-reference";
+import { getNodeLocationText } from "../../tracers/getNodeLocationText";
+import { TypeIdentifierGenerator } from "../identifier-generators/type-identifier-generator";
 
 // type ExtendedSourceFile = ts.SourceFile & {
 // 	moduleScope?: ModuleScope;

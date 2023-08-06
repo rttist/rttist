@@ -24,6 +24,7 @@ export const TypeIds = {
 	Invalid: ModuleIds.Invalid + "::Invalid",
 
 	NonPrimitiveObject: "#object",
+	Function: "#Function",
 	Any: "#any",
 	Unknown: "#unknown",
 	Void: "#void",
@@ -52,7 +53,7 @@ export const TypeIds = {
 	Float64Array: "#Float64Array",
 	BigInt64Array: "#BigInt64Array",
 	BigUint64Array: "#BigUint64Array",
-	ArrayDefinition: "#ArrayDefinition",
+	ArrayDefinition: "#Array",
 	ReadonlyArrayDefinition: "#ReadonlyArray",
 	MapDefinition: "#Map",
 	WeakMapDefinition: "#WeakMap",

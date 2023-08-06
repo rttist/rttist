@@ -1,3 +1,4 @@
+import { TypeIds } from "@rttist/core";
 import { AccessModifier, Accessor, PropertyFlags } from "rttist";
 import * as ts from "typescript";
 import { DecoratorProperties, PropertyProperties } from "../../../declarations/type-properties";
@@ -53,12 +54,16 @@ export function mapProperties(members: ts.Symbol[], context: Context): Array<Pro
 						context.typeChecker.getSymbolAtLocation(declaration.initializer);
 
 					if (initializerSymbol === undefined) {
+						// TODO: In case that initializer has no symbol we have to use TypeChecker and generate type ID using the TS's Type.
 						const initializerType = getType(memberSymbol, declaration, context.typeChecker);
-						const s = initializerType.getSymbol();
+
+						type = context.transformerContext.tsTypeTypeChecker.getType(initializerType, undefined, false);
+
+						// const s = initializerType.getSymbol();
 						// if (initializerType.isLiteral()) {
 						// 	type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer);
 						// } else {
-						type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer, true);
+						// type = context.transformerContext.syntaxTypeChecker.getType(declaration.initializer, true);
 						// }
 					} else {
 						const initializerTypeDeclaration = getDeclaration(initializerSymbol);

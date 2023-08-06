@@ -10,11 +10,13 @@ import { MetadataPrinter } from "../../metadata/metadata-printer";
 import { dirname } from "../../utils/path";
 import { resolveSourceFileCachePath } from "../../utils/resolve-sourcefile-cache-path";
 import { ModuleIdentifierGenerator } from "../syntax-type-checker/identifier-generators/module-identifier-generator";
+import { TypeCheckerTypeIdentifierGenerator } from "../syntax-type-checker/identifier-generators/type-checker-type-identifier-generator";
 import { TypeIdentifierGenerator } from "../syntax-type-checker/identifier-generators/type-identifier-generator";
 import { ScopeAnalyzer } from "../syntax-type-checker/scope-analyzer";
 import { ScopeManager } from "../syntax-type-checker/scopes/scope-manager";
 import { ScopeRegistry } from "../syntax-type-checker/scopes/scope-registry";
-import { SyntaxTypeChecker } from "../syntax-type-checker/syntax-type-checker";
+import { SyntaxTypeChecker } from "../syntax-type-checker/type-checkers/syntax-type-checker";
+import { TypeScriptTypeTypeChecker } from "../syntax-type-checker/type-checkers/typescript-type-type-checker";
 import { mainVisitor } from "../visitors/main-visitor";
 import { Context } from "./context";
 import { SourceFileContext } from "./source-file-context";
@@ -57,6 +59,11 @@ export class TransformerContext {
 	public readonly syntaxTypeChecker: SyntaxTypeChecker;
 
 	/**
+	 * Syntax type checker.
+	 */
+	public readonly tsTypeTypeChecker: TypeScriptTypeTypeChecker;
+
+	/**
 	 * Scope manager.
 	 */
 	public readonly scopeManager: ScopeManager;
@@ -85,10 +92,16 @@ export class TransformerContext {
 		this.scopeAnalyzer = new ScopeAnalyzer(config, this.scopeRegistry, this.moduleIdentifierGenerator);
 		this.scopeManager = new ScopeManager(this.scopeAnalyzer, this.scopeRegistry);
 		this.syntaxTypeChecker = new SyntaxTypeChecker(
-			// this.scopeAnalyzer,
-			// this.moduleIdentifierGenerator,
 			new TypeIdentifierGenerator(this.scopeManager),
 			new Logger("SyntaxTypeChecker", undefined, LogBuffer.default)
+		);
+		this.tsTypeTypeChecker = new TypeScriptTypeTypeChecker(
+			new TypeCheckerTypeIdentifierGenerator(
+				this.scopeManager,
+				this.moduleIdentifierGenerator,
+				this.config,
+				this.typeChecker
+			)
 		);
 
 		// This will allow deconstruction of the context.
@@ -114,7 +127,6 @@ export class TransformerContext {
 			this.config,
 			this.scopeAnalyzer.analyzeSourceFile(sourceFileNode, transformationContext)
 		);
-		// sourceFileContext.analyzeScopes();
 
 		const context = new Context(
 			undefined,

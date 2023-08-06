@@ -98,7 +98,7 @@ export class ScopeAnalyzer {
 
 			const moduleId: ModuleIdentifier = this.moduleIdentifierGenerator.generateImportedModuleIdentifier(
 				sourceFile.fileName,
-				importDeclaration
+				importDeclaration.moduleSpecifier
 			);
 
 			if (importDeclaration.importClause) {
