@@ -1,6 +1,5 @@
 import { startTime } from "./performance-import-time-start"; // Keep first
 import { Entry } from "fast-glob";
-import { startCacheServer } from "memory-mapped-files";
 import type { CLI } from "./cli";
 import { cpus } from "os";
 import * as fs from "fs/promises";
@@ -18,6 +17,11 @@ import * as cliProgress from "cli-progress";
 import { Watcher } from "./lib/watcher";
 import { WorkerMessageType } from "./declarations/worker-message-type";
 import PromiseSource from "promise-cs";
+
+let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
+try {
+	startCacheServer = require("memory-mapped-files").startCacheServer;
+} catch (e) {}
 
 const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
 
@@ -47,14 +51,13 @@ export class Program {
 	public async run(): Promise<void> {
 		const config = await this.getConfig();
 
-		// Logger.setGlobalPrefix("@rttist/typegen");
 		Logger.setLevel(config.logLevel);
 
 		this.logger.log(LogLevel.Info, LogColor.blue, "Project root: " + config.projectRoot);
 		this.logger.log(LogLevel.Info, LogColor.blue, "TypeScript root directory: " + config.tsRootDir);
 
 		// run MMF cache server
-		startCacheServer(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
+		startCacheServer?.(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
 
 		const allFiles = await this.getSourceFilesWithStats(config);
 		const allFilesPath = allFiles.map((x) => x.path);
@@ -63,8 +66,9 @@ export class Program {
 
 		// Watch files in case the watch mode is enabled.
 		if (config.watch) {
-			const watcher = new Watcher(config, typelibGenerator, completedPS);
-			watcher.watch(allFilesPath);
+			this.logger.warn("Watch mode is currently deactivated because of WIP refactoring.");
+			// const watcher = new Watcher(config, typelibGenerator, completedPS);
+			// watcher.watch(allFilesPath);
 		}
 
 		await this.loadCachedStats(config);
@@ -234,6 +238,7 @@ export class Program {
 	private getSourceFilesGlobOptions(config: Config) {
 		return {
 			cwd: config.projectRoot,
+			// cwd: config.tsRootDir,
 			dot: false,
 			onlyFiles: true,
 			ignore: config.exclude,

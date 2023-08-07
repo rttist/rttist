@@ -1,9 +1,10 @@
 import * as esbuild from "esbuild";
 import * as fs from "fs/promises";
+import * as path from "path";
 import { ModuleKind } from "typescript";
 import { Config } from "./config/config";
 import { removeExtension } from "./transformer/utils/removeExtension";
-import { resolvePath } from "./utils/path";
+import { normalizePath, resolvePath } from "./utils/path";
 
 export class TypelibGenerator {
 	constructor(
@@ -16,7 +17,12 @@ export class TypelibGenerator {
 	/**
 	 * Manually invoke typelib generation and bundling.
 	 */
-	generate() {}
+	async generate() {
+		const projectTypeLibImporterPromise = this.generateProjectTypelibImporter();
+		await this.generateTypeLibs();
+		await this.bundle();
+		await projectTypeLibImporterPromise;
+	}
 
 	filesAdded(files: string[]) {
 		this.files.push(...files);
@@ -45,17 +51,29 @@ export class TypelibGenerator {
 	/**
 	 * (Re)generate typelibs.
 	 */
-	private async generateTypelibs() {
-		await this.generateMetadataIndex();
-		await this.generateTypelib("metadata.typelib.ts", false);
-		await this.generateTypelib("public.typelib.ts", true);
+	private async generateTypeLibs() {
+		// TODO: Do this only in case that some of the files changed.
+		await Promise.all([
+			this.generateMetadataIndex(),
+			this.generateTypelib("internal.typelib.ts", false),
+			this.generateTypelib("public.typelib.ts", true),
+		]);
 	}
 
 	private async generateMetadataIndex() {
 		await fs.writeFile(
 			resolvePath(this.config.cacheDir, "metadata.index.ts"),
-			`${this.files.map((file, index) => `import * as $${index} from "./${removeExtension(file)}";`).join("\n")}
-export const metadataCollection: Array<{ add(library: MetadataLibrary, stripInternals: boolean): void}> = [${this.files
+			`${this.files
+				.map(
+					(file, index) =>
+						`import * as $${index} from "./${removeExtension(
+							normalizePath(
+								path.relative(this.config.tsRootDir, path.resolve(this.config.projectRoot, file))
+							)
+						)}";`
+				)
+				.join("\n")}
+export const metadataCollection: Array<{ add(library: any, stripInternals: boolean): void}> = [${this.files
 				.map((_, index) => `$${index}`)
 				.join(",")}];`,
 			"utf-8"
@@ -74,22 +92,45 @@ export { Metadata };`,
 		);
 	}
 
+	private async generateProjectTypelibImporter() {
+		await fs.writeFile(
+			resolvePath(this.config.tsRootDir, "metadata.typelib.ts"),
+			`import { ModuleImporter, Type } from "rttist";
+// @ts-ignore
+import { Metadata } from "./internal.typelib";
+
+Type.configure({
+	nullability: ${this.config.strictNullChecks ? "false" : "true"},
+});
+
+ModuleImporter.registerImporters({
+	// "@@this/controllers/HomeController": () => import("./controllers/HomeController"), // TODO: Add importers for all the reflected modules.
+});
+
+/** @internal */
+export { Metadata };`,
+			"utf-8"
+		);
+	}
+
 	/**
 	 * Create typelibs JS bundles.
 	 */
 	private async bundle() {
 		await esbuild.build({
 			entryPoints: [
-				resolvePath(this.config.cacheDir, "metadata.typelib.ts"),
+				resolvePath(this.config.cacheDir, "internal.typelib.ts"),
 				resolvePath(this.config.cacheDir, "public.typelib.ts"),
 			],
 
 			bundle: true,
 			minify: true,
-			outfile: resolvePath(this.config.outDir, "metadata.typelib.js"),
+			outdir: this.config.outDir,
+			// outdir: resolvePath(this.config.tsRootDir, ".metadata"),
 			platform: "neutral",
 			format: this.config.module === ModuleKind.CommonJS ? "cjs" : "esm",
 			target: "es2015",
+			external: ["rttist"],
 		});
 	}
 

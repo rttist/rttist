@@ -239,6 +239,19 @@ export class TypeIdentifierGenerator {
 			return this.generateTypeIdentifier(node.type, valueContext);
 		}
 
+		if (ts.isExpressionWithTypeArguments(node)) {
+			const genericTypeDefinition = this.generateTypeIdentifier(node.expression, valueContext);
+			// TODO: We have to generate Id for this specific generic type; but we have to add this type to metadata also.
+			return (
+				genericTypeDefinition +
+				(node.typeArguments === undefined
+					? ""
+					: `{${node.typeArguments.map((ta) => this.generateTypeIdentifier(ta, false)).join(",")}}`)
+			);
+			// // TODO: This is temporary for prototype
+			// return genericTypeDefinition;
+		}
+
 		return undefined;
 	}
 

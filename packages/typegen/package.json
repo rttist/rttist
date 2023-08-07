@@ -1,18 +1,19 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.1.0",
+	"version": "0.1.0-proto.4",
 	"description": "Type generator for RTTIST",
 	"bin": {
 		"typegen": "dist/bin.js"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "tsc",
-		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc"
+		"prepare": "esbuild src/bin.ts --bundle --minify --outfile=dist/bin.js --platform=node --packages=external && esbuild src/worker.ts --bundle --minify --outfile=dist/worker.js --platform=node --packages=external",
+		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare"
 	},
 	"files": [
 		"LICENSE",
 		"README.md",
+		"config-schema.json",
 		"dist/**/*.js"
 	],
 	"keywords": [

@@ -34,35 +34,67 @@ export function getHeritageClauses(
 ): DeclarationHeritageClauses {
 	const result: DeclarationHeritageClauses = {};
 
-	// if (declaration.heritageClauses) {
-	// 	const ext = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ExtendsKeyword)[0];
-	//
-	// 	if (ext) {
-	// 		result.extends = ext.types.map((t) =>
-	// 			context.metadata.addType(
-	// 				context.typeChecker.getTypeFromTypeNode(t),
-	// 				false,
-	// 				context.typeChecker.getSymbolAtLocation(ext),
-	// 				undefined,
-	// 				context
-	// 			)
-	// 		);
-	// 	}
-	//
-	// 	const impl = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword)[0];
-	//
-	// 	if (impl) {
-	// 		result.implements = impl.types.map((t) =>
-	// 			context.metadata.addType(
-	// 				context.typeChecker.getTypeFromTypeNode(t),
-	// 				false,
-	// 				context.typeChecker.getSymbolAtLocation(impl),
-	// 				undefined,
-	// 				context
-	// 			)
-	// 		);
-	// 	}
-	// }
+	if (declaration.heritageClauses) {
+		const ext = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ExtendsKeyword)[0];
+
+		if (ext) {
+			result.extends = ext.types.map(
+				(t) => {
+					// return context.transformerContext.syntaxTypeChecker.getType(t);
+					const typeReference = context.transformerContext.syntaxTypeChecker.getType(t);
+
+					if (t.typeArguments !== undefined && t.typeArguments.length > 0) {
+						context.metadata.generateMetadataForType(
+							typeReference,
+							context.typeChecker.getTypeFromTypeNode(t),
+							false,
+							context.typeChecker.getSymbolAtLocation(ext),
+							undefined,
+							context
+						);
+					}
+
+					return typeReference;
+				} /*.addType(
+					context.typeChecker.getTypeFromTypeNode(t),
+					false,
+					context.typeChecker.getSymbolAtLocation(ext),
+					undefined,
+					context
+				)*/
+			);
+		}
+
+		const impl = declaration.heritageClauses.filter((h) => h.token === ts.SyntaxKind.ImplementsKeyword)[0];
+
+		if (impl) {
+			result.implements = impl.types.map(
+				(t) => {
+					const typeReference = context.transformerContext.syntaxTypeChecker.getType(t);
+
+					if (t.typeArguments !== undefined && t.typeArguments.length > 0) {
+						context.metadata.generateMetadataForType(
+							typeReference,
+							context.typeChecker.getTypeFromTypeNode(t),
+							false,
+							context.typeChecker.getSymbolAtLocation(impl),
+							undefined,
+							context
+						);
+					}
+
+					return typeReference;
+				}
+				// context.metadata.addType(
+				// 	context.typeChecker.getTypeFromTypeNode(t),
+				// 	false,
+				// 	context.typeChecker.getSymbolAtLocation(impl),
+				// 	undefined,
+				// 	context
+				// )
+			);
+		}
+	}
 
 	return result;
 }

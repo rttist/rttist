@@ -26,18 +26,16 @@ const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 
 // TODO: Move
 function getTypeArgumentsReference(type: ts.ObjectType, context: Context): TransformerTypeReference[] | undefined {
-	return [];
+	let typeArguments = (type as ts.TypeReference).typeArguments?.map(
+		(typeArg) => context.transformerContext.tsTypeTypeChecker.getType(typeArg, undefined, false)
+		// context.metadata.referenceType(typeArg, false, undefined, undefined, context)
+	);
 
-	// TODO: Implement
-	// let typeArguments = (type as ts.TypeReference).typeArguments?.map((typeArg) =>
-	// 	context.metadata.referenceType(typeArg, false, undefined, undefined, context)
-	// );
-	//
-	// if (typeArguments === undefined || typeArguments.length === 0) {
-	// 	typeArguments = undefined;
-	// }
-	//
-	// return typeArguments;
+	if (typeArguments === undefined || typeArguments.length === 0) {
+		typeArguments = undefined;
+	}
+
+	return typeArguments;
 }
 
 export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, context: Context): TypeMapperResult {
@@ -87,7 +85,12 @@ export function mapObject(type: ts.ObjectType, symbol: ts.Symbol | undefined, co
 
 		if (type !== resolvedType) {
 			// TODO: Handle generic type definition
-			// properties.genericTypeDefinition = context.metadata.referenceType(
+			properties.genericTypeDefinition = context.transformerContext.tsTypeTypeChecker.getType(
+				resolvedType,
+				undefined,
+				false
+			);
+			// context.metadata.referenceType(
 			// 	resolvedType,
 			// 	false,
 			// 	undefined,

@@ -8,6 +8,7 @@ dist
 /tests/dist-mjs/
 /tests/dist-strict-null/
 packages/*/dist
+/dev/hookyns/2/dist-old/
 **/tsconfig.tsbuildinfo
 reflection.meta.js
 reflection.meta.ts

@@ -1,4 +1,3 @@
-import { createClient } from "memory-mapped-files";
 import type { Client } from "memory-mapped-files";
 import * as ts from "typescript";
 import * as fs from "fs";
@@ -6,13 +5,18 @@ import { Config } from "../config/config";
 import { TransformerContext } from "../transformer/contexts/transformer-context";
 import { createSourceFileVisitor } from "../transformer/visitors/sourcefile-visitor";
 
+let createClient: undefined | typeof import("memory-mapped-files").createClient;
+try {
+	createClient = require("memory-mapped-files").createClient;
+} catch (e) {}
+
 export function generateModulesMetadata(
 	sourceFiles: string[],
 	config: Config,
 	writeFileCallback: (filename: string) => void
 ) {
 	// const mmfClient = undefined;
-	const mmfClient = createClient();
+	const mmfClient = createClient?.();
 	const options = getCompilerOptions(config);
 	const host = createCompilerHost(options, config, mmfClient);
 	const program = ts.createProgram(sourceFiles, options, host);
@@ -27,7 +31,7 @@ export function generateModulesMetadata(
 		],
 	});
 
-	// mmfClient.dispose();
+	mmfClient?.dispose();
 }
 
 function createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClient?: Client) {

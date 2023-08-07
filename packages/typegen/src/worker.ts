@@ -11,6 +11,7 @@ import { WorkerMessageType } from "./declarations/worker-message-type";
 
 const workerArguments = workerData as WorkerArguments;
 const files = workerArguments.files.map((filePath) => resolvePath(workerArguments.config.projectRoot, filePath));
+// const files = workerArguments.files.map((filePath) => resolvePath(workerArguments.config.tsRootDir, filePath));
 
 Logger.setLevel(workerArguments.config.logLevel);
 
