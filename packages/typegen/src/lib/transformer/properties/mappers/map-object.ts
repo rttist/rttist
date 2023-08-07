@@ -9,7 +9,7 @@ import { getClassModifiers, getHeritageClauses } from "../../utils/declarationHe
 import { isExported } from "../../utils/isExported";
 import { getDeclaration } from "../../utils/symbolHelpers";
 import { getSymbol, isReference } from "../../utils/typeHelpers";
-import { getConstructors } from "../getConstructors";
+import { getConstructors } from "../get-constructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
 import { mapProperties } from "../map-properties";
 import { mapIndexes } from "../mapIndexes";

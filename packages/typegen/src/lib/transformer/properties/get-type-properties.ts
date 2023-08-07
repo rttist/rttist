@@ -1,6 +1,7 @@
+import { TypeKind } from "rttist";
 import * as ts from "typescript";
 import { TypeMapper } from "../../../declarations/mappers";
-import { TypeProperties } from "../../../declarations/type-properties";
+import { TypeAliasProperties, TypeProperties } from "../../../declarations/type-properties";
 import { InvalidTypeProperties } from "../consts";
 import { Context } from "../contexts/context";
 import { printTypeDebugInfo } from "../tracers/printTypeDebugInfo";
@@ -81,23 +82,33 @@ export function getTypeProperties(
 		// );
 
 		if (declaration) {
+			// Type alias pointing to another type, directly.
 			if (declaration.type.kind === ts.SyntaxKind.TypeReference) {
 				// if (declaredSymbol && declaredSymbol != type.symbol)
-				// TODO: Implement type reference
-				// return {
-				// 	name: symbol.escapedName.toString(),
-				// 	kind: TypeKind.Alias,
-				// 	target: context.metadata.referenceType(type, false, undefined, undefined, context)
-				// } as TypeAliasProperties;
+				return {
+					name: symbol.escapedName.toString(),
+					kind: TypeKind.Alias,
+					// TODO: Generate metadata
+					target: context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
+				} as TypeAliasProperties;
 			}
 
+			// Type alias of union.
 			if (declaration.type.kind === ts.SyntaxKind.UnionType) {
 			}
 
+			// Type alias of intersection.
 			if (declaration.type.kind === ts.SyntaxKind.IntersectionType) {
 			}
 
-			if (declaration.type.kind === ts.SyntaxKind.LiteralType) {
+			// Alias of complex type - object
+			if (declaration.type.kind === ts.SyntaxKind.TypeLiteral) {
+				return {
+					name: symbol.escapedName.toString(),
+					kind: TypeKind.Alias, // TODO: This is not just an alias; this is a type literal
+					// TODO: Generate metadata
+					target: context.transformerContext.tsTypeTypeChecker.getType(type, symbol, false),
+				} as TypeAliasProperties;
 			}
 		}
 	}

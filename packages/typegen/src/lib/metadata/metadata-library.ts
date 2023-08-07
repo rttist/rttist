@@ -91,6 +91,16 @@ export class MetadataLibrary {
 		typeNode: ts.TypeNode | undefined,
 		context: Context
 	) {
+		// TODO: Implement properly! We do not want to generate properties for intrinsic types. But we have to handle generic types such as Array<SomeOfMyProjectTypes>.
+		if (typeReference.id.charAt(0) === "#") {
+			return {
+				typeReference: typeReference,
+				type: type,
+				nullable: nullable,
+				properties: {},
+			};
+		}
+
 		const typeInfo: TypeInfo = {
 			typeReference: typeReference,
 			// transformerType: transformerType,

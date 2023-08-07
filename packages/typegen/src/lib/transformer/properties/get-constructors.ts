@@ -2,7 +2,7 @@ import * as ts from "typescript";
 import { SignatureProperties } from "../../../declarations/type-properties";
 import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 import { Context } from "../contexts/context";
-import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
+import { getSignatureParametersProperties } from "./get-signature-parameters-properties";
 
 export function getConstructors(type: ts.Type, context: Context): SignatureProperties[] | undefined {
 	const constructors: Array<SignatureProperties> = [];

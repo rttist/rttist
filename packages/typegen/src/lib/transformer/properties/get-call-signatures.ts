@@ -1,7 +1,7 @@
 ﻿import * as ts from "typescript";
 import { SignatureProperties } from "../../../declarations/type-properties";
 import { Context } from "../contexts/context";
-import { getSignatureParametersProperties } from "./getSignatureParametersProperties";
+import { getSignatureParametersProperties } from "./get-signature-parameters-properties";
 
 export function getCallSignatures(type: ts.Type, context: Context): SignatureProperties[] {
 	return type.getCallSignatures().map((signature) => ({
