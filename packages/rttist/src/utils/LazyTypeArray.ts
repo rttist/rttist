@@ -1,26 +1,29 @@
 import type { TypeReference } from "../declarations";
-import type { Type }          from "../Type";
-import { LazyType }           from "./LazyType";
+import type { MetadataLibrary } from "../Metadata";
+import type { Type } from "../Type";
 
 /**
  * @internal
  */
-export class LazyTypeArray<TType = Type>
-{
+export class LazyTypeArray<TType = Type> {
 	private readonly _references: ReadonlyArray<TypeReference>;
 	private _types?: ReadonlyArray<TType>;
 
 	public readonly length: number;
 
-	get types(): ReadonlyArray<TType>
-	{
-		return this._types ?? (this._types = Object.freeze(
-			this._references.map(type => LazyType.resolver(type) as TType)
-		));
+	get types(): ReadonlyArray<TType> {
+		return (
+			this._types ??
+			(this._types = Object.freeze(
+				this._references.map((type) => this.metadataLibrary.resolveType(type) as TType)
+			))
+		);
 	}
 
-	constructor(typeRefs: ReadonlyArray<TypeReference>)
-	{
+	constructor(
+		private readonly metadataLibrary: MetadataLibrary,
+		typeRefs: ReadonlyArray<TypeReference>
+	) {
 		this._references = typeRefs;
 		this.length = typeRefs.length;
 	}

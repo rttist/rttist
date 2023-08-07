@@ -18,7 +18,7 @@ class Importer {
 	 * @param moduleId
 	 */
 	import(moduleId: string): Promise<undefined | { [exportName: string]: any }> {
-		return this.importMap[moduleId]();
+		return this.importMap[moduleId]?.() ?? Promise.resolve(undefined);
 	}
 }
 

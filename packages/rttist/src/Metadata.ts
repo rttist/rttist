@@ -1,7 +1,6 @@
-import { ModuleMetadata } from "./declarations";
-import type { ModuleIdentifier, ModuleReference, TypeIdentifier, TypeReference } from "./declarations";
+import type { ModuleIdentifier, ModuleReference, TypeIdentifier, TypeReference, ModuleMetadata } from "./declarations";
 import { ModuleIds } from "@rttist/core";
-import { resolveSingletonInstance } from "./helpers";
+import { AnyArray, resolveSingletonInstance, UnknownFunction } from "./helpers";
 import { Module } from "./Module";
 import { NativeTypes, Type } from "./Type";
 
@@ -15,9 +14,58 @@ export class MetadataLibrary {
 	 */
 	private readonly aliases = new Map<TypeIdentifier, TypeIdentifier>();
 
+	constructor(/** @internal */ _globalLibrary: boolean = false) {
+		if (!_globalLibrary) {
+			this.addType(
+				Type.Invalid,
+				Type.Any,
+				Type.Unknown,
+				Type.Void,
+				Type.Never,
+				Type.Null,
+				Type.Undefined,
+				Type.NonPrimitiveObject,
+				Type.String,
+				Type.Number,
+				Type.BigInt,
+				Type.Boolean,
+				Type.True,
+				Type.False,
+				Type.Date,
+				Type.Error,
+				Type.Symbol,
+				Type.UniqueSymbol,
+				Type.RegExp,
+				Type.Int8Array,
+				Type.Uint8Array,
+				Type.Uint8ClampedArray,
+				Type.Int16Array,
+				Type.Uint16Array,
+				Type.Int32Array,
+				Type.Uint32Array,
+				Type.Float32Array,
+				Type.Float64Array,
+				Type.BigInt64Array,
+				Type.BigUint64Array,
+				Type.ArrayBuffer,
+				Type.SharedArrayBuffer,
+				Type.Atomics,
+				Type.DataView,
+				AnyArray,
+				UnknownFunction
+			);
+
+			this.addModule(Module.Native, Module.Invalid, Module.Dynamic);
+		}
+	}
+
 	addMetadata(moduleMetadata: ModuleMetadata, stripInternals: boolean) {
 		// TODO: Implement stripping of internals
-		this.addModule(new Module(moduleMetadata));
+		const module = new Module(moduleMetadata, this);
+		this.addModule(module);
+
+		// TODO: We have to solve this somehow. We need to add types from the module to the global Metadata, because some functions does not have a reference to the metadat library so it asks the global Metadata; but in such case, anybody can import global metadata library and take internal types.
+		Metadata.addModule(module);
 	}
 
 	/**
@@ -62,7 +110,9 @@ export class MetadataLibrary {
 					continue;
 				}
 
-				throw new Error(`Type with id '${type.id}' already exists.`);
+				// TODO: Uncomment throw after fixing duplicities in metadata
+				// throw new Error(`Type with id '${type.id}' already exists.`);
+				return;
 			}
 
 			this.types.set(type.id, type);
@@ -162,4 +212,4 @@ export class MetadataLibrary {
 }
 
 // noinspection JSUnusedGlobalSymbols
-export const Metadata = resolveSingletonInstance("rttist/Metadata", MetadataLibrary);
+export const Metadata = resolveSingletonInstance("rttist/Metadata", MetadataLibrary, [true]);

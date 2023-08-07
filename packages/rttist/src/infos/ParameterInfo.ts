@@ -1,14 +1,14 @@
-import type { Type }                  from "../Type";
+import type { MetadataLibrary } from "../Metadata";
+import type { Type } from "../Type";
 import type { ParameterInfoMetadata } from "../declarations";
-import { ParameterFlags }             from "../enums";
-import { LazyType }                   from "../utils/LazyType";
-import { DecoratorInfo }              from "./DecoratorInfo";
+import { ParameterFlags } from "../enums";
+import { LazyType } from "../utils/LazyType";
+import { DecoratorInfo } from "./DecoratorInfo";
 
 /**
  * Details about parameter of method, function or constructor.
  */
-export class ParameterInfo
-{
+export class ParameterInfo {
 	/**
 	 * @internal
 	 */
@@ -37,28 +37,26 @@ export class ParameterInfo
 	/**
 	 * Type of the parameter.
 	 */
-	get type(): Type
-	{
+	get type(): Type {
 		return this._type.type;
 	}
 
 	/**
 	 * @param initializer
+	 * @param metadataLibrary
 	 */
-	constructor(initializer: ParameterInfoMetadata)
-	{
+	constructor(initializer: ParameterInfoMetadata, metadataLibrary: MetadataLibrary) {
 		this.name = initializer.name;
-		this._type = new LazyType(initializer.type);
+		this._type = new LazyType(metadataLibrary, initializer.type);
 		this.optional = (initializer.flags & ParameterFlags.Optional) !== 0;
 		this.rest = (initializer.flags & ParameterFlags.Rest) !== 0;
-		this._decorators = Object.freeze((initializer.decorators || []).map(meta => new DecoratorInfo(meta)));
+		this._decorators = Object.freeze((initializer.decorators || []).map((meta) => new DecoratorInfo(meta)));
 	}
 
 	/**
 	 * Returns array of decorators.
 	 */
-	getDecorators(): ReadonlyArray<DecoratorInfo>
-	{
+	getDecorators(): ReadonlyArray<DecoratorInfo> {
 		return this._decorators;
 	}
 }

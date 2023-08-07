@@ -1,6 +1,7 @@
 import type { AnyTypeMetadata } from "../declarations";
-import { TypeKind }             from "../enums";
-import { Type }                 from "../Type";
+import { TypeKind } from "../enums";
+import type { MetadataLibrary } from "../Metadata";
+import { Type } from "../Type";
 import {
 	ArrayType,
 	ClassType,
@@ -28,8 +29,8 @@ import {
 	UnionType,
 	UniqueSymbolType,
 	WeakMapType,
-	WeakSetType
-}                               from "../types";
+	WeakSetType,
+} from "../types";
 
 type TypeKindToTypeMap = {
 	[TypeKind.NumberLiteral]: LiteralType;
@@ -57,57 +58,55 @@ type TypeKindToTypeMap = {
 	[TypeKind.Promise]: PromiseType;
 	[TypeKind.Tuple]: TupleType;
 	// TODO: Add the rest
-}
+};
 
-function createType(metadata: AnyTypeMetadata)
-{
-	switch (metadata.kind)
-	{
+function createType(metadata: AnyTypeMetadata, metadataLibrary: MetadataLibrary) {
+	switch (metadata.kind) {
 		case TypeKind.NumberLiteral:
 		case TypeKind.BigIntLiteral:
 		case TypeKind.StringLiteral:
 		case TypeKind.RegExpLiteral:
-			return new LiteralType(metadata);
+			return new LiteralType(metadata, metadataLibrary);
 		case TypeKind.TemplateLiteral:
-			return new TemplateType(metadata);
+			return new TemplateType(metadata, metadataLibrary);
 		case TypeKind.UniqueSymbol:
-			return new UniqueSymbolType(metadata);
+			return new UniqueSymbolType(metadata, metadataLibrary);
 		case TypeKind.ESSymbol:
-			return new ESSymbolType(metadata);
+			return new ESSymbolType(metadata, metadataLibrary);
 		case TypeKind.Object:
-			return new ObjectType(metadata);
+			return new ObjectType(metadata, metadataLibrary);
 		case TypeKind.Interface:
-			return new InterfaceType(metadata);
+			return new InterfaceType(metadata, metadataLibrary);
 		case TypeKind.Class:
-			return new ClassType(metadata);
+			return new ClassType(metadata, metadataLibrary);
 		case TypeKind.TypeParameter:
-			return new TypeParameterType(metadata);
+			return new TypeParameterType(metadata, metadataLibrary);
 		case TypeKind.Alias:
-			return new TypeAliasType(metadata);
+			return new TypeAliasType(metadata, metadataLibrary);
 		case TypeKind.ConditionalType:
-			return new ConditionalType(metadata);
+			return new ConditionalType(metadata, metadataLibrary);
 		case TypeKind.IndexedAccess:
-			return new IndexedAccessType(metadata);
+			return new IndexedAccessType(metadata, metadataLibrary);
 		case TypeKind.Module:
-			return new ModuleType(metadata);
+			return new ModuleType(metadata, metadataLibrary);
 		case TypeKind.Namespace:
-			return new NamespaceType(metadata);
+			return new NamespaceType(metadata, metadataLibrary);
 		case TypeKind.Union:
-			return new UnionType(metadata);
+			return new UnionType(metadata, metadataLibrary);
 		case TypeKind.Intersection:
-			return new IntersectionType(metadata);
+			return new IntersectionType(metadata, metadataLibrary);
 		// case TypeKind.Method:
 		// 	return new MethodType(); // TODO: Create. Should it be serialized on its own or should it just point to MethodInfo of an object (class/interface/object literal)/...? Does Method even exists on its own? Wouldn't it be only IndexedAccess?
 		case TypeKind.Function:
-			return new FunctionType(metadata);
+			return new FunctionType(metadata, metadataLibrary);
 		case TypeKind.GeneratorFunction:
-			return new GeneratorFunctionType(metadata);
+			return new GeneratorFunctionType(metadata, metadataLibrary);
 		case TypeKind.Enum:
-			return new EnumType(metadata);
+			return new EnumType(metadata, metadataLibrary);
 		case TypeKind.EnumLiteral:
-			return new EnumLiteralType(metadata);
+			return new EnumLiteralType(metadata, metadataLibrary);
 		case TypeKind.Promise:
-			return new PromiseType([TypeKind.PromiseDefinition], metadata);
+			return new PromiseType([TypeKind.PromiseDefinition], metadata, metadataLibrary);
 		// TODO: Create the rest
 		// case TypeKind.Generator:
 		// 	return new Type();
@@ -135,18 +134,18 @@ function createType(metadata: AnyTypeMetadata)
 
 	console.warn("Creating Type of unknown TypeKind.", metadata);
 
-	return new Type(metadata);
+	return new Type(metadata, metadataLibrary);
 }
 
-export class TypeFactory
-{
-	static create<TMetadata extends AnyTypeMetadata = AnyTypeMetadata>(metadata: TMetadata):
-		TMetadata extends { kind: infer TKind }
-			? TKind extends keyof TypeKindToTypeMap
-				? TypeKindToTypeMap[TKind]
-				: Type
-			: never
-	{
-		return createType(metadata) as any;
+export class TypeFactory {
+	static create<TMetadata extends AnyTypeMetadata = AnyTypeMetadata>(
+		metadata: TMetadata,
+		metadataLibrary: MetadataLibrary
+	): TMetadata extends { kind: infer TKind }
+		? TKind extends keyof TypeKindToTypeMap
+			? TypeKindToTypeMap[TKind]
+			: Type
+		: never {
+		return createType(metadata, metadataLibrary) as any;
 	}
 }

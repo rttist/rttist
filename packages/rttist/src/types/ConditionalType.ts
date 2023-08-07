@@ -1,9 +1,9 @@
 import type { ConditionalTypeMetadata } from "../declarations";
-import { Type }                         from "../Type";
-import { LazyType }                     from "../utils/LazyType";
+import type { MetadataLibrary } from "../Metadata";
+import { Type } from "../Type";
+import { LazyType } from "../utils/LazyType";
 
-export class ConditionalType extends Type
-{
+export class ConditionalType extends Type {
 	private readonly _extendsRef: LazyType;
 	private readonly _trueTypeRef: LazyType;
 	private readonly _falseTypeRef: LazyType;
@@ -11,33 +11,29 @@ export class ConditionalType extends Type
 	/**
 	 * Extends type
 	 */
-	get extends(): Type
-	{
+	get extends(): Type {
 		return this._extendsRef.type;
 	}
 
 	/**
 	 * True type
 	 */
-	get trueType(): Type
-	{
+	get trueType(): Type {
 		return this._trueTypeRef.type;
 	}
 
 	/**
 	 * False type
 	 */
-	get falseType(): Type
-	{
+	get falseType(): Type {
 		return this._falseTypeRef.type;
 	}
 
-	constructor(initializer: ConditionalTypeMetadata)
-	{
-		super(initializer);
+	constructor(initializer: ConditionalTypeMetadata, metadataLibrary: MetadataLibrary) {
+		super(initializer, metadataLibrary);
 
-		this._extendsRef = new LazyType(initializer.extends);
-		this._trueTypeRef = new LazyType(initializer.trueType);
-		this._falseTypeRef = new LazyType(initializer.falseType);
+		this._extendsRef = new LazyType(metadataLibrary, initializer.extends);
+		this._trueTypeRef = new LazyType(metadataLibrary, initializer.trueType);
+		this._falseTypeRef = new LazyType(metadataLibrary, initializer.falseType);
 	}
 }

@@ -1,7 +1,8 @@
 import type { AnyTypeMetadata, ModuleIdentifier, ModuleMetadata } from "./declarations";
+import type { Type } from "./Type";
+import type { MetadataLibrary } from "./Metadata";
 import { TypeFactory } from "./factories";
 import { ModuleImporter } from "./ModuleImporter";
-import type { Type } from "./Type";
 import { ModuleIds } from "@rttist/core";
 import { LazyModuleArray } from "./utils/LazyModuleArray";
 
@@ -9,17 +10,26 @@ export class Module {
 	/**
 	 * Module for all the native types.
 	 */
-	public static readonly Native: Module = new Module({ id: ModuleIds.Native, name: "native", path: "typescript" });
+	public static readonly Native: Module = new Module(
+		{ id: ModuleIds.Native, name: "native", path: "typescript" },
+		undefined!
+	);
 
 	/**
 	 * Module for dynamic types without specific module.
 	 */
-	public static readonly Dynamic: Module = new Module({ id: ModuleIds.Dynamic, name: "dynamic", path: "" });
+	public static readonly Dynamic: Module = new Module(
+		{ id: ModuleIds.Dynamic, name: "dynamic", path: "" },
+		undefined!
+	);
 
 	/**
 	 * Unknown module.
 	 */
-	public static readonly Invalid: Module = new Module({ id: ModuleIds.Invalid, name: "invalid", path: "" });
+	public static readonly Invalid: Module = new Module(
+		{ id: ModuleIds.Invalid, name: "invalid", path: "" },
+		undefined!
+	);
 
 	/** @internal */
 	private readonly _childrenRefs: LazyModuleArray;
@@ -50,17 +60,18 @@ export class Module {
 
 	/**
 	 * @param initializer
+	 * @param metadataLibrary
 	 */
-	constructor(initializer: ModuleMetadata) {
+	constructor(initializer: ModuleMetadata, metadataLibrary: MetadataLibrary) {
 		this._id = initializer.id;
 		this._import = initializer.import ?? (() => ModuleImporter.import(initializer.id));
 		this.name = initializer.name;
 		this.path = initializer.path;
-		this._childrenRefs = new LazyModuleArray(initializer.children || []);
+		this._childrenRefs = new LazyModuleArray(metadataLibrary, initializer.children || []);
 		this._types = Object.freeze(
 			(initializer.types || []).map((typeMetadata) => {
 				(typeMetadata as any).module = initializer.id;
-				return TypeFactory.create(typeMetadata as AnyTypeMetadata);
+				return TypeFactory.create(typeMetadata as AnyTypeMetadata, metadataLibrary);
 			})
 		);
 	}

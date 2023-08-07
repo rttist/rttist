@@ -1,4 +1,5 @@
 import type { AsyncCtorReference, ClassTypeMetadata } from "../declarations";
+import type { MetadataLibrary } from "../Metadata";
 import { mapDecorators } from "../utils/mappers";
 import type { TypeAliasType } from "./TypeAliasType";
 import type { InterfaceType } from "./InterfaceType";
@@ -9,6 +10,7 @@ import { LazyTypeArray } from "../utils/LazyTypeArray";
 import { ObjectLikeTypeBase } from "./ObjectLikeTypeBase";
 
 export class ClassType extends ObjectLikeTypeBase {
+	// region Internals
 	/** @internal */
 	private readonly _implementsRef: LazyTypeArray<InterfaceType | TypeAliasType>;
 	/** @internal */
@@ -22,6 +24,7 @@ export class ClassType extends ObjectLikeTypeBase {
 	private readonly _abstract: boolean;
 	/** @internal */
 	private readonly _extendsRef?: LazyType<ClassType>;
+	// endregion
 
 	/**
 	 * Base type
@@ -45,13 +48,21 @@ export class ClassType extends ObjectLikeTypeBase {
 		return this._abstract;
 	}
 
-	constructor(initializer: ClassTypeMetadata) {
-		super(initializer);
+	constructor(initializer: ClassTypeMetadata, metadataLibrary: MetadataLibrary) {
+		super(initializer, metadataLibrary);
 
 		this._ctor = initializer.ctor ?? (() => this.module.import().then((module) => module?.[initializer.name]));
-		this._implementsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(initializer.implements || []);
-		this._extendsRef = initializer.extends === undefined ? undefined : new LazyType<ClassType>(initializer.extends);
-		this._constructors = Object.freeze((initializer.constructors ?? []).map((meta) => new SignatureInfo(meta)));
+		this._implementsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(
+			metadataLibrary,
+			initializer.implements || []
+		);
+		this._extendsRef =
+			initializer.extends === undefined
+				? undefined
+				: new LazyType<ClassType>(metadataLibrary, initializer.extends);
+		this._constructors = Object.freeze(
+			(initializer.constructors ?? []).map((meta) => new SignatureInfo(meta, metadataLibrary))
+		);
 		this._decorators = mapDecorators(initializer);
 		this._abstract = initializer.abstract ?? false;
 	}

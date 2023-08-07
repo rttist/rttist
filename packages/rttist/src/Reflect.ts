@@ -59,11 +59,11 @@ declare global {
 		 */
 		export function getType<T = unknown>(): Type;
 
-		/**
-		 * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
-		 * @param reference
-		 */
-		export function resolveType(reference: TypeReference): Type;
+		// /**
+		//  * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
+		//  * @param reference
+		//  */
+		// export function resolveType(reference: TypeReference): Type;
 
 		/**
 		 * Returns generic class from generic class definition.
@@ -89,13 +89,13 @@ declare global {
 		// export function createCallsite(fn: Function, context: any, typeArgs: { [typeParameterIndex: number]: TypeReference }, ...args: any[]): any;
 	}
 
-	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" | "resolveType" | "getGenericClass">;
+	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" /* | "resolveType"*/ | "getGenericClass">;
 }
 
 let RttistObj;
 getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	getType: getType,
-	resolveType: Metadata.resolveType.bind(Metadata),
+	// resolveType: Metadata.resolveType.bind(Metadata),
 	symbols: Symbols.metadata,
 	[FncNames.getGenericClass]: getGenericClass,
 	[FncNames.constructGeneric]: constructGeneric,

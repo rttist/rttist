@@ -1,57 +1,58 @@
-import {
-	ModuleIds,
-	PROTOTYPE_TYPE_PROPERTY,
-	TypeIds
-}                        from "@rttist/core";
-import {
-	ParameterFlags,
-	TypeKind
-}                        from "./enums";
-import { Module }        from "./Module";
+import { ModuleIds, PROTOTYPE_TYPE_PROPERTY, TypeIds } from "@rttist/core";
+import { ParameterFlags, TypeKind } from "./enums";
+import { Module } from "./Module";
 import { getGlobalThis } from "./utils/getGlobalThis";
-import { Metadata }      from "./Metadata";
-import { Type }          from "./Type";
-import { FunctionType }  from "./types";
+import { Metadata } from "./Metadata";
+import { Type } from "./Type";
+import { FunctionType } from "./types";
 
-export function resolveSingletonInstance<T>(key: string, Class: { new(): T }): T
-{
+export function resolveSingletonInstance<T>(key: string, Class: { new (...args: any[]): T }, args: any[] = []): T {
 	const go = getGlobalThis();
 	const s = Symbol.for(key);
-	return go[s] || (go[s] = new Class());
+	return go[s] || (go[s] = new Class(...args));
 }
 
 /**
  * @internal
  */
-export const AnyArray = new Type({
-	kind: TypeKind.Interface,
-	name: "Array",
-	id: ModuleIds.Native + "::Array{" + TypeIds.Any + "}",
-	module: ModuleIds.Native,
-	genericTypeDefinition: [TypeKind.ArrayDefinition],
-	typeArguments: [TypeIds.Any]
-});
+export const AnyArray = new Type(
+	{
+		kind: TypeKind.Interface,
+		name: "Array",
+		id: ModuleIds.Native + "::Array{" + TypeIds.Any + "}",
+		module: ModuleIds.Native,
+		genericTypeDefinition: [TypeKind.ArrayDefinition],
+		typeArguments: [TypeIds.Any],
+	},
+	undefined!
+);
 
 /**
  * @internal
  */
-export const UnknownFunction = new FunctionType({
-	kind: TypeKind.Function,
-	name: "Function",
-	id: ModuleIds.Native + "::Function",
-	module: ModuleIds.Native,
-	signatures: [{
-		parameters: [{
-			name: "x",
-			flags: ParameterFlags.Rest,
-			type: AnyArray.id
-		}],
-		returnType: TypeIds.Unknown
-	}]
-});
+export const UnknownFunction = new FunctionType(
+	{
+		kind: TypeKind.Function,
+		name: "Function",
+		id: ModuleIds.Native + "::Function",
+		module: ModuleIds.Native,
+		signatures: [
+			{
+				parameters: [
+					{
+						name: "x",
+						flags: ParameterFlags.Rest,
+						type: AnyArray.id,
+					},
+				],
+				returnType: TypeIds.Unknown,
+			},
+		],
+	},
+	undefined!
+);
 
-export function getTypeOfRuntimeValue(value: any): Type
-{
+export function getTypeOfRuntimeValue(value: any): Type {
 	if (value === undefined) return Type.Undefined;
 	if (value === null) return Type.Null;
 	if (typeof value === "string") return Type.String;
@@ -76,21 +77,20 @@ export function getTypeOfRuntimeValue(value: any): Type
 	if (value instanceof Type) return Type.Type;
 	if (value instanceof Module) return Type.Module;
 
-	if (value.constructor === undefined)
-	{
+	if (value.constructor === undefined) {
 		return Type.Unknown;
 	}
 
 	if (value.constructor === Object) return Type.NonPrimitiveObject;
 	if (value.constructor === Array) return AnyArray;
 
-	const typeRef = value.prototype?.[PROTOTYPE_TYPE_PROPERTY]
-		|| value.constructor.prototype[PROTOTYPE_TYPE_PROPERTY]
-		|| value[PROTOTYPE_TYPE_PROPERTY]
-		|| undefined;
+	const typeRef =
+		value.prototype?.[PROTOTYPE_TYPE_PROPERTY] ||
+		value.constructor.prototype[PROTOTYPE_TYPE_PROPERTY] ||
+		value[PROTOTYPE_TYPE_PROPERTY] ||
+		undefined;
 
-	if (typeRef !== undefined)
-	{
+	if (typeRef !== undefined) {
 		return Metadata.resolveType(typeRef);
 	}
 

@@ -1,13 +1,13 @@
-import type { Type }              from "../Type";
+import type { MetadataLibrary } from "../Metadata";
+import type { Type } from "../Type";
 import type { IndexInfoMetadata } from "../declarations";
-import { IndexFlags }             from "../enums";
-import { LazyType }               from "../utils/LazyType";
+import { IndexFlags } from "../enums";
+import { LazyType } from "../utils/LazyType";
 
 /**
  * Index description
  */
-export class IndexInfo
-{
+export class IndexInfo {
 	/**
 	 * @internal
 	 */
@@ -26,16 +26,14 @@ export class IndexInfo
 	/**
 	 * Index key type.
 	 */
-	get keyType(): Type
-	{
+	get keyType(): Type {
 		return this._keyTypeRef.type;
 	}
 
 	/**
 	 * Index value type.
 	 */
-	get type(): Type
-	{
+	get type(): Type {
 		return this._typeRef.type;
 	}
 
@@ -46,13 +44,13 @@ export class IndexInfo
 
 	/**
 	 * @param initializer
+	 * @param metadataLibrary
 	 * @internal
 	 */
-	constructor(initializer: IndexInfoMetadata)
-	{
+	constructor(initializer: IndexInfoMetadata, metadataLibrary: MetadataLibrary) {
 		this.metadata = initializer;
-		this._keyTypeRef = new LazyType<Type>(initializer.key);
-		this._typeRef = new LazyType<Type>(initializer.type);
+		this._keyTypeRef = new LazyType<Type>(metadataLibrary, initializer.key);
+		this._typeRef = new LazyType<Type>(metadataLibrary, initializer.type);
 		this.readonly = (initializer.flags & IndexFlags.Readonly) !== 0;
 	}
 }

@@ -1,6 +1,7 @@
 import type { LiteralTypeMetadata } from "../declarations";
-import { TypeKind }                 from "../enums";
-import { Type }                     from "../Type";
+import type { MetadataLibrary } from "../Metadata";
+import { TypeKind } from "../enums";
+import { Type } from "../Type";
 
 export type StringLiteralType = Omit<LiteralType, "value"> & { value: string };
 export type NumberLiteralType = Omit<LiteralType, "value"> & { value: number };
@@ -8,61 +9,50 @@ export type BooleanLiteralType = Omit<LiteralType, "value"> & { value: boolean }
 export type BigIntLiteralType = Omit<LiteralType, "value"> & { value: BigInt };
 export type RegExpLiteralType = Omit<LiteralType, "value"> & { value: RegExp };
 
-export class LiteralType extends Type
-{
+export class LiteralType extends Type {
 	public readonly value: any;
 
-	constructor(initializer: LiteralTypeMetadata)
-	{
-		super(initializer);
+	constructor(initializer: LiteralTypeMetadata, metadataLibrary: MetadataLibrary) {
+		super(initializer, metadataLibrary);
 		this.value = this.parseValue(initializer.value);
 	}
 
-	isStringLiteral(): this is StringLiteralType
-	{
+	isStringLiteral(): this is StringLiteralType {
 		return this._kind === TypeKind.StringLiteral;
 	}
 
-	isNumberLiteral(): this is NumberLiteralType
-	{
+	isNumberLiteral(): this is NumberLiteralType {
 		return this._kind === TypeKind.NumberLiteral;
 	}
 
-	isBooleanLiteral(): this is BooleanLiteralType
-	{
+	isBooleanLiteral(): this is BooleanLiteralType {
 		return this._kind === TypeKind.True || this._kind === TypeKind.False;
 	}
 
-	isBigIntLiteral(): this is BigIntLiteralType
-	{
+	isBigIntLiteral(): this is BigIntLiteralType {
 		return this._kind === TypeKind.BigIntLiteral;
 	}
 
-	isRegExpLiteral(): this is RegExpLiteralType
-	{
+	isRegExpLiteral(): this is RegExpLiteralType {
 		return this._kind === TypeKind.RegExpLiteral;
 	}
 
 	/**
 	 * Check if this type is a "true" literal.
 	 */
-	isTrue(): boolean
-	{
+	isTrue(): boolean {
 		return this.kind === TypeKind.True;
 	}
 
 	/**
 	 * Check if this type is a "false" literal.
 	 */
-	isFalse(): boolean
-	{
+	isFalse(): boolean {
 		return this.kind === TypeKind.False;
 	}
 
-	private parseValue(value: any): any
-	{
-		switch (this._kind)
-		{
+	private parseValue(value: any): any {
+		switch (this._kind) {
 			case TypeKind.StringLiteral:
 				return value + "";
 			case TypeKind.NumberLiteral:
@@ -78,9 +68,8 @@ export class LiteralType extends Type
 
 		return value;
 	}
-	
-	toString(): string
-	{
+
+	toString(): string {
 		return `${TypeKind[this._kind]}\(${this.value})`;
 	}
 }

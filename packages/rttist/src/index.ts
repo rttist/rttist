@@ -1,6 +1,5 @@
 // keep order of imports & exports - there are circular dependencies
 import { LazyType } from "./utils/LazyType";
-import { LazyModule } from "./utils/LazyModule";
 import { Type } from "./Type";
 import { Module } from "./Module";
 import { Metadata } from "./Metadata";
@@ -15,7 +14,7 @@ export { Module } from "./Module";
 export { Type, NativeTypes } from "./Type";
 export * from "./infos";
 export * from "./types";
-export { Metadata, MetadataLibrary } from "./Metadata";
+export { /*Metadata,*/ MetadataLibrary } from "./Metadata";
 export { getType } from "./functions/getType";
 export { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
 export { constructGeneric } from "./functions/constructGeneric";
@@ -25,7 +24,7 @@ export * from "./symbols";
 export { ModuleImporter } from "./ModuleImporter";
 
 LazyType.resolver = Metadata.resolveType.bind(Metadata);
-LazyModule.resolver = Metadata.resolveModule.bind(Metadata);
+// LazyModule.resolver = Metadata.resolveModule.bind(Metadata);
 
 Metadata.addType(
 	Type.Invalid,

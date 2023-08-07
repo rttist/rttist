@@ -1,5 +1,6 @@
 import type { TypeReference } from "../declarations";
-import type { Type }          from "../Type";
+import type { MetadataLibrary } from "../Metadata";
+import type { Type } from "../Type";
 
 /**
  * @internal
@@ -9,8 +10,7 @@ export type TypeResolver = (typeRef: TypeReference) => Type;
 /**
  * @internal
  */
-export class LazyType<TType extends Type = Type>
-{
+export class LazyType<TType extends Type = Type> {
 	public static resolver: TypeResolver = () => {
 		throw new Error("LazyType.resolver not set.");
 	};
@@ -18,15 +18,15 @@ export class LazyType<TType extends Type = Type>
 	private readonly _reference: TypeReference;
 	private _type?: TType;
 
-	get type(): TType
-	{
-		return this._type ?? (this._type = LazyType.resolver(this._reference) as TType);
+	get type(): TType {
+		return this._type ?? (this._type = this.metadataLibrary.resolveType(this._reference) as TType);
 	}
 
-	constructor(typeReference: TypeReference)
-	{
-		if (!typeReference)
-		{
+	constructor(
+		private readonly metadataLibrary: MetadataLibrary,
+		typeReference: TypeReference
+	) {
+		if (!typeReference) {
 			throw new Error("Invalid type reference.");
 		}
 

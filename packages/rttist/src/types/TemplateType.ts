@@ -1,14 +1,13 @@
 import type { TemplateTypeMetadata } from "../declarations";
-import { Type }                      from "../Type";
+import type { MetadataLibrary } from "../Metadata";
+import { Type } from "../Type";
 
-export class TemplateType extends Type
-{
+export class TemplateType extends Type {
 	public readonly head: string;
-	public readonly templateSpans: Array<{ expression: string, literal: string }>;
+	public readonly templateSpans: Array<{ expression: string; literal: string }>;
 
-	constructor(initializer: TemplateTypeMetadata)
-	{
-		super(initializer);
+	constructor(initializer: TemplateTypeMetadata, metadataLibrary: MetadataLibrary) {
+		super(initializer, metadataLibrary);
 		this.head = initializer.head;
 		this.templateSpans = initializer.templateSpans;
 	}

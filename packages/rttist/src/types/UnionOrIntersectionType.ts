@@ -1,9 +1,9 @@
 import type { UnionOrIntersectionTypeMetadata } from "../declarations";
-import { Type }                                 from "../Type";
-import { LazyTypeArray }                        from "../utils/LazyTypeArray";
+import type { MetadataLibrary } from "../Metadata";
+import { Type } from "../Type";
+import { LazyTypeArray } from "../utils/LazyTypeArray";
 
-export abstract class UnionOrIntersectionType extends Type
-{
+export abstract class UnionOrIntersectionType extends Type {
 	protected abstract operatorSymbol: string;
 
 	/**
@@ -14,23 +14,20 @@ export abstract class UnionOrIntersectionType extends Type
 	/**
 	 * Array of underlying types.
 	 */
-	get types(): ReadonlyArray<Type>
-	{
+	get types(): ReadonlyArray<Type> {
 		return this._types.types;
 	}
 
-	protected constructor(initializer: UnionOrIntersectionTypeMetadata)
-	{
-		super(initializer);
+	protected constructor(initializer: UnionOrIntersectionTypeMetadata, metadataLibrary: MetadataLibrary) {
+		super(initializer, metadataLibrary);
 
-		this._types = new LazyTypeArray<Type>(initializer.types || []);
+		this._types = new LazyTypeArray<Type>(metadataLibrary, initializer.types || []);
 	}
 
 	/**
 	 * Returns string representation of the type.
 	 */
-	toString(): string
-	{
-		return `{${this.types.map(t => t.toString()).join(this.operatorSymbol)}`;
+	toString(): string {
+		return `{${this.types.map((t) => t.toString()).join(this.operatorSymbol)}`;
 	}
 }
