@@ -95,9 +95,9 @@ export { Metadata };`,
 	private async generateProjectTypelibImporter() {
 		await fs.writeFile(
 			resolvePath(this.config.tsRootDir, "metadata.typelib.ts"),
-			`import { ModuleImporter, Type } from "rttist";
+			`import { ModuleImporter, Type, MetadataLibrary } from "rttist";
 // @ts-ignore
-import { Metadata } from "./internal.typelib";
+import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
 
 Type.configure({
 	nullability: ${this.config.strictNullChecks ? "false" : "true"},
@@ -108,7 +108,7 @@ ModuleImporter.registerImporters({
 });
 
 /** @internal */
-export { Metadata };`,
+export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 			"utf-8"
 		);
 	}

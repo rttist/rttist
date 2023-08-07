@@ -1,6 +1,6 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.1.0-proto.4",
+	"version": "0.1.0-proto.5",
 	"description": "Type generator for RTTIST",
 	"bin": {
 		"typegen": "dist/bin.js"
