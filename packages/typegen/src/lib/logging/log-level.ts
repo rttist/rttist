@@ -1,5 +1,4 @@
-export enum LogLevel
-{
+export enum LogLevel {
 	None = "NON",
 	Trace = "TRA",
 	Debug = "DBG",
@@ -7,4 +6,5 @@ export enum LogLevel
 	Warning = "WRN",
 	Error = "ERR",
 	Dev = "DEV",
+	Always = "ALW",
 }

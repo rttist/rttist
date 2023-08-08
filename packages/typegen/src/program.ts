@@ -1,12 +1,10 @@
 import { startTime } from "./performance-import-time-start"; // Keep first
-import { Entry } from "fast-glob";
+import type { Entry } from "fast-glob";
 import type { CLI } from "./cli";
-import { cpus } from "os";
-import * as fs from "fs/promises";
-import { Worker } from "worker_threads";
+import type { Worker } from "worker_threads";
 import { WorkerMessage } from "./declarations/worker-message";
 import { Config, getParsedConfig } from "./lib/config/config";
-import { CacheStats } from "./declarations/cache-stats";
+import { CacheStats } from "./lib/cache/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { LogColor, Logger, LogLevel } from "./lib/logging";
 import { LogBuffer } from "./lib/logging/log-buffer";
@@ -16,14 +14,11 @@ import * as fastGlob from "fast-glob";
 import * as cliProgress from "cli-progress";
 import { Watcher } from "./lib/watcher";
 import { WorkerMessageType } from "./declarations/worker-message-type";
-import PromiseSource from "promise-cs";
 
 let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
 try {
 	startCacheServer = require("memory-mapped-files").startCacheServer;
 } catch (e) {}
-
-const JSON_DATE_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?/;
 
 // TODO: Refactor this file. Separate base build, spawning and watching.
 
@@ -38,9 +33,6 @@ export class Program {
 		parseStart: startTime,
 		start: performance.now(),
 	};
-	private stats: CacheStats = {
-		lastGeneration: new Date(0, 0),
-	};
 
 	constructor(private readonly cli: CLI) {}
 
@@ -53,40 +45,81 @@ export class Program {
 
 		Logger.setLevel(config.logLevel);
 
-		this.logger.log(LogLevel.Info, LogColor.blue, "Project root: " + config.projectRoot);
-		this.logger.log(LogLevel.Info, LogColor.blue, "TypeScript root directory: " + config.tsRootDir);
+		this.logInitialMessage(config);
+		const stats = new CacheStats(config, this.logger);
+
+		const allFiles = await this.getSourceFilesWithStats(config);
+		const changedFilesToRegenerate = this.getFilesToRegenerate(allFiles, config, stats);
+
+		if (changedFilesToRegenerate.length === 0) {
+			this.handleNoChangesDetected(config);
+			return;
+		}
+
+		const allFilesPath = allFiles.map((x) => x.path);
+		const typelibGenerator = new TypelibGenerator(config, allFilesPath);
 
 		// run MMF cache server
 		startCacheServer?.(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
 
-		const allFiles = await this.getSourceFilesWithStats(config);
-		const allFilesPath = allFiles.map((x) => x.path);
-		const completedPS = new PromiseSource();
-		const typelibGenerator = new TypelibGenerator(config, allFilesPath);
+		// SPAWN workers
+		const workers = this.spawnWorkers(changedFilesToRegenerate, config);
+		// Progress bar
+		const progressBar = this.createProgressBar(changedFilesToRegenerate);
 
+		// Capture initialization time
+		this.performanceEntries.initialization = performance.now();
+
+		await this.waitWorkersFinishedPromise(workers, progressBar);
+		this.flushWorkersLogBuffer(workers);
+		await this.waitWorkersExitPromise(workers);
+
+		// await generateTypelibFiles(
+		// 	allFiles.map((x) => x.path),
+		// 	config
+		// );
+		await typelibGenerator.generate();
+		// TODO generate bundles too
+
+		this.performanceEntries.completed = performance.now();
+		this.printPerformanceInfo(config);
+
+		stats.value.lastGeneration = new Date();
+		stats.persist();
+
+		// const completedPS = new PromiseSource();
 		// Watch files in case the watch mode is enabled.
 		if (config.watch) {
 			this.logger.warn("Watch mode is currently deactivated because of WIP refactoring.");
 			// const watcher = new Watcher(config, typelibGenerator, completedPS);
 			// watcher.watch(allFilesPath);
 		}
+		// completedPS.resolve();
+	}
 
-		await this.loadCachedStats(config);
+	/**
+	 * Flush workers log buffers
+	 */
+	private flushWorkersLogBuffer(workers: any[]) {
+		workers.forEach((worker) => {
+			worker.worker.postMessage({ type: WorkerMessageType.FlushLogBuffer });
+		});
+	}
 
-		// Filter files to regenerate (files with changes after last generation).
-		const filesToProcess = await this.getFilesToRegenerate(allFiles, config);
-		// SPAWN workers
-		const workers = this.spawnWorkers(filesToProcess, config);
-		// Progress bar
-		const progressBar = this.createProgressBar(filesToProcess);
+	/**
+	 * Create Promise waiting for all workers to exit.
+	 */
+	private waitWorkersExitPromise(workers: any[]) {
+		return Promise.all(workers.map((entry) => entry.workerExitedPromise));
+	}
 
-		// Capture initialization time
-		this.performanceEntries.initialization = performance.now();
-
-		// Wait for workers to finish generation
+	/**
+	 * Create Promise waiting for all workers to finish generation; with progress update.
+	 */
+	private async waitWorkersFinishedPromise(workers: any[], progressBar: cliProgress.SingleBar) {
 		await Promise.all(
 			workers.map((entry) => {
-				entry.worker.on("message", (message) => {
+				entry.worker.on("message", (message: WorkerMessage) => {
 					if (message.type === WorkerMessageType.FileFinished) {
 						progressBar.increment();
 					}
@@ -97,33 +130,27 @@ export class Program {
 		);
 
 		progressBar.stop();
+	}
 
-		// Flush workers log buffers
-		workers.forEach((worker) => {
-			worker.worker.postMessage({ type: WorkerMessageType.FlushLogBuffer });
-		});
+	private logInitialMessage(config: Config) {
+		this.logger.log(
+			LogLevel.Info,
+			LogColor.blue,
+			"Configuration",
+			"\n\tproject root:".padEnd(29, " ") + config.projectRoot,
+			// "\n\ttypescript root directory: " + config.tsRootDir, // tsRootDir required typescript; but we don't want to import it early
+			"\n\tcache directory:".padEnd(29, " ") + config.cacheDir
+		);
+	}
 
-		// Wait for workers to exit
-		await Promise.all(workers.map((entry) => entry.workerExitedPromise));
-
-		if (filesToProcess.length > 0) {
-			// await generateTypelibFiles(
-			// 	allFiles.map((x) => x.path),
-			// 	config
-			// );
-			await typelibGenerator.generate();
-			// TODO generate bundles too
-		}
-
-		this.performanceEntries.completed = performance.now();
+	private handleNoChangesDetected(config: Config) {
+		this.logger.log(
+			LogLevel.Always,
+			LogColor.cyan,
+			"No changes detected.\n\tUse '-f' or '--force' to force generation."
+		);
+		this.performanceEntries.initialization = performance.now();
 		this.printPerformanceInfo(config);
-
-		if (filesToProcess.length > 0) {
-			this.stats.lastGeneration = new Date();
-			await this.persistStats(config);
-		}
-
-		completedPS.resolve();
 	}
 
 	private createProgressBar(files: string[]) {
@@ -139,16 +166,17 @@ export class Program {
 		return progressBar;
 	}
 
-	private async getFilesToRegenerate(allFiles: Entry[], config: Config) {
+	private getFilesToRegenerate(allFiles: Entry[], config: Config, stats: CacheStats) {
 		// Filter out files that have not been modified since last generation
 		const files = config.force
 			? allFiles
-			: allFiles.filter((entry) => !entry.stats || entry.stats.mtime > this.stats.lastGeneration);
+			: allFiles.filter((entry) => !entry.stats || entry.stats.mtime > stats.value.lastGeneration);
 
 		return files.map((entry) => entry.path);
 	}
 
 	private spawnWorkers(fileNames: string[], config: Config) {
+		const cpus = require("os").cpus;
 		const cpuCount = Math.round(cpus().length / 3);
 		// Find out how many files each worker should process; If it's less than 5 per worker, use only one worker.
 		const workerFileCount =
@@ -196,16 +224,22 @@ export class Program {
 			"sec.",
 
 			"\n\tInitialization:",
-			roundPerfTime((this.performanceEntries.initialization ?? 0) - this.performanceEntries.start),
+			roundPerfTime(
+				(this.performanceEntries.initialization ?? performance.now()) - this.performanceEntries.start
+			),
 			"sec.",
 
-			"\n\tGenerating metadata:",
-			roundPerfTime((this.performanceEntries.completed ?? 0) - (this.performanceEntries.initialization ?? 0)),
-			"sec.",
+			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
+				? []
+				: [
+						"\n\tGenerating metadata:",
+						roundPerfTime(this.performanceEntries.completed - this.performanceEntries.initialization),
+						"sec.",
 
-			"\n\tTotal time:",
-			roundPerfTime((this.performanceEntries.completed ?? 0) - this.performanceEntries.parseStart),
-			"sec."
+						"\n\tTotal time:",
+						roundPerfTime(this.performanceEntries.completed - this.performanceEntries.parseStart),
+						"sec.",
+				  ])
 
 			// "\n\tProcessed",
 			// this.metadata.getNumberOfTypes(),
@@ -252,6 +286,7 @@ export class Program {
 			logger.trace("Spawning worker for files", files);
 		}
 
+		const Worker = require("worker_threads").Worker;
 		const worker = new Worker(resolvePath(__dirname, "worker.js"), {
 			workerData: {
 				files: files,
@@ -293,34 +328,5 @@ export class Program {
 
 			resolve(undefined);
 		});
-	}
-
-	private async persistStats(config: Config) {
-		const statsPath = resolvePath(config.cacheDir, "stats.json");
-		await fs.writeFile(statsPath, JSON.stringify(this.stats, null, 4), "utf-8");
-	}
-
-	private async loadCachedStats(config: Config): Promise<void> {
-		const statsPath = resolvePath(config.cacheDir, "stats.json");
-		const stats = await fs.readFile(statsPath, "utf-8").catch(() => undefined);
-
-		try {
-			this.stats = {
-				...this.stats,
-				...(JSON.parse(stats ?? "{}", function (key, value) {
-					if (typeof value === "string") {
-						let match = value.match(JSON_DATE_REGEX);
-
-						if (match) {
-							return new Date(match[0]);
-						}
-					}
-					return value;
-				}) as CacheStats),
-			};
-		} catch (error) {
-			this.logger.error("Failed to parse stats file.", error);
-			throw error;
-		}
 	}
 }

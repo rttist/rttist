@@ -10,6 +10,7 @@ const LEVEL_MAP = {
 	[LogLevel.Warning]: 4,
 	[LogLevel.Error]: 5,
 	[LogLevel.Dev]: 6,
+	[LogLevel.Always]: 7,
 };
 
 const COLOR_MAP = {
@@ -20,6 +21,7 @@ const COLOR_MAP = {
 	[LogLevel.Warning]: LogColor.yellow,
 	[LogLevel.Error]: LogColor.red,
 	[LogLevel.Dev]: undefined,
+	[LogLevel.Always]: undefined,
 };
 
 function writeToConsole(

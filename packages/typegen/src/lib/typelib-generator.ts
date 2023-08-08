@@ -1,10 +1,10 @@
 import * as esbuild from "esbuild";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { ModuleKind } from "typescript";
 import { Config } from "./config/config";
 import { removeExtension } from "./transformer/utils/removeExtension";
 import { normalizePath, resolvePath } from "./utils/path";
+import { lazyTypescript } from "./utils/lazy-typescript";
 
 export class TypelibGenerator {
 	constructor(
@@ -128,7 +128,7 @@ export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 			outdir: this.config.outDir,
 			// outdir: resolvePath(this.config.tsRootDir, ".metadata"),
 			platform: "neutral",
-			format: this.config.module === ModuleKind.CommonJS ? "cjs" : "esm",
+			format: this.config.module === lazyTypescript.get().ModuleKind.CommonJS ? "cjs" : "esm",
 			target: "es2015",
 			external: ["rttist"],
 		});

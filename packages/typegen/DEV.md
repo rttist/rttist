@@ -16,3 +16,4 @@
   This is required for solving `stripInternals`. End-user project and every package will have custom library excluding internals of 3rd parties.
 - To speed thinks up, keep list of all TS files and its moduleIds in memory.
 - Try to build without parallelization if there is less then x files per CPU, it should be faster.
+- If you want to import typescript anywhere in the code under `bin.ts`, you should use `lazyTypescript.get()` almost everywhere. This is because `typescript` is a heavy dependency (it take 200 ms to import it) and we want to load it only when needed - eg. processing everything from cache when there are no changes does not require typescript.

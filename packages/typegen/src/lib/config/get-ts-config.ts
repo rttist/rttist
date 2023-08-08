@@ -1,12 +1,14 @@
-import * as ts from "typescript";
-import { CommandLineArguments } from "../../declarations/command-line-arguments";
+import type { ParseConfigFileHost, ParsedCommandLine } from "typescript";
+import type { CommandLineArguments } from "../../declarations/command-line-arguments";
 import { resolvePath } from "../utils/path";
+import { lazyTypescript } from "../utils/lazy-typescript";
 
-export function getTsConfig(cliArgs: CommandLineArguments): ts.ParsedCommandLine {
+export function getTsConfig(cliArgs: CommandLineArguments): ParsedCommandLine {
+	const ts = lazyTypescript.get();
 	const config = ts.getParsedCommandLineOfConfigFile(
 		resolvePath(cliArgs.projectRoot, "tsconfig.json"),
 		{},
-		ts.sys as unknown as ts.ParseConfigFileHost
+		ts.sys as unknown as ParseConfigFileHost
 	);
 
 	if (!config) {

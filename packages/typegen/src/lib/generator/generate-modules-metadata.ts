@@ -7,65 +7,65 @@ import { createSourceFileVisitor } from "../transformer/visitors/sourcefile-visi
 
 let createClient: undefined | typeof import("memory-mapped-files").createClient;
 try {
-	createClient = require("memory-mapped-files").createClient;
+    createClient = require("memory-mapped-files").createClient;
 } catch (e) {}
 
 export function generateModulesMetadata(
-	sourceFiles: string[],
-	config: Config,
-	writeFileCallback: (filename: string) => void
+    sourceFiles: string[],
+    config: Config,
+    writeFileCallback: (filename: string) => void
 ) {
-	// const mmfClient = undefined;
-	const mmfClient = createClient?.();
-	const options = getCompilerOptions(config);
-	const host = createCompilerHost(options, config, mmfClient);
-	const program = ts.createProgram(sourceFiles, options, host);
-	const transformerContext = new TransformerContext(program, config, writeFileCallback);
+    // const mmfClient = undefined;
+    const mmfClient = createClient?.();
+    const options = getCompilerOptions(config);
+    const host = createCompilerHost(options, config, mmfClient);
+    const program = ts.createProgram(sourceFiles, options, host);
+    const transformerContext = new TransformerContext(program, config, writeFileCallback);
 
-	program.emit(undefined, undefined, undefined, false, {
-		before: [
-			(context) => {
-				transformerContext.scopeManager.setTransformationContext(context);
-				return createSourceFileVisitor(context, transformerContext);
-			},
-		],
-	});
+    program.emit(undefined, undefined, undefined, false, {
+        before: [
+            (context) => {
+                transformerContext.scopeManager.setTransformationContext(context);
+                return createSourceFileVisitor(context, transformerContext);
+            },
+        ],
+    });
 
-	mmfClient?.dispose();
+    mmfClient?.dispose();
 }
 
 function createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClient?: Client) {
-	const host = ts.createCompilerHost(options);
+    const host = ts.createCompilerHost(options);
 
-	host.writeFile = (fileName: string, contents: string) => {
-		// writeFileCallback(fileName);
-	};
+    host.writeFile = (fileName: string, contents: string) => {
+        // writeFileCallback(fileName);
+    };
 
-	if (mmfClient) {
-		host.readFile = (fileName) => {
-			const file = mmfClient.getFile(fileName.replace(config.tsRootDir, ""));
+    if (mmfClient) {
+        host.readFile = (fileName) => {
+            const file = mmfClient.getFile(fileName.replace(config.tsRootDir, ""));
 
-			if (file) {
-				return file;
-			}
+            if (file) {
+                return file;
+            }
 
-			return fs.readFileSync(fileName, "utf-8");
-		};
-	}
+            return fs.readFileSync(fileName, "utf-8");
+        };
+    }
 
-	return host;
+    return host;
 }
 
 function getCompilerOptions(config: Config) {
-	const options: ts.CompilerOptions = {
-		...config.compilerOptions,
-		isolatedModules: true,
-		// noLib: true,
-		skipDefaultLibCheck: config.typecheck,
-		noResolve: !config.typecheck,
-		declaration: false,
-		declarationMap: false,
-		sourceMap: false,
-	};
-	return options;
+    const options: ts.CompilerOptions = {
+        ...config.compilerOptions,
+        isolatedModules: true,
+        // noLib: true,
+        skipDefaultLibCheck: config.typecheck,
+        noResolve: !config.typecheck,
+        declaration: false,
+        declarationMap: false,
+        sourceMap: false,
+    };
+    return options;
 }

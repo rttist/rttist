@@ -1,18 +1,18 @@
+import type * as ts from "typescript";
+import type { PackageInfo } from "../../declarations/package-info";
+import type { DependencyInfo } from "../../declarations/dependency-info";
+import type { PackageJson } from "../../declarations/package-json";
+import type { ConfigReflectionSection } from "./config-reflection-section";
 import { ConfigurationBuilder, IRootConfiguration } from "@netleaf/extensions-configuration";
 import fs from "fs/promises";
-import { makeRe } from "minimatch";
 import path from "path";
-import * as ts from "typescript";
 import { CommandLineArguments } from "../../declarations/command-line-arguments";
-import { DependencyInfo } from "../../declarations/dependency-info";
-import type { PackageInfo } from "../../declarations/package-info";
-import { PackageJson } from "../../declarations/package-json";
 import { TargetPlatform } from "../../declarations/target-platform";
 import { Logger, LogLevel } from "../logging";
 import { joinPaths, normalizePath, resolvePath } from "../utils/path";
-import { ConfigReflectionSection } from "./config-reflection-section";
 import { getPackageInfo } from "./get-package-info";
 import { getTsConfig } from "./get-ts-config";
+import { lazyTypescript } from "../utils/lazy-typescript";
 
 const DefaultConfiguration: ConfigReflectionSection = {
 	devMode: false,
@@ -150,16 +150,28 @@ function createConfig(
 	dependenciesInfo: DependencyInfo[]
 ): Config {
 	const projectRoot = commandLineArguments.projectRoot;
-	const tsParsedCommandLine = getTsConfig(commandLineArguments);
 	const metadataConfig = reflectionConfig.getSection("metadata");
 	const devMode = ["true", true].includes(reflectionConfig.get("devMode") ?? DefaultConfiguration.devMode);
+
+	let tsParsedCommandLine: ts.ParsedCommandLine | undefined;
+	const tsconfig = {
+		// getter to lazy-load typescript
+		get parsedCommandLine() {
+			if (tsParsedCommandLine === undefined) {
+				tsParsedCommandLine = getTsConfig(commandLineArguments);
+			}
+			return tsParsedCommandLine;
+		},
+	};
 
 	return {
 		packageInfo: packageInfo,
 		dependenciesInfo: dependenciesInfo,
 
 		projectRoot: resolvePath(projectRoot),
-		tsRootDir: resolvePath(tsParsedCommandLine.options.rootDir ?? projectRoot),
+		get tsRootDir() {
+			return resolvePath(tsconfig.parsedCommandLine.options.rootDir ?? projectRoot);
+		},
 		cacheDir: resolvePath(commandLineArguments.projectRoot, ".metadata"),
 		outDir: resolvePath(commandLineArguments.projectRoot, metadataConfig.get("outDir")!),
 
@@ -174,12 +186,23 @@ function createConfig(
 		target: TargetPlatform[reflectionConfig.get("target") as keyof typeof TargetPlatform],
 
 		// TS OPTIONS
-		compilerOptions: tsParsedCommandLine.options,
-		strictNullChecks:
-			(ts as any).getStrictOptionValue?.(tsParsedCommandLine.options, "strictNullChecks") ??
-			tsParsedCommandLine.options.strictNullChecks === true,
-		moduleResolution: getModuleResolutionKind(tsParsedCommandLine.options),
-		module: getModuleKind(tsParsedCommandLine.options),
+		get compilerOptions() {
+			return tsconfig.parsedCommandLine.options;
+		},
+		get strictNullChecks() {
+			return (
+				(lazyTypescript.get() as any).getStrictOptionValue?.(
+					tsconfig.parsedCommandLine.options,
+					"strictNullChecks"
+				) ?? tsconfig.parsedCommandLine.options.strictNullChecks === true
+			);
+		},
+		get moduleResolution() {
+			return getModuleResolutionKind(tsconfig.parsedCommandLine.options);
+		},
+		get module() {
+			return getModuleKind(tsconfig.parsedCommandLine.options);
+		},
 
 		devMode: devMode,
 		logLevel: LogLevel[reflectionConfig.get("logLevel") ?? (devMode ? "Debug" : "Warning")],
@@ -188,62 +211,16 @@ function createConfig(
 		// this.plugins = (reflectionConfig.get("plugins") ?? DefaultConfiguration.plugins).map((plugin) =>
 		// 	this.getPlugin(plugin, projectRoot)
 		// );
-
-		// this.emit =
-		// 	(metadataConfig.get("emit") || DefaultConfiguration.metadata.emit) === EmitType.TypeScript
-		// 		? EmitType.TypeScript
-		// 		: EmitType.JavaScript;
-
-		// TYPELIB path
-		// const typeLibPath = metadataConfig.get("path")!;
-		// this.metadataTypelibPath = path.join(this.outDir, typeLibPath);
-		// this.metadataTypelibSourcePath = path.join(this.rootDir, typeLibPath).replace(/\.js$/, ".ts");
 	};
 }
 
-function toRegex(pattern: string, logger: Logger): RegExp {
-	const regex = makeRe(pattern, { partial: true, dot: true });
-
-	if (!regex) {
-		logger.error(`Invalid glob pattern '${pattern}'.`);
-		// Return regex matching nothing.
-		return /(?!)/;
-	}
-
-	return regex;
-}
-
-// /**
-//  * Returns a list of exclude regexes.
-//  * @param excludes
-//  * @param projectRoot
-//  * @param logger
-//  */
-// function createExcludePatterns<TConfig, TVal, TSection>(
-// 	excludes: string[] | undefined,
-// 	projectRoot: string,
-// 	logger: Logger
-// ): RegExp[] {
-// 	return (excludes ?? []).map((pattern) => {
-// 		if (pattern.startsWith("./")) {
-// 			pattern = (projectRoot.endsWith("/") ? projectRoot.slice(0, -1) : projectRoot) + "/" + pattern.slice(2);
-// 		}
-//
-// 		return toRegex(pattern, logger);
-// 	});
-// 	// Exclude typelib from sources.
-// 	// .concat([this.getTypelibSourceRegex()])
-// }
-
 function getModuleResolutionKind(options: ts.CompilerOptions) {
-	return (
-		(ts as any).getEmitModuleResolutionKind?.(options) ??
-		options.moduleResolution ??
-		ts.ModuleResolutionKind.Classic
-	);
+	const ts = lazyTypescript.get() as any;
+	return ts.getEmitModuleResolutionKind?.(options) ?? options.moduleResolution ?? ts.ModuleResolutionKind.Classic;
 }
 
 function getModuleKind(compilerOptions: ts.CompilerOptions) {
+	const ts = lazyTypescript.get();
 	const target = compilerOptions.target ?? ts.ScriptTarget.ES5;
 
 	return (

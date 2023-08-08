@@ -7,8 +7,9 @@
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "esbuild src/bin.ts --bundle --minify --outfile=dist/bin.js --platform=node --packages=external && esbuild src/worker.ts --bundle --minify --outfile=dist/worker.js --platform=node --packages=external",
-		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare"
+		"prepare": "esbuild src/bin.ts src/worker.ts --bundle --minify --outdir=dist --platform=node --packages=external",
+		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare",
+		"start": "esbuild src/bin.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
 	},
 	"files": [
 		"LICENSE",
@@ -43,7 +44,6 @@
 		"fast-glob": "^3.3.0",
 		"memory-mapped-files": "^0.1.1",
 		"micromatch": "^4.0.5",
-		"minimatch": "^9.0.3",
 		"promise-cs": "^1.0.2",
 		"rttist": "workspace:^",
 		"typescript": "5.1.6"
