@@ -13,6 +13,7 @@ packages/*/dist
 reflection.meta.js
 reflection.meta.ts
 .metadata
+!packages/typegen/bin/*.js
 
 !jest.config.js
 

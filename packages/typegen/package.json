@@ -3,7 +3,7 @@
 	"version": "0.1.0-proto.5",
 	"description": "Type generator for RTTIST",
 	"bin": {
-		"typegen": "dist/bin.js"
+		"typegen": "./bin/typegen"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -15,7 +15,8 @@
 		"LICENSE",
 		"README.md",
 		"config-schema.json",
-		"dist/**/*.js"
+		"dist/**/*.js",
+		"bin/typegen"
 	],
 	"keywords": [
 		"type",
