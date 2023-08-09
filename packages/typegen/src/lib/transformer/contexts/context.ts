@@ -18,11 +18,7 @@ export class Context {
 	public readonly log: Logger;
 	public readonly node: ts.Node;
 	public readonly parent?: Context;
-	public readonly visitor: ts.Visitor;
-
-	get config() {
-		return this.transformerContext.config;
-	}
+	public readonly visitor: (node: ts.Node) => void;
 
 	constructor(
 		parent: Context | undefined,
@@ -43,11 +39,11 @@ export class Context {
 		this.visitor = (node: ts.Node) => visitor(node, this);
 	}
 
-	visitWithCurrentContext(node: ts.Node): ts.VisitResult<ts.Node> {
-		return this.visitor(node) as ts.VisitResult<ts.Node>;
+	visitEachChild(node: ts.Node) {
+		ts.forEachChild(node, this.visitor);
 	}
 
-	visitWithNewContext(node: ts.Node, visitor: TransformerVisitor): ts.Node {
+	visitWithNewContext(node: ts.Node, visitor: TransformerVisitor) {
 		const context = new Context(
 			this,
 			this.transformerContext,
@@ -57,20 +53,8 @@ export class Context {
 			visitor
 		);
 
-		return ts.visitEachChild(node, context.visitor, context.transformationContext);
-	}
-
-	get currentSourceFile(): ts.SourceFile {
-		let node: ts.Node | undefined = this.node;
-
-		while (node) {
-			if (ts.isSourceFile(node)) {
-				return node;
-			}
-
-			node = this.parent?.node;
-		}
-
-		throw new Error("No SourceFile found in contexts.");
+		ts.forEachChild(node, (node) => {
+			context.visitor(node);
+		});
 	}
 }

@@ -16,7 +16,7 @@ export function getConstantValue(
 		return (type as any).intrinsicName === "true";
 	}
 
-	if (context.config.devMode) {
+	if (context.transformerContext.config.devMode) {
 		context.log.ifWarn(() => [
 			"Unexpected value. Only constant values are allowed.\n\t" + getNodeLocationText(node),
 		]);

@@ -3,7 +3,7 @@ import { Context } from "../contexts/context";
 
 // TODO: Check out ts.TypeOnlyAliasDeclaration and ts.TypeOnlyCompatibleAliasDeclaration
 
-export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: Context): ts.VisitResult<ts.Node> {
+export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: Context): void {
 	// This is not true already!
 	// // TODO: This will never return type of the TypeAlias if the TypeAlias is just something like `type X = Y;`
 	// // and there is no way to get the right type. If such aliases should be supported, we must change whole logic
@@ -21,6 +21,4 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 		undefined,
 		context
 	);
-
-	return declaration;
 }

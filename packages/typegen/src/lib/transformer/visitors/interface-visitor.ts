@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import { Context } from "../contexts/context";
 
-export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: Context): ts.VisitResult<ts.Node> {
+export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: Context): void {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
 	// Add interface's type to the metadata.
@@ -13,6 +13,4 @@ export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: 
 		undefined,
 		context
 	);
-
-	return declaration;
 }

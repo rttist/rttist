@@ -180,7 +180,7 @@ function createConfig(
 		typecheck: commandLineArguments.typecheck,
 
 		include: metadataConfig.get("include")!,
-		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "metadata.typelib.ts"]), // TODO: Check if it must be fixed because of relative paths
+		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "**/metadata.typelib.ts"]),
 
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
 		target: TargetPlatform[reflectionConfig.get("target") as keyof typeof TargetPlatform],

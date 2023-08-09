@@ -28,6 +28,7 @@ export class Program {
 		parseStart: number;
 		start: number;
 		initialization?: number;
+		metadataGenerationFinished?: number;
 		completed?: number;
 	} = {
 		parseStart: startTime,
@@ -71,6 +72,7 @@ export class Program {
 		this.performanceEntries.initialization = performance.now();
 
 		await this.waitWorkersFinishedPromise(workers, progressBar);
+		this.performanceEntries.metadataGenerationFinished = performance.now();
 		this.flushWorkersLogBuffer(workers);
 		await this.waitWorkersExitPromise(workers);
 
@@ -134,7 +136,7 @@ export class Program {
 
 	private logInitialMessage(config: Config) {
 		this.logger.log(
-			LogLevel.Info,
+			LogLevel.Always,
 			LogColor.blue,
 			"Configuration",
 			"\n\tproject root:".padEnd(29, " ") + config.projectRoot,
@@ -208,7 +210,7 @@ export class Program {
 			workers.push(worker);
 		}
 
-		this.logger.info("Workers spawned:", workers.length);
+		this.logger.debug("Workers spawned:", workers.length);
 
 		return workers;
 	}
@@ -229,13 +231,31 @@ export class Program {
 			),
 			"sec.",
 
-			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
+			...(this.performanceEntries.metadataGenerationFinished === undefined ||
+			this.performanceEntries.initialization === undefined
 				? []
 				: [
 						"\n\tGenerating metadata:",
-						roundPerfTime(this.performanceEntries.completed - this.performanceEntries.initialization),
+						roundPerfTime(
+							this.performanceEntries.metadataGenerationFinished - this.performanceEntries.initialization
+						),
 						"sec.",
+				  ]),
 
+			...(this.performanceEntries.completed === undefined ||
+			this.performanceEntries.metadataGenerationFinished === undefined
+				? []
+				: [
+						"\n\tBundling typelib:",
+						roundPerfTime(
+							this.performanceEntries.completed - this.performanceEntries.metadataGenerationFinished
+						),
+						"sec.",
+				  ]),
+
+			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
+				? []
+				: [
 						"\n\tTotal time:",
 						roundPerfTime(this.performanceEntries.completed - this.performanceEntries.parseStart),
 						"sec.",

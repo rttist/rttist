@@ -2,10 +2,7 @@ import * as ts from "typescript";
 import { Context } from "../contexts/context";
 import { mainVisitor } from "./main-visitor";
 
-export function functionVisitor(
-	declaration: ts.FunctionLikeDeclarationBase,
-	context: Context
-): ts.VisitResult<ts.Node> {
+export function functionVisitor(declaration: ts.FunctionLikeDeclarationBase, context: Context): void {
 	context.visitWithNewContext(declaration, visitFunctionDeclaration);
 
 	const typeReference = context.transformerContext.syntaxTypeChecker.getType(declaration);
@@ -20,7 +17,7 @@ export function functionVisitor(
 			context
 		);
 
-		return declaration;
+		return;
 	}
 
 	if (ts.isFunctionExpression(declaration)) {
@@ -33,12 +30,10 @@ export function functionVisitor(
 			context
 		);
 
-		return declaration;
+		return;
 	}
-
-	return declaration;
 }
 
-function visitFunctionDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node> {
-	return mainVisitor(node, context);
+function visitFunctionDeclaration(node: ts.Node, context: Context): void {
+	mainVisitor(node, context);
 }

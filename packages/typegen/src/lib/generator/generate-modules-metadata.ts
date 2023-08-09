@@ -10,7 +10,7 @@ import { Context } from "../transformer/contexts/context";
 import { SourceFileContext } from "../transformer/contexts/source-file-context";
 import { mainVisitor } from "../transformer/visitors/main-visitor";
 import { resolveSourceFileCachePath } from "../utils/resolve-sourcefile-cache-path";
-import { dirname } from "../utils/path";
+import { dirname, normalizePath } from "../utils/path";
 import { MetadataPrinter } from "../metadata/metadata-printer";
 import { ScopeRegistry } from "../transformer/syntax-type-checker/scopes/scope-registry";
 import { ModuleIdentifierGenerator } from "../transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
@@ -46,84 +46,58 @@ export async function generateModulesMetadata(
 	);
 
 	const writePromises: Promise<void>[] = [];
+	const transformationContext: ts.TransformationContext = null as any;
+	const sourceFilesSet = new Set(sourceFiles.map(normalizePath));
 
 	for (let sourceFileNode of program.getSourceFiles()) {
-		ts.forEachChild(sourceFileNode, (node) => {});
+		if (!sourceFilesSet.has(sourceFileNode.fileName)) {
+			continue;
+		}
+		// // Skip if it is external SourceFile or if file is not included by config.
+		// if (
+		// 	program.isSourceFileFromExternalLibrary(sourceFileNode) ||
+		// 	!canIncludeSourceFile(sourceFileNode.fileName, config)
+		// ) {
+		// 	return sourceFileNode;
+		// }
+
+		if (config.devMode) {
+			logger.log(LogLevel.Trace, LogColor.cyan, `Visitation of file ${sourceFileNode.fileName} started.`);
+		}
+
+		// const sourceFileStart = performance.now();
+
+		const moduleScope = scopeAnalyzer.analyzeSourceFile(sourceFileNode, transformationContext);
+		const moduleMetadata = ModuleMetadata.createFromSourceFile(sourceFileNode, config, moduleScope);
+
+		const context = new Context(
+			undefined,
+			transformerContext,
+			transformationContext,
+			new SourceFileContext(sourceFileNode, config, moduleScope, moduleMetadata),
+			sourceFileNode,
+			mainVisitor
+		);
+
+		// Visit SourceFile using the main visitor.
+		mainVisitor(sourceFileNode, context);
+
+		// this.perfEntries.sourceFiles.push(performance.now() - sourceFileStart);
+
+		writePromises.push(
+			persistModuleMetadata(sourceFileNode, config, metadataPrinter, moduleMetadata, writeFileCallback)
+		);
+
+		if (config.devMode) {
+			logger.log(
+				LogLevel.Trace,
+				LogColor.gray,
+				`Visitation of file ${sourceFileNode.fileName} has been finished.`
+			);
+		}
 	}
 
-	// program.emit(undefined, undefined, undefined, false, {
-	// 	before: [
-	// 		(transformationContext) => {
-	// 			transformerContext.scopeManager.setTransformationContext(transformationContext);
-	//
-	// 			return (sourceFileNode: ts.SourceFile): ts.SourceFile => {
-	// 				// // It should always be a SourceFile, but check it, just for case.
-	// 				// if (!ts.isSourceFile(sourceFileNode)) {
-	// 				// 	return sourceFileNode;
-	// 				// }
-	//
-	// 				// // Skip if it is external SourceFile or if file is not included by config.
-	// 				// if (
-	// 				// 	program.isSourceFileFromExternalLibrary(sourceFileNode) ||
-	// 				// 	!canIncludeSourceFile(sourceFileNode.fileName, config)
-	// 				// ) {
-	// 				// 	return sourceFileNode;
-	// 				// }
-	//
-	// 				// const sourceFileStart = performance.now();
-	//
-	// 				if (config.devMode) {
-	// 					logger.log(
-	// 						LogLevel.Trace,
-	// 						LogColor.cyan,
-	// 						`Visitation of file ${sourceFileNode.fileName} started.`
-	// 					);
-	// 				}
-	//
-	// 				const moduleScope = scopeAnalyzer.analyzeSourceFile(sourceFileNode, transformationContext);
-	// 				const moduleMetadata = ModuleMetadata.createFromSourceFile(sourceFileNode, config, moduleScope);
-	//
-	// 				const context = new Context(
-	// 					undefined,
-	// 					transformerContext,
-	// 					transformationContext,
-	// 					new SourceFileContext(sourceFileNode, config, moduleScope, moduleMetadata),
-	// 					sourceFileNode,
-	// 					mainVisitor
-	// 				);
-	//
-	// 				// Visit SourceFile
-	// 				context.visitWithCurrentContext(sourceFileNode);
-	//
-	// 				// this.perfEntries.sourceFiles.push(performance.now() - sourceFileStart);
-	//
-	// 				writePromises.push(
-	// 					persistModuleMetadata(
-	// 						sourceFileNode,
-	// 						config,
-	// 						metadataPrinter,
-	// 						moduleMetadata,
-	// 						writeFileCallback
-	// 					)
-	// 				);
-	//
-	// 				if (config.devMode) {
-	// 					logger.log(
-	// 						LogLevel.Trace,
-	// 						LogColor.gray,
-	// 						`Visitation of file ${sourceFileNode.fileName} has been finished.`
-	// 					);
-	// 				}
-	//
-	// 				return sourceFileNode;
-	// 			};
-	// 		},
-	// 	],
-	// });
-
 	await Promise.all(writePromises);
-	// await Promise.all(transformerContext.writePromises);
-
 	mmfClient?.dispose();
 }
 
@@ -147,30 +121,6 @@ function persistModuleMetadata(
 			writeFileCallback(sourceFileNode.fileName);
 		});
 }
-
-// function sourceFileVisitor(sourceFileNode: ts.SourceFile, sourceFileContext: Context, logger: Logger) {
-// 	if (sourceFileContext.transformerContext.config.devMode) {
-// 		logger.log(LogLevel.Trace, LogColor.cyan, `Visitation of file ${sourceFileNode.fileName} started.`);
-// 	}
-//
-// 	// Visit SourceFile
-// 	sourceFileContext.visitWithCurrentContext(sourceFileNode);
-//
-// 	// // PLUGINS
-// 	// for (let plugin of config.plugins)
-// 	// {
-// 	// 	if (plugin.visit !== undefined)
-// 	// 	{
-// 	// 		visitedSourceFileNode = plugin.visit(visitedSourceFileNode, sourceFileContext);
-// 	// 	}
-// 	// }
-//
-// 	if (sourceFileContext.transformerContext.config.devMode) {
-// 		logger.log(LogLevel.Trace, LogColor.gray, `Visitation of file ${sourceFileNode.fileName} has been finished.`);
-// 	}
-//
-// 	return sourceFileNode;
-// }
 
 function createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClient?: Client) {
 	const host = ts.createCompilerHost(options);
@@ -204,6 +154,7 @@ function getCompilerOptions(config: Config) {
 		declaration: false,
 		declarationMap: false,
 		sourceMap: false,
+		allowJs: true,
 	};
 	return options;
 }

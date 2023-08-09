@@ -10,7 +10,7 @@ import { typeAliasVisitor } from "./type-alias-visitor";
  * @param nodeToVisit
  * @param context
  */
-export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitResult<ts.Node> {
+export function mainVisitor(nodeToVisit: ts.Node, context: Context): void {
 	switch (nodeToVisit.kind) {
 		case ts.SyntaxKind.ClassExpression:
 		case ts.SyntaxKind.ClassDeclaration:
@@ -25,5 +25,5 @@ export function mainVisitor(nodeToVisit: ts.Node, context: Context): ts.VisitRes
 			return functionVisitor(nodeToVisit as unknown as ts.FunctionDeclaration, context);
 	}
 
-	return ts.visitEachChild(nodeToVisit, context.visitor, context.transformationContext);
+	context.visitEachChild(nodeToVisit);
 }

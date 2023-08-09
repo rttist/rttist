@@ -16,12 +16,12 @@ export class ScopeManager {
 	}
 
 	getClosestScope(node: ts.Node): Scope {
-		if (this.transformationContext === undefined) {
-			throw new Error("Transformation context not set.");
-		}
+		// if (this.transformationContext === undefined) {
+		// 	throw new Error("Transformation context not set.");
+		// }
 
 		const sourceFile = node.getSourceFile();
-		const moduleScope = this.scopeAnalyzer.analyzeSourceFile(sourceFile, this.transformationContext);
+		const moduleScope = this.scopeAnalyzer.analyzeSourceFile(sourceFile, this.transformationContext!);
 
 		return this.scopeRegistry.getClosestScope(node) ?? moduleScope;
 	}

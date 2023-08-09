@@ -158,14 +158,18 @@ export class ScopeAnalyzer {
 			});
 		}
 
-		ts.visitEachChild(
-			sourceFile,
-			(child) => {
-				this.generateScopes(child, moduleScope, transformationContext);
-				return child;
-			},
-			transformationContext
-		);
+		ts.forEachChild(sourceFile, (child) => {
+			this.generateScopes(child, moduleScope, transformationContext);
+		});
+
+		// ts.visitEachChild(
+		// 	sourceFile,
+		// 	(child) => {
+		// 		this.generateScopes(child, moduleScope, transformationContext);
+		// 		return child;
+		// 	},
+		// 	transformationContext
+		// );
 
 		return moduleScope;
 	}
@@ -192,13 +196,16 @@ export class ScopeAnalyzer {
 
 		let scope = this.doesCreateScope(node) ? this.scopeRegistry.createScope(node, parentScope) : parentScope;
 
-		ts.visitEachChild(
-			node,
-			(child) => {
-				this.generateScopes(child, scope, transformationContext);
-				return child;
-			},
-			transformationContext
-		);
+		ts.forEachChild(node, (child) => {
+			this.generateScopes(child, scope, transformationContext);
+		});
+		// ts.visitEachChild(
+		// 	node,
+		// 	(child) => {
+		// 		this.generateScopes(child, scope, transformationContext);
+		// 		return child;
+		// 	},
+		// 	transformationContext
+		// );
 	}
 }

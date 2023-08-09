@@ -2,10 +2,7 @@ import type { Context } from "../contexts/context";
 import * as ts from "typescript";
 import { functionVisitor } from "./function-visitor";
 
-export function classVisitor(
-	declaration: ts.ClassDeclaration | ts.ClassExpression,
-	context: Context
-): ts.VisitResult<ts.Node> {
+export function classVisitor(declaration: ts.ClassDeclaration | ts.ClassExpression, context: Context): void {
 	const type = context.typeChecker.getTypeAtLocation(declaration);
 
 	context.metadata.generateMetadataForType(
@@ -18,22 +15,19 @@ export function classVisitor(
 	);
 
 	context.visitWithNewContext(declaration, visitClassDeclaration);
-
-	return declaration;
 }
 
-function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<ts.Node> {
+function visitClassDeclaration(node: ts.Node, context: Context): void {
 	if (ts.isPropertyDeclaration(node)) {
 		if (node.initializer) {
 			if (ts.isClassExpression(node.initializer)) {
-				context.visitWithNewContext(node.initializer, visitClassDeclaration);
-				return node;
+				return context.visitWithNewContext(node.initializer, visitClassDeclaration);
 			}
 
-			return ts.visitEachChild(node, context.visitor, context.transformationContext) as ts.PropertyDeclaration;
+			return context.visitEachChild(node);
 		}
 
-		return node;
+		return;
 	}
 
 	if (ts.isGetAccessorDeclaration(node)) {
@@ -55,6 +49,4 @@ function visitClassDeclaration(node: ts.Node, context: Context): ts.VisitResult<
 	if (ts.isConstructorDeclaration(node)) {
 		return functionVisitor(node, context);
 	}
-
-	return node;
 }
