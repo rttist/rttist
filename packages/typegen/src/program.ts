@@ -1,4 +1,4 @@
-import { startTime } from "./performance-import-time-start"; // Keep first
+import { startTime } from "./lib/utils/performance-import-time-start"; // Keep first
 import type { Entry } from "fast-glob";
 import type { CLI } from "./cli";
 import type { Worker } from "worker_threads";

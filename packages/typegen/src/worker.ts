@@ -23,11 +23,11 @@ generateModulesMetadata(files, workerArguments.config, (filename) => {
 	parentPort?.postMessage({
 		type: WorkerMessageType.FileFinished,
 	});
-});
-
-// POST Message GenerationCompleted
-parentPort?.postMessage({
-	type: WorkerMessageType.GenerationCompleted,
+}).then(() => {
+	// POST Message GenerationCompleted
+	parentPort?.postMessage({
+		type: WorkerMessageType.GenerationCompleted,
+	});
 });
 
 function flushHandler(message: WorkerMessage) {

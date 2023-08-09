@@ -123,7 +123,7 @@ export class Watcher {
 
 	private registerEventHandlers(filesTouchedWhileInitialGeneration: Set<string>) {
 		this.watcher
-			.on("add", (path) => {
+			.on("add", async (path) => {
 				// Check ready status; all files are "added" on start; maybe bug of chokidar?
 				if (!this.readyToWatch) {
 					return;
@@ -136,27 +136,27 @@ export class Watcher {
 					return;
 				}
 
-				this.regenerateMetadata([path]);
+				await this.regenerateMetadata([path]);
 				this.typelibGenerator.filesAdded([path]);
 			})
-			.on("change", (path) => {
+			.on("change", async (path) => {
 				if (!this.completedPS.completed) {
 					filesTouchedWhileInitialGeneration.add(path);
 					return;
 				}
 
-				this.regenerateMetadata([path]);
+				await this.regenerateMetadata([path]);
 				this.typelibGenerator.fileChanged(path);
 			})
-			.on("unlink", (path) => {
+			.on("unlink", async (path) => {
 				// this.allFiles.delete(path);
 
 				// TODO: Delete metadata from the cache folder
 
-				this.regenerateMetadata([]);
+				await this.regenerateMetadata([]);
 				this.typelibGenerator.filesRemoved([path]);
 			})
-			.on("unlinkDir", (dirPath) => {
+			.on("unlinkDir", async (dirPath) => {
 				// Array.from(this.allFiles)
 				// 	.filter((path) => path.startsWith(dirPath))
 				// 	.forEach((path) => {
@@ -164,7 +164,7 @@ export class Watcher {
 				// 		// TODO: Delete metadata from the cache folder
 				// 	});
 
-				this.regenerateMetadata([]);
+				await this.regenerateMetadata([]);
 				this.typelibGenerator.filesRemoved(
 					Array.from(this.typelibGenerator.getProjectFiles()).filter((path) => path.startsWith(dirPath))
 				);
@@ -174,12 +174,12 @@ export class Watcher {
 			});
 	}
 
-	private regenerateMetadata(paths: string[]) {
+	private async regenerateMetadata(paths: string[]) {
 		this.logger.info("File change detected. Starting incremental compilation...");
 
 		// Regenerate metadata of given files.
 		if (paths.length > 0) {
-			generateModulesMetadata(
+			await generateModulesMetadata(
 				paths.map((path) => resolvePath(this.config.projectRoot, path)),
 				this.config,
 				(filename) => {

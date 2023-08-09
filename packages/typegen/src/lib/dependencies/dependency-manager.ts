@@ -1,8 +1,8 @@
-﻿import { Config } from "../config/config";
-import { DependencyInfo } from "../../declarations/dependency-info";
+﻿import type { Config } from "../config/config";
+import type { DependencyInfo } from "../../declarations/dependency-info";
 
 export class DependencyManager {
-	public readonly dependencies?: DependencyInfo[];
+	public readonly dependencies: DependencyInfo[];
 
 	constructor(config: Config) {
 		this.dependencies = config.dependenciesInfo;
@@ -12,8 +12,8 @@ export class DependencyManager {
 		return this.dependencies?.find((dep) => dep.pathRegex.test(fileName));
 	}
 
-	// public async loadDependencies(): Promise<DependencyInfo[]> {
-	// 	const dependenciesInfo: DependencyInfo[] = [];
+	// public async loadDependencies(): Promise<void> {
+	// 	// const dependenciesInfo: DependencyInfo[] = [];
 	// 	const dependencies = Object.keys(this.config.packageInfo.packageJson.dependencies ?? {}).concat(
 	// 		Object.keys(this.config.packageInfo.packageJson.devDependencies ?? [])
 	// 	);
@@ -45,7 +45,7 @@ export class DependencyManager {
 	// 						}
 	// 					}
 	//
-	// 					dependenciesInfo.push(dependencyInfo);
+	// 					this.dependencies.push(dependencyInfo);
 	// 				} catch (e) {
 	// 					this.logger.warn(
 	// 						`Unable to read package.json of package '${packageName}'\n\t${joinedPath}\n\t`,
@@ -57,8 +57,6 @@ export class DependencyManager {
 	// 	}
 	//
 	// 	await Promise.all(promises);
-	//
-	// 	return dependenciesInfo;
 	// }
 	//
 	// private async readPackageJson(joinedPath: string, packageName: any): Promise<PackageJson> {

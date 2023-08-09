@@ -1,11 +1,10 @@
-// import type { TransformerVisitor }            from "../declarations/general";
-import * as ts from "typescript";
 import type { TransformerVisitor } from "../../../declarations/transformer-visitor";
-import { Logger } from "../../logging";
 import type { MetadataLibrary } from "../../metadata/metadata-library";
+import type { TransformerContext } from "./transformer-context";
+import * as ts from "typescript";
+import { Logger } from "../../logging";
 import { getNodeLocationText } from "../tracers/getNodeLocationText";
 import { SourceFileContext } from "./source-file-context";
-import type { TransformerContext } from "./transformer-context";
 
 /**
  * Context of visitors

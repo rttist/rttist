@@ -4,6 +4,19 @@ import { CLI } from "./cli";
 const cli = new CLI();
 const program = new Program(cli);
 
-program.run().catch((error) => {
-	console.error("Program failed.", error);
-});
+program
+	.run()
+	.catch((error) => {
+		console.error("Program failed.", error);
+
+		// TODO: Use it in finally block
+		try {
+			require("memory-mapped-files").stopCacheServer();
+		} catch (e) {}
+	})
+	.finally(() => {
+		// TODO: Keep it in finally; but it logs .NET exception
+		// try {
+		// 	require("memory-mapped-files").stopCacheServer();
+		// } catch (e) {}
+	});
