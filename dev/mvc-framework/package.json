@@ -3,8 +3,7 @@
 	"name": "simple-tests",
 	"type": "commonjs",
 	"reflection": {
-		"index": "dist/metadata.index.json",
-		"typelib": "dist/metadata.typelib.js"
+		"metadata": "dist/public.typelib.js"
 	},
 	"dependencies": {
 		"hyper-express": "^6.5.6",

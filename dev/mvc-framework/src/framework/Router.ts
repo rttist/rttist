@@ -39,8 +39,6 @@ export class Router {
 			}))
 			.filter((x) => x.routeDecorator !== undefined);
 
-		console.log("types:", Metadata.getTypes().map((type) => type.isClass()).length);
-
 		await Promise.all(
 			controllers.map(async (controllerInfo) => {
 				const module = await controllerInfo.type.module.import();

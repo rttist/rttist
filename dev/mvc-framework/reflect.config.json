@@ -1,5 +1,5 @@
 {
-	"$schema": "../../packages/typegen/config-schema.json",
+	"$schema": "./node_modules/@rttist/typegen/config-schema.json",
 	"metadata": {
 		"include": [
 			"src/**/*.ts"

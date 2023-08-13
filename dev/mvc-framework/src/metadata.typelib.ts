@@ -2,8 +2,9 @@
 * This file is generated automatically by the RTTIST TypeGen tool.
 * Do not edit it manually.
 */
-import { ModuleImporter, Type, MetadataLibrary, createGetTypeFunction } from "rttist";
-// @ts-ignore
+import { ModuleImporter, MetadataLibrary, createGetTypeFunction } from "rttist";
+import "rttist/dist/public.typelib";
+// @ts-ignore; configure this as an external dependency
 import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
 
 ModuleImporter.registerImporters({
