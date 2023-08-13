@@ -14,7 +14,7 @@ reflection.meta.js
 reflection.meta.ts
 .metadata
 !packages/typegen/bin/*.js
-!create-esm-package-json.js
+!post-build.js
 
 !jest.config.js
 
