@@ -41,10 +41,10 @@ export function getSignatureParametersProperties(
 			type = declaration.type
 				? context.transformerContext.syntaxTypeChecker.getType(declaration.type)
 				: context.transformerContext.tsTypeTypeChecker.getType(
-						context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration),
-						undefined,
-						optional
-				  );
+					context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration),
+					undefined,
+					optional
+				);
 			// type = context.transformerContext.syntaxTypeChecker.getType(declaration.type);
 			// type = context.transformerContext.metadata.generateMetadataForType(
 			// 	declaration.type

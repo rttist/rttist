@@ -5,7 +5,7 @@ import { getNodeLocationText } from "../tracers/getNodeLocationText";
 export function getConstantValue(
 	node: ts.Node,
 	context: Context
-): string | number | boolean | ts.PseudoBigInt | ts.PrimaryExpression {
+): string | number | boolean | ts.PseudoBigInt | ts.PrimaryExpression | ts.KeywordTypeNode {
 	const type = context.typeChecker.getTypeAtLocation(node);
 
 	if (type.isLiteral()) {
@@ -14,6 +14,17 @@ export function getConstantValue(
 
 	if (type.flags & ts.TypeFlags.BooleanLiteral) {
 		return (type as any).intrinsicName === "true";
+	}
+
+	switch (node.kind) {
+		case ts.SyntaxKind.NullKeyword:
+			return ts.factory.createNull();
+		case ts.SyntaxKind.UndefinedKeyword:
+			return ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
+	}
+
+	if ((type as any).intrinsicName === "undefined") {
+		return ts.factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
 	}
 
 	if (context.transformerContext.config.devMode) {
