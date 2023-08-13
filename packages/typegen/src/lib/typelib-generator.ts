@@ -109,8 +109,12 @@ export { Metadata };`,
 * This file is generated automatically by the RTTIST TypeGen tool.
 * Do not edit it manually.
 */
-import { ModuleImporter, Type, MetadataLibrary, createGetTypeFunction } from "rttist";
-// @ts-ignore
+import { ModuleImporter, MetadataLibrary, createGetTypeFunction } from "rttist";
+${this.config.dependenciesInfo
+	.filter((dep) => dep.metadataPath !== undefined)
+	.map((dep) => `import "${dep.metadataImportSpecifier}";`)
+	.join("\n")}
+// @ts-ignore; configure this as an external dependency
 import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
 
 ModuleImporter.registerImporters({

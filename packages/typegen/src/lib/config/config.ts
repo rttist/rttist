@@ -13,6 +13,7 @@ import { joinPaths, normalizePath, resolvePath } from "../utils/path";
 import { getPackageInfo } from "./get-package-info";
 import { getTsConfig } from "./get-ts-config";
 import { lazyTypescript } from "../utils/lazy-typescript";
+import { removeExtension } from "../transformer/utils/removeExtension";
 
 const DefaultConfiguration: ConfigReflectionSection = {
 	devMode: false,
@@ -86,6 +87,7 @@ async function getDependenciesInfo(packageInfo: PackageInfo, logger: Logger): Pr
 						packageRoot: realDirPath,
 						pathRegex: new RegExp("^" + realDirPath),
 						metadataPath: undefined,
+						metadataImportSpecifier: undefined,
 					};
 
 					const packageJson = await readPackageJson(joinedPath, packageName, logger);
@@ -95,6 +97,12 @@ async function getDependenciesInfo(packageInfo: PackageInfo, logger: Logger): Pr
 							dependencyInfo.metadataPath = normalizePath(
 								joinPaths(dependencyInfo.packageRoot, packageJson.reflection.metadata)
 							);
+
+							let specifier = removeExtension(packageJson.reflection.metadata.replace(/\\/g, "/"));
+							if (specifier.startsWith("./")) {
+								specifier = specifier.slice(2);
+							}
+							dependencyInfo.metadataImportSpecifier = `${packageName}/${specifier}`;
 						}
 					}
 

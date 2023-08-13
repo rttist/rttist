@@ -7,9 +7,13 @@
 	"type": "commonjs",
 	"types": "dist/index.d.ts",
 	"exports": {
-		"default": "./dist/index.js",
-		"require": "./dist/index.js",
-		"import": "./dist/esm/index.js"
+		".": {
+			"default": "./dist/index.js",
+			"require": "./dist/index.js",
+			"import": "./dist/esm/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./dist/public.typelib": "./dist/public.typelib.js"
 	},
 	"engines": {
 		"node": ">=16.0.0"
@@ -21,14 +25,13 @@
 		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
 		"postbuild": "node ./post-build.js"
 	},
-	"tsup": {
-		"entry": ["src/index.ts"],
-		"clean": false
-	},
 	"files": [
 		"LICENSE",
 		"README.md",
-		"dist/**/*.js",
+		"dist/index.js",
+		"dist/public.typelib.js",
+		"dist/esm/index.js",
+		"dist/esm/package.json",
 		"dist/**/*.d.ts"
 	],
 	"keywords": [
@@ -65,5 +68,8 @@
 	"bugs": {
 		"url": "https://github.com/rttist/rttist/issues"
 	},
-	"homepage": "https://rttist.org"
+	"homepage": "https://rttist.org",
+	"reflection": {
+		"metadata": "dist/public.typelib.js"
+	}
 }

@@ -3,4 +3,5 @@
 	packageRoot: string;
 	pathRegex: RegExp;
 	metadataPath?: string;
+	metadataImportSpecifier?: string;
 };
