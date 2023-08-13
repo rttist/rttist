@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-beta.2",
+	"version": "1.0.0-beta.3",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "./dist/index.js",
 	"module": "./dist/esm/index.js",
@@ -20,7 +20,7 @@
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "npm run bundle && npm run postbuild",
+		"prepare": "npm run bundle && pnpx @rttist/typegen@proto generate -f && npm run postbuild",
 		"bundle": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean",
 		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
 		"postbuild": "node ./post-build.js"
