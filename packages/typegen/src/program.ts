@@ -18,8 +18,8 @@ import { blue, cyan, dim, whiteBright } from "chalk";
 
 let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
 try {
+	// startCacheServer = require("memory-mapped-files").startCacheServer;
 	// import { startCacheServer as scs } from "memory-mapped-files";
-	startCacheServer = require("memory-mapped-files").startCacheServer;
 } catch (e) {}
 
 // TODO: Refactor this file. Separate base build, spawning and watching.
@@ -162,18 +162,21 @@ export class Program {
 	private async spawnWorkers(fileNames: string[], config: Config) {
 		const cpus = (await import("os")).cpus;
 		const Worker = (await import("worker_threads")).Worker;
+		const atLeastFilesPerWorker = 50;
 
-		const cpuCount = Math.round(cpus().length / 3);
-		// Find out how many files each worker should process; If it's less than 5 per worker, use only one worker.
+		const cpuCount = Math.round(cpus().length / 3) || 1; // divided by 3 because of multiple threads per CPU (all new CPUs) and some space for other processes.
 		const workerFileCount =
-			fileNames.length < cpuCount * 5 ? fileNames.length : Math.floor(fileNames.length / cpuCount) || 1;
+			fileNames.length > atLeastFilesPerWorker * cpuCount ? fileNames.length / cpuCount : atLeastFilesPerWorker;
 
 		const workers = [];
 
 		// Visit every sourceFile in the program
 		for (let filesOffset = 0, cpu = 1; filesOffset < fileNames.length; cpu++) {
 			// Get given number of files for this worker; or take the rest if this is the last worker.
-			const files = fileNames.slice(filesOffset, cpu === cpuCount ? undefined : filesOffset + workerFileCount);
+			const files = fileNames.slice(
+				filesOffset,
+				fileNames.length - filesOffset < workerFileCount ? undefined : filesOffset + workerFileCount
+			);
 
 			if (!files.length) {
 				break;

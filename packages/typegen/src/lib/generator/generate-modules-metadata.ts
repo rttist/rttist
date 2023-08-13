@@ -19,7 +19,7 @@ import { ModuleMetadata } from "../metadata/module-metadata";
 
 let createClient: undefined | typeof import("memory-mapped-files").createClient;
 try {
-	createClient = require("memory-mapped-files").createClient;
+	// createClient = require("memory-mapped-files").createClient;
 	// import { createClient as cc } from "memory-mapped-files";
 	// createClient = cc;
 	// // createClient = (await import("memory-mapped-files")).createClient;

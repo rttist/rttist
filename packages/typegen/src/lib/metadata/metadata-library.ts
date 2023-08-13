@@ -115,7 +115,7 @@ export class MetadataLibrary {
 		this.processedTypes.set(typeReference.id, typeInfo);
 
 		// Add type to Module
-		context.log.trace("Adding type", typeInfo.typeReference, "to", context.sourceFileContext.metadata.id);
+		context.log.trace("Adding type", typeInfo.typeReference.id, "to", context.sourceFileContext.metadata.id);
 		context.sourceFileContext.metadata.addType(typeInfo);
 
 		return typeInfo;
