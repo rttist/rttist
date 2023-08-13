@@ -1,10 +1,5 @@
-import type {
-	ModuleIdentifier,
-	ModuleReference
-} from "./declarations";
-import type {
-	AnyTypeMetadata
-} from "./TypeMetadata";
+import type { ModuleIdentifier, ModuleReference } from "./declarations";
+import type { AnyTypeMetadata } from "./TypeMetadata";
 
 export type ModuleMetadata = {
 	id: ModuleIdentifier;

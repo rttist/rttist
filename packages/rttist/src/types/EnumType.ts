@@ -1,12 +1,11 @@
 import type { EnumTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 
 export class EnumType extends Type {
 	private readonly _entries: Array<readonly [enumeratorName: string, value: any]>;
 
-	constructor(initializer: EnumTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: EnumTypeMetadata) {
+		super(initializer);
 
 		this._entries = Object.entries(initializer.entries || {}).map(([name, value]) =>
 			Object.freeze<readonly [enumeratorName: string, value: any]>([name, value])

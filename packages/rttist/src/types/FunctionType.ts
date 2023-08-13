@@ -1,6 +1,5 @@
 import type { FunctionTypeMetadata } from "../declarations";
 import type { SignatureInfo } from "../infos";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 import { mapSignatures } from "../utils/mappers";
 
@@ -10,10 +9,10 @@ export class FunctionType extends Type {
 	 */
 	private readonly _signatures: ReadonlyArray<SignatureInfo>;
 
-	constructor(initializer: FunctionTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: FunctionTypeMetadata) {
+		super(initializer);
 
-		this._signatures = mapSignatures(initializer, metadataLibrary);
+		this._signatures = mapSignatures(initializer);
 	}
 
 	/**

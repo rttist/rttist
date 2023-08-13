@@ -43,16 +43,16 @@ export function getHeritageClauses(
 					// return context.transformerContext.syntaxTypeChecker.getType(t);
 					const typeReference = context.transformerContext.syntaxTypeChecker.getType(t);
 
-					if (t.typeArguments !== undefined && t.typeArguments.length > 0) {
-						context.metadata.generateMetadataForType(
-							typeReference,
-							context.typeChecker.getTypeFromTypeNode(t),
-							false,
-							context.typeChecker.getSymbolAtLocation(ext),
-							undefined,
-							context
-						);
-					}
+					// if (t.typeArguments !== undefined && t.typeArguments.length > 0) {
+					// 	context.metadata.generateMetadataForType(
+					// 		typeReference,
+					// 		context.typeChecker.getTypeFromTypeNode(t),
+					// 		false,
+					// 		context.typeChecker.getSymbolAtLocation(ext),
+					// 		undefined,
+					// 		context
+					// 	);
+					// }
 
 					return typeReference;
 				} /*.addType(

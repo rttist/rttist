@@ -1,6 +1,6 @@
 import type { TypeReference } from "./declarations";
-import { Symbols } from "./symbols";
 import type { Type } from "./Type";
+import { Symbols } from "./symbols";
 import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
 import { resolveMethodCallsite } from "./functions/resolveMethodCallsite";
 import { invalidTypeGenerator } from "./functions/invalidTypeGenerator";
@@ -9,9 +9,8 @@ import { createCallsite } from "./functions/createCallsite";
 import { constructGeneric } from "./functions/constructGeneric";
 import { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
 import { getGenericClass } from "./functions/getGenericClass";
-import { getType } from "./functions/getType";
-import { Metadata } from "./Metadata";
 import { getGlobalThis } from "./utils/getGlobalThis";
+import { globalGetType } from "./global-get-type";
 
 declare global {
 	namespace Reflect {
@@ -59,12 +58,6 @@ declare global {
 		 */
 		export function getType<T = unknown>(): Type;
 
-		// /**
-		//  * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
-		//  * @param reference
-		//  */
-		// export function resolveType(reference: TypeReference): Type;
-
 		/**
 		 * Returns generic class from generic class definition.
 		 * @param classCtor
@@ -89,14 +82,15 @@ declare global {
 		// export function createCallsite(fn: Function, context: any, typeArgs: { [typeParameterIndex: number]: TypeReference }, ...args: any[]): any;
 	}
 
-	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" /* | "resolveType"*/ | "getGenericClass">;
+	const Rttist: Pick<typeof Reflect, "constructGeneric" | "getType" /* | "resolveType"*/ | "getGenericClass"> & {
+		symbols: typeof Symbols.metadata;
+	};
 }
 
 let RttistObj;
 getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
-	getType: getType,
-	// resolveType: Metadata.resolveType.bind(Metadata),
-	symbols: Symbols.metadata,
+	getType: globalGetType,
+	// TODO: All these functions require metadata library; we have to do something like with the getType (createGetType())
 	[FncNames.getGenericClass]: getGenericClass,
 	[FncNames.constructGeneric]: constructGeneric,
 	[FncNames.getClassTypeParameter]: getClassTypeParameterReference,
@@ -105,6 +99,8 @@ getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	[FncNames.resolveFunctionCallsite]: getFunctionCallsiteTypeArgumentsOrInvalid,
 	[FncNames.resolveMethodCallsite]: resolveMethodCallsite,
 };
+
+getGlobalThis()[RTTIST_NAMESPACE].symbols = Symbols.metadata;
 
 for (let key of Object.keys(RttistObj)) {
 	(Reflect as any)[key] = RttistObj[key];

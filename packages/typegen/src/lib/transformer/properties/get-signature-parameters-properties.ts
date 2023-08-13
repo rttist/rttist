@@ -35,19 +35,27 @@ export function getSignatureParametersProperties(
 		let restFlags = ParameterFlags.None;
 
 		if (declaration) {
-			const parameterType = context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration);
+			// const parameterType = context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration);
 
 			// Parameter type
-			type = context.transformerContext.metadata.generateMetadataForType(
-				declaration.type
-					? context.transformerContext.syntaxTypeChecker.getType(declaration.type)
-					: context.transformerContext.tsTypeTypeChecker.getType(parameterType, undefined, optional),
-				parameterType,
-				optional,
-				parameterSymbol,
-				undefined,
-				context
-			).typeReference;
+			type = declaration.type
+				? context.transformerContext.syntaxTypeChecker.getType(declaration.type)
+				: context.transformerContext.tsTypeTypeChecker.getType(
+						context.typeChecker.getTypeOfSymbolAtLocation(parameterSymbol, declaration),
+						undefined,
+						optional
+				  );
+			// type = context.transformerContext.syntaxTypeChecker.getType(declaration.type);
+			// type = context.transformerContext.metadata.generateMetadataForType(
+			// 	declaration.type
+			// 		? context.transformerContext.syntaxTypeChecker.getType(declaration.type)
+			// 		: context.transformerContext.tsTypeTypeChecker.getType(parameterType, undefined, optional),
+			// 	parameterType,
+			// 	optional,
+			// 	parameterSymbol,
+			// 	undefined,
+			// 	context
+			// ).typeReference;
 
 			// Initializer
 			initializer =
@@ -62,15 +70,15 @@ export function getSignatureParametersProperties(
 			}
 		} else {
 			const parameterType = context.typeChecker.getDeclaredTypeOfSymbol(parameterSymbol);
-
-			type = context.transformerContext.metadata.generateMetadataForType(
-				context.transformerContext.tsTypeTypeChecker.getType(parameterType, parameterSymbol, optional),
-				parameterType,
-				optional,
-				parameterSymbol,
-				undefined,
-				context
-			).typeReference;
+			type = context.transformerContext.tsTypeTypeChecker.getType(parameterType, parameterSymbol, optional);
+			// type = context.transformerContext.metadata.generateMetadataForType(
+			// 	context.transformerContext.tsTypeTypeChecker.getType(parameterType, parameterSymbol, optional),
+			// 	parameterType,
+			// 	optional,
+			// 	parameterSymbol,
+			// 	undefined,
+			// 	context
+			// ).typeReference;
 		}
 
 		parameters.push({

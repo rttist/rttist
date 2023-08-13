@@ -1,58 +1,10 @@
-import { ModuleIds, PROTOTYPE_TYPE_PROPERTY, TypeIds } from "@rttist/core";
-import { ParameterFlags, TypeKind } from "./enums";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import { Module } from "./Module";
-import { getGlobalThis } from "./utils/getGlobalThis";
-import { Metadata } from "./Metadata";
 import { Type } from "./Type";
-import { FunctionType } from "./types";
+import { getNativeTypes } from "./native-types";
+import { MetadataLibrary } from "./Metadata";
 
-export function resolveSingletonInstance<T>(key: string, Class: { new (...args: any[]): T }, args: any[] = []): T {
-	const go = getGlobalThis();
-	const s = Symbol.for(key);
-	return go[s] || (go[s] = new Class(...args));
-}
-
-/**
- * @internal
- */
-export const AnyArray = new Type(
-	{
-		kind: TypeKind.Interface,
-		name: "Array",
-		id: ModuleIds.Native + "::Array{" + TypeIds.Any + "}",
-		module: ModuleIds.Native,
-		genericTypeDefinition: [TypeKind.ArrayDefinition],
-		typeArguments: [TypeIds.Any],
-	},
-	undefined!
-);
-
-/**
- * @internal
- */
-export const UnknownFunction = new FunctionType(
-	{
-		kind: TypeKind.Function,
-		name: "Function",
-		id: ModuleIds.Native + "::Function",
-		module: ModuleIds.Native,
-		signatures: [
-			{
-				parameters: [
-					{
-						name: "x",
-						flags: ParameterFlags.Rest,
-						type: AnyArray.id,
-					},
-				],
-				returnType: TypeIds.Unknown,
-			},
-		],
-	},
-	undefined!
-);
-
-export function getTypeOfRuntimeValue(value: any): Type {
+export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibrary): Type {
 	if (value === undefined) return Type.Undefined;
 	if (value === null) return Type.Null;
 	if (typeof value === "string") return Type.String;
@@ -82,7 +34,7 @@ export function getTypeOfRuntimeValue(value: any): Type {
 	}
 
 	if (value.constructor === Object) return Type.NonPrimitiveObject;
-	if (value.constructor === Array) return AnyArray;
+	if (value.constructor === Array) return getNativeTypes().AnyArray;
 
 	const typeRef =
 		value.prototype?.[PROTOTYPE_TYPE_PROPERTY] ||
@@ -91,8 +43,8 @@ export function getTypeOfRuntimeValue(value: any): Type {
 		undefined;
 
 	if (typeRef !== undefined) {
-		return Metadata.resolveType(typeRef);
+		return metadataLibrary.resolveType(typeRef);
 	}
 
-	return typeof value === "function" ? UnknownFunction : Type.Unknown;
+	return typeof value === "function" ? getNativeTypes().UnknownFunction : Type.Unknown;
 }

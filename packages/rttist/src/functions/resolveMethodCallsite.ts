@@ -1,7 +1,4 @@
-import {
-	CALLSITE_TYPE_ARGS_PROPERTY,
-	FncNames
-}                        from "@rttist/core";
+import { CALLSITE_TYPE_ARGS_PROPERTY, FncNames } from "@rttist/core";
 import { TypeReference } from "../declarations";
 
 /**
@@ -9,8 +6,7 @@ import { TypeReference } from "../declarations";
  * @param context
  * @param methodName
  */
-export function resolveMethodCallsite(context: any, methodName: string)
-{
+export function resolveMethodCallsite(context: any, methodName: string) {
 	const callsiteArgs: TypeReference[] | undefined = context[methodName][CALLSITE_TYPE_ARGS_PROPERTY];
 	context[methodName][CALLSITE_TYPE_ARGS_PROPERTY] = undefined;
 	return callsiteArgs || (Rttist as any)[FncNames.invalidTypeGenerator]();

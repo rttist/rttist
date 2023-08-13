@@ -1,35 +1,24 @@
 import type { AnyTypeMetadata, ModuleIdentifier, ModuleMetadata } from "./declarations";
 import type { Type } from "./Type";
-import type { MetadataLibrary } from "./Metadata";
 import { TypeFactory } from "./factories";
 import { ModuleImporter } from "./ModuleImporter";
-import { ModuleIds } from "@rttist/core";
 import { LazyModuleArray } from "./utils/LazyModuleArray";
 
 export class Module {
 	/**
 	 * Module for all the native types.
 	 */
-	public static readonly Native: Module = new Module(
-		{ id: ModuleIds.Native, name: "native", path: "typescript" },
-		undefined!
-	);
+	public declare static readonly Native: Module;
 
 	/**
 	 * Module for dynamic types without specific module.
 	 */
-	public static readonly Dynamic: Module = new Module(
-		{ id: ModuleIds.Dynamic, name: "dynamic", path: "" },
-		undefined!
-	);
+	public declare static readonly Dynamic: Module;
 
 	/**
 	 * Unknown module.
 	 */
-	public static readonly Invalid: Module = new Module(
-		{ id: ModuleIds.Invalid, name: "invalid", path: "" },
-		undefined!
-	);
+	public declare static readonly Invalid: Module;
 
 	/** @internal */
 	private readonly _childrenRefs: LazyModuleArray;
@@ -60,18 +49,17 @@ export class Module {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 */
-	constructor(initializer: ModuleMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: ModuleMetadata) {
 		this._id = initializer.id;
 		this._import = initializer.import ?? (() => ModuleImporter.import(initializer.id));
 		this.name = initializer.name;
 		this.path = initializer.path;
-		this._childrenRefs = new LazyModuleArray(metadataLibrary, initializer.children || []);
+		this._childrenRefs = new LazyModuleArray(initializer.children || []);
 		this._types = Object.freeze(
 			(initializer.types || []).map((typeMetadata) => {
 				(typeMetadata as any).module = initializer.id;
-				return TypeFactory.create(typeMetadata as AnyTypeMetadata, metadataLibrary);
+				return TypeFactory.create(typeMetadata as AnyTypeMetadata);
 			})
 		);
 	}

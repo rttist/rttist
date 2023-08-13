@@ -7,23 +7,20 @@ Welcome and thank You for investing your time in contributing to my project! :ta
 * Fork the repository,
 * create a branch with your feature,
 * install pnpm (`npm i pnpm -g`) if you don't have it yet. (this is a monorepo configured via pnpm; npm workspaces are still quite bad)
-* run `pnpm install` in repository root `.` directory, which is monorepo root (using npm workspaces) - this will create root `node_modules` directory with symlinks to the transformer and runtime packages,
-* open project in your favorite IDE (I use JetBrains products such as Webstorm and Rider; there is an .editorconfig with all style rules in the repository),
-* make your changes in `./packages/core` and/or `./packages/rttist` (use `tsc` to rebuild the package),
-* cd into the `./dev/xxx`,
-* `npx ttsc` and try your changes,
+* Run `pnpm install` in the repository root `.` directory,
+* make your changes in `./packages/core`, `./packages/rttist` and/or `./packages/typegen` (to build the packages check scripts in corresponding package.json file; every project can be built by the `tsc`, but some of them are bundled using the esbuild),
+* try your changes - you can put your development testing code into `./dev/{your name}`,
 * update tests,
 * run tests by `npm test` from project root,
 * make a PR into the `devel` branch.
 
-## Debugging
+## Debugging TypeGen
 
-Run compiler using `node ttypescript/bin/tsc` inside one of the dev directories,
-eg. `cd dev/hookyns/1 && node ../../node_modules/ttypescript/bin/tsc`
+Run the TypeGen by `node packages/typegen/dist/bin.js`.
 
 ### Dev mode
 
-To enable developer mode and logging, you must update reflect.config.
+To enable developer mode and logging, you must update reflect.config.js.
 
 ```json
 {
@@ -34,5 +31,8 @@ To enable developer mode and logging, you must update reflect.config.
 
 ## Some rules
 
-* Use type imports `import type {} from ""` whenever it is possible. In rttist package there is problem with circular dependencies so type imports help to identify issues.
+* Use type imports `import type {} from ""` whenever it is possible. In rttist package there is problem with circular dependencies.
 * Use `===` equality.
+
+## Code-style
+This project use Prettier. There is `.prettierrc` config file in the repository root. There are no GIT hooks yet so please use the prettier to format the code using your IDE.

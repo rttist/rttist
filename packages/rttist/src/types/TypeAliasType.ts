@@ -1,5 +1,4 @@
 ﻿import type { TypeAliasTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 import { LazyType } from "../utils/LazyType";
 
@@ -11,8 +10,8 @@ export class TypeAliasType extends Type {
 		return this._target.type;
 	}
 
-	constructor(initializer: TypeAliasTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
-		this._target = new LazyType(metadataLibrary, initializer.target);
+	constructor(initializer: TypeAliasTypeMetadata) {
+		super(initializer);
+		this._target = new LazyType(initializer.target);
 	}
 }

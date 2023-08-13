@@ -1,20 +1,31 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-beta.0",
+	"version": "1.0.0-beta.1",
 	"description": "Abstract declarations for TypeScript runtime reflection",
-	"main": "dist/index.js",
+	"main": "./dist/index.js",
+	"module": "./dist/esm/index.js",
+	"type": "commonjs",
 	"types": "dist/index.d.ts",
+	"exports": {
+		"default": "./dist/index.js",
+		"require": "./dist/index.js",
+		"import": "./dist/esm/index.js"
+	},
+	"engines": {
+		"node": ">=16.0.0"
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "tsc",
-		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && tsc"
+		"prepare": "npm run build && npm run generate:esmpackage && npm run generate:types",
+		"build": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --keep-names",
+		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
+		"generate:esmpackage": "node ./create-esm-package-json.js",
+		"prepublishOnly": "tsc --emitDeclarationOnly --outDir dist"
 	},
 	"files": [
 		"LICENSE",
 		"README.md",
 		"dist/**/*.js",
-		"typelib/index.js",
-		"typelib/index.d.ts",
 		"dist/**/*.d.ts"
 	],
 	"keywords": [
@@ -35,11 +46,13 @@
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"dependencies": {
-		"@rttist/core": "workspace:^"
+		"@rttist/core": "workspace:^",
+		"esbuild": "^0.18.11",
+		"tsup": "^7.2.0"
 	},
 	"devDependencies": {
-		"typescript": "4.8.x",
-		"rimraf": "^3.0.2"
+		"rimraf": "^3.0.2",
+		"typescript": "4.8.x"
 	},
 	"repository": {
 		"type": "git",

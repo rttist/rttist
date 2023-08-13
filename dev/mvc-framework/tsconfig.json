@@ -1,0 +1,30 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"module": "commonjs",
+		"moduleResolution": "nodenext",
+		"target": "ESNext",
+		"lib": ["ESNext"],
+		"removeComments": true,
+//		"declaration": false,
+		"noImplicitAny": false,
+		"sourceMap": true,
+		"experimentalDecorators": true,
+		"rootDir": "src",
+		"outDir": "dist",
+		"plugins": [
+//			{
+//				"transform": "tst-reflect-transformer"
+//			}
+		],
+		"types": []
+	},
+	"files": ["src/index.ts"],
+	"include": [
+		"./src/controllers/*.ts"
+	],
+	"exclude": [
+		"node_modules/**/*",
+		"node_modules"
+	]
+}

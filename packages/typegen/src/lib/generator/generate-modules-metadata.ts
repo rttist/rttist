@@ -20,6 +20,9 @@ import { ModuleMetadata } from "../metadata/module-metadata";
 let createClient: undefined | typeof import("memory-mapped-files").createClient;
 try {
 	createClient = require("memory-mapped-files").createClient;
+	// import { createClient as cc } from "memory-mapped-files";
+	// createClient = cc;
+	// // createClient = (await import("memory-mapped-files")).createClient;
 } catch (e) {}
 
 export async function generateModulesMetadata(
@@ -147,10 +150,13 @@ function createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClie
 function getCompilerOptions(config: Config) {
 	const options: ts.CompilerOptions = {
 		...config.compilerOptions,
-		isolatedModules: true,
+		// isolatedModules: true,
 		// noLib: true,
-		skipDefaultLibCheck: config.typecheck,
+		// skipDefaultLibCheck: true,
+		// noResolve: true,
+		// skipDefaultLibCheck: config.typecheck,
 		noResolve: !config.typecheck,
+		// noResolve: true,
 		declaration: false,
 		declarationMap: false,
 		sourceMap: false,

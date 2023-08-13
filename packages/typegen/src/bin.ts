@@ -6,12 +6,12 @@ const program = new Program(cli);
 
 program
 	.run()
-	.catch((error) => {
+	.catch(async (error: any) => {
 		console.error("Program failed.", error);
 
 		// TODO: Use it in finally block
 		try {
-			require("memory-mapped-files").stopCacheServer();
+			(await import("memory-mapped-files")).stopCacheServer();
 		} catch (e) {}
 	})
 	.finally(() => {

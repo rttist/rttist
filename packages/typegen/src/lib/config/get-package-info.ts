@@ -18,6 +18,7 @@ export function getPackageInfo(root: string /*, recursiveCheck: boolean = false*
 			packageRoot: root,
 			name: parsed.name || UNKNOWN_PACKAGE_NAME,
 			packageJson: parsed,
+			type: parsed.type || "commonjs",
 		};
 	} catch (e) {
 		throw new Error(`Unable to read package.json in ${root}.\n${e instanceof Error ? e.message : e}`);

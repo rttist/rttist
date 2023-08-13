@@ -18,25 +18,27 @@ export function mapTypeParameter(type: ts.Type, symbol: ts.Symbol | undefined, c
 				name: declaration.name.escapedText as string,
 				constraint:
 					(declaration.constraint &&
-						context.metadata.generateMetadataForType(
-							context.transformerContext.syntaxTypeChecker.getType(declaration.constraint, false),
-							context.typeChecker.getTypeAtLocation(declaration.constraint),
-							false,
-							undefined,
-							undefined,
-							context
-						).typeReference) ||
+						context.transformerContext.syntaxTypeChecker.getType(declaration.constraint, false)) ||
+					// context.metadata.generateMetadataForType(
+					// 	context.transformerContext.syntaxTypeChecker.getType(declaration.constraint, false),
+					// 	context.typeChecker.getTypeAtLocation(declaration.constraint),
+					// 	false,
+					// 	undefined,
+					// 	undefined,
+					// 	context
+					// ).typeReference
 					undefined,
 				default:
 					(declaration.default &&
-						context.metadata.generateMetadataForType(
-							context.transformerContext.syntaxTypeChecker.getType(declaration.default, false),
-							context.typeChecker.getTypeAtLocation(declaration.default),
-							false,
-							undefined,
-							undefined,
-							context
-						).typeReference) ||
+						context.transformerContext.syntaxTypeChecker.getType(declaration.default, false)) ||
+					// context.metadata.generateMetadataForType(
+					// 	context.transformerContext.syntaxTypeChecker.getType(declaration.default, false),
+					// 	context.typeChecker.getTypeAtLocation(declaration.default),
+					// 	false,
+					// 	undefined,
+					// 	undefined,
+					// 	context
+					// ).typeReference
 					undefined,
 			};
 		}

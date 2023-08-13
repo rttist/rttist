@@ -19,10 +19,12 @@ export class CLI {
 		// 	"./reflect.config.json"
 		// );
 		program.option("-w, --watch", "enable watch mode.");
-		program.option(
-			"-t, --typecheck",
-			"enable type-checking - metadata will be more accurate but it will be much slower and it will consume much more memory."
-		);
+		program.option("--init", "create config file with recommended options."); // TODO: Implement.
+		program.option("--patch-package", "patch package.json file - add information about the typelib file."); // TODO: Implement. Match style by /^\s*\{([\s\S]*?)\S/m regex, take match, split by \n and take last part
+		// program.option(
+		// 	"-t, --typecheck",
+		// 	"enable type-checking - metadata will be more accurate but it will be much slower and it will consume much more memory."
+		// );
 
 		program.parse();
 	}

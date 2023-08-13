@@ -1,5 +1,4 @@
 import type { UnionOrIntersectionTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 import { LazyTypeArray } from "../utils/LazyTypeArray";
 
@@ -18,10 +17,10 @@ export abstract class UnionOrIntersectionType extends Type {
 		return this._types.types;
 	}
 
-	protected constructor(initializer: UnionOrIntersectionTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	protected constructor(initializer: UnionOrIntersectionTypeMetadata) {
+		super(initializer);
 
-		this._types = new LazyTypeArray<Type>(metadataLibrary, initializer.types || []);
+		this._types = new LazyTypeArray<Type>(initializer.types || []);
 	}
 
 	/**

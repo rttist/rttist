@@ -1,5 +1,4 @@
 import type { IndexedAccessTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 import { LazyType } from "../utils/LazyType";
 
@@ -21,10 +20,10 @@ export class IndexedAccessType extends Type {
 		return this._indexTypeRef.type;
 	}
 
-	constructor(initializer: IndexedAccessTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: IndexedAccessTypeMetadata) {
+		super(initializer);
 
-		this._objectTypeRef = new LazyType(metadataLibrary, initializer.objectType);
-		this._indexTypeRef = new LazyType(metadataLibrary, initializer.indexType);
+		this._objectTypeRef = new LazyType(initializer.objectType);
+		this._indexTypeRef = new LazyType(initializer.indexType);
 	}
 }

@@ -1,12 +1,11 @@
-// noinspection JSUnusedGlobalSymbols
-
-import type { TypeIdentifier, TypeMetadata, TypesConfiguration } from "./declarations";
-import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
-import type { MetadataLibrary } from "./Metadata";
+import type {TypeIdentifier, TypeMetadata} from "./declarations";
+import type {MetadataLibrary} from "./Metadata";
+import {MetadataScope} from "./metadata-scope";
 import type {
 	ClassType,
 	ConditionalType,
 	EnumType,
+	ESSymbolType,
 	FunctionType,
 	GenericType,
 	InterfaceType,
@@ -15,85 +14,73 @@ import type {
 	ObjectLikeTypeBase,
 	ObjectType,
 	TemplateType,
+	TypeAliasType,
 	TypeParameterType,
 	UnionType,
-	ESSymbolType,
-	TypeAliasType,
 	UniqueSymbolType,
 } from "./types";
-import type { Module } from "./Module";
-import { ModuleIds } from "@rttist/core";
-import { LazyModule } from "./utils/LazyModule";
-import { LazyType } from "./utils/LazyType";
-import { LazyTypeArray } from "./utils/LazyTypeArray";
-import { LiteralTypeKinds, PrimitiveTypeKinds, TypeKind } from "./enums";
-
-const createdWellKnownTypes = new Set();
+import type {Module} from "./Module";
+import {getFunctionCallsiteTypeArgumentsOrInvalid} from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
+import {LazyModule} from "./utils/LazyModule";
+import {LazyType} from "./utils/LazyType";
+import {LazyTypeArray} from "./utils/LazyTypeArray";
+import {LiteralTypeKinds, PrimitiveTypeKinds, TypeKind} from "./enums";
 
 /**
  * Object representing TypeScript type in memory
  */
 export class Type {
-	public static readonly Invalid = cn("Invalid", TypeKind.Invalid, ModuleIds.Invalid);
-	public static readonly NonPrimitiveObject = cn("object", TypeKind.NonPrimitiveObject);
-	public static readonly Any = cn("any", TypeKind.Any);
-	public static readonly Unknown = cn("unknown", TypeKind.Unknown);
-	public static readonly Void = cn("void", TypeKind.Void);
-	public static readonly Never = cn("never", TypeKind.Never);
-	public static readonly Null = cn("null", TypeKind.Null);
-	public static readonly Undefined = cn("undefined", TypeKind.Undefined);
-	public static readonly String = cn("String", TypeKind.String);
-	public static readonly Number = cn("Number", TypeKind.Number);
-	public static readonly BigInt = cn("BigInt", TypeKind.BigInt);
-	public static readonly Boolean = cn("Boolean", TypeKind.Boolean);
-	public static readonly True = cn("true", TypeKind.True);
-	public static readonly False = cn("false", TypeKind.False);
-	public static readonly Date = cn("Date", TypeKind.Date);
-	public static readonly Error = cn("Error", TypeKind.Error);
-	public static readonly Symbol = cn("Symbol", TypeKind.Symbol);
-	public static readonly UniqueSymbol = cn("UniqueSymbol", TypeKind.UniqueSymbol);
-	public static readonly RegExp = cn("RegExp", TypeKind.RegExp);
-	public static readonly Int8Array = cn("Int8Array", TypeKind.Int8Array);
-	public static readonly Uint8Array = cn("Uint8Array", TypeKind.Uint8Array);
-	public static readonly Uint8ClampedArray = cn("Uint8ClampedArray", TypeKind.Uint8ClampedArray);
-	public static readonly Int16Array = cn("Int16Array", TypeKind.Int16Array);
-	public static readonly Uint16Array = cn("Uint16Array", TypeKind.Uint16Array);
-	public static readonly Int32Array = cn("Int32Array", TypeKind.Int32Array);
-	public static readonly Uint32Array = cn("Uint32Array", TypeKind.Uint32Array);
-	public static readonly Float32Array = cn("Float32Array", TypeKind.Float32Array);
-	public static readonly Float64Array = cn("Float64Array", TypeKind.Float64Array);
-	public static readonly BigInt64Array = cn("BigInt64Array", TypeKind.BigInt64Array);
-	public static readonly BigUint64Array = cn("BigUint64Array", TypeKind.BigUint64Array);
-	public static readonly ArrayDefinition = cn("ArrayDefinition", TypeKind.ArrayDefinition);
-	public static readonly ReadonlyArrayDefinition = cn("ReadonlyArray", TypeKind.ReadonlyArrayDefinition);
-	public static readonly MapDefinition = cn("Map", TypeKind.MapDefinition);
-	public static readonly WeakMapDefinition = cn("WeakMap", TypeKind.WeakMapDefinition);
-	public static readonly SetDefinition = cn("Set", TypeKind.SetDefinition);
-	public static readonly WeakSetDefinition = cn("WeakSet", TypeKind.WeakSetDefinition);
-	public static readonly PromiseDefinition = cn("Promise", TypeKind.PromiseDefinition);
-	public static readonly GeneratorDefinition = cn("Generator", TypeKind.GeneratorDefinition);
-	public static readonly AsyncGeneratorDefinition = cn("AsyncGenerator", TypeKind.AsyncGeneratorDefinition);
-	public static readonly IteratorDefinition = cn("Iterator", TypeKind.IteratorDefinition);
-	public static readonly IterableDefinition = cn("Iterable", TypeKind.IterableDefinition);
-	public static readonly IterableIteratorDefinition = cn("IterableIterator", TypeKind.IterableIteratorDefinition);
-	public static readonly AsyncIteratorDefinition = cn("AsyncIterator", TypeKind.AsyncIteratorDefinition);
-	public static readonly AsyncIterableDefinition = cn("AsyncIterable", TypeKind.AsyncIterableDefinition);
-	public static readonly AsyncIterableIteratorDefinition = cn(
-		"AsyncIterableIterator",
-		TypeKind.AsyncIterableIteratorDefinition
-	);
-	public static readonly ArrayBuffer = cn("ArrayBuffer", TypeKind.ArrayBuffer);
-	public static readonly SharedArrayBuffer = cn("SharedArrayBuffer", TypeKind.SharedArrayBuffer);
-	public static readonly Atomics = cn("Atomics", TypeKind.Atomics);
-	public static readonly DataView = cn("DataView", TypeKind.DataView);
-	public static readonly Type = cn("Type", TypeKind.RttistType, "@rttist/dist/Type");
-	public static readonly Module = cn("Module", TypeKind.RttistModule, "@rttist/dist/Module");
-
-	/**
-	 * Configuration - global nullability of all the types (StrictNullChecks TS option).
-	 * @internal
-	 */
-	private static _nullability: boolean;
+	public declare static readonly Invalid: Type;
+	public declare static readonly NonPrimitiveObject: Type;
+	public declare static readonly Any: Type;
+	public declare static readonly Unknown: Type;
+	public declare static readonly Void: Type;
+	public declare static readonly Never: Type;
+	public declare static readonly Null: Type;
+	public declare static readonly Undefined: Type;
+	public declare static readonly String: Type;
+	public declare static readonly Number: Type;
+	public declare static readonly BigInt: Type;
+	public declare static readonly Boolean: Type;
+	public declare static readonly True: Type;
+	public declare static readonly False: Type;
+	public declare static readonly Date: Type;
+	public declare static readonly Error: Type;
+	public declare static readonly Symbol: Type;
+	public declare static readonly UniqueSymbol: Type;
+	public declare static readonly RegExp: Type;
+	public declare static readonly Int8Array: Type;
+	public declare static readonly Uint8Array: Type;
+	public declare static readonly Uint8ClampedArray: Type;
+	public declare static readonly Int16Array: Type;
+	public declare static readonly Uint16Array: Type;
+	public declare static readonly Int32Array: Type;
+	public declare static readonly Uint32Array: Type;
+	public declare static readonly Float32Array: Type;
+	public declare static readonly Float64Array: Type;
+	public declare static readonly BigInt64Array: Type;
+	public declare static readonly BigUint64Array: Type;
+	public declare static readonly ArrayDefinition: Type;
+	public declare static readonly ReadonlyArrayDefinition: Type;
+	public declare static readonly MapDefinition: Type;
+	public declare static readonly WeakMapDefinition: Type;
+	public declare static readonly SetDefinition: Type;
+	public declare static readonly WeakSetDefinition: Type;
+	public declare static readonly PromiseDefinition: Type;
+	public declare static readonly GeneratorDefinition: Type;
+	public declare static readonly AsyncGeneratorDefinition: Type;
+	public declare static readonly IteratorDefinition: Type;
+	public declare static readonly IterableDefinition: Type;
+	public declare static readonly IterableIteratorDefinition: Type;
+	public declare static readonly AsyncIteratorDefinition: Type;
+	public declare static readonly AsyncIterableDefinition: Type;
+	public declare static readonly AsyncIterableIteratorDefinition: Type;
+	public declare static readonly ArrayBuffer: Type;
+	public declare static readonly SharedArrayBuffer: Type;
+	public declare static readonly Atomics: Type;
+	public declare static readonly DataView: Type;
+	public declare static readonly Type: Type;
+	public declare static readonly Module: Type;
 
 	/** @internal */
 	protected readonly _id: TypeIdentifier;
@@ -104,7 +91,7 @@ export class Type {
 	/** @internal */
 	protected readonly _exported: boolean;
 	/** @internal */
-	protected readonly _nullable?: boolean;
+	protected readonly _nullable: boolean;
 	/** @internal */
 	protected readonly _moduleRef: LazyModule;
 	/** @internal */
@@ -115,8 +102,10 @@ export class Type {
 	protected readonly _isGenericTypeDefinition: boolean;
 	/** @internal */
 	protected readonly _isIterable: boolean = false;
-
 	// protected readonly _hasIterator: boolean;
+
+	/** @internal */
+	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	/**
 	 * Type identifier.
@@ -165,7 +154,7 @@ export class Type {
 	 * Type is nullable so null and undefined are valid values for the type.
 	 */
 	get nullable(): boolean {
-		return this._nullable || Type._nullability;
+		return this._nullable;
 	}
 
 	/**
@@ -178,16 +167,8 @@ export class Type {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 */
-	constructor(
-		initializer: TypeMetadata,
-		private readonly metadataLibrary: MetadataLibrary
-	) {
-		if (createdWellKnownTypes.has(initializer.kind)) {
-			throw new Error("Cannot create well-known type multiple times.");
-		}
-
+	constructor(initializer: TypeMetadata) {
 		if (!initializer.module) {
 			throw new Error("Type must have a module.");
 		}
@@ -196,35 +177,15 @@ export class Type {
 		this._kind = initializer.kind;
 		this._name = initializer.name;
 		this._exported = initializer.exported || false;
-
-		// Set to _nullable only when defined in initializer. If not specified, it must be lazily taken from TypesConfiguration.
-		if (initializer.nullable === true) {
-			this._nullable = true;
-		}
-
-		this._moduleRef = new LazyModule(metadataLibrary, initializer.module);
+		this._moduleRef = new LazyModule(initializer.module);
+		this._nullable = initializer.nullable || this.metadataLibrary.configuration.nullability || false;
 
 		// Generics
 		this._definitionRef = initializer.genericTypeDefinition
-			? new LazyType<GenericType<Type>>(metadataLibrary, initializer.genericTypeDefinition)
+			? new LazyType<GenericType<Type>>(initializer.genericTypeDefinition)
 			: undefined;
 		this._isGenericTypeDefinition = initializer.isGenericTypeDefinition || false;
-		this._typeArgumentsRef = new LazyTypeArray(metadataLibrary, initializer.typeArguments || []);
-	}
-
-	/**
-	 * Configure behavior of types.
-	 * @param nullability
-	 */
-	static configure({ nullability }: TypesConfiguration) {
-		this._nullability = nullability ?? false;
-	}
-
-	/**
-	 * @private
-	 */
-	private isComparableByKind(): boolean {
-		return !!NativeTypes[this._kind];
+		this._typeArgumentsRef = new LazyTypeArray(initializer.typeArguments || []);
 	}
 
 	/**
@@ -240,10 +201,6 @@ export class Type {
 		if (target === undefined) {
 			const [targetTypeReference] = getFunctionCallsiteTypeArgumentsOrInvalid(this.is);
 			target = this.metadataLibrary.resolveType(targetTypeReference);
-		}
-
-		if (this.isComparableByKind()) {
-			return this._kind === target._kind;
 		}
 
 		return this._id === target._id;
@@ -502,74 +459,3 @@ export class Type {
 		return `${TypeKind[this._kind]}\{${this.id}}`;
 	}
 }
-
-/**
- * Create native type from object.
- */
-function cn(name: string, kind: TypeKind, module: string = ModuleIds.Native): Type {
-	const type = new Type(
-		{
-			kind,
-			name,
-			id: module + "::" + name,
-			module: module,
-		},
-		undefined!
-	);
-
-	createdWellKnownTypes.add(type);
-
-	return type;
-}
-
-export const NativeTypes: { [typeKind: number]: Type } = {
-	[TypeKind.Invalid]: Type.Invalid,
-	[TypeKind.Any]: Type.Any,
-	[TypeKind.Unknown]: Type.Unknown,
-	[TypeKind.Void]: Type.Void,
-	[TypeKind.Never]: Type.Never,
-	[TypeKind.Null]: Type.Null,
-	[TypeKind.Undefined]: Type.Undefined,
-	[TypeKind.NonPrimitiveObject]: Type.NonPrimitiveObject,
-	[TypeKind.String]: Type.String,
-	[TypeKind.Number]: Type.Number,
-	[TypeKind.BigInt]: Type.BigInt,
-	[TypeKind.Boolean]: Type.Boolean,
-	[TypeKind.True]: Type.True,
-	[TypeKind.False]: Type.False,
-	[TypeKind.Date]: Type.Date,
-	[TypeKind.Error]: Type.Error,
-	[TypeKind.Symbol]: Type.Symbol,
-	[TypeKind.UniqueSymbol]: Type.UniqueSymbol,
-	[TypeKind.RegExp]: Type.RegExp,
-	[TypeKind.Int8Array]: Type.Int8Array,
-	[TypeKind.Uint8Array]: Type.Uint8Array,
-	[TypeKind.Uint8ClampedArray]: Type.Uint8ClampedArray,
-	[TypeKind.Int16Array]: Type.Int16Array,
-	[TypeKind.Uint16Array]: Type.Uint16Array,
-	[TypeKind.Int32Array]: Type.Int32Array,
-	[TypeKind.Uint32Array]: Type.Uint32Array,
-	[TypeKind.Float32Array]: Type.Float32Array,
-	[TypeKind.Float64Array]: Type.Float64Array,
-	[TypeKind.BigInt64Array]: Type.BigInt64Array,
-	[TypeKind.BigUint64Array]: Type.BigUint64Array,
-	[TypeKind.ArrayBuffer]: Type.ArrayBuffer,
-	[TypeKind.SharedArrayBuffer]: Type.SharedArrayBuffer,
-	[TypeKind.Atomics]: Type.Atomics,
-	[TypeKind.DataView]: Type.DataView,
-	[TypeKind.ArrayDefinition]: Type.ArrayDefinition,
-	[TypeKind.ReadonlyArrayDefinition]: Type.ReadonlyArrayDefinition,
-	[TypeKind.MapDefinition]: Type.MapDefinition,
-	[TypeKind.WeakMapDefinition]: Type.WeakMapDefinition,
-	[TypeKind.SetDefinition]: Type.SetDefinition,
-	[TypeKind.WeakSetDefinition]: Type.WeakSetDefinition,
-	[TypeKind.PromiseDefinition]: Type.PromiseDefinition,
-	[TypeKind.GeneratorDefinition]: Type.GeneratorDefinition,
-	[TypeKind.AsyncGeneratorDefinition]: Type.AsyncGeneratorDefinition,
-	[TypeKind.IteratorDefinition]: Type.IteratorDefinition,
-	[TypeKind.IterableDefinition]: Type.IterableDefinition,
-	[TypeKind.IterableIteratorDefinition]: Type.IterableIteratorDefinition,
-	[TypeKind.AsyncIteratorDefinition]: Type.AsyncIteratorDefinition,
-	[TypeKind.AsyncIterableDefinition]: Type.AsyncIterableDefinition,
-	[TypeKind.AsyncIterableIteratorDefinition]: Type.AsyncIterableIteratorDefinition,
-} as const;

@@ -1,8 +1,7 @@
 /**
  * Kind of type
  */
-export enum TypeKind
-{
+export enum TypeKind {
 	Invalid,
 	Unknown,
 	Any,
@@ -54,8 +53,6 @@ export enum TypeKind
 	AsyncIteratorDefinition,
 	AsyncIterableDefinition,
 	AsyncIterableIteratorDefinition,
-	RttistType,
-	RttistModule,
 
 	Module = 60,
 	Namespace,
@@ -98,7 +95,7 @@ export enum TypeKind
 }
 
 export type NativeTypeKind =
-	TypeKind.Any
+	| TypeKind.Any
 	| TypeKind.Unknown
 	| TypeKind.Void
 	| TypeKind.Never
@@ -147,11 +144,6 @@ export type NativeTypeKind =
 	| TypeKind.AsyncIteratorDefinition
 	| TypeKind.AsyncIterableDefinition
 	| TypeKind.AsyncIterableIteratorDefinition
-	
-	| TypeKind.RttistType
-	| TypeKind.RttistModule
-	
-	| TypeKind.Invalid
-	;
+	| TypeKind.Invalid;
 
 export type NonNativeTypeKind = Exclude<TypeKind, NativeTypeKind>;

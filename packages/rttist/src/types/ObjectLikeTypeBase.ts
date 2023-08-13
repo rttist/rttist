@@ -1,6 +1,5 @@
 import type { ObjectLikeBaseTypeMetadata } from "../declarations";
-import { IndexInfo, MethodInfo, PropertyInfo } from "../infos";
-import type { MetadataLibrary } from "../Metadata";
+import type { IndexInfo, MethodInfo, PropertyInfo } from "../infos";
 import { Type } from "../Type";
 import { mapIndexes, mapMethods, mapProperties } from "../utils/mappers";
 
@@ -14,11 +13,11 @@ export abstract class ObjectLikeTypeBase extends Type {
 	private readonly _indexes: ReadonlyArray<IndexInfo>;
 	// endregion
 
-	protected constructor(initializer: ObjectLikeBaseTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
-		this._properties = mapProperties(initializer, metadataLibrary);
-		this._methods = mapMethods(initializer, metadataLibrary);
-		this._indexes = mapIndexes(initializer, metadataLibrary);
+	protected constructor(initializer: ObjectLikeBaseTypeMetadata) {
+		super(initializer);
+		this._properties = mapProperties(initializer);
+		this._methods = mapMethods(initializer);
+		this._indexes = mapIndexes(initializer);
 
 		// @ts-ignore
 		this._isIterable =

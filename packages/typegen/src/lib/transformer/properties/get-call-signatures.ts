@@ -9,14 +9,14 @@ export function getCallSignatures(type: ts.Type, context: Context): SignaturePro
 		returnType: context.transformerContext.tsTypeTypeChecker.getType(signature.getReturnType(), undefined, false),
 		typeParameters: signature.typeParameters?.map((typeParameter) => {
 			const typeReference = context.transformerContext.tsTypeTypeChecker.getType(typeParameter, undefined, false);
-			context.metadata.generateMetadataForType(
-				typeReference,
-				typeParameter,
-				false,
-				undefined,
-				undefined,
-				context
-			);
+			// context.metadata.generateMetadataForType(
+			// 	typeReference,
+			// 	typeParameter,
+			// 	false,
+			// 	undefined,
+			// 	undefined,
+			// 	context
+			// );
 			return typeReference;
 		}),
 	}));

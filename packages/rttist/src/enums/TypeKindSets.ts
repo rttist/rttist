@@ -19,7 +19,7 @@ export const PrimitiveTypeKinds = new Set([
 	TypeKind.Symbol,
 	TypeKind.UniqueSymbol,
 	TypeKind.Null,
-	TypeKind.Undefined
+	TypeKind.Undefined,
 ]);
 
 export const NonPrimitiveKeywordTypeKinds = new Set([
@@ -27,7 +27,7 @@ export const NonPrimitiveKeywordTypeKinds = new Set([
 	TypeKind.Never,
 	TypeKind.Unknown,
 	TypeKind.Any,
-	TypeKind.NonPrimitiveObject
+	TypeKind.NonPrimitiveObject,
 ]);
 
 // export const ComparableByKind = new Set<TypeKind>([

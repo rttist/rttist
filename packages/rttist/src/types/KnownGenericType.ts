@@ -1,5 +1,4 @@
 import type { TypeMetadata, TypeReference } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import type { GenericType } from "./GenericType";
 import { Type } from "../Type";
 
@@ -11,9 +10,9 @@ export class KnownGenericType<TParams extends ReadonlyArray<Type>> extends Type 
 		return this._definitionRef!.type;
 	}
 
-	constructor(definition: TypeReference, initializer: TypeMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(definition: TypeReference, initializer: TypeMetadata) {
 		initializer.genericTypeDefinition = definition;
-		super(initializer, metadataLibrary);
+		super(initializer);
 	}
 
 	/**

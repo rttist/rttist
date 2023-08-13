@@ -1,7 +1,7 @@
 import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import { TypeReference } from "../declarations";
 import { Type } from "../Type";
-import { LazyType } from "../utils/LazyType";
+import { MetadataScope } from "../metadata-scope";
 
 export function constructGeneric<TType = any>(
 	target: Function,
@@ -11,8 +11,8 @@ export function constructGeneric<TType = any>(
 ): TType {
 	const Class = Rttist.getGenericClass(
 		target,
-		...typeParameters.map(
-			(tpReference) => (tpReference instanceof Type ? tpReference : LazyType.resolver(tpReference)) //Rttist.resolveType(tpReference)
+		...typeParameters.map((tpReference) =>
+			tpReference instanceof Type ? tpReference : MetadataScope.current.resolveType(tpReference)
 		)
 	);
 

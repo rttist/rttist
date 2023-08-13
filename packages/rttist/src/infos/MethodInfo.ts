@@ -1,8 +1,8 @@
 import type { MethodInfoMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
+import type { AccessModifier } from "../enums";
+import { PropertyFlags } from "../enums";
 import { DecoratorInfo } from "./DecoratorInfo";
-import { AccessModifier, PropertyFlags } from "../enums";
-import { MemberName } from "../types";
+import { MemberName } from "../types/MemberName";
 import { getAccessModifier } from "../utils/flags";
 import { SignatureInfo } from "./SignatureInfo";
 
@@ -65,12 +65,10 @@ export class MethodInfo {
 	 * Internal method constructor.
 	 * @internal
 	 */
-	constructor(initializer: MethodInfoMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: MethodInfoMetadata) {
 		this.metadata = initializer;
 		this._name = new MemberName(initializer.name);
-		this._signatures = Object.freeze(
-			(initializer.signatures || []).map((meta) => new SignatureInfo(meta, metadataLibrary))
-		);
+		this._signatures = Object.freeze((initializer.signatures || []).map((meta) => new SignatureInfo(meta)));
 		this._decorators = Object.freeze((initializer.decorators || []).map((meta) => new DecoratorInfo(meta)));
 		this._accessModifier = getAccessModifier(initializer.flags);
 		this._optional = (initializer.flags & PropertyFlags.Optional) !== 0;

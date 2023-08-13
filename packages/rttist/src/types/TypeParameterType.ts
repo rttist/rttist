@@ -1,5 +1,4 @@
 import type { TypeParameterTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 import { LazyType } from "../utils/LazyType";
 
@@ -21,12 +20,10 @@ export class TypeParameterType extends Type {
 		return this._default?.type;
 	}
 
-	constructor(initializer: TypeParameterTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: TypeParameterTypeMetadata) {
+		super(initializer);
 
-		this._constraint = initializer.constraint
-			? new LazyType<Type>(metadataLibrary, initializer.constraint)
-			: undefined;
-		this._default = initializer.default ? new LazyType<Type>(metadataLibrary, initializer.default) : undefined;
+		this._constraint = initializer.constraint ? new LazyType<Type>(initializer.constraint) : undefined;
+		this._default = initializer.default ? new LazyType<Type>(initializer.default) : undefined;
 	}
 }

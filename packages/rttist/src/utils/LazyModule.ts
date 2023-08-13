@@ -1,31 +1,21 @@
 import type { ModuleReference } from "../declarations";
 import type { MetadataLibrary } from "../Metadata";
 import type { Module } from "../Module";
-
-// /**
-//  * @internal
-//  */
-// export type ModuleResolver = (moduleRef: ModuleReference) => Module;
+import { MetadataScope } from "../metadata-scope";
 
 /**
  * @internal
  */
 export class LazyModule {
-	// public static resolver: ModuleResolver = () => {
-	// 	throw new Error("ModuleResolver.resolver not set.");
-	// };
-
 	private readonly _reference: ModuleReference;
 	private _module?: Module;
+	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	get module(): Module {
 		return this._module ?? (this._module = this.metadataLibrary.resolveModule(this._reference));
 	}
 
-	constructor(
-		private readonly metadataLibrary: MetadataLibrary,
-		moduleRef: ModuleReference
-	) {
+	constructor(moduleRef: ModuleReference) {
 		if (!moduleRef) {
 			throw new Error("Invalid module reference.");
 		}

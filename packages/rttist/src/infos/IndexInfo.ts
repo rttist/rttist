@@ -1,4 +1,3 @@
-import type { MetadataLibrary } from "../Metadata";
 import type { Type } from "../Type";
 import type { IndexInfoMetadata } from "../declarations";
 import { IndexFlags } from "../enums";
@@ -44,13 +43,12 @@ export class IndexInfo {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 * @internal
 	 */
-	constructor(initializer: IndexInfoMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: IndexInfoMetadata) {
 		this.metadata = initializer;
-		this._keyTypeRef = new LazyType<Type>(metadataLibrary, initializer.key);
-		this._typeRef = new LazyType<Type>(metadataLibrary, initializer.type);
+		this._keyTypeRef = new LazyType<Type>(initializer.key);
+		this._typeRef = new LazyType<Type>(initializer.type);
 		this.readonly = (initializer.flags & IndexFlags.Readonly) !== 0;
 	}
 }

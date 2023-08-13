@@ -1,4 +1,3 @@
-import type { MetadataLibrary } from "../Metadata";
 import type { Type } from "../Type";
 import type { ParameterInfoMetadata } from "../declarations";
 import { ParameterFlags } from "../enums";
@@ -43,11 +42,10 @@ export class ParameterInfo {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 */
-	constructor(initializer: ParameterInfoMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: ParameterInfoMetadata) {
 		this.name = initializer.name;
-		this._type = new LazyType(metadataLibrary, initializer.type);
+		this._type = new LazyType(initializer.type);
 		this.optional = (initializer.flags & ParameterFlags.Optional) !== 0;
 		this.rest = (initializer.flags & ParameterFlags.Rest) !== 0;
 		this._decorators = Object.freeze((initializer.decorators || []).map((meta) => new DecoratorInfo(meta)));

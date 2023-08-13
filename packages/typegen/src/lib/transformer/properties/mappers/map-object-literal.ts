@@ -4,7 +4,7 @@ import { TypeMapperResult } from "../../../../declarations/mappers";
 import { Context } from "../../contexts/context";
 import { getSymbol } from "../../utils/typeHelpers";
 import { mapProperties } from "../map-properties";
-import { mapIndexes } from "../mapIndexes";
+import { mapIndexes } from "../map-indexes";
 import { mapMethods } from "../map-methods";
 
 export function mapObjectLiteral(

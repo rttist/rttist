@@ -12,7 +12,7 @@ import { getSymbol, isReference } from "../../utils/typeHelpers";
 import { getConstructors } from "../get-constructors";
 import { getDecoratorsProperties } from "../getDecoratorsProperties";
 import { mapProperties } from "../map-properties";
-import { mapIndexes } from "../mapIndexes";
+import { mapIndexes } from "../map-indexes";
 import { mapMethods } from "../map-methods";
 import { mapObjectLiteral } from "./map-object-literal";
 import { mapFunction } from "./map-function";

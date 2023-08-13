@@ -1,5 +1,4 @@
 import type { EnumLiteralTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import type { EnumType } from "./EnumType";
 import { TypeKind } from "../enums";
 import { Type } from "../Type";
@@ -12,10 +11,10 @@ export class EnumLiteralType extends Type {
 	private readonly enumRef: LazyType<EnumType>;
 	public readonly value: any;
 
-	constructor(initializer: EnumLiteralTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: EnumLiteralTypeMetadata) {
+		super(initializer);
 		this.value = this.parseValue(initializer.value);
-		this.enumRef = new LazyType<EnumType>(metadataLibrary, initializer.enum);
+		this.enumRef = new LazyType<EnumType>(initializer.enum);
 	}
 
 	isStringLiteral(): this is StringEnumLiteralType {

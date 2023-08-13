@@ -1,6 +1,7 @@
 import { LogBuffer } from "./log-buffer";
-import { LogColor } from "./log-color";
 import { LogLevel } from "./log-level";
+import { dim, gray } from "chalk";
+import { LogColor, LogColorNames } from "./log-color";
 
 const LEVEL_MAP = {
 	[LogLevel.None]: 0,
@@ -24,6 +25,17 @@ const COLOR_MAP = {
 	[LogLevel.Always]: undefined,
 };
 
+// const COLOR_MAP = {
+// 	[LogLevel.None]: undefined,
+// 	[LogLevel.Trace]: LogColorNames.gray,
+// 	[LogLevel.Debug]: LogColorNames.magenta,
+// 	[LogLevel.Info]: undefined,
+// 	[LogLevel.Warning]: LogColorNames.yellow,
+// 	[LogLevel.Error]: LogColorNames.red,
+// 	[LogLevel.Dev]: undefined,
+// 	[LogLevel.Always]: undefined,
+// };
+
 function writeToConsole(
 	logBuffer: LogBuffer,
 	level: LogLevel,
@@ -34,15 +46,19 @@ function writeToConsole(
 ) {
 	if (color) {
 		logBuffer.log(
-			`\x1b[${color}m[${level}] ${prefix}`,
+			`${gray(`[${level}]`)} ${dim(prefix)}\x1b[${color}m`,
 			...args.flatMap((arg) => (typeof arg !== "string" ? ["\x1b[0m", arg, `\x1b[${color}m`] : [arg])),
 			contextSuffix,
 			"\x1b[0m"
 		);
 	} else {
-		logBuffer.log(`[${level}] ${prefix}`, ...args, contextSuffix);
+		logBuffer.log(`${gray(`[${level}]`)} ${dim(prefix)}`, ...args, contextSuffix);
 	}
 }
+
+// export function colorText(text: string, color: number) {
+// 	return `\x1b[${color}m${text}\x1b[0m`;
+// }
 
 export class Logger {
 	private readonly contextSuffix: string;
@@ -52,7 +68,7 @@ export class Logger {
 	constructor(
 		private readonly prefix: string,
 		context?: string,
-		private readonly buffer: LogBuffer = LogBuffer.default
+		public readonly buffer: LogBuffer = LogBuffer.default
 	) {
 		this.contextSuffix = context ? "\n\tContext: " + context : "";
 	}
@@ -78,14 +94,7 @@ export class Logger {
 			return;
 		}
 
-		writeToConsole(
-			this.buffer,
-			level,
-			COLOR_MAP[level],
-			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,
-			this.contextSuffix,
-			argsCallback()
-		);
+		writeToConsole(this.buffer, level, COLOR_MAP[level], this.getPrefix(), this.contextSuffix, argsCallback());
 	}
 
 	/**
@@ -98,15 +107,20 @@ export class Logger {
 		if (LEVEL_MAP[level] < Logger.logLevel) {
 			return;
 		}
+		writeToConsole(this.buffer, level, color, this.getPrefix(), this.contextSuffix, args);
+	}
 
-		writeToConsole(
-			this.buffer,
-			level,
-			color,
-			!!Logger.globalPrefix ? `(${Logger.globalPrefix}) ${this.prefix} -` : `${this.prefix} -`,
-			this.contextSuffix,
-			args
-		);
+	private getPrefix() {
+		let prefix = "";
+
+		if (Logger.globalPrefix) {
+			prefix += `(${Logger.globalPrefix}) `;
+		}
+
+		if (this.prefix) {
+			prefix += `${this.prefix}: `;
+		}
+		return prefix;
 	}
 
 	/**
@@ -115,6 +129,7 @@ export class Logger {
 	 */
 	trace(...args: any[]) {
 		this.log(LogLevel.Trace, LogColor.gray, ...args);
+		// this.log(LogLevel.Trace, LogColorNames.gray, ...args);
 	}
 
 	/**
@@ -131,6 +146,7 @@ export class Logger {
 	 */
 	debug(...args: any[]) {
 		this.log(LogLevel.Debug, LogColor.magenta, ...args);
+		// this.log(LogLevel.Debug, LogColorNames.magenta, ...args);
 	}
 
 	/**
@@ -163,6 +179,7 @@ export class Logger {
 	 */
 	warn(...args: any[]) {
 		this.log(LogLevel.Warning, LogColor.yellow, ...args);
+		// this.log(LogLevel.Warning, LogColorNames.yellow, ...args);
 	}
 
 	/**
@@ -179,5 +196,6 @@ export class Logger {
 	 */
 	error(...args: any[]) {
 		this.log(LogLevel.Error, LogColor.red, ...args);
+		// this.log(LogLevel.Error, LogColorNames.red, ...args);
 	}
 }

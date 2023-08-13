@@ -1,8 +1,15 @@
-import type { ModuleIdentifier, ModuleReference, TypeIdentifier, TypeReference, ModuleMetadata } from "./declarations";
+import type {
+	ModuleIdentifier,
+	ModuleMetadata,
+	ModuleReference,
+	TypeIdentifier,
+	TypeReference,
+	TypesConfiguration,
+} from "./declarations";
 import { ModuleIds } from "@rttist/core";
-import { AnyArray, resolveSingletonInstance, UnknownFunction } from "./helpers";
 import { Module } from "./Module";
-import { NativeTypes, Type } from "./Type";
+import { Type } from "./Type";
+import { MetadataScope } from "./metadata-scope";
 
 export class MetadataLibrary {
 	private readonly modules = new Map<ModuleIdentifier, Module>();
@@ -14,58 +21,114 @@ export class MetadataLibrary {
 	 */
 	private readonly aliases = new Map<TypeIdentifier, TypeIdentifier>();
 
-	constructor(/** @internal */ _globalLibrary: boolean = false) {
-		if (!_globalLibrary) {
-			this.addType(
-				Type.Invalid,
-				Type.Any,
-				Type.Unknown,
-				Type.Void,
-				Type.Never,
-				Type.Null,
-				Type.Undefined,
-				Type.NonPrimitiveObject,
-				Type.String,
-				Type.Number,
-				Type.BigInt,
-				Type.Boolean,
-				Type.True,
-				Type.False,
-				Type.Date,
-				Type.Error,
-				Type.Symbol,
-				Type.UniqueSymbol,
-				Type.RegExp,
-				Type.Int8Array,
-				Type.Uint8Array,
-				Type.Uint8ClampedArray,
-				Type.Int16Array,
-				Type.Uint16Array,
-				Type.Int32Array,
-				Type.Uint32Array,
-				Type.Float32Array,
-				Type.Float64Array,
-				Type.BigInt64Array,
-				Type.BigUint64Array,
-				Type.ArrayBuffer,
-				Type.SharedArrayBuffer,
-				Type.Atomics,
-				Type.DataView,
-				AnyArray,
-				UnknownFunction
-			);
-
-			this.addModule(Module.Native, Module.Invalid, Module.Dynamic);
+	constructor(configuration: TypesConfiguration, parentLibrary: MetadataLibrary);
+	/** @internal */
+	constructor(configuration: TypesConfiguration);
+	constructor(
+		public readonly configuration: TypesConfiguration,
+		private readonly parentLibrary?: MetadataLibrary
+	) {
+		if (!parentLibrary && new.target !== GlobalMetadataLibrary) {
+			throw new Error("Cannot instantiate new MetadataLibrary without parent.");
 		}
+	}
+
+	/**
+	 * Returns the first Type from the library that satisfies the provided predicate.
+	 * If no Type satisfies the predicate, undefined is returned.
+	 * @param predicate
+	 * @returns {Type | undefined}
+	 */
+	findType(predicate: (type: Type) => boolean): Type | undefined {
+		for (const [_, type] of this.types) {
+			if (predicate(type)) {
+				return type;
+			}
+		}
+
+		if (this.parentLibrary !== undefined) {
+			return this.parentLibrary.findType(predicate);
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Returns all the Types contained in the Metadata.
+	 */
+	getTypes(): Type[] {
+		return Array.from(this.types.values()).concat(this.parentLibrary?.getTypes() ?? []);
+	}
+
+	/**
+	 * Returns the first Module from the library that satisfies the provided predicate.
+	 * If no Module satisfies the predicate, undefined is returned.
+	 * @param predicate
+	 * @returns {Module | undefined}
+	 */
+	findModule(predicate: (module: Module) => boolean): Module | undefined {
+		for (const [_, module] of this.modules) {
+			if (predicate(module)) {
+				return module;
+			}
+		}
+
+		if (this.parentLibrary !== undefined) {
+			return this.parentLibrary.findModule(predicate);
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Returns all Modules contained in the library.
+	 */
+	getModules(): Module[] {
+		return Array.from(this.modules.values()).concat(this.parentLibrary?.getModules() ?? []);
+	}
+
+	/**
+	 * Returns a Type instance identified by the reference. Returns Type.Invalid if no Type found.
+	 * @param id
+	 */
+	resolveType(id: TypeReference): Type {
+		if (!id) {
+			throw new Error("Invalid type reference.");
+		}
+
+		// TODO: Resolve aliases
+
+		return this.types.get(id) ?? this.parentLibrary?.types.get(id) ?? Type.Invalid;
+	}
+
+	/**
+	 * Returns a Module instance identified by the reference. Returns Module.Invalid if no Module found.
+	 * @param id
+	 */
+	resolveModule(id: ModuleReference): Module {
+		if (!id) {
+			throw new Error("Invalid module reference.");
+		}
+
+		return this.modules.get(id) ?? this.parentLibrary?.modules.get(id) ?? Module.Invalid;
 	}
 
 	addMetadata(moduleMetadata: ModuleMetadata, stripInternals: boolean) {
 		// TODO: Implement stripping of internals
-		const module = new Module(moduleMetadata, this);
-		this.addModule(module);
+		// if (stripInternals) {
+		//
+		// 	return;
+		// }
 
-		// TODO: We have to solve this somehow. We need to add types from the module to the global Metadata, because some functions does not have a reference to the metadat library so it asks the global Metadata; but in such case, anybody can import global metadata library and take internal types.
-		Metadata.addModule(module);
+		if (this.parentLibrary) {
+			this.parentLibrary.addMetadata(moduleMetadata, stripInternals);
+			return;
+		}
+
+		MetadataScope.doWithScope(this, () => {
+			const module = new Module(moduleMetadata);
+			this.addModule(module);
+		});
 	}
 
 	/**
@@ -73,6 +136,12 @@ export class MetadataLibrary {
 	 * @param modules
 	 */
 	addModule(...modules: Module[]): void {
+		// TODO: Handle parentLibrary properly; keep internals here and strip them for parent
+		if (this.parentLibrary) {
+			this.parentLibrary.addModule(...modules);
+			return;
+		}
+
 		for (let module of modules) {
 			// noinspection SuspiciousTypeOfGuard
 			if (!(module instanceof Module)) {
@@ -95,6 +164,12 @@ export class MetadataLibrary {
 	 * @param types
 	 */
 	addType(...types: Type[]): void {
+		// TODO: Handle parentLibrary properly; keep internals here and strip them for parent
+		if (this.parentLibrary) {
+			this.parentLibrary.addType(...types);
+			return;
+		}
+
 		for (let type of types) {
 			// noinspection SuspiciousTypeOfGuard
 			if (!(type instanceof Type)) {
@@ -120,96 +195,21 @@ export class MetadataLibrary {
 	}
 
 	addAliases(aliases: { [alias: TypeIdentifier]: TypeIdentifier }) {
+		if (this.parentLibrary) {
+			this.parentLibrary.addAliases(aliases);
+			return;
+		}
+
 		Object.entries(aliases).forEach(([alias, target]) => {
 			this.aliases.set(alias, target);
 		});
 
 		// TODO: maybe we can resolve aliases here? Always store alias and final type; not alias to alias. But it will cost startup time.
 	}
-
-	/**
-	 * Returns the first Type in the Metadata that satisfies the provided predicate.
-	 * If no Types satisfy the predicate, undefined is returned.
-	 * @param predicate
-	 * @returns {Type | undefined}
-	 */
-	findType(predicate: (type: Type) => boolean): Type | undefined {
-		for (const [_, type] of this.types) {
-			if (predicate(type)) {
-				return type;
-			}
-		}
-
-		return undefined;
-	}
-
-	/**
-	 * Returns all the Types contained in the Metadata.
-	 */
-	getTypes(): Type[] {
-		return Array.from(this.types.values());
-	}
-
-	/**
-	 * Returns the first Module in the Metadata that satisfies the provided predicate.
-	 * If no Modules satisfy the predicate, undefined is returned.
-	 * @param predicate
-	 * @returns {Module | undefined}
-	 */
-	findModule(predicate: (module: Module) => boolean): Module | undefined {
-		for (const [_, module] of this.modules) {
-			if (predicate(module)) {
-				return module;
-			}
-		}
-
-		return undefined;
-	}
-
-	/**
-	 * Returns all Modules contained in Metadata.
-	 */
-	getModules(): Module[] {
-		return Array.from(this.modules.values());
-	}
-
-	/**
-	 * Returns a Type instance identified by the reference. Returns Type.Unknown if no Type found.
-	 * @param reference
-	 */
-	resolveType(reference: TypeReference): Type {
-		if (!reference) {
-			throw new Error("Invalid type reference.");
-		}
-
-		if (typeof reference === "object") {
-			const nativeType: Type | undefined = NativeTypes[reference[0]];
-
-			if (nativeType) {
-				return nativeType;
-			}
-
-			console.error("Type referenced by", reference, "not found.");
-			return Type.Invalid;
-		}
-
-		// TODO: Resolve aliases
-
-		return this.types.get(reference) ?? Type.Invalid;
-	}
-
-	/**
-	 * Returns a Module instance identified by the reference. Returns Module.Unknown if no Module found.
-	 * @param reference
-	 */
-	resolveModule(reference: ModuleReference): Module {
-		if (!reference) {
-			throw new Error("Invalid module reference.");
-		}
-
-		return this.modules.get(reference) ?? Module.Invalid;
-	}
 }
 
-// noinspection JSUnusedGlobalSymbols
-export const Metadata = resolveSingletonInstance("rttist/Metadata", MetadataLibrary, [true]);
+export class GlobalMetadataLibrary extends MetadataLibrary {
+	constructor(configuration: TypesConfiguration) {
+		super(configuration);
+	}
+}

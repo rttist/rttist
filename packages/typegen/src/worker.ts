@@ -1,4 +1,4 @@
-import { parentPort, workerData } from "worker_threads";
+import { parentPort, workerData, threadId } from "worker_threads";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { WorkerMessage } from "./declarations/worker-message";
 import { generateModulesMetadata } from "./lib/generator/generate-modules-metadata";
@@ -7,7 +7,7 @@ import { LogBuffer } from "./lib/logging/log-buffer";
 import { resolvePath } from "./lib/utils/path";
 import { WorkerMessageType } from "./declarations/worker-message-type";
 
-// console.log(); // TODO: Required for debugging, idk why.
+// console.log("Worker", threadId); // TODO: Required for debugging, idk why.
 
 const workerArguments = workerData as WorkerArguments;
 const files = workerArguments.files.map((filePath) => resolvePath(workerArguments.config.projectRoot, filePath));

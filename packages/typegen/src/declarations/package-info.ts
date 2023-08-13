@@ -8,4 +8,5 @@ export type PackageInfo = {
 	packageRoot: string;
 	name: string;
 	packageJson: PackageJson;
+	type: "module" | "commonjs";
 };

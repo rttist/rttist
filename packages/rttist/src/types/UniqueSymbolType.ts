@@ -1,5 +1,4 @@
 ﻿import type { UniqueSymbolTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 
 export type KnownUniqueSymbolType = UniqueSymbolType & {
@@ -29,8 +28,8 @@ export class UniqueSymbolType extends Type {
 		return this._symbol;
 	}
 
-	constructor(initializer: UniqueSymbolTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: UniqueSymbolTypeMetadata) {
+		super(initializer);
 
 		this._key = initializer.key;
 

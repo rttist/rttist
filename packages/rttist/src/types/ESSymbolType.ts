@@ -1,5 +1,4 @@
 ﻿import type { ESSymbolTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { Type } from "../Type";
 
 /**
@@ -19,8 +18,8 @@ export class ESSymbolType extends Type {
 		return this._symbol;
 	}
 
-	constructor(initializer: ESSymbolTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: ESSymbolTypeMetadata) {
+		super(initializer);
 		this._key = initializer.key;
 		this._symbol = (Symbol as any)[initializer.key];
 	}

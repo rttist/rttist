@@ -1,0 +1,12 @@
+{
+	"$schema": "../../packages/typegen/config-schema.json",
+	"metadata": {
+		"include": [
+			"src/**/*.ts"
+		],
+		"encode": false,
+		"exclude": []
+	},
+	"devMode": true,
+	"logLevel": "Debug"
+}

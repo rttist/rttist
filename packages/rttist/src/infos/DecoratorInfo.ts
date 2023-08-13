@@ -1,13 +1,11 @@
-import type { DecoratorInfoMetadata } from "../declarations";
-import type { Type }                  from "../Type";
-import type { FunctionType }          from "../types";
-import type { TypeIdentifier }        from "../declarations";
+import type { DecoratorInfoMetadata, TypeIdentifier } from "../declarations";
+import type { Type } from "../Type";
+import type { FunctionType } from "../types";
 
 /**
  * Represents a decorator of a class, method or parameter.
  */
-export class DecoratorInfo
-{
+export class DecoratorInfo {
 	/**
 	 * @internal
 	 */
@@ -31,8 +29,7 @@ export class DecoratorInfo
 	/**
 	 * @param initializer
 	 */
-	constructor(initializer: DecoratorInfoMetadata)
-	{
+	constructor(initializer: DecoratorInfoMetadata) {
 		this.metadata = initializer;
 		this.name = initializer.name;
 		this.id = initializer.id;
@@ -42,8 +39,7 @@ export class DecoratorInfo
 	/**
 	 * List of literal arguments
 	 */
-	getArguments(): ReadonlyArray<any>
-	{
+	getArguments(): ReadonlyArray<any> {
 		return this._args;
 	}
 
@@ -51,8 +47,7 @@ export class DecoratorInfo
 	 * Check if this decorator is given type.
 	 * @param decoratorType
 	 */
-	is(decoratorType: Type): decoratorType is FunctionType
-	{
+	is(decoratorType: Type): decoratorType is FunctionType {
 		return decoratorType.id === this.id;
 	}
 }

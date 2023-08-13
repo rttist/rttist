@@ -1,6 +1,4 @@
 import type { AsyncCtorReference, ClassTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
-import { mapDecorators } from "../utils/mappers";
 import type { TypeAliasType } from "./TypeAliasType";
 import type { InterfaceType } from "./InterfaceType";
 import type { Type } from "../Type";
@@ -48,22 +46,14 @@ export class ClassType extends ObjectLikeTypeBase {
 		return this._abstract;
 	}
 
-	constructor(initializer: ClassTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: ClassTypeMetadata) {
+		super(initializer);
 
 		this._ctor = initializer.ctor ?? (() => this.module.import().then((module) => module?.[initializer.name]));
-		this._implementsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(
-			metadataLibrary,
-			initializer.implements || []
-		);
-		this._extendsRef =
-			initializer.extends === undefined
-				? undefined
-				: new LazyType<ClassType>(metadataLibrary, initializer.extends);
-		this._constructors = Object.freeze(
-			(initializer.constructors ?? []).map((meta) => new SignatureInfo(meta, metadataLibrary))
-		);
-		this._decorators = mapDecorators(initializer);
+		this._implementsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(initializer.implements || []);
+		this._extendsRef = initializer.extends === undefined ? undefined : new LazyType<ClassType>(initializer.extends);
+		this._constructors = Object.freeze((initializer.constructors ?? []).map((meta) => new SignatureInfo(meta)));
+		this._decorators = Object.freeze((initializer.decorators ?? []).map((meta) => new DecoratorInfo(meta)));
 		this._abstract = initializer.abstract ?? false;
 	}
 

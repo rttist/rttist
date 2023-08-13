@@ -4,9 +4,9 @@
 #    - 'packages/runtime' TODO: This is new thin tst-reflect on top of Rttist
     - 'packages/typegen'
     - 'packages/plugins/vite'
-#    - 'packages/transformer' TODO: Remove
+#    - 'packages/plugins/swc'
     - 'tests/'
-#    - 'dev/hookyns/1'
+    - 'dev/mvc-framework'
     - 'dev/hookyns/2'
     - 'dev/hookyns/webpack'
 #    - 'dev-packages/pkg1'

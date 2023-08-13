@@ -1,5 +1,4 @@
 import type { InterfaceTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import type { TypeAliasType } from "./TypeAliasType";
 import { Type } from "../Type";
 import { LazyTypeArray } from "../utils/LazyTypeArray";
@@ -16,9 +15,9 @@ export class InterfaceType extends ObjectLikeTypeBase {
 		return this._extendsRef.types;
 	}
 
-	constructor(initializer: InterfaceTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
-		this._extendsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(metadataLibrary, initializer.extends || []);
+	constructor(initializer: InterfaceTypeMetadata) {
+		super(initializer);
+		this._extendsRef = new LazyTypeArray<InterfaceType | TypeAliasType>(initializer.extends || []);
 	}
 
 	/**

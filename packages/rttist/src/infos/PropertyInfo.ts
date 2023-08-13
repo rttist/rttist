@@ -1,8 +1,7 @@
 import type { PropertyInfoMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import type { Type } from "../Type";
 import { AccessModifier, Accessor, PropertyFlags } from "../enums";
-import { MemberName } from "../types";
+import { MemberName } from "../types/MemberName";
 import { getAccessModifier, getAccessor } from "../utils/flags";
 import { LazyType } from "../utils/LazyType";
 import { DecoratorInfo } from "./DecoratorInfo";
@@ -61,11 +60,10 @@ export class PropertyInfo {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 */
-	constructor(initializer: PropertyInfoMetadata, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: PropertyInfoMetadata) {
 		this.name = new MemberName(initializer.name);
-		this._type = new LazyType<Type>(metadataLibrary, initializer.type);
+		this._type = new LazyType<Type>(initializer.type);
 		this._decorators = Object.freeze((initializer.decorators || []).map((meta) => new DecoratorInfo(meta)));
 		this.metadata = initializer;
 		this.accessModifier = getAccessModifier(initializer.flags);

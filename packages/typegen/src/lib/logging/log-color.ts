@@ -4,5 +4,26 @@ export const LogColor = {
 	blue: 34,
 	magenta: 35,
 	cyan: 36,
-	gray: 90
+	gray: 90,
+	white: 37,
+	bright: 1,
+	dim: 2,
 };
+export enum LogColorNames {
+	black = "black",
+	red = "red",
+	green = "green",
+	yellow = "yellow",
+	blue = "blue",
+	magenta = "magenta",
+	cyan = "cyan",
+	white = "white",
+	gray = "gray",
+	redBright = "redBright",
+	greenBright = "greenBright",
+	yellowBright = "yellowBright",
+	blueBright = "blueBright",
+	magentaBright = "magentaBright",
+	cyanBright = "cyanBright",
+	whiteBright = "whiteBright",
+}

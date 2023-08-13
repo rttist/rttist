@@ -5,10 +5,17 @@ import { Config } from "./config/config";
 import { removeExtension } from "./transformer/utils/removeExtension";
 import { normalizePath, resolvePath } from "./utils/path";
 import { lazyTypescript } from "./utils/lazy-typescript";
+import { ModuleIdentifierGenerator } from "./transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
+
+export type TypeLibBundleResult = {
+	name: string;
+	bytes: number;
+};
 
 export class TypelibGenerator {
 	constructor(
 		private readonly config: Config,
+		private readonly moduleIdentifierGenerator: ModuleIdentifierGenerator,
 		private readonly files: string[]
 	) {
 		// this.startRegenerateInterval();
@@ -17,11 +24,12 @@ export class TypelibGenerator {
 	/**
 	 * Manually invoke typelib generation and bundling.
 	 */
-	async generate() {
+	async generate(): Promise<TypeLibBundleResult[]> {
 		const projectTypeLibImporterPromise = this.generateProjectTypelibImporter();
 		await this.generateTypeLibs();
-		await this.bundle();
+		const result = await this.bundle();
 		await projectTypeLibImporterPromise;
+		return result;
 	}
 
 	filesAdded(files: string[]) {
@@ -83,9 +91,11 @@ export const metadataCollection: Array<{ add(library: any, stripInternals: boole
 	private async generateTypelib(typelibFileName: string, stripInternals: boolean) {
 		await fs.writeFile(
 			resolvePath(this.config.cacheDir, typelibFileName),
-			`import { MetadataLibrary } from "rttist";
+			`import { MetadataLibrary, GlobalMetadata } from "rttist";
 import { metadataCollection } from "./metadata.index";
-const Metadata = new MetadataLibrary();
+const Metadata = new MetadataLibrary({
+	nullability: ${this.config.strictNullChecks ? "false" : "true"},
+}, GlobalMetadata);
 metadataCollection.forEach((mod) => mod.add(Metadata, ${stripInternals ? "true" : "false"}));
 export { Metadata };`,
 			"utf-8"
@@ -95,17 +105,29 @@ export { Metadata };`,
 	private async generateProjectTypelibImporter() {
 		await fs.writeFile(
 			resolvePath(this.config.tsRootDir, "metadata.typelib.ts"),
-			`import { ModuleImporter, Type, MetadataLibrary } from "rttist";
+			`/*
+* This file is generated automatically by the RTTIST TypeGen tool.
+* Do not edit it manually.
+*/
+import { ModuleImporter, Type, MetadataLibrary, createGetTypeFunction } from "rttist";
 // @ts-ignore
 import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
 
-Type.configure({
-	nullability: ${this.config.strictNullChecks ? "false" : "true"},
+ModuleImporter.registerImporters({
+	${this.files
+		.map((file, index) => {
+			const absolutePath = path.resolve(this.config.projectRoot, file);
+			const moduleId = this.moduleIdentifierGenerator.generateModuleIdentifier(absolutePath);
+			const relativePathFromTsRootDir = removeExtension(
+				normalizePath(path.relative(this.config.tsRootDir, absolutePath))
+			);
+
+			return `"${moduleId}": () => import("./${relativePathFromTsRootDir}.js"),`;
+		})
+		.join("\n\t")}
 });
 
-ModuleImporter.registerImporters({
-	// "@@this/controllers/HomeController": () => import("./controllers/HomeController"), // TODO: Add importers for all the reflected modules.
-});
+export const getType = createGetTypeFunction(InternalMetadataLibrary);
 
 /** @internal */
 export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
@@ -116,8 +138,8 @@ export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 	/**
 	 * Create typelibs JS bundles.
 	 */
-	private async bundle() {
-		await esbuild.build({
+	private async bundle(): Promise<TypeLibBundleResult[]> {
+		const result: esbuild.BuildResult = await esbuild.build({
 			entryPoints: [
 				resolvePath(this.config.cacheDir, "internal.typelib.ts"),
 				resolvePath(this.config.cacheDir, "public.typelib.ts"),
@@ -131,7 +153,18 @@ export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 			format: this.config.module === lazyTypescript.get().ModuleKind.CommonJS ? "cjs" : "esm",
 			target: "es2015",
 			external: ["rttist"],
+			metafile: true,
 		});
+
+		const outputs = result.metafile?.outputs ?? {};
+
+		return Object.keys(outputs).map(
+			(key) =>
+				({
+					name: key,
+					bytes: outputs[key].bytes,
+				}) satisfies TypeLibBundleResult
+		);
 	}
 
 	// private clearOnKill() {

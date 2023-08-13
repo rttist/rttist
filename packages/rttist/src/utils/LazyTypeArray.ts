@@ -1,6 +1,7 @@
 import type { TypeReference } from "../declarations";
 import type { MetadataLibrary } from "../Metadata";
 import type { Type } from "../Type";
+import { MetadataScope } from "../metadata-scope";
 
 /**
  * @internal
@@ -8,6 +9,7 @@ import type { Type } from "../Type";
 export class LazyTypeArray<TType = Type> {
 	private readonly _references: ReadonlyArray<TypeReference>;
 	private _types?: ReadonlyArray<TType>;
+	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	public readonly length: number;
 
@@ -20,10 +22,7 @@ export class LazyTypeArray<TType = Type> {
 		);
 	}
 
-	constructor(
-		private readonly metadataLibrary: MetadataLibrary,
-		typeRefs: ReadonlyArray<TypeReference>
-	) {
+	constructor(typeRefs: ReadonlyArray<TypeReference>) {
 		this._references = typeRefs;
 		this.length = typeRefs.length;
 	}

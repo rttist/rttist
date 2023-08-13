@@ -1,6 +1,7 @@
 import type { ModuleReference } from "../declarations";
 import type { MetadataLibrary } from "../Metadata";
 import type { Module } from "../Module";
+import { MetadataScope } from "../metadata-scope";
 
 /**
  * @internal
@@ -8,6 +9,7 @@ import type { Module } from "../Module";
 export class LazyModuleArray<TModule = Module> {
 	private readonly _references: ReadonlyArray<ModuleReference>;
 	private _modules?: ReadonlyArray<TModule>;
+	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	public readonly length: number;
 
@@ -20,10 +22,7 @@ export class LazyModuleArray<TModule = Module> {
 		);
 	}
 
-	constructor(
-		private readonly metadataLibrary: MetadataLibrary,
-		moduleRefs: ReadonlyArray<ModuleReference>
-	) {
+	constructor(moduleRefs: ReadonlyArray<ModuleReference>) {
 		this._references = moduleRefs;
 		this.length = moduleRefs.length;
 	}

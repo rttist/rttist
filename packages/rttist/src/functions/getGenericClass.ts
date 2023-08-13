@@ -2,7 +2,7 @@ import { CALLSITE_TYPE_ARGS_PROPERTY } from "@rttist/core";
 import { TypeReference } from "../declarations";
 import { GenericTypeRegister } from "../GenericTypeRegister";
 import { Type } from "../Type";
-import { LazyType } from "../utils/LazyType";
+import { MetadataScope } from "../metadata-scope";
 
 export function getGenericClass<T>(classCtor: { new (...args: any[]): T }, ...typeParameters: Type[]): Function {
 	if (typeParameters.length === 0) {
@@ -10,7 +10,7 @@ export function getGenericClass<T>(classCtor: { new (...args: any[]): T }, ...ty
 		(getGenericClass as any)[CALLSITE_TYPE_ARGS_PROPERTY] = undefined;
 
 		if (callsiteArgs !== undefined && (callsiteArgs.length !== 0 || !!callsiteArgs[0])) {
-			const type = LazyType.resolver(callsiteArgs[0]); //Reflect.resolveType(callsiteArgs[0]);
+			const type = MetadataScope.current.resolveType(callsiteArgs[0]);
 			return GenericTypeRegister.getGenericClass(classCtor, type.isGenericType() ? type.getTypeArguments() : []);
 		}
 	}

@@ -1,7 +1,8 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.1.0-proto.5",
+	"version": "0.1.0-proto.6",
 	"description": "Type generator for RTTIST",
+	"type": "commonjs",
 	"bin": {
 		"typegen": "./bin/typegen"
 	},
@@ -38,6 +39,7 @@
 	"dependencies": {
 		"@netleaf/extensions-configuration": "^0.5.2",
 		"@rttist/core": "workspace:^",
+		"chalk": "^4.1.2",
 		"chokidar": "^3.5.3",
 		"cli-progress": "^3.12.0",
 		"commander": "^11.0.0",
@@ -45,6 +47,7 @@
 		"fast-glob": "^3.3.0",
 		"memory-mapped-files": "^0.1.1",
 		"micromatch": "^4.0.5",
+		"nanospinner": "^1.1.0",
 		"promise-cs": "^1.0.2",
 		"rttist": "workspace:^",
 		"typescript": "5.1.6"

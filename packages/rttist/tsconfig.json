@@ -8,14 +8,14 @@
 		"stripInternal": true,
 		"declaration": true,
 		"outDir": "dist",
-		"rootDir": "./src",
-		"baseUrl": "./src",
+		"rootDir": "src",
+		"baseUrl": "src",
 		"composite": true,
 		"isolatedModules": true,
 		"types": []
 	},
 	"include": [
-		"./src/**/*.ts"
+		"src/**/*.ts"
 	],
 	"exclude": [
 		"node_modules/**/*",

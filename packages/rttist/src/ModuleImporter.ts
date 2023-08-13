@@ -1,8 +1,9 @@
-import { resolveSingletonInstance } from "./helpers";
+import { resolveSingletonInstance } from "./resolveSingletonInstance";
 
 class Importer {
 	private readonly importMap: { [moduleId: string]: () => Promise<any> } = {};
 
+	// noinspection JSUnusedGlobalSymbols; used in generated metadata
 	/**
 	 * Register importers.
 	 * @param importMap
@@ -22,4 +23,4 @@ class Importer {
 	}
 }
 
-export const ModuleImporter = resolveSingletonInstance("rttist/ModuleImporter", Importer);
+export const ModuleImporter = resolveSingletonInstance("rttist/ModuleImporter", () => new Importer());

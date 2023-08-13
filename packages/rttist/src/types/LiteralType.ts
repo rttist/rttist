@@ -1,5 +1,4 @@
 import type { LiteralTypeMetadata } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
 import { TypeKind } from "../enums";
 import { Type } from "../Type";
 
@@ -12,8 +11,8 @@ export type RegExpLiteralType = Omit<LiteralType, "value"> & { value: RegExp };
 export class LiteralType extends Type {
 	public readonly value: any;
 
-	constructor(initializer: LiteralTypeMetadata, metadataLibrary: MetadataLibrary) {
-		super(initializer, metadataLibrary);
+	constructor(initializer: LiteralTypeMetadata) {
+		super(initializer);
 		this.value = this.parseValue(initializer.value);
 	}
 

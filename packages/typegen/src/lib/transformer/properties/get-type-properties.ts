@@ -20,6 +20,7 @@ import { mapIntersection } from "./mappers/map-intersection";
 import { mapObject } from "./mappers/map-object";
 import { mapUnion } from "./mappers/map-union";
 import { mapUniqueSymbol } from "./mappers/mapUniqueSymbol";
+import { getTypeSourceLocationText } from "../tracers/getTypeSourceLocationText";
 
 const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 	[ts.TypeFlags.Enum]: mapEnum as TypeMapper,
@@ -131,7 +132,12 @@ export function getTypeProperties(
 	}
 
 	if (mapper === undefined) {
-		context.log.warn("No mapper found for the type.\n\t" + printTypeDebugInfo(type, context.typeChecker));
+		context.log.warn(
+			"No mapper found for the type.\n\t" +
+				printTypeDebugInfo(type, context.typeChecker) +
+				"\n\t" +
+				getTypeSourceLocationText(type, context)
+		);
 		return { ...InvalidTypeProperties };
 	}
 

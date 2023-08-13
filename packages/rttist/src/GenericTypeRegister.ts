@@ -1,10 +1,9 @@
-import { PROTOTYPE_TYPE_PROPERTY }  from "@rttist/core";
-import { GenericTypeFactory }       from "./factories";
-import { resolveSingletonInstance } from "./helpers";
-import type { Type }                from "./Type";
+import type { Type } from "./Type";
+import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
+import { GenericTypeFactory } from "./factories";
+import { resolveSingletonInstance } from "./resolveSingletonInstance";
 
-class Register
-{
+class Register {
 	/**
 	 * Classes of dynamically created generic types.
 	 * @private
@@ -17,9 +16,8 @@ class Register
 	 * @param typeParameters
 	 * @private
 	 */
-	private getId(genericTypeDefinition: Type, typeParameters: readonly Type[])
-	{
-		return genericTypeDefinition.id + "{" + typeParameters.map(tp => tp.id).join(",") + "}";
+	private getId(genericTypeDefinition: Type, typeParameters: readonly Type[]) {
+		return genericTypeDefinition.id + "{" + typeParameters.map((tp) => tp.id).join(",") + "}";
 	}
 
 	/**
@@ -28,34 +26,30 @@ class Register
 	 * @param classCtor
 	 * @param typeParameters
 	 */
-	getGenericClass<T>(classCtor: { new(...args: any[]): T }, typeParameters: readonly Type[]): { new(...args: any[]): T }
-	{
+	getGenericClass<T>(
+		classCtor: { new (...args: any[]): T },
+		typeParameters: readonly Type[]
+	): { new (...args: any[]): T } {
 		const genericTypeDefinition = Rttist.getType(classCtor);
 
-		if (!genericTypeDefinition.isClass())
-		{
+		if (!genericTypeDefinition.isClass()) {
 			console.error("GenericTypeRegister.getGenericClass called for type which is not a ClassType.");
 
-			return class Invalid
-			{
-			} as any;
+			return class Invalid {} as any;
 		}
 
 		const fullName = this.getId(genericTypeDefinition, typeParameters);
 		let genericClass = this.createdTypes[fullName];
 
-		if (!genericClass)
-		{
+		if (!genericClass) {
 			const name = classCtor.name + "{}";
 
 			this.createdTypes[fullName] = genericClass = {
-				[name]: class extends (classCtor as any)
-				{
-					constructor(...args: any[])
-					{
+				[name]: class extends (classCtor as any) {
+					constructor(...args: any[]) {
 						super(...args);
 					}
-				}
+				},
 			}[name];
 
 			genericClass.prototype[PROTOTYPE_TYPE_PROPERTY] = GenericTypeFactory.create(
@@ -69,4 +63,4 @@ class Register
 	}
 }
 
-export const GenericTypeRegister = resolveSingletonInstance("rttist/GenericTypeRegister", Register);
+export const GenericTypeRegister = resolveSingletonInstance("rttist/GenericTypeRegister", () => new Register());

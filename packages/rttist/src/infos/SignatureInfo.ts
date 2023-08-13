@@ -1,4 +1,3 @@
-import type { MetadataLibrary } from "../Metadata";
 import type { Type } from "../Type";
 import type { SignatureMetadataBase } from "../declarations";
 import { LazyType } from "../utils/LazyType";
@@ -35,15 +34,12 @@ export class SignatureInfo {
 
 	/**
 	 * @param initializer
-	 * @param metadataLibrary
 	 */
-	constructor(initializer: SignatureMetadataBase, metadataLibrary: MetadataLibrary) {
+	constructor(initializer: SignatureMetadataBase) {
 		this.metadata = initializer;
-		this._parameters = Object.freeze(
-			(initializer.parameters || []).map((meta) => new ParameterInfo(meta, metadataLibrary))
-		);
-		this._typeParametersRef = new LazyTypeArray(metadataLibrary, initializer.typeParameters || []);
-		this._returnTypeRef = new LazyType(metadataLibrary, initializer.returnType);
+		this._parameters = Object.freeze((initializer.parameters || []).map((meta) => new ParameterInfo(meta)));
+		this._typeParametersRef = new LazyTypeArray(initializer.typeParameters || []);
+		this._returnTypeRef = new LazyType(initializer.returnType);
 	}
 
 	/**

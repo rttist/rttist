@@ -1,22 +1,24 @@
 import { startTime } from "./lib/utils/performance-import-time-start"; // Keep first
 import type { Entry } from "fast-glob";
+import FastGlob from "fast-glob";
 import type { CLI } from "./cli";
 import type { Worker } from "worker_threads";
 import { WorkerMessage } from "./declarations/worker-message";
 import { Config, getParsedConfig } from "./lib/config/config";
 import { CacheStats } from "./lib/cache/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
-import { LogColor, Logger, LogLevel } from "./lib/logging";
+import { Logger, LogLevel } from "./lib/logging";
 import { LogBuffer } from "./lib/logging/log-buffer";
-import { TypelibGenerator } from "./lib/typelib-generator";
+import { TypeLibBundleResult, TypelibGenerator } from "./lib/typelib-generator";
 import { resolvePath } from "./lib/utils/path";
-import * as fastGlob from "fast-glob";
 import * as cliProgress from "cli-progress";
-import { Watcher } from "./lib/watcher";
 import { WorkerMessageType } from "./declarations/worker-message-type";
+import { ModuleIdentifierGenerator } from "./lib/transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
+import { blue, cyan, dim, whiteBright } from "chalk";
 
 let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
 try {
+	// import { startCacheServer as scs } from "memory-mapped-files";
 	startCacheServer = require("memory-mapped-files").startCacheServer;
 } catch (e) {}
 
@@ -45,10 +47,8 @@ export class Program {
 		const config = await this.getConfig();
 
 		Logger.setLevel(config.logLevel);
-
-		this.logInitialMessage(config);
+		this.printInitialMessage(config);
 		const stats = new CacheStats(config, this.logger);
-
 		const allFiles = await this.getSourceFilesWithStats(config);
 		const changedFilesToRegenerate = this.getFilesToRegenerate(allFiles, config, stats);
 
@@ -58,21 +58,19 @@ export class Program {
 		}
 
 		const allFilesPath = allFiles.map((x) => x.path);
-		const typelibGenerator = new TypelibGenerator(config, allFilesPath);
+		const typelibGenerator = new TypelibGenerator(config, new ModuleIdentifierGenerator(config), allFilesPath);
 
 		// run MMF cache server
 		startCacheServer?.(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
 
 		// SPAWN workers
-		const workers = this.spawnWorkers(changedFilesToRegenerate, config);
-		// Progress bar
+		const workers = await this.spawnWorkers(changedFilesToRegenerate, config);
+
 		const progressBar = this.createProgressBar(changedFilesToRegenerate);
-
-		// Capture initialization time
 		this.performanceEntries.initialization = performance.now();
-
 		await this.waitWorkersFinishedPromise(workers, progressBar);
 		this.performanceEntries.metadataGenerationFinished = performance.now();
+
 		this.flushWorkersLogBuffer(workers);
 		await this.waitWorkersExitPromise(workers);
 
@@ -80,9 +78,8 @@ export class Program {
 		// 	allFiles.map((x) => x.path),
 		// 	config
 		// );
-		await typelibGenerator.generate();
-		// TODO generate bundles too
-
+		const typelibResult = await typelibGenerator.generate();
+		this.printTypelibsInfo(typelibResult);
 		this.performanceEntries.completed = performance.now();
 		this.printPerformanceInfo(config);
 
@@ -134,23 +131,8 @@ export class Program {
 		progressBar.stop();
 	}
 
-	private logInitialMessage(config: Config) {
-		this.logger.log(
-			LogLevel.Always,
-			LogColor.blue,
-			"Configuration",
-			"\n\tproject root:".padEnd(29, " ") + config.projectRoot,
-			// "\n\ttypescript root directory: " + config.tsRootDir, // tsRootDir required typescript; but we don't want to import it early
-			"\n\tcache directory:".padEnd(29, " ") + config.cacheDir
-		);
-	}
-
 	private handleNoChangesDetected(config: Config) {
-		this.logger.log(
-			LogLevel.Always,
-			LogColor.cyan,
-			"No changes detected.\n\tUse '-f' or '--force' to force generation."
-		);
+		this.printNoChangesDetected();
 		this.performanceEntries.initialization = performance.now();
 		this.printPerformanceInfo(config);
 	}
@@ -177,8 +159,10 @@ export class Program {
 		return files.map((entry) => entry.path);
 	}
 
-	private spawnWorkers(fileNames: string[], config: Config) {
-		const cpus = require("os").cpus;
+	private async spawnWorkers(fileNames: string[], config: Config) {
+		const cpus = (await import("os")).cpus;
+		const Worker = (await import("worker_threads")).Worker;
+
 		const cpuCount = Math.round(cpus().length / 3);
 		// Find out how many files each worker should process; If it's less than 5 per worker, use only one worker.
 		const workerFileCount =
@@ -197,15 +181,11 @@ export class Program {
 
 			filesOffset += files.length;
 
-			const worker = this.spawn(config, files, this.logger);
+			const worker = this.spawn(config, files, this.logger, Worker);
 
-			worker.workerExitedPromise
-				// .then(() => {
-				// 	// console.log("Worker finished");
-				// })
-				.catch((error) => {
-					this.logger.error("Worker failed.", error);
-				});
+			worker.workerExitedPromise.catch((error) => {
+				this.logger.error("Worker failed.", error);
+			});
 
 			workers.push(worker);
 		}
@@ -215,50 +195,92 @@ export class Program {
 		return workers;
 	}
 
+	private printInitialMessage(config: Config) {
+		this.logger.log(
+			LogLevel.Info,
+			undefined,
+			"Configuration",
+			`\n\t${whiteBright("project root:".padEnd(18, " ") /*, LogColor.bright*/)} ${blue(config.projectRoot)}`,
+			// "\n\ttypescript root directory: " + config.tsRootDir, // tsRootDir required typescript; but we don't want to import it early
+			`\n\t${whiteBright("cache directory:".padEnd(18, " "))} ${blue(config.cacheDir)}`
+		);
+		this.logger.buffer.log("");
+	}
+
+	private printNoChangesDetected() {
+		this.logger.log(
+			LogLevel.Always,
+			undefined,
+			`${cyan("No changes detected.")}\n\t${dim("Use '-f' or '--force' to force generation.")}`
+		);
+	}
+
+	private printTypelibsInfo(typelibResult: TypeLibBundleResult[]) {
+		if (typelibResult.length !== 0) {
+			const longestName = Math.max(...typelibResult.map((x) => x.name.length));
+
+			this.logger.buffer.log("");
+			this.logger.log(
+				LogLevel.Info,
+				undefined,
+				`\n\t${whiteBright.bold(
+					"Typelib files".padEnd(longestName, " ") /*, LogColor.bright*/
+				)} | ${whiteBright.bold("Size")}`,
+				...typelibResult.flatMap((typelib) => [
+					"\n\t" + cyan(typelib.name.padEnd(longestName, " ")) + " | " + blue(typelib.bytes / 1000 + " kB"),
+				])
+			);
+		}
+	}
+
 	private printPerformanceInfo(config: Config) {
+		this.logger.buffer.log("");
 		this.logger.log(
 			config.devMode ? LogLevel.Dev : LogLevel.Debug,
-			LogColor.magenta,
-			"Completed!",
+			undefined,
+			cyan("Completed \u2713"),
 
-			"\n\tImporting modules:",
-			roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart),
-			"sec.",
+			`\n\t${dim("Importing modules: ")} ${blue(
+				roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart).toString()
+			)} ${dim("sec.")}`,
 
-			"\n\tInitialization:",
-			roundPerfTime(
-				(this.performanceEntries.initialization ?? performance.now()) - this.performanceEntries.start
-			),
-			"sec.",
+			`\n\t${dim("Initialization: ")} ${blue(
+				roundPerfTime(
+					(this.performanceEntries.initialization ?? performance.now()) - this.performanceEntries.start
+				).toString()
+			)} ${dim("sec.")}`,
 
 			...(this.performanceEntries.metadataGenerationFinished === undefined ||
 			this.performanceEntries.initialization === undefined
 				? []
 				: [
-						"\n\tGenerating metadata:",
-						roundPerfTime(
-							this.performanceEntries.metadataGenerationFinished - this.performanceEntries.initialization
-						),
-						"sec.",
+						`\n\t${dim("Generating metadata: ")} ${blue(
+							roundPerfTime(
+								this.performanceEntries.metadataGenerationFinished -
+									this.performanceEntries.initialization
+							).toString()
+						)} ${dim("sec.")}`,
 				  ]),
 
 			...(this.performanceEntries.completed === undefined ||
 			this.performanceEntries.metadataGenerationFinished === undefined
 				? []
 				: [
-						"\n\tBundling typelib:",
-						roundPerfTime(
-							this.performanceEntries.completed - this.performanceEntries.metadataGenerationFinished
-						),
-						"sec.",
+						`\n\t${dim("Bundling typelib: ")} ${blue(
+							roundPerfTime(
+								this.performanceEntries.completed - this.performanceEntries.metadataGenerationFinished
+							).toString()
+						)} ${dim("sec.")}`,
 				  ]),
 
 			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
 				? []
 				: [
-						"\n\tTotal time:",
-						roundPerfTime(this.performanceEntries.completed - this.performanceEntries.parseStart),
-						"sec.",
+						`\n\tTotal time: ${blue(
+							roundPerfTime(
+								this.performanceEntries.completed - this.performanceEntries.parseStart
+							).toString()
+						)} sec.`,
 				  ])
 
 			// "\n\tProcessed",
@@ -283,7 +305,7 @@ export class Program {
 	 * @private
 	 */
 	private async getSourceFilesWithStats(config: Config) {
-		return await fastGlob.glob(config.include, {
+		return await FastGlob.glob(config.include, {
 			...this.getSourceFilesGlobOptions(config),
 			stats: true,
 		});
@@ -292,7 +314,6 @@ export class Program {
 	private getSourceFilesGlobOptions(config: Config) {
 		return {
 			cwd: config.projectRoot,
-			// cwd: config.tsRootDir,
 			dot: false,
 			onlyFiles: true,
 			ignore: config.exclude,
@@ -301,13 +322,13 @@ export class Program {
 		};
 	}
 
-	private spawn(config: Config, files: string[], logger: Logger) {
+	private spawn(config: Config, files: string[], logger: Logger, Worker: typeof import("worker_threads").Worker) {
 		if (config.devMode) {
 			logger.trace("Spawning worker for files", files);
 		}
 
-		const Worker = require("worker_threads").Worker;
 		const worker = new Worker(resolvePath(__dirname, "worker.js"), {
+			// const worker = new Worker(resolvePath(dirname(fileURLToPath(import.meta.url)), "worker.js"), {
 			workerData: {
 				files: files,
 				config: config,

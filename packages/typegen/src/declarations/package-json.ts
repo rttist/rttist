@@ -3,6 +3,7 @@
  */
 export type PackageJson = {
 	name?: string;
+	type?: "module" | "commonjs";
 	dependencies?: string[];
 	devDependencies?: string[];
 	reflection?: {
