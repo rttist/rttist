@@ -12,7 +12,7 @@ export async function initCommand(cli: CLI) {
 		await handleConfigFile(args);
 		await handlePackageJson(args);
 
-		console.log(green(`\u2713 Done.`));
+		console.log(green(`\u2713 Done`));
 	} catch (error: any) {
 		console.error(error instanceof Error ? error.message : error);
 	}

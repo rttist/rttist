@@ -14,7 +14,7 @@ import { resolvePath } from "./lib/utils/path";
 import * as cliProgress from "cli-progress";
 import { WorkerMessageType } from "./declarations/worker-message-type";
 import { ModuleIdentifierGenerator } from "./lib/transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
-import { blue, cyan, dim, whiteBright } from "chalk";
+import { blue, cyan, dim, green, whiteBright } from "chalk";
 
 let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
 try {
@@ -129,6 +129,7 @@ export class Program {
 		);
 
 		progressBar.stop();
+		console.log("");
 	}
 
 	private handleNoChangesDetected(config: Config) {
@@ -142,10 +143,11 @@ export class Program {
 			{
 				stream: process.stdout,
 				clearOnComplete: false,
-				format: "processing files [{bar}] {percentage}% | {value}/{total}",
+				format: `\t[{bar}] ${blue("{percentage}")} % | ${blue("{value}")}/${blue("{total}")}`,
 			},
 			cliProgress.Presets.legacy
 		);
+		this.logger.log(LogLevel.Always, undefined, "Processing files...");
 		progressBar.start(files.length, 0);
 		return progressBar;
 	}
@@ -193,7 +195,7 @@ export class Program {
 			workers.push(worker);
 		}
 
-		this.logger.debug("Workers spawned:", workers.length);
+		// this.logger.debug("Workers spawned:", workers.length);
 
 		return workers;
 	}
@@ -238,10 +240,13 @@ export class Program {
 
 	private printPerformanceInfo(config: Config) {
 		this.logger.buffer.log("");
+		this.logger.buffer.log(green("\u2713 Done"));
+		this.logger.buffer.log("");
+
 		this.logger.log(
 			config.devMode ? LogLevel.Dev : LogLevel.Debug,
 			undefined,
-			cyan("Completed \u2713"),
+			// cyan("Completed \u2713"),
 
 			`\n\t${dim("Importing modules: ")} ${blue(
 				roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart).toString()
@@ -326,10 +331,6 @@ export class Program {
 	}
 
 	private spawn(config: Config, files: string[], logger: Logger, Worker: typeof import("worker_threads").Worker) {
-		if (config.devMode) {
-			logger.trace("Spawning worker for files", files);
-		}
-
 		const worker = new Worker(resolvePath(__dirname, "worker.js"), {
 			// const worker = new Worker(resolvePath(dirname(fileURLToPath(import.meta.url)), "worker.js"), {
 			workerData: {
