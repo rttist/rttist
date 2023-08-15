@@ -1,5 +1,5 @@
 {
-	"name": "@rttist/typegen-plugins-vite",
+	"name": "vite-plugin-rttist",
 	"version": "4.0.0-alpha.0",
 	"description": "Rttist typegen plugin adding support for Vite",
 	"main": "dist/index.js",
