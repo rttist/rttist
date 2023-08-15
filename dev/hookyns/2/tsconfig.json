@@ -5,10 +5,9 @@
 		"moduleResolution": "node",
 		"target": "ESNext",
 		"lib": ["ESNext"],
-//		"module": "CommonJS",
-//		"target": "ESNext",
 		"removeComments": true,
 //		"declaration": false,
+		"noImplicitAny": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
 		"rootDir": ".",
@@ -22,7 +21,8 @@
 	},
 	"files": ["index.ts"],
 	"include": [
-		"framework"
+		"framework",
+		"controllers"
 	],
 	"exclude": [
 		"node_modules/**/*",

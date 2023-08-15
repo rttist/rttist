@@ -1,95 +1,107 @@
-import {
-	Server,
-	Response
-}                               from "hyper-express";
-import {
-	ClassType,
-	getType,
-	Metadata,
-	ParameterInfo
-}                               from "rttist";
-import { route }                from "./controllers/decorators/route";
-import { IController }          from "./controllers/IController";
+import type { Server, Request, Response } from "hyper-express";
+import { ClassType, ParameterInfo, FunctionType, InterfaceType } from "rttist";
+import { IController } from "./controllers/IController";
 import { IPathParameterParser } from "./controllers/IPathParameterParser";
+import { Metadata } from "../metadata.typelib";
 
-export class Router
-{
-	constructor(private readonly webServer: Server, private readonly pathParamParser: IPathParameterParser)
-	{
-	}
+export class Router {
+	constructor(
+		private readonly webServer: Server,
+		private readonly pathParamParser: IPathParameterParser
+	) {}
 
-	async registerControllers()
-	{
-		const routeDecoratorType = getType(route);
-		const controllerInterfaceType = getType<IController>();
+	async registerControllers() {
+		//const routeDecoratorType = getType(route);
+		const routeDecoratorType = Metadata.getTypes().filter(
+			(t) => t.isFunction() && t.id.includes("/framework/Router")
+		)[0] as FunctionType;
+
+		//const controllerInterfaceType = getType<IController>();
+		const controllerInterfaceType = Metadata.getTypes().filter(
+			(t) => t.isInterface() && t.id.includes("/framework/controllers/IController")
+		)[0] as InterfaceType;
 
 		// Find all classes extended from IController decorated by the @route.
 		const controllers = Metadata.getTypes()
-			.filter(type =>
-				type.isClass() &&
-				!type.abstract &&
-				type.exported &&
-				type.isDerivedFrom(controllerInterfaceType)
+			.filter(
+				(type) =>
+					type.isClass() && !type.abstract && type.exported && type.isDerivedFrom(controllerInterfaceType)
 			)
-			.map(type => ({
+			.map((type) => ({
 				type: type as ClassType,
-				routeDecorator: (type as ClassType).getDecorators().find(decorator => decorator.is(routeDecoratorType))
+				routeDecorator: (type as ClassType)
+					.getDecorators()
+					.find((decorator) => decorator.is(routeDecoratorType)),
 			}))
-			.filter(x => x.routeDecorator !== undefined);
+			.filter((x) => x.routeDecorator !== undefined);
 
-		await Promise.all(controllers.map(async controllerInfo => {
-			const module = await controllerInfo.type.module.import();
-			const ClassCtor: { new(): IController } = (module as any)[controllerInfo.type.name];
+		console.log("types:", Metadata.getTypes().map((type) => type.isClass()).length);
 
-			// The @route decorator argument
-			const route = controllerInfo.routeDecorator!.getArguments()[0];
+		await Promise.all(
+			controllers.map(async (controllerInfo) => {
+				//const module = await controllerInfo.type.module.import();
+				const module =
+					(await controllerInfo.type.module.import()) ??
+					require(controllerInfo.type.module.path
+						.replace("/src/controllers/", "/dist/controllers/")
+						.replace(".ts", ".js"));
 
-			// GET
-			const getMethod = controllerInfo.type.getMethod("get");
+				if (!module) {
+					console.error(`Unable to import module of controller '${controllerInfo.type.name}'.`);
+					return;
+				}
 
-			if (getMethod !== undefined)
-			{
-				const parameters = getMethod.getSignatures()[0].getParameters();
-				const idIndex = parameters.findIndex(param => param.name === "id");
-				const paramInfo: ParameterInfo | undefined = idIndex === -1 ? undefined : parameters[idIndex];
-				let ctor, args, parameterInfo;
+				const ClassCtor: { new (): IController } = module[controllerInfo.type.name];
 
-				this.webServer.get("/" + route + "/:id", (req, res) => {
-					ctor = new ClassCtor();
+				// The @route decorator argument
+				const route = controllerInfo.routeDecorator!.getArguments()[0];
 
-					if (paramInfo === undefined)
-					{
-						this.respond(ctor.get!(), res);
-						return;
-					}
+				// GET
+				const getMethod = controllerInfo.type.getMethod("get");
 
-					args = [];
-					for (let param in req.params)
-					{
-						if (req.params.hasOwnProperty(param))
-						{
-							parameterInfo = parameters.find(p => p.name === param);
+				if (getMethod !== undefined) {
+					const parameters = getMethod.getSignatures()[0].getParameters();
+					const idIndex = parameters.findIndex((param) => param.name === "id");
+					const paramInfo: ParameterInfo | undefined = idIndex === -1 ? undefined : parameters[idIndex];
+					let ctor, args, parameterInfo;
+					const routePaths =
+						!route || route === "/" ? ["/"] : ["/" + route, "/" + route + "/", "/" + route + "/:id"];
 
-							args.push(
-								parameterInfo === undefined
-									? undefined
-									: this.pathParamParser.parse(req.params[param], paramInfo.type)
-							);
+					console.info("Registering GET ", routePaths.join(", GET "));
+
+					const handler = (req: Request, res: Response) => {
+						ctor = new ClassCtor();
+
+						if (paramInfo === undefined) {
+							this.respond(ctor.get!(), res);
+							return;
 						}
-					}
 
-					this.respond(ctor.get!(...args), res);
-				});
-			}
-		}));
+						args = [];
+						for (let param in req.params) {
+							if (req.params.hasOwnProperty(param)) {
+								parameterInfo = parameters.find((p) => p.name === param);
+
+								args.push(
+									parameterInfo === undefined
+										? undefined
+										: this.pathParamParser.parse(req.params[param], paramInfo.type)
+								);
+							}
+						}
+
+						this.respond(ctor.get!(...args), res);
+					};
+
+					for (let path of routePaths) {
+						this.webServer.get(path, handler);
+					}
+				}
+			})
+		);
 	}
 
-	private respond(value: any, response: Response)
-	{
-		response.send(
-			typeof value === "object"
-				? JSON.stringify(value)
-				: value.toString()
-		);
+	private respond(value: any, response: Response) {
+		response.send(typeof value === "object" ? JSON.stringify(value) : value.toString());
 	}
 }

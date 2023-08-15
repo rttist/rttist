@@ -10,5 +10,5 @@
 		]
 	},
 	"devMode": true,
-	"logLevel": "Debug"
+	"logLevel": "Info"
 }

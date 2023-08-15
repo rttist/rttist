@@ -1,26 +1,21 @@
 import type * as ts from "typescript";
-import type {
-	NativeTransformerTypeReference,
-	TransformerNativeTypeReference
-} from "./general";
-import {
-	ModuleIdentifier,
-	TypeIdentifier,
-	TypeKind,
-	NativeTypeKind
-} from "rttist";
+import type { NativeTransformerTypeReference, TransformerNativeTypeReference } from "./general";
+import { ModuleIdentifier, TypeIdentifier, TypeKind, NativeTypeKind } from "rttist";
 import { ModuleIds } from "@rttist/core";
 
 /**
  * TypeReference used inside transformer. Change nativeReference to TyeKind -> remove TransformerNativeTypeReference
  * type.
  */
-export class TransformerTypeReference
-{
+export class TransformerTypeReference {
 	public static readonly Unknown = new TransformerTypeReference(ModuleIds.Native, "Unknown", TypeKind.Unknown);
 	public static readonly Invalid = new TransformerTypeReference(ModuleIds.Native, "Invalid", TypeKind.Invalid);
 	public static readonly Any = new TransformerTypeReference(ModuleIds.Native, "Any", TypeKind.Any);
-	public static readonly NonPrimitiveObject = new TransformerTypeReference(ModuleIds.Native, "object", TypeKind.NonPrimitiveObject);
+	public static readonly NonPrimitiveObject = new TransformerTypeReference(
+		ModuleIds.Native,
+		"object",
+		TypeKind.NonPrimitiveObject
+	);
 	public static readonly Void = new TransformerTypeReference(ModuleIds.Native, "Void", TypeKind.Void);
 	public static readonly Undefined = new TransformerTypeReference(ModuleIds.Native, "Undefined", TypeKind.Undefined);
 	public static readonly Null = new TransformerTypeReference(ModuleIds.Native, "Null", TypeKind.Null);
@@ -36,7 +31,11 @@ export class TransformerTypeReference
 	public static readonly Error = new TransformerTypeReference(ModuleIds.Native, "Error", TypeKind.Error);
 	public static readonly RegExp = new TransformerTypeReference(ModuleIds.Native, "RegExp", TypeKind.RegExp);
 	public static readonly RttistType = new TransformerTypeReference(ModuleIds.Native, "Type", TypeKind.RttistType);
-	public static readonly RttistModule = new TransformerTypeReference(ModuleIds.Native, "Module", TypeKind.RttistModule);
+	public static readonly RttistModule = new TransformerTypeReference(
+		ModuleIds.Native,
+		"Module",
+		TypeKind.RttistModule
+	);
 
 	private readonly _native: boolean;
 	private readonly _module: ModuleIdentifier;
@@ -46,23 +45,19 @@ export class TransformerTypeReference
 
 	public readonly sourceFile?: ts.SourceFile;
 
-	get nativeReference(): TransformerNativeTypeReference | undefined
-	{
+	get nativeReference(): TransformerNativeTypeReference | undefined {
 		return this._nativeReference;
 	}
 
-	get id(): TypeIdentifier
-	{
+	get id(): TypeIdentifier {
 		return this._id;
 	}
 
-	get name(): string
-	{
+	get name(): string {
 		return this._name;
 	}
 
-	get moduleIdentifier(): ModuleIdentifier
-	{
+	get moduleIdentifier(): ModuleIdentifier {
 		return this._module;
 	}
 
@@ -79,30 +74,25 @@ export class TransformerTypeReference
 		nativeTypeKnd?: NativeTypeKind,
 		typeArguments?: string[],
 		sourceFile?: ts.SourceFile
-	)
-	{
+	) {
 		this._module = module;
 		this._name = typeName;
 		this._id = this.createTypeId(module, typeName, typeArguments);
 		this.sourceFile = sourceFile;
 
-		if ((this._native = (nativeTypeKnd !== undefined)))
-		{
+		if ((this._native = nativeTypeKnd !== undefined)) {
 			this._nativeReference = { kind: nativeTypeKnd };
 		}
 	}
 
-	isKindOnly(): this is NativeTransformerTypeReference
-	{
+	isKindOnly(): this is NativeTransformerTypeReference {
 		return this._native;
 	}
 
-	private createTypeId(module: ModuleIdentifier, identifier: TypeIdentifier, typeArguments?: string[])
-	{
+	private createTypeId(module: ModuleIdentifier, identifier: TypeIdentifier, typeArguments?: string[]) {
 		let id = module + "::" + identifier;
 
-		if (typeArguments?.length)
-		{
+		if (typeArguments?.length) {
 			id += "{" + typeArguments.join(",") + "}";
 		}
 

@@ -11,7 +11,7 @@ export class Xyz {
 	fooConst = 5 as const;
 }
 
-@route("/dummy11")
+@route("dummy11")
 export class Dummy1Controller implements IController {
 	static readonly field: IController;
 	static readonly field2: typeof MainConst.StaticFiled; // TODO: This generates "@simple-tests/nested-classes:MainConst" it miss the ".StaticFiled"
@@ -23,23 +23,23 @@ export class Dummy1Controller implements IController {
 
 class Foo<T> {
 	static readonly prop: number;
-	promise: Promise<boolean>;
+	promise!: Promise<boolean>;
 	regex = /sss/;
 	date = new Date();
 	dateOptional?: Date;
 	symbol = Symbol();
-	array: number[];
-	array2: Array<string>;
+	array!: number[];
+	array2!: Array<string>;
 	array3 = [];
 	array4 = Array;
-	array5: typeof Array<string>;
-	readonlyArray: ReadonlyArray<string>;
+	array5!: typeof Array<string>;
+	readonlyArray!: ReadonlyArray<string>;
 	iterableIterator = [].values();
 	map = new Map<string, undefined>();
 	set = new Set<string>();
-	stringLiteral: "foo" | "bar" | "baz";
-	numberLiteral: 1 | 2 | 3;
-	booleanLiteral: true | false;
+	stringLiteral!: "foo" | "bar" | "baz";
+	numberLiteral!: 1 | 2 | 3;
+	booleanLiteral!: true | false;
 
 	private *generator() {
 		return 0;
@@ -49,7 +49,7 @@ class Foo<T> {
 		return 0;
 	}
 
-	function: Function;
+	function!: Function;
 
 	constructor(bar: T);
 	constructor(bar: T, foo: string);

@@ -37,11 +37,6 @@ export class Router {
 		await Promise.all(
 			controllers.map(async (controllerInfo) => {
 				const module = await controllerInfo.type.module.import();
-				// const module =
-				// 	(await controllerInfo.type.module.import()) ??
-				// 	require(controllerInfo.type.module.path
-				// 		.replace("/src/controllers/", "/dist/controllers/")
-				// 		.replace(".ts", ".js"));
 
 				if (!module) {
 					console.error(`Unable to import module of controller '${controllerInfo.type.name}'.`);
@@ -65,7 +60,7 @@ export class Router {
 					const routePaths =
 						!route || route === "/" ? ["/"] : ["/" + route, "/" + route + "/", "/" + route + "/:id"];
 
-					console.info("Registering GET ", routePaths.join(", GET "));
+					console.info("Registering GET", routePaths.join(", GET "));
 
 					const handler = (req: Request, res: Response) => {
 						ctor = new ClassCtor();

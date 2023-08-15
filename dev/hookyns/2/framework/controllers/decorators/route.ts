@@ -1,5 +1,3 @@
 export function route(path: string) {
-	return function(target: Function, _: any) {
-		
-	}
+	return function (target: Function, _: any = undefined) {};
 }

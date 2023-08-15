@@ -12,5 +12,12 @@
 	},
 	"dependencies": {
 		"rttist": "^1.0.0-alpha.4"
+	},
+	"files": [
+		"dist/index.js",
+		"dist/public.typelib.js"
+	],
+	"reflection": {
+		"metadata": "dist/public.typelib.js"
 	}
 }
