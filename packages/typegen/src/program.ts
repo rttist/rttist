@@ -51,17 +51,35 @@ export class Program {
 		const stats = new CacheStats(config, this.logger);
 		const allFiles = await this.getSourceFilesWithStats(config);
 		const changedFilesToRegenerate = this.getFilesToRegenerate(allFiles, config, stats);
-
-		if (changedFilesToRegenerate.length === 0) {
-			this.handleNoChangesDetected(config);
-			return;
-		}
-
 		const allFilesPath = allFiles.map((x) => x.path);
 		const typelibGenerator = new TypelibGenerator(config, new ModuleIdentifierGenerator(config), allFilesPath);
 
 		// run MMF cache server
-		startCacheServer?.(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
+		if (changedFilesToRegenerate.length > 0 || config.watch) {
+			startCacheServer?.(config.tsRootDir, ["**/*.ts", "**/*.tsx", "**/*.d.ts"]);
+		}
+
+		// Generate metadata and typelibs
+		await this.generate(changedFilesToRegenerate, config, typelibGenerator, stats);
+
+		// Watch files in case the watch mode is enabled.
+		if (config.watch) {
+			const { Watcher } = require("./lib/watcher");
+			const watcher = new Watcher(config, typelibGenerator);
+			watcher.watch();
+		}
+	}
+
+	private async generate(
+		changedFilesToRegenerate: string[],
+		config: Config,
+		typelibGenerator: TypelibGenerator,
+		stats: CacheStats
+	) {
+		if (changedFilesToRegenerate.length === 0) {
+			this.handleNoChangesDetected(config);
+			return;
+		}
 
 		// SPAWN workers
 		const workers = await this.spawnWorkers(changedFilesToRegenerate, config);
@@ -74,26 +92,16 @@ export class Program {
 		this.flushWorkersLogBuffer(workers);
 		await this.waitWorkersExitPromise(workers);
 
-		// await generateTypelibFiles(
-		// 	allFiles.map((x) => x.path),
-		// 	config
-		// );
 		const typelibResult = await typelibGenerator.generate();
-		this.printTypelibsInfo(typelibResult);
 		this.performanceEntries.completed = performance.now();
+
+		this.logger.buffer.log("");
+		this.logger.buffer.log(green("\u2713 Done"));
+
 		this.printPerformanceInfo(config);
 
 		stats.value.lastGeneration = new Date();
 		stats.persist();
-
-		// const completedPS = new PromiseSource();
-		// Watch files in case the watch mode is enabled.
-		if (config.watch) {
-			this.logger.warn("Watch mode is currently deactivated because of WIP refactoring.");
-			// const watcher = new Watcher(config, typelibGenerator, completedPS);
-			// watcher.watch(allFilesPath);
-		}
-		// completedPS.resolve();
 	}
 
 	/**
@@ -213,41 +221,16 @@ export class Program {
 	}
 
 	private printNoChangesDetected() {
-		this.logger.log(
-			LogLevel.Always,
-			undefined,
-			`${cyan("No changes detected.")}\n\t${dim("Use '-f' or '--force' to force generation.")}`
+		this.logger.buffer.log(
+			`${green("\u2713 No changes detected.")}\n\t${dim("Use '-f' or '--force' to force generation.")}`
 		);
-	}
-
-	private printTypelibsInfo(typelibResult: TypeLibBundleResult[]) {
-		if (typelibResult.length !== 0) {
-			const longestName = Math.max(...typelibResult.map((x) => x.name.length));
-
-			this.logger.buffer.log("");
-			this.logger.log(
-				LogLevel.Info,
-				undefined,
-				`\n\t${whiteBright.bold(
-					"Typelib files".padEnd(longestName, " ") /*, LogColor.bright*/
-				)} | ${whiteBright.bold("Size")}`,
-				...typelibResult.flatMap((typelib) => [
-					"\n\t" + cyan(typelib.name.padEnd(longestName, " ")) + " | " + blue(typelib.bytes / 1000 + " kB"),
-				])
-			);
-		}
 	}
 
 	private printPerformanceInfo(config: Config) {
 		this.logger.buffer.log("");
-		this.logger.buffer.log(green("\u2713 Done"));
-		this.logger.buffer.log("");
-
 		this.logger.log(
 			config.devMode ? LogLevel.Dev : LogLevel.Debug,
 			undefined,
-			// cyan("Completed \u2713"),
-
 			`\n\t${dim("Importing modules: ")} ${blue(
 				roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart).toString()
 			)} ${dim("sec.")}`,
@@ -289,7 +272,8 @@ export class Program {
 								this.performanceEntries.completed - this.performanceEntries.parseStart
 							).toString()
 						)} sec.`,
-				  ])
+				  ]),
+			"\n"
 
 			// "\n\tProcessed",
 			// this.metadata.getNumberOfTypes(),

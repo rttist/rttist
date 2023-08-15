@@ -1,5 +1,4 @@
 import { TypeKind } from "rttist";
-import { SyntaxKind } from "typescript";
 import * as ts from "typescript";
 import type { Config } from "../../config/config";
 import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
@@ -49,7 +48,11 @@ export function toExpression(value: any, config: Config): ts.Expression {
 					propertyAssignments.push(ts.factory.createPropertyAssignment(prop, expr));
 
 					if (prop === "kind" && config.devMode && value.hasOwnProperty("id")) {
-						ts.addSyntheticTrailingComment(expr, SyntaxKind.MultiLineCommentTrivia, TypeKind[value[prop]]);
+						ts.addSyntheticTrailingComment(
+							expr,
+							ts.SyntaxKind.MultiLineCommentTrivia,
+							TypeKind[value[prop]]
+						);
 					}
 				}
 			}

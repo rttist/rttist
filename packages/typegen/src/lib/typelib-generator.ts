@@ -6,6 +6,9 @@ import { removeExtension } from "./transformer/utils/removeExtension";
 import { normalizePath, resolvePath } from "./utils/path";
 import { lazyTypescript } from "./utils/lazy-typescript";
 import { ModuleIdentifierGenerator } from "./transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
+import { Logger, LogLevel } from "./logging";
+import { blue, cyan, whiteBright } from "chalk";
+import { LogBuffer } from "./logging/log-buffer";
 
 export type TypeLibBundleResult = {
 	name: string;
@@ -13,6 +16,8 @@ export type TypeLibBundleResult = {
 };
 
 export class TypelibGenerator {
+	private readonly logger = new Logger("TypelibGenerator", undefined, LogBuffer.autoFlush);
+
 	constructor(
 		private readonly config: Config,
 		private readonly moduleIdentifierGenerator: ModuleIdentifierGenerator,
@@ -24,43 +29,43 @@ export class TypelibGenerator {
 	/**
 	 * Manually invoke typelib generation and bundling.
 	 */
-	async generate(): Promise<TypeLibBundleResult[]> {
+	async generate() {
 		const projectTypeLibImporterPromise = this.generateProjectTypelibImporter();
 		await this.generateTypeLibs();
 		const result = await this.bundle();
 		await projectTypeLibImporterPromise;
-		return result;
 	}
 
-	filesAdded(files: string[]) {
-		this.files.push(...files);
-
-		// TODO: Generate Typelibs and bundles
+	getProjectFiles() {
+		return this.files;
 	}
 
-	filesRemoved(files: string[]) {
+	async fileAdded(file: string) {
+		this.files.push(file);
+		await this.generate();
+	}
+
+	async filesRemoved(files: string[]) {
 		files.forEach((file) => {
 			const index = this.files.indexOf(file);
 
 			if (index >= 0) {
 				this.files.splice(index, 1);
 			}
-
-			// TODO: Delete metadata from the cache folder
 		});
 
-		// TODO: Generate Typelibs and bundles
+		await this.generate();
 	}
 
-	fileChanged(file: string) {
-		// TODO: Generate only bundle; typelibs didn't change
+	async fileChanged(file: string) {
+		await this.generateTypeLibs();
+		await this.bundle();
 	}
 
 	/**
 	 * (Re)generate typelibs.
 	 */
 	private async generateTypeLibs() {
-		// TODO: Do this only in case that some of the files changed.
 		await Promise.all([
 			this.generateMetadataIndex(),
 			this.generateTypelib("internal.typelib.ts", false),
@@ -161,14 +166,15 @@ export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 		});
 
 		const outputs = result.metafile?.outputs ?? {};
-
-		return Object.keys(outputs).map(
+		var bundleResult = Object.keys(outputs).map(
 			(key) =>
 				({
 					name: key,
 					bytes: outputs[key].bytes,
 				}) satisfies TypeLibBundleResult
 		);
+		this.printTypelibsInfo(bundleResult);
+		return bundleResult;
 	}
 
 	// private clearOnKill() {
@@ -211,7 +217,22 @@ export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 	// 		this.logger.error(err);
 	// 	}
 	// }
-	getProjectFiles() {
-		return this.files;
+
+	private printTypelibsInfo(typelibResult: TypeLibBundleResult[]) {
+		if (typelibResult.length !== 0) {
+			const longestName = Math.max(...typelibResult.map((x) => x.name.length));
+
+			this.logger.buffer.log("");
+			this.logger.log(
+				LogLevel.Info,
+				undefined,
+				`\n\t${whiteBright.bold(
+					"Typelib files".padEnd(longestName, " ") /*, LogColor.bright*/
+				)} | ${whiteBright.bold("Size")}`,
+				...typelibResult.flatMap((typelib) => [
+					"\n\t" + cyan(typelib.name.padEnd(longestName, " ")) + " | " + blue(typelib.bytes / 1000 + " kB"),
+				])
+			);
+		}
 	}
 }

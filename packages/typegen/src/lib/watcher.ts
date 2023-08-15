@@ -1,71 +1,40 @@
+import type { FSWatcher } from "chokidar";
+import type { Config } from "./config/config";
 import * as chokidar from "chokidar";
-import { FSWatcher } from "chokidar";
-import PromiseSource from "promise-cs";
-import { Config } from "./config/config";
-import { generateModulesMetadata } from "./generator/generate-modules-metadata";
 import { Logger } from "./logging";
 import { TypelibGenerator } from "./typelib-generator";
-import { resolvePath } from "./utils/path";
+import { MetadataGenerator } from "./metadata-generator";
+import { LogBuffer } from "./logging/log-buffer";
+import { resolveSourceFileCachePath } from "./utils/resolve-sourcefile-cache-path";
+import * as fs from "fs";
 
 export class Watcher {
-	// private readonly allFiles: Set<string> = new Set<string>();
-	private readonly logger = new Logger("Watcher");
-	private _watcher?: FSWatcher;
-	// private regenerateInterval?: NodeJS.Timeout;
-	// private regenerateTypelibs = false;
-	private readyToWatch = false;
+	private readonly logger = new Logger("Watcher", undefined, LogBuffer.autoFlush);
+	private readonly metadataGenerator: MetadataGenerator;
 
-	private get watcher() {
-		if (!this._watcher) {
-			this._watcher = this.createWatcher();
-		}
-		return this._watcher;
-	}
+	private watcher?: FSWatcher;
+	private readyToWatch = false;
 
 	constructor(
 		private readonly config: Config,
-		private readonly typelibGenerator: TypelibGenerator,
-		private readonly completedPS: PromiseSource<void>
+		private readonly typelibGenerator: TypelibGenerator
 	) {
-		// this.regenerateIntervalHandler = this.regenerateIntervalHandler.bind(this);
+		this.metadataGenerator = new MetadataGenerator(this.config);
+
+		this.metadataGenerator.on("write", (sourceFilePath, metadataPath) => {
+			this.logger.info(`Regenerated metadata of file`, sourceFilePath);
+		});
 	}
 
 	/**
 	 * Start watching files.
-	 * @param files
 	 */
-	watch(files: string[]) {
-		// // TODO: Remove list of all files
-		// // Add files to the set of all files.
-		// files.forEach((file) => this.allFiles.add(file));
-
-		const filesTouchedWhileInitialGeneration = new Set<string>();
-
-		// this.startRegenerateInterval();
+	watch() {
+		this.watcher = this.createWatcher();
 		this.clearOnKill();
-		this.registerEventHandlers(filesTouchedWhileInitialGeneration);
+		this.registerEventHandlers();
 
-		// this.completedPS.promise
-		// 	.then(async () => {
-		// 		this.logger.info("Watching for file changes...");
-		//
-		// 		if (filesTouchedWhileInitialGeneration.size > 0) {
-		// 			this.logger.info(
-		// 				"File change detected. Starting incremental compilation...",
-		// 				filesTouchedWhileInitialGeneration
-		// 			);
-		//
-		// 			generateModulesMetadata(
-		// 				Array.from(filesTouchedWhileInitialGeneration),
-		// 				this.config,
-		// 				(filename) => {}
-		// 			);
-		// 			this.regenerateTypelibs = true;
-		// 		}
-		// 	})
-		// 	.catch((error) => {
-		// 		this.logger.error(error);
-		// 	});
+		this.logger.info("Watching for file changes...");
 	}
 
 	private createWatcher() {
@@ -74,100 +43,52 @@ export class Watcher {
 			cwd: this.config.projectRoot,
 		});
 	}
-	//
-	// /**
-	//  * Start interval which regenerates typelib files after changes.
-	//  */
-	// private startRegenerateInterval() {
-	// 	this.regenerateInterval = setInterval(this.regenerateIntervalHandler, 100);
-	// }
-	//
-	// private async regenerateIntervalHandler() {
-	// 	try {
-	// 		if (!this.regenerateTypelibs) {
-	// 			// Skip if the regenerate is not requested.
-	// 			return;
-	// 		}
-	//
-	// 		// Reset the regenerate flag.
-	// 		this.regenerateTypelibs = false;
-	//
-	// 		// Clear interval to prevent multiple regenerations.
-	// 		clearInterval(this.regenerateInterval);
-	//
-	// 		// TODO: Regenerate
-	// 		// await generateTypelibFiles(Array.from(this.allFiles), this.config);
-	//
-	// 		this.startRegenerateInterval();
-	// 	} catch (err) {
-	// 		this.logger.error(err);
-	// 	}
-	// }
 
 	private clearOnKill() {
 		const clear = () => {
-			this.watcher.close().catch(() => {});
-
-			// if (this.regenerateInterval) {
-			// 	clearInterval(this.regenerateInterval);
-			// }
+			this.watcher?.close().catch(() => {});
 		};
 
 		process.on("SIGINT", clear);
 		process.on("SIGTERM", clear);
 	}
 
-	// private setupWatch() {
-	//
-	// }
-
-	private registerEventHandlers(filesTouchedWhileInitialGeneration: Set<string>) {
+	private registerEventHandlers() {
 		this.watcher
-			.on("add", async (path) => {
+			?.on("add", async (path) => {
 				// Check ready status; all files are "added" on start; maybe bug of chokidar?
 				if (!this.readyToWatch) {
 					return;
 				}
 
-				// this.allFiles.add(path);
-
-				if (!this.completedPS.completed) {
-					filesTouchedWhileInitialGeneration.add(path);
-					return;
-				}
-
 				await this.regenerateMetadata([path]);
-				this.typelibGenerator.filesAdded([path]);
+				await this.typelibGenerator.fileAdded(path);
 			})
 			.on("change", async (path) => {
-				if (!this.completedPS.completed) {
-					filesTouchedWhileInitialGeneration.add(path);
-					return;
-				}
-
 				await this.regenerateMetadata([path]);
-				this.typelibGenerator.fileChanged(path);
+				await this.typelibGenerator.fileChanged(path);
 			})
 			.on("unlink", async (path) => {
-				// this.allFiles.delete(path);
-
-				// TODO: Delete metadata from the cache folder
+				try {
+					fs.unlinkSync(resolveSourceFileCachePath(path, this.config));
+				} catch (e) {}
 
 				await this.regenerateMetadata([]);
-				this.typelibGenerator.filesRemoved([path]);
+				await this.typelibGenerator.filesRemoved([path]);
 			})
 			.on("unlinkDir", async (dirPath) => {
-				// Array.from(this.allFiles)
-				// 	.filter((path) => path.startsWith(dirPath))
-				// 	.forEach((path) => {
-				// 		this.allFiles.delete(path);
-				// 		// TODO: Delete metadata from the cache folder
-				// 	});
+				const removedFiles = Array.from(this.typelibGenerator.getProjectFiles()).filter((path) =>
+					path.startsWith(dirPath)
+				);
+
+				removedFiles.forEach((path) => {
+					try {
+						fs.unlinkSync(resolveSourceFileCachePath(path, this.config));
+					} catch (e) {}
+				});
 
 				await this.regenerateMetadata([]);
-				this.typelibGenerator.filesRemoved(
-					Array.from(this.typelibGenerator.getProjectFiles()).filter((path) => path.startsWith(dirPath))
-				);
+				await this.typelibGenerator.filesRemoved(removedFiles);
 			})
 			.on("ready", () => {
 				this.readyToWatch = true;
@@ -179,17 +100,7 @@ export class Watcher {
 
 		// Regenerate metadata of given files.
 		if (paths.length > 0) {
-			await generateModulesMetadata(
-				paths.map((path) => resolvePath(this.config.projectRoot, path)),
-				this.config,
-				(filename) => {
-					this.logger.info(`Regenerated metadata`, filename);
-				}
-			);
+			await this.metadataGenerator.generate(paths);
 		}
-
-		// TODO: regenerate
-		// Flag to regenerate typelib files.
-		// this.regenerateTypelibs = true;
 	}
 }

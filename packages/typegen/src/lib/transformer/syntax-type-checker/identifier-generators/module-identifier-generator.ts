@@ -1,6 +1,6 @@
-﻿import * as path from "path";
+﻿import type * as ts from "typescript";
+import * as path from "path";
 import { ModuleIdentifier } from "rttist";
-import * as ts from "typescript";
 import { Config } from "../../../config/config";
 
 export class ModuleIdentifierGenerator {

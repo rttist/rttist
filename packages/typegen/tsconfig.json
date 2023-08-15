@@ -19,7 +19,8 @@
 	"files": [
 		"src/declarations/globals.ts",
 		"src/bin.ts",
-		"src/worker.ts"
+		"src/worker.ts",
+		"src/lib/watcher.ts"
 	],
 //	"include": [
 //		"src/**/*.ts"
