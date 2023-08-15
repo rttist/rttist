@@ -1,7 +1,7 @@
 import type { Server, Request, Response } from "hyper-express";
-import { ClassType, ParameterInfo, FunctionType, InterfaceType } from "rttist";
 import { IController } from "./controllers/IController";
 import { IPathParameterParser } from "./controllers/IPathParameterParser";
+import { ClassType, ParameterInfo, FunctionType, InterfaceType } from "rttist";
 import { Metadata } from "../metadata.typelib";
 
 export class Router {
@@ -12,30 +12,25 @@ export class Router {
 
 	async registerControllers() {
 		//const routeDecoratorType = getType(route);
-		const routeDecoratorType = Metadata.getTypes().find(
+		const typeRoute = Metadata.getTypes().find(
 			(t) => t.isFunction() && t.id.endsWith("/framework/controllers/decorators/route:route")
 		) as FunctionType | undefined;
 
-		if (!routeDecoratorType) throw new Error("Unable to find route decorator type.");
+		if (!typeRoute) throw new Error("Unable to find route decorator type.");
 
-		//const controllerInterfaceType = getType<IController>();
-		const controllerInterfaceType = Metadata.getTypes().find(
+		//const typeIController = getType<IController>();
+		const typeIController = Metadata.getTypes().find(
 			(t) => t.isInterface() && t.id.includes("/framework/controllers/IController:IController")
 		) as InterfaceType | undefined;
 
-		if (!controllerInterfaceType) throw new Error("Unable to find controller interface type.");
+		if (!typeIController) throw new Error("Unable to find controller interface type.");
 
-		// Find all classes extended from IController decorated by the @route.
+		// Find all classes implementing the IController decorated by the @route.
 		const controllers = Metadata.getTypes()
-			.filter(
-				(type) =>
-					type.isClass() && !type.abstract && type.exported && type.isDerivedFrom(controllerInterfaceType)
-			)
+			.filter((type) => type.isClass() && !type.abstract && type.exported && type.isDerivedFrom(typeIController))
 			.map((type) => ({
 				type: type as ClassType,
-				routeDecorator: (type as ClassType)
-					.getDecorators()
-					.find((decorator) => decorator.is(routeDecoratorType)),
+				routeDecorator: (type as ClassType).getDecorators().find((decorator) => decorator.is(typeRoute)),
 			}))
 			.filter((x) => x.routeDecorator !== undefined);
 
@@ -53,6 +48,7 @@ export class Router {
 					return;
 				}
 
+				// controllerInfo.type.getCtor()
 				const ClassCtor: { new (): IController } = module[controllerInfo.type.name];
 
 				// The @route decorator argument

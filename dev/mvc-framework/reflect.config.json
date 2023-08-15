@@ -8,5 +8,5 @@
 		"exclude": []
 	},
 	"devMode": true,
-	"logLevel": "Debug"
+	"logLevel": "Info"
 }
