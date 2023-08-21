@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ES2022",
+		"rootDir": "src",
+		"outDir": "dist",
+		"strict": true,
+		"strictNullChecks": true,
+		"isolatedModules": true,
+		"removeComments": true,
+		"sourceMap": true,
+		"stripInternal": true,
+	},
+	"include": [
+		"./src/**/*.ts"
+	],
+}

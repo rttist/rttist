@@ -1,0 +1,151 @@
+use swc_core::ecma::{
+	ast::Program,
+	ast::CallExpr,
+	ast::EsVersion,
+	ast::Ident,
+	ast::Callee,
+	// transforms::testing::test,
+	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
+};
+use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
+use swc_ecma_parser::{/*parse_file_as_module, */parse_file_as_program, Syntax, TsConfig};
+use swc_core::common::{FileName, SourceMap, sync::Lrc, Span};
+use swc::{Compiler};
+use swc::config::{SourceMapsConfig};
+
+pub struct TransformVisitor;
+
+impl VisitMut for TransformVisitor {
+	fn visit_mut_call_expr(&mut self, call_expression: &mut CallExpr) {
+		call_expression.visit_mut_children_with(self);
+
+		let rtrn = CallExpr {
+			span: Span::default(),
+			args: call_expression.args.clone(),
+			// args: vec![],
+			callee: Callee::Expr(Box::from(Ident::new("iChangedTheCallExpression".into(), Default::default()))),
+			type_args: Default::default(),
+		};
+
+		*call_expression = rtrn
+	}
+}
+
+#[plugin_transform]
+pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
+	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor));
+	transformed_program
+}
+
+
+pub fn transform(source_code: String) -> String {
+	// pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
+	// 	let source_file = swc_core::common::SourceFile::new(swc_core::common::FileName::Real("sourcefile".into()), false, src.into(), );
+	let cm: Lrc<SourceMap> = Default::default();
+	let fm = cm.new_source_file(FileName::Custom("filename.ts".to_string()), source_code);
+	let compiler = Compiler::new(cm);
+
+	// let source_file = Lrc::new(SourceFile::new_from(
+	// 	"filename",
+	// 	false,
+	// 	"filename",
+	// 	src,
+	// 	swc_core::common::Pos::from_usize(start_pos),
+	// ));
+
+	// let program_result = match is_module {
+	// 	IsModule::Bool(true) => {
+	// 		parse_file_as_module(&fm, syntax, target, comments, &mut errors)
+	// 			.map(Program::Module)
+	// 	}
+	// 	IsModule::Bool(false) => {
+	// 		parse_file_as_script(&fm, syntax, target, comments, &mut errors)
+	// 			.map(Program::Script)
+	// 	}
+	// 	IsModule::Unknown => {
+	// 		parse_file_as_program(&fm, syntax, target, comments, &mut errors)
+	// 	}
+	// };
+
+	let mut errors = vec![];
+	// let program = compiler.parse_js(fm).unwrap();
+	let program = parse_file_as_program(&fm, Syntax::Typescript(TsConfig {
+		// let program = parse_file_as_module(&fm, Syntax::Typescript(TsConfig {
+		tsx: true, // filename.to_string_lossy().ends_with(".tsx")
+		decorators: true,
+		dts: false,
+		no_early_errors: false,
+		disallow_ambiguous_jsx_like: false,
+	}), EsVersion::EsNext, Default::default(), &mut errors).unwrap();
+	// swc_ecma_parser::parse_file_as_program().unwrap();
+
+	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor));
+
+	compiler.print(
+		&transformed_program,
+		Some("filename.ts"),
+		None,
+		false,
+		EsVersion::EsNext,
+		SourceMapsConfig::Bool(false),
+		&Default::default(),
+		None,
+		false,
+		None,
+		false,
+		false,
+		"",
+	)
+		.expect("Failed to print")
+		// .map_err(|err| err.to_string())
+		// .unwrap()
+		.code
+}
+
+// An example to test plugin transform.
+// Recommended strategy to test plugin's transform is verify
+// the Visitor's behavior, instead of trying to run `process_transform` with mocks
+// unless explicitly required to do so.
+// test!(
+//     Default::default(),
+//     |_| as_folder(TransformVisitor),
+//     boo,
+//     // Input codes
+//     r#"console.log("transform");"#,
+//     // Output codes after transformed with plugin
+//     r#"console.log("transform");"#
+// );
+
+// #[test]
+// fn test_typescript() {
+// 	let source = r#"
+// function logParameter(target: Object, propertyName: string) {
+//   console.log(target, propertyName);
+// }
+//
+//
+// function logClass(target: Function) {
+//   console.log(target)
+// }
+//
+// @logClass
+// export class Employee {
+//   @logParameter
+//   name: string;
+// }
+//     "#.to_string();
+//
+// 	let res = GLOBALS.set(&Default::default(), || transform(source));
+//
+//
+// 	println!("{}", res);
+//
+// 	// match res {
+// 	// 	Ok(output) => {
+// 	// 		println!("{}", output);
+// 	// 	}
+// 	// 	Err(msg) => {
+// 	// 		println!("{}", msg);
+// 	// 	}
+// 	// };
+// }

@@ -1,0 +1,19 @@
+[package]
+name = "test"
+version = "0.1.0"
+edition = "2021"
+
+#[[bin]]
+#name = "swc_plugin_rttist_bin"
+#path = "src/main.rs"
+
+[dependencies]
+serde = "1"
+swc = "0.264.63"
+swc_core = { version = "0.79.*", features = ["ecma_plugin_transform"] }
+swc_ecma_parser = "0.137.15"
+swc_plugin_rttist = { path = "../swc-plugin-rttist" }
+
+# .cargo/config defines few alias to build plugin.
+# cargo build-wasi generates wasm-wasi32 binary
+# cargo build-wasm32 generates wasm32-unknown-unknown binary.

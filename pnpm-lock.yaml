@@ -97,6 +97,28 @@ importers:
         specifier: ^4.8.0
         version: 4.8.3
 
+  packages/plugins/swc:
+    dependencies:
+      '@rttist/core':
+        specifier: workspace:^
+        version: link:../../core
+      '@rttist/typegen':
+        specifier: workspace:^
+        version: link:../../typegen
+      '@swc/core':
+        specifier: ^1.3.70
+        version: 1.3.70
+      woodpile:
+        specifier: ^0.0.5
+        version: 0.0.5
+    devDependencies:
+      '@types/node':
+        specifier: ^16.0.0
+        version: 16.18.38
+      rimraf:
+        specifier: ^3.0.2
+        version: 3.0.2
+
   packages/plugins/vite:
     dependencies:
       '@rttist/core':
@@ -5711,6 +5733,10 @@ packages:
   /wildcard@2.0.1:
     resolution: {integrity: sha512-CC1bOL87PIWSBhDcTrdeLo6eGT7mCFtrg0uIJtqJUFyK+eJnzl8A1niH56uu7KMa5XFrtiV+AQuHO3n7DsHnLQ==}
     dev: true
+
+  /woodpile@0.0.5:
+    resolution: {integrity: sha512-ICRUO/RPXlKiFhSlvX6eyG5oCvDnt2dWHLhwxevYwomTC7nrAsOnljQQwe9AidgAV9ayXptwOKunwV0MeWpEBQ==}
+    dev: false
 
   /wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
