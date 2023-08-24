@@ -1,9 +1,19 @@
 use swc_core::ecma::{
+	ast,
 	ast::Program,
 	ast::CallExpr,
 	ast::EsVersion,
 	ast::Ident,
 	ast::Callee,
+	ast::MemberExpr,
+	ast::MemberProp,
+	ast::Expr,
+	ast::ExprOrSpread,
+	ast::Str,
+	ast::ModuleItem,
+	ast::ModuleDecl,
+	ast::ImportDecl,
+	ast::ImportSpecifier,
 	// transforms::testing::test,
 	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
@@ -12,28 +22,92 @@ use swc_ecma_parser::{/*parse_file_as_module, */parse_file_as_program, Syntax, T
 use swc_core::common::{FileName, SourceMap, sync::Lrc, Span};
 use swc::{Compiler};
 use swc::config::{SourceMapsConfig};
+use swc_core::ecma::ast::Module;
 
-pub struct TransformVisitor;
+const METADATA_IMPORT_IDENTIFIER: &str = "___metadataImport___";
+
+pub struct TransformVisitor {
+	// module: *mut Module,
+	add_import: bool,
+}
 
 impl VisitMut for TransformVisitor {
 	fn visit_mut_call_expr(&mut self, call_expression: &mut CallExpr) {
 		call_expression.visit_mut_children_with(self);
 
-		let rtrn = CallExpr {
-			span: Span::default(),
-			args: call_expression.args.clone(),
-			// args: vec![],
-			callee: Callee::Expr(Box::from(Ident::new("iChangedTheCallExpression".into(), Default::default()))),
-			type_args: Default::default(),
-		};
+		if call_expression.type_args.is_some() {
+			if let Some(expr) = call_expression.callee.as_expr() {
+				if let Some(identifier) = expr.as_ident() {
+					if identifier.sym.to_string() == "getType".to_string() {
+						self.add_import = true;
 
-		*call_expression = rtrn
+						let rtrn = CallExpr {
+							span: Span::default(),
+							// args: call_expression.args.clone(),
+							args: vec![ExprOrSpread::from(Expr::from(Str {
+								span: Span::default(),
+								value: "type identifier".into(),
+								raw: None,
+							}))/*, ArrayLit {
+						span: Span::default(),
+						elems: call_expression.args.clone(),
+					}.as_arg()*/],
+							callee: Callee::Expr(Box::new(MemberExpr {
+								span: Span::default(),
+								obj: Box::new(Ident {
+									span: Span::default(),
+									sym: METADATA_IMPORT_IDENTIFIER.into(),
+									optional: false,
+								}.into()),
+								prop: MemberProp::from(Ident::new("resolveType".into(), Default::default())),
+							}.into())),
+							type_args: Default::default(),
+						};
+
+						*call_expression = rtrn
+					}
+				}
+			}
+		}
+	}
+
+	fn visit_mut_module(&mut self, module: &mut Module) {
+		// *self.module = &module;
+
+		module.visit_mut_children_with(self);
+
+		if self.add_import {
+			module.body.insert(0, ModuleItem::ModuleDecl(
+				ModuleDecl::Import(ImportDecl {
+					span: Span::default(),
+					specifiers: vec![ImportSpecifier::Namespace(ast::ImportStarAsSpecifier {
+						span: Span::default(),
+						local: Ident {
+							span: Span::default(),
+							sym: METADATA_IMPORT_IDENTIFIER.into(),
+							optional: false,
+							// type_ann: Default::default(),
+						},
+					})],
+					src: Box::new(Str {
+						span: Span::default(),
+						value: "./metadata.typelib".into(),
+						raw: None,
+					}),
+					type_only: false,
+					asserts: None,
+				})
+			));
+		}
 	}
 }
 
 #[plugin_transform]
 pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
-	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor));
+	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor {
+		// module: &mut program.expect_module(),
+		add_import: false,
+	}));
 	transformed_program
 }
 
@@ -79,7 +153,10 @@ pub fn transform(source_code: String) -> String {
 	}), EsVersion::EsNext, Default::default(), &mut errors).unwrap();
 	// swc_ecma_parser::parse_file_as_program().unwrap();
 
-	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor));
+	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor {
+		// module: &mut program.expect_module(),
+		add_import: false,
+	}));
 
 	compiler.print(
 		&transformed_program,

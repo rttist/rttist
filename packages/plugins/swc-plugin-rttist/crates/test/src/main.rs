@@ -22,7 +22,8 @@ export class Employee {
   name: string;
 }
 
-
+getType(Employee);
+getType<number>()
 getType(getType<string>());
     "#.to_string();
 
