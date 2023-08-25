@@ -22,12 +22,20 @@ export class Employee {
   name: string;
 }
 
+export class Foo extends Employee {
+	bar: string;
+	static {
+		console.log(Foo);
+	}
+}
+
 getType(Employee);
+getType<Employee>();
 getType<number>()
 getType(getType<string>());
     "#.to_string();
 
-	let res = transform(source);
+	let res = transform("F:/Work/sandbox/rttist-test/some-file.ts".to_string(), source);
 
 
 	println!("{}", res);
