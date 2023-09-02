@@ -1,9 +1,9 @@
-mod generate_module_id;
-mod generate_type_id;
+pub mod generate_module_id;
+pub mod generate_type_id;
 
 use swc_core::ecma::{
 	ast,
-	ast::Program,
+	// ast::Program,
 	ast::CallExpr,
 	ast::EsVersion,
 	ast::Ident,
@@ -20,7 +20,7 @@ use swc_core::ecma::{
 	// transforms::testing::test,
 	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
-use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
+// use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
 use swc_ecma_parser::{/*parse_file_as_module, */parse_file_as_program, Syntax, TsConfig};
 use swc_core::common::{FileName, SourceMap, sync::Lrc, Span};
 use swc::{Compiler};
@@ -36,6 +36,15 @@ pub struct TransformVisitor {
 	// module: *mut Module,
 	module_id: ModuleIdentifier,
 	add_import: bool,
+}
+
+impl TransformVisitor {
+	pub fn new(module_id: String) -> TransformVisitor {
+		TransformVisitor {
+			module_id: generate_module_id(module_id),
+			add_import: false
+		}
+	}
 }
 
 impl VisitMut for TransformVisitor {
@@ -80,6 +89,8 @@ impl VisitMut for TransformVisitor {
 	}
 
 	fn visit_mut_class_decl(&mut self, declaration: &mut ClassDecl) {
+		declaration.visit_mut_children_with(self);
+
 		/*
 		add static block:
 		static {
@@ -134,6 +145,8 @@ impl VisitMut for TransformVisitor {
 	}
 
 	fn visit_mut_fn_decl(&mut self, declaration: &mut FnDecl) {
+		declaration.visit_mut_children_with(self);
+
 		let ass = Box::new(Expr::Assign(ast::AssignExpr {
 			span: Span::default(),
 			op: ast::AssignOp::Assign,
@@ -254,17 +267,16 @@ impl VisitMut for TransformVisitor {
 	}
 }
 
-#[plugin_transform]
-pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
-	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor {
-		// module: &mut program.expect_module(),
-
-		module_id: generate_module_id(_metadata.source_map.source_file.get().unwrap().name.to_string()),
-		add_import: false,
-	}));
-	transformed_program
-}
-
+// #[plugin_transform]
+// pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
+// 	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor {
+// 		// module: &mut program.expect_module(),
+//
+// 		module_id: generate_module_id(_metadata.source_map.source_file.get().unwrap().name.to_string()),
+// 		add_import: false,
+// 	}));
+// 	transformed_program
+// }
 
 pub fn transform(file_path: String, source_code: String) -> String {
 	// pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {

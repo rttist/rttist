@@ -1,0 +1,23 @@
+[package]
+name = "rttist_ts_loader"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rttist_ts_loader"
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+serde = "1"
+swc = "0.264.63"
+swc_core = { version = "0.79.*", features = ["ecma_plugin_transform"] }
+swc_ecma_parser = "0.137.15"
+rttist_swc_transformer = { path = "../rttist-swc-transformer" }
+wasm-bindgen = { version = "0.2.82", features = ["enable-interning"] }
+
+# .cargo/config defines few alias to build plugin.
+# cargo build-wasi generates wasm-wasi32 binary
+# cargo build-wasm32 generates wasm32-unknown-unknown binary.

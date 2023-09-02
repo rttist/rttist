@@ -1,7 +1,7 @@
 use crate::generate_module_id::ModuleIdentifier;
 use swc_core::ecma::{
 	ast,
-	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
+	// visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
 
 // pub fn generate_type_id(file_path: String, declaration: &ast::ClassDecl) -> String {

@@ -1,9 +1,0 @@
-[workspace]
-members = ["crates/*"]
-
-[profile.release]
-lto = true
-## Optimize for size
-#opt-level = "s"
-## Strip debug symbols
-#strip = "symbols"

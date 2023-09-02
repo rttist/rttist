@@ -1,5 +1,5 @@
 use swc_core::common::{GLOBALS};
-use swc_plugin_rttist::transform;
+use rttist_swc_transformer::transform;
 
 fn main() {
 	GLOBALS.set(&Default::default(), || test());

@@ -3,6 +3,7 @@
     - 'packages/rttist'
 #    - 'packages/runtime' TODO: This is new thin tst-reflect on top of Rttist
     - 'packages/typegen'
+    - 'packages/plugins/rust/crates/rttist-native-ts-loader'
     - 'packages/plugins/vite'
 #    - 'packages/plugins/swc'
     - 'tests/'

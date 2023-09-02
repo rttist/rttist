@@ -1,20 +1,18 @@
 [package]
-name = "swc_plugin_rttist"
+name = "test"
 version = "0.1.0"
 edition = "2021"
 
-#[lib]
-#name = "swc_plugin_rttist"
-#crate-type = ["cdylib"]
-
-[profile.release]
-lto = true
+#[[bin]]
+#name = "swc_plugin_rttist_bin"
+#path = "src/main.rs"
 
 [dependencies]
 serde = "1"
 swc = "0.264.63"
 swc_core = { version = "0.79.*", features = ["ecma_plugin_transform"] }
 swc_ecma_parser = "0.137.15"
+rttist_swc_transformer = { path = "../rttist-swc-transformer" }
 
 # .cargo/config defines few alias to build plugin.
 # cargo build-wasi generates wasm-wasi32 binary

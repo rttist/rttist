@@ -1,0 +1,15 @@
+{
+    "name": "@rttist/swc-transformer",
+	"version": "0.1.0-proto.0",
+	"description": "RTTIST reflection TypeScript transformer",
+    "author": "Roman Jámbor",
+    "license": "MIT",
+    "keywords": ["rttist", "plugin", "swc", "transformer", "reflection", "typescript", "runtime"],
+    "main": "target/wasm32-wasi/release/rttist_swc_transformer.wasm",
+    "scripts": {
+        "prepublishOnly": "cargo build --target wasm32-wasi --release",
+        "prepublishOnly_orig": "cargo build-wasi --release"
+    },
+    "files": [],
+    "preferUnplugged": true
+}
