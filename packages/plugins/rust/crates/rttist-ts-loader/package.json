@@ -1,31 +1,29 @@
 {
-    "name": "@rttist/ts-loader",
-    "version": "0.1.0-proto.0",
-    "description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
-    "author": "Roman Jámbor",
-    "license": "MIT",
-    "keywords": [
-        "rttist",
-        "plugin",
-        "swc",
-        "transformer",
-        "reflection",
-        "loader",
-        "typescript",
-        "runtime"
-    ],
-    "main": "dist/rttist_ts_loader.wasm",
-    "scripts": {
-        "prepublishOnly": "cargo build-wasm32 --release && node scripts/copy-files.js"
-    },
-    "files": [
-        "dist/rttist_ts_loader.wasm",
-        "dist/index.d.ts",
-        "dist/index.js"
-    ],
-    "preferUnplugged": true,
-    "devDependencies": {
-        "@types/node": "^20.5.8",
-        "typescript": "^5.2.2"
-    }
+	"name": "@rttist/ts-loader",
+	"version": "0.1.0-proto.0",
+	"description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"keywords": [
+		"rttist",
+		"plugin",
+		"swc",
+		"transformer",
+		"reflection",
+		"loader",
+		"typescript",
+		"runtime"
+	],
+	"main": "dist/index.js",
+	"devDependencies": {
+		"neon-cli": "^0.10.1",
+		"typescript": "^5.2.2"
+	},
+	"scripts": {
+		"prepublishOnly": "neon build --release && tsc"
+	},
+	"files": [
+		"dist/**/*",
+		"native/index.node"
+	]
 }

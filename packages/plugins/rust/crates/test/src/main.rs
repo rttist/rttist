@@ -1,12 +1,13 @@
 use swc_core::common::{GLOBALS};
 use rttist_swc_transformer::transform;
+use rttist_swc_transformer::types::{PackageInfo, TransformerContext};
 
 fn main() {
-	GLOBALS.set(&Default::default(), || test());
+    GLOBALS.set(&Default::default(), || test());
 }
 
 fn test() {
-	let source = r#"
+    let source = r#"
 function logParameter(target: Object, propertyName: string) {
   console.log(target, propertyName);
 }
@@ -35,8 +36,11 @@ getType<number>()
 getType(getType<string>());
     "#.to_string();
 
-	let res = transform("F:/Work/sandbox/rttist-test/some-file.ts".to_string(), source);
+    let res = transform(
+        "F:/Work/sandbox/rttist-test/some-file.ts".to_string(),
+        source,
+        TransformerContext::new(PackageInfo::new("rttist-test-pkg".to_string(), "F:/Work/sandbox/rttist-test".to_string())),
+    );
 
-
-	println!("{}", res);
+    println!("{}", res);
 }

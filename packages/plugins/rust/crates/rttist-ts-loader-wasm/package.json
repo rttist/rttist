@@ -1,0 +1,32 @@
+{
+    "name": "@rttist/ts-loader-wasm",
+    "version": "0.1.0-proto.0",
+    "description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
+    "author": "Roman Jámbor",
+    "license": "MIT",
+    "keywords": [
+        "rttist",
+        "plugin",
+        "swc",
+        "transformer",
+        "reflection",
+        "loader",
+        "typescript",
+        "runtime"
+    ],
+    "main": "pkg/rttist_ts_loader_wasm.js",
+    "types": "pkg/rttist_ts_loader_wasm.d.ts",
+    "files": [
+        "pkg/rttist_ts_loader_wasm_bg.wasm",
+        "pkg/rttist_ts_loader_wasm.js",
+        "pkg/rttist_ts_loader_wasm.d.ts"
+    ],
+    "scripts": {
+        "prepublishOnly": "npx wasm-pack build --scope swc -t nodejs --release",
+        "prepublishOnly_old": "cargo build-wasm32 --release && node scripts/copy-files.js"
+    },
+    "devDependencies": {
+        "@types/node": "^20.5.8",
+        "typescript": "^5.2.2"
+    }
+}

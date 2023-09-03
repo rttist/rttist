@@ -1,11 +1,12 @@
 pub mod generate_module_id;
 pub mod generate_type_id;
+pub mod types;
+mod utils;
 
+use std::sync::Arc;
 use swc_core::ecma::{
 	ast,
-	// ast::Program,
 	ast::CallExpr,
-	ast::EsVersion,
 	ast::Ident,
 	ast::Callee,
 	ast::MemberExpr,
@@ -17,32 +18,37 @@ use swc_core::ecma::{
 	ast::ModuleDecl,
 	ast::ImportDecl,
 	ast::ImportSpecifier,
-	// transforms::testing::test,
 	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
-// use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
-use swc_ecma_parser::{/*parse_file_as_module, */parse_file_as_program, Syntax, TsConfig};
-use swc_core::common::{FileName, SourceMap, sync::Lrc, Span};
+use swc_ecma_ast::EsVersion as ast_EsVersion;
+use swc_ecma_parser::{parse_file_as_program, Syntax, TsConfig};
+use swc_core::common::{Span};
+use swc_common::source_map::SourceMap;
+use swc_common::{
+	FileName
+};
 use swc::{Compiler};
 use swc::config::{SourceMapsConfig};
-use swc_core::ecma::ast::{BlockStmt, ClassDecl, ClassMember, FnDecl, Module, Stmt};
-use crate::generate_module_id::{generate_module_id, ModuleIdentifier};
+use swc_core::ecma::ast::{BlockStmt, ClassDecl, ClassMember, FnDecl, Module, Stmt, EsVersion};
+use crate::generate_module_id::{ModuleIdentifier};
 use crate::generate_type_id::{TypeIdentifier};
+use crate::types::{TransformerContext};
 
 const METADATA_IMPORT_IDENTIFIER: &str = "___metadataImport___";
 const PROTOTYPE_TYPE_PROPERTY_NAME: &str = "[[type]]";
 
 pub struct TransformVisitor {
-	// module: *mut Module,
 	module_id: ModuleIdentifier,
 	add_import: bool,
+	transformer_context: TransformerContext,
 }
 
 impl TransformVisitor {
-	pub fn new(module_id: String) -> TransformVisitor {
+	pub fn new(module_id: String, transformer_context: TransformerContext) -> TransformVisitor {
 		TransformVisitor {
-			module_id: generate_module_id(module_id),
-			add_import: false
+			module_id: ModuleIdentifier::for_file(module_id, &transformer_context),
+			add_import: false,
+			transformer_context
 		}
 	}
 }
@@ -260,7 +266,7 @@ impl VisitMut for TransformVisitor {
 						raw: None,
 					}),
 					type_only: false,
-					asserts: None,
+					with: None
 				})
 			));
 		}
@@ -278,10 +284,10 @@ impl VisitMut for TransformVisitor {
 // 	transformed_program
 // }
 
-pub fn transform(file_path: String, source_code: String) -> String {
+pub fn transform(file_path: String, source_code: String, transformer_context: TransformerContext) -> String {
 	// pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
 	// 	let source_file = swc_core::common::SourceFile::new(swc_core::common::FileName::Real("sourcefile".into()), false, src.into(), );
-	let cm: Lrc<SourceMap> = Default::default();
+	let cm: Arc<SourceMap> = Default::default();
 	let fm = cm.new_source_file(FileName::Custom(file_path.to_string()), source_code);
 	let compiler = Compiler::new(cm);
 
@@ -309,24 +315,20 @@ pub fn transform(file_path: String, source_code: String) -> String {
 
 	let mut errors = vec![];
 	// let program = compiler.parse_js(fm).unwrap();
-	let program = parse_file_as_program(&fm, Syntax::Typescript(TsConfig {
+	let program = parse_file_as_program(fm.as_ref(), Syntax::Typescript(TsConfig {
 		// let program = parse_file_as_module(&fm, Syntax::Typescript(TsConfig {
 		tsx: true, // filename.to_string_lossy().ends_with(".tsx")
 		decorators: true,
 		dts: false,
 		no_early_errors: false,
 		disallow_ambiguous_jsx_like: false,
-	}), EsVersion::EsNext, Default::default(), &mut errors).unwrap();
+	}), ast_EsVersion::EsNext, Default::default(), &mut errors).unwrap();
 	// swc_ecma_parser::parse_file_as_program().unwrap();
 
-	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor {
-		// module: &mut program.expect_module(),
-		module_id: generate_module_id(file_path.to_string()),
-		add_import: false,
-	}));
+	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor::new(file_path.to_string(), transformer_context)));
 
 	compiler.print(
-		&transformed_program,
+		&transformed_program.expect_module(),
 		Some("filename.ts"),
 		None,
 		false,

@@ -2,23 +2,21 @@
 	"compilerOptions": {
 		"module": "CommonJS",
 		"target": "ES2020",
-		"lib": ["ES2020", "DOM"],
+		"lib": ["ES2020"],
 		"sourceMap": false,
 		"strict": true,
 		"stripInternal": true,
 		"declaration": true,
 		"outDir": "dist",
-		"rootDir": ".",
+		"rootDir": "lib",
 		"baseUrl": ".",
 		"isolatedModules": true,
 		"allowJs": true
 //		"types": []
 	},
 	"files": [
-		"js/index.ts"
+		"lib/index.ts"
 	],
-	"include": [
-//		"pkg/*.js"
-	],
+	"include": [],
 	"exclude": []
 }

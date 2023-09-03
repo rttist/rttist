@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/rttist-swc-transformer", "crates/swc-plugin-rttist", "crates/rttist-native-ts-loader/native"]
+members = ["crates/rttist-swc-transformer", "crates/swc-plugin-rttist", "crates/rttist-ts-loader/native", "crates/rttist-ts-loader-wasm", "crates/test"]
 resolver = "2"
 
 [profile.release]
