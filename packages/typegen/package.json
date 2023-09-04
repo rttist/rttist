@@ -1,6 +1,6 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.1.0-proto.8",
+	"version": "0.1.0-proto.9",
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
 	"bin": {

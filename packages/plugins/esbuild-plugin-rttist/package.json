@@ -1,0 +1,57 @@
+{
+	"name": "esbuild-plugin-rttist",
+	"version": "0.1.0",
+	"description": "RTTIST plugin adding support for advanced reflection features to esbuild",
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"keywords": [
+		"rttist",
+		"plugin",
+		"esbuild",
+		"esbuild-plugin",
+		"swc",
+		"transformer",
+		"reflection",
+		"loader",
+		"typescript",
+		"runtime"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/esm/index.js",
+	"type": "commonjs",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"default": "./dist/index.js",
+			"require": "./dist/index.js",
+			"import": "./dist/esm/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./dist/public.typelib": "./dist/public.typelib.js"
+	},
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"dependencies": {
+		"tsup": "^7.2.0",
+		"@rttist/ts-loader-wasm": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^16.0.0"
+	},
+	"peerDependencies": {
+		"esbuild": "^0.19.2"
+	},
+	"scripts": {
+		"prepublishOnly": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --dts"
+	},
+	"files": [
+		"LICENSE",
+		"README.md",
+		"dist/index.js",
+		"dist/public.typelib.js",
+		"dist/esm/index.js",
+		"dist/esm/package.json",
+		"dist/**/*.d.ts"
+	]
+}
