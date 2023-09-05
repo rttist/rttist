@@ -1,6 +1,6 @@
 {
 	"name": "esbuild-plugin-rttist",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "RTTIST plugin adding support for advanced reflection features to esbuild",
 	"author": "Roman Jámbor",
 	"license": "MIT",

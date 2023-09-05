@@ -51,6 +51,22 @@ export type RttistPluginOptions = {
 };
 
 export function rttistPlugin(pluginOptions: RttistPluginOptions) {
+	if (!pluginOptions.tsRootDir || pluginOptions.tsRootDir.length === 0) {
+		throw new Error("tsRootDir is required");
+	}
+
+	if (
+		!pluginOptions.packageInfo ||
+		!pluginOptions.packageInfo.rootDir ||
+		pluginOptions.packageInfo.rootDir.length === 0
+	) {
+		throw new Error("packageInfo.rootDir is required");
+	}
+
+	if (!pluginOptions.packageInfo.name || pluginOptions.packageInfo.name.length === 0) {
+		throw new Error("packageInfo.name is required");
+	}
+
 	return {
 		name: "esbuild-plugin-rttist",
 		setup(build) {
@@ -61,12 +77,6 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions) {
 			});
 
 			build.onLoad({ filter: /\.(tsx?|mts|cts)$/ }, async (args) => {
-				if (args.namespace == "rttist.ignore") {
-					return {
-						contents: "",
-					} satisfies esbuild.OnLoadResult;
-				}
-
 				const input = await fs.promises.readFile(args.path, "utf8");
 				const transformed = transform(
 					input,
