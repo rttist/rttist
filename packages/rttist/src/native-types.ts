@@ -1,6 +1,6 @@
 import { Type } from "./Type";
 import { ParameterFlags, TypeKind } from "./enums";
-import { FunctionType } from "./types";
+import { FunctionType, LiteralType } from "./types";
 import { ModuleIds, TypeIds } from "@rttist/core";
 
 let created = false;
@@ -55,8 +55,20 @@ export function getNativeTypes() {
 			Number: cn("Number", "Number"),
 			BigInt: cn("BigInt", "BigInt"),
 			Boolean: cn("Boolean", "Boolean"),
-			True: cn("true", "True"),
-			False: cn("false", "False"),
+			True: new LiteralType({
+				id: TypeIds.True,
+				kind: TypeKind.True,
+				name: "true",
+				module: ModuleIds.Native,
+				value: true,
+			}),
+			False: new LiteralType({
+				id: TypeIds.False,
+				kind: TypeKind.False,
+				name: "false",
+				module: ModuleIds.Native,
+				value: false,
+			}),
 			Date: cn("Date", "Date"),
 			Error: cn("Error", "Error"),
 			Symbol: cn("Symbol", "Symbol"),

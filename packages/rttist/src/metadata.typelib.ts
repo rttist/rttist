@@ -13,6 +13,7 @@ ModuleImporter.registerImporters({
 });
 
 export const getType = createGetTypeFunction(InternalMetadataLibrary);
+export const resolveType = InternalMetadataLibrary.resolveType.bind(InternalMetadataLibrary);
 
 /** @internal */
 export const Metadata: MetadataLibrary = InternalMetadataLibrary;
