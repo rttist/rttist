@@ -97,6 +97,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/rttist
     devDependencies:
+      '@rttist/typegen':
+        specifier: workspace:*
+        version: link:../../../packages/typegen
       esbuild:
         specifier: ^0.19.2
         version: 0.19.2
@@ -113,7 +116,7 @@ importers:
   packages/plugins/esbuild-plugin-rttist:
     dependencies:
       '@rttist/ts-loader-wasm':
-        specifier: workspace:*
+        specifier: workspace:^*
         version: link:../rust/crates/rttist-ts-loader-wasm
       esbuild:
         specifier: ^0.19.2
