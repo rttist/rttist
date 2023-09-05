@@ -34,7 +34,7 @@
 	},
 	"dependencies": {
 		"tsup": "^7.2.0",
-		"@rttist/ts-loader-wasm": "workspace:*"
+		"@rttist/ts-loader-wasm": "workspace:^*"
 	},
 	"devDependencies": {
 		"@types/node": "^16.0.0"
