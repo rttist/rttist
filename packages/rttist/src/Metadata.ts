@@ -10,8 +10,32 @@ import { ModuleIds } from "@rttist/core";
 import { Module } from "./Module";
 import { Type } from "./Type";
 import { MetadataScope } from "./metadata-scope";
-import { LiteralType } from "./types";
+import {
+	ArrayType,
+	IntersectionType,
+	LiteralType,
+	MapType,
+	PromiseType,
+	ReadonlyArrayType,
+	SetType,
+	TupleType,
+	UnionType,
+	WeakMapType,
+	WeakSetType,
+} from "./types";
 import { TypeKind } from "./enums";
+
+const TYPE_IDENTIFIER_REGEX = /^#(.+?)\{(.+?)}(\?)?$/;
+const NATIVE_KNOWN_TYPES_CTOR_MAP = new Map<string, new (...args: any[]) => Type>([
+	["Promise", PromiseType],
+	["Array", ArrayType],
+	["ReadonlyArray", ReadonlyArrayType],
+	["Set", SetType],
+	["WeakSet", WeakSetType],
+	["Map", MapType],
+	["WeakMap", WeakMapType],
+	["Tuple", TupleType],
+]);
 
 export class MetadataLibrary {
 	private readonly modules = new Map<ModuleIdentifier, Module>();
@@ -106,11 +130,11 @@ export class MetadataLibrary {
 			return existingType;
 		}
 
-		// Ad-hoc literal types
-		if (id.slice(0, 3) == "#L(") {
-			const type = this.createLiteralType(id);
-			this.addType(type);
-			return type;
+		// Ad-hoc types
+		const adhocType = this.handleAdhocType(id);
+
+		if (adhocType) {
+			return adhocType;
 		}
 
 		return Type.Invalid;
@@ -244,6 +268,63 @@ export class MetadataLibrary {
 			module: ModuleIds.Native,
 			name: value,
 		});
+	}
+
+	private getTypeIdInfo(id: TypeReference) {
+		const match = id.match(TYPE_IDENTIFIER_REGEX);
+
+		if (!match) {
+			return;
+		}
+
+		return {
+			type: match[1],
+			arguments: match[2].split(","),
+			nullable: match[3] === "?",
+		};
+	}
+
+	private handleAdhocType(id: TypeReference) {
+		if (id.slice(0, 3) == "#L(") {
+			const type = this.createLiteralType(id);
+			this.addType(type);
+			return type;
+		}
+
+		const typeIdInfo = this.getTypeIdInfo(id);
+
+		if (!typeIdInfo) {
+			return;
+		}
+
+		// UNION or INTERSECTION
+		if (typeIdInfo.type === "|" || typeIdInfo.type === "&") {
+			const type = new (typeIdInfo.type === "|" ? UnionType : IntersectionType)({
+				id: id,
+				module: ModuleIds.Native,
+				name: typeIdInfo.type,
+				kind: TypeKind.Union,
+				types: typeIdInfo.arguments,
+				nullable: typeIdInfo.nullable,
+			});
+			this.addType(type);
+			return type;
+		}
+
+		// NATIVE GENERIC TYPEs
+		const Ctor = NATIVE_KNOWN_TYPES_CTOR_MAP.get(typeIdInfo.type);
+
+		if (Ctor) {
+			const type = new Ctor({
+				id: id,
+				module: ModuleIds.Native,
+				name: `${typeIdInfo.type}<'${typeIdInfo.arguments.length}>`,
+				kind: TypeKind.Type,
+				typeArguments: typeIdInfo.arguments.map((typeId) => typeId),
+			});
+			this.addType(type);
+			return type;
+		}
 	}
 }
 

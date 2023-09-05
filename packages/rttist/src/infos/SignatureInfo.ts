@@ -3,6 +3,7 @@ import type { SignatureMetadataBase } from "../declarations";
 import { LazyType } from "../utils/LazyType";
 import { LazyTypeArray } from "../utils/LazyTypeArray";
 import { ParameterInfo } from "./ParameterInfo";
+import { TypeParameterType } from "../types";
 
 export class SignatureInfo {
 	/**
@@ -52,7 +53,7 @@ export class SignatureInfo {
 	/**
 	 * Returns array of type parameters.
 	 */
-	getTypeParameters(): ReadonlyArray<Type> {
-		return this._typeParametersRef.types;
+	getTypeParameters(): ReadonlyArray<TypeParameterType> {
+		return this._typeParametersRef.types as ReadonlyArray<TypeParameterType>;
 	}
 }
