@@ -88,8 +88,14 @@ export interface EnumLiteralTypeMetadata extends TypeMetadata {
 }
 
 export interface LiteralTypeMetadata extends TypeMetadata {
-	kind: TypeKind.NumberLiteral | TypeKind.StringLiteral | TypeKind.BigIntLiteral | TypeKind.RegExpLiteral;
-	value: number | string | bigint | RegExp;
+	kind:
+		| TypeKind.NumberLiteral
+		| TypeKind.StringLiteral
+		| TypeKind.BigIntLiteral
+		| TypeKind.RegExpLiteral
+		| TypeKind.True
+		| TypeKind.False;
+	value: number | string | bigint | RegExp | boolean;
 }
 
 export interface TemplateTypeMetadata extends TypeMetadata {

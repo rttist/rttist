@@ -10,6 +10,8 @@ import { ModuleIds } from "@rttist/core";
 import { Module } from "./Module";
 import { Type } from "./Type";
 import { MetadataScope } from "./metadata-scope";
+import { LiteralType } from "./types";
+import { TypeKind } from "./enums";
 
 export class MetadataLibrary {
 	private readonly modules = new Map<ModuleIdentifier, Module>();
@@ -98,7 +100,20 @@ export class MetadataLibrary {
 
 		// TODO: Resolve aliases
 
-		return this.types.get(id) ?? this.parentLibrary?.types.get(id) ?? Type.Invalid;
+		const existingType = this.types.get(id) ?? this.parentLibrary?.types.get(id);
+
+		if (existingType) {
+			return existingType;
+		}
+
+		// Ad-hoc literal types
+		if (id.slice(0, 3) == "#L(") {
+			const type = this.createLiteralType(id);
+			this.addType(type);
+			return type;
+		}
+
+		return Type.Invalid;
 	}
 
 	/**
@@ -205,6 +220,30 @@ export class MetadataLibrary {
 		});
 
 		// TODO: maybe we can resolve aliases here? Always store alias and final type; not alias to alias. But it will cost startup time.
+	}
+
+	private createLiteralType(id: string) {
+		const value = id.slice(3, -1);
+		const kind =
+			value[value.length - 1] === "n"
+				? TypeKind.BigIntLiteral
+				: value[0] === "'"
+				? TypeKind.StringLiteral
+				: value === "true"
+				? TypeKind.True
+				: value === "false"
+				? TypeKind.False
+				: value[0] === "/"
+				? TypeKind.RegExpLiteral
+				: TypeKind.NumberLiteral;
+
+		return new LiteralType({
+			id: id,
+			value: kind === TypeKind.StringLiteral ? value.slice(1, -1) : value,
+			kind: kind,
+			module: ModuleIds.Native,
+			name: value,
+		});
 	}
 }
 
