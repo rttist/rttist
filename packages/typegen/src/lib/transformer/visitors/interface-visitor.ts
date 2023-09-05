@@ -13,4 +13,8 @@ export function interfaceVisitor(declaration: ts.InterfaceDeclaration, context: 
 		undefined,
 		context
 	);
+
+	if (declaration.typeParameters) {
+		context.metadata.generateMetadataForTypeParameters(declaration.typeParameters, context);
+	}
 }

@@ -1,16 +1,10 @@
-import type { ModuleIdentifier, ModuleReference, TypeIdentifier } from "rttist";
+import type { ModuleIdentifier, TypeIdentifier } from "rttist";
 import { TargetPlatform } from "../../declarations/target-platform";
 import type { TypeInfo } from "../../declarations/type-info";
-import type {
-	ModuleMetadataProperties,
-	ModuleProperties,
-	TypePropertiesWithId,
-} from "../../declarations/type-properties";
+import type { ModuleMetadataProperties, ModuleProperties } from "../../declarations/type-properties";
 import * as ts from "typescript";
 import { ModuleIds } from "@rttist/core";
 import { Config } from "../config/config";
-import { Context } from "../transformer/contexts/context";
-import { getTypeProperties } from "../transformer/properties/get-type-properties";
 import { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
 
 /**

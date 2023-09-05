@@ -123,6 +123,19 @@ export class MetadataLibrary {
 		// return typeRef;
 	}
 
+	generateMetadataForTypeParameters(typeParameters: ts.NodeArray<ts.TypeParameterDeclaration>, context: Context) {
+		for (let tp of typeParameters) {
+			this.generateMetadataForType(
+				context.transformerContext.syntaxTypeChecker.getType(tp),
+				context.typeChecker.getTypeAtLocation(tp),
+				false,
+				context.typeChecker.getSymbolAtLocation(tp),
+				undefined,
+				context
+			);
+		}
+	}
+
 	// /**
 	//  * Get ModuleMetadata. Create if not exists yet.
 	//  * @param typeRef

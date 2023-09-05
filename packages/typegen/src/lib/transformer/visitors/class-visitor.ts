@@ -14,6 +14,10 @@ export function classVisitor(declaration: ts.ClassDeclaration | ts.ClassExpressi
 		context
 	);
 
+	if (declaration.typeParameters) {
+		context.metadata.generateMetadataForTypeParameters(declaration.typeParameters, context);
+	}
+
 	context.visitWithNewContext(declaration, visitClassDeclaration);
 }
 

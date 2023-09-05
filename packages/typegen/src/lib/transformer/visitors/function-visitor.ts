@@ -1,13 +1,14 @@
 import * as ts from "typescript";
 import { Context } from "../contexts/context";
 import { mainVisitor } from "./main-visitor";
+import { SignatureDeclarationBase } from "typescript";
 
 export function functionVisitor(declaration: ts.FunctionLikeDeclarationBase, context: Context): void {
 	context.visitWithNewContext(declaration, visitFunctionDeclaration);
 
 	const typeReference = context.transformerContext.syntaxTypeChecker.getType(declaration);
 
-	if (ts.isFunctionDeclaration(declaration)) {
+	if (ts.isFunctionDeclaration(declaration) || ts.isFunctionExpression(declaration)) {
 		context.metadata.generateMetadataForType(
 			typeReference,
 			context.typeChecker.getTypeAtLocation(declaration),
@@ -16,21 +17,13 @@ export function functionVisitor(declaration: ts.FunctionLikeDeclarationBase, con
 			undefined,
 			context
 		);
-
-		return;
 	}
 
-	if (ts.isFunctionExpression(declaration)) {
-		context.metadata.generateMetadataForType(
-			typeReference,
-			context.typeChecker.getTypeAtLocation(declaration),
-			false,
-			context.typeChecker.getSymbolAtLocation(declaration),
-			undefined,
+	if ((declaration as ts.SignatureDeclarationBase).typeParameters) {
+		context.metadata.generateMetadataForTypeParameters(
+			(declaration as ts.SignatureDeclarationBase).typeParameters!,
 			context
 		);
-
-		return;
 	}
 }
 

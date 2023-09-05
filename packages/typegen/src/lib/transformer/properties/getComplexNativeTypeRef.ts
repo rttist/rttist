@@ -1,7 +1,7 @@
 // import * as ts from "typescript";
 // import { TypeKind, NativeTypeKind } from "rttist";
 // import { ModuleIds } from "@rttist/core";
-// import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
+// import {TransformerTypeReference} from "../../metadata/transformer-type-reference";
 //
 // /**
 //  * Return TypeProperties whether the type is a complex native type, such as Uint8Array etc.
@@ -13,14 +13,14 @@
 // }
 //
 // function ct(name: string, kind: NativeTypeKind) {
-// 	return new TransformerTypeReference(ModuleIds.Native, name, kind);
+// 	return new TransformerTypeReference(ModuleIds.Native);
 // }
 //
 // const NameMap: { [name: string]: TransformerTypeReference } = {
-// 	String: TransformerTypeReference.String,
-// 	Number: TransformerTypeReference.Number,
-// 	Boolean: TransformerTypeReference.Boolean,
-// 	BigInt: TransformerTypeReference.BigInt,
+// 	// String: TransformerTypeReference.String,
+// 	// Number: TransformerTypeReference.Number,
+// 	// Boolean: TransformerTypeReference.Boolean,
+// 	// BigInt: TransformerTypeReference.BigInt,
 // 	Date: ct("Date", TypeKind.Date),
 // 	Error: ct("Error", TypeKind.Error),
 // 	Int8Array: ct("Int8Array", TypeKind.Int8Array),

@@ -21,4 +21,8 @@ export function typeAliasVisitor(declaration: ts.TypeAliasDeclaration, context: 
 		undefined,
 		context
 	);
+
+	if (declaration.typeParameters) {
+		context.metadata.generateMetadataForTypeParameters(declaration.typeParameters, context);
+	}
 }

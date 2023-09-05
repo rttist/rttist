@@ -83,7 +83,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 
 		// If there is no declaration and/or symbol
 		if (!declaration || !symbol) {
-			return this.getTypeRefWithoutDeclaration(type, symbol);
+			return this.getTypeRefWithoutDeclaration(type, symbol, nullable);
 		}
 
 		const sourceFile = declaration.getSourceFile();
@@ -116,13 +116,13 @@ export class TypeCheckerTypeIdentifierGenerator {
 			// 	return knownTypeReference;
 			// }
 
-			// TODO: It is important to distinguish Generic type definition and generic type
-			const typeArguments =
+			// TODO: It is important to distinguish Generic type definition and generic type;;; No it's not!? Everything we get by this typechecker generator should be always some specific generic type.
+			let typeArguments =
 				(type as ts.GenericType).typeArguments?.filter(
 					(t) => (t.flags & ts.TypeFlags.TypeParameter) === 0 || (t.symbol as any)?.parent !== symbol
 				) || []; // TODO: Can be problem if the args is TypeParameter from some parent (eg. passing TypeParameter of class to some type of property)
 
-			const isGenericTypeDefinition = typeArguments.length !== 0 && (type as ts.GenericType).target == type;
+			// const isGenericTypeDefinition = typeArguments.length !== 0 && (type as ts.GenericType).target == type;
 
 			// // It has no type arguments or it's generic type definition and it is native type
 			// if ((isGenericTypeDefinition || typeArguments.length === 0) && sourceFileId === ModuleIds.Native) {
@@ -154,11 +154,20 @@ export class TypeCheckerTypeIdentifierGenerator {
 				typeName = name ? "UniqueSymbol@" + name : typeName;
 			}
 
-			const isKnownType = wellKnownType.has(typeName);
+			let isKnownType = wellKnownType.has(typeName);
+
+			if (
+				(type as ts.GenericType).target &&
+				((type as ts.GenericType).target.objectFlags & ts.ObjectFlags.Tuple) !== 0
+			) {
+				typeName = "Tuple";
+				isKnownType = true;
+				typeArguments = (type as any).resolvedTypeArguments ?? [];
+			}
 
 			// If it is not exported, the type name is not guaranteed to be unique.
 			// So we will generate the path to the root declaration statement
-			if (!isExported(declaration)) {
+			if (declaration && !isExported(declaration)) {
 				// if (((type as any).objectFlags & ts.ObjectFlags.Anonymous) !== 0)
 				let parentSymbol: ts.Symbol = (symbol as any).parent;
 
@@ -208,7 +217,11 @@ export class TypeCheckerTypeIdentifierGenerator {
 		return typeReference;
 	}
 
-	private getTypeRefWithoutDeclaration(type: ts.Type, symbol: ts.Symbol | undefined): TypeIdentifier {
+	private getTypeRefWithoutDeclaration(
+		type: ts.Type,
+		symbol: ts.Symbol | undefined,
+		nullable: boolean
+	): TypeIdentifier {
 		// // try to check if it's primitive type
 		// let typeReference = getPrimitiveTypeReference(type);
 		//
@@ -219,6 +232,17 @@ export class TypeCheckerTypeIdentifierGenerator {
 		let typeReference = this.getUnionOrIntersectionTypeRef(type, symbol);
 
 		if (typeReference === undefined) {
+			if (
+				(type as ts.GenericType).target &&
+				((type as ts.GenericType).target.objectFlags & ts.ObjectFlags.Tuple) !== 0
+			) {
+				const typeArguments = (type as any).resolvedTypeArguments ?? [];
+
+				return `${TypeIds.TupleDefinition}{${typeArguments
+					.map((typeArg: ts.Type) => this.getTypeCheckerTypeIdentifier(typeArg, undefined, false))
+					.join(",")}}`;
+			}
+
 			// TODO: Log this.
 			// log.ifWarn(() => [
 			// 	`Unable to generate Id for type without ${!symbol ? "symbol" : "declaration"}.`,
@@ -308,47 +332,48 @@ export class TypeCheckerTypeIdentifierGenerator {
 // 	return new TransformerTypeReference(ModuleIds.Native, name, kind);
 // }
 //
-// const NameMap: { [name: string]: TypeIdentifier } = {
-// 	String: TypeIds.String,
-// 	Number: TypeIds.Number,
-// 	Boolean: TypeIds.Boolean,
-// 	BigInt: TypeIds.BigInt,
-// 	Date: TypeIds.Date,
-// 	Error: ct("Error", TypeKind.Error),
-// 	Int8Array: ct("Int8Array", TypeKind.Int8Array),
-// 	Uint8Array: ct("Uint8Array", TypeKind.Uint8Array),
-// 	Uint8ClampedArray: ct("Uint8ClampedArray", TypeKind.Uint8ClampedArray),
-// 	Int16Array: ct("Int16Array", TypeKind.Int16Array),
-// 	Uint16Array: ct("Uint16Array", TypeKind.Uint16Array),
-// 	Int32Array: ct("Int32Array", TypeKind.Int32Array),
-// 	Uint32Array: ct("Uint32Array", TypeKind.Uint32Array),
-// 	Float32Array: ct("Float32Array", TypeKind.Float32Array),
-// 	Float64Array: ct("Float64Array", TypeKind.Float64Array),
-// 	BigInt64Array: ct("Float64Array", TypeKind.BigInt64Array),
-// 	BigUint64Array: ct("BigUint64Array", TypeKind.BigUint64Array),
-// 	Symbol: ct("Symbol", TypeKind.Symbol),
-// 	Promise: ct("Promise", TypeKind.PromiseDefinition),
-// 	RegExp: ct("RegExp", TypeKind.RegExp),
-// 	ArrayBuffer: ct("ArrayBuffer", TypeKind.ArrayBuffer),
-// 	SharedArrayBuffer: ct("SharedArrayBuffer", TypeKind.SharedArrayBuffer),
-// 	Function: ct("Function", TypeKind.FunctionType),
-// 	Object: ct("Object", TypeKind.ObjectType),
-// 	Atomics: ct("Atomics", TypeKind.Atomics),
-// 	DataView: ct("DataView", TypeKind.DataView),
-// 	Array: ct("Array", TypeKind.ArrayDefinition),
-// 	ReadonlyArray: ct("ReadonlyArray", TypeKind.ReadonlyArrayDefinition),
-// 	Map: ct("Map", TypeKind.MapDefinition),
-// 	WeakMap: ct("WeakMap", TypeKind.WeakMapDefinition),
-// 	Set: ct("Set", TypeKind.SetDefinition),
-// 	WeakSet: ct("WeakSet", TypeKind.WeakSetDefinition),
-// 	Generator: ct("Generator", TypeKind.GeneratorDefinition),
-// 	AsyncGenerator: ct("AsyncGenerator", TypeKind.AsyncGeneratorDefinition),
-// 	Iterator: ct("Iterator", TypeKind.IteratorDefinition),
-// 	Iterable: ct("Iterable", TypeKind.IterableDefinition),
-// 	IterableIterator: ct("IterableIterator", TypeKind.IterableIteratorDefinition),
-// 	AsyncIterator: ct("AsyncIterator", TypeKind.AsyncIteratorDefinition),
-// 	AsyncIterable: ct("AsyncIterable", TypeKind.AsyncIterableDefinition),
-// 	AsyncIterableIterator: ct("AsyncIterableIterator", TypeKind.AsyncIterableIteratorDefinition),
+// const ComplexTypesRefMap: { [name: string]: TypeIdentifier } = {
+// 	// String: TypeIds.String,
+// 	// Number: TypeIds.Number,
+// 	// Boolean: TypeIds.Boolean,
+// 	// BigInt: TypeIds.BigInt,
+// 	// Date: TypeIds.Date,
+// 	Error: TypeIds.Error,
+// 	Int8Array: TypeIds.Int8Array,
+// 	Uint8Array: TypeIds.Uint8Array,
+// 	Uint8ClampedArray: TypeIds.Uint8ClampedArray,
+// 	Int16Array: TypeIds.Int16Array,
+// 	Uint16Array: TypeIds.Uint16Array,
+// 	Int32Array: TypeIds.Int32Array,
+// 	Uint32Array: TypeIds.Uint32Array,
+// 	Float32Array: TypeIds.Float32Array,
+// 	Float64Array: TypeIds.Float64Array,
+// 	BigInt64Array: TypeIds.BigInt64Array,
+// 	BigUint64Array: TypeIds.BigUint64Array,
+// 	Symbol: TypeIds.Symbol,
+// 	Promise: TypeIds.PromiseDefinition,
+// 	RegExp: TypeIds.RegExp,
+// 	ArrayBuffer: TypeIds.ArrayBuffer,
+// 	SharedArrayBuffer: TypeIds.SharedArrayBuffer,
+// 	Function: TypeIds.Function,
+// 	// Object: TypeIds.Object,
+// 	Atomics: TypeIds.Atomics,
+// 	DataView: TypeIds.DataView,
+// 	Array: TypeIds.ArrayDefinition,
+// 	// Tuple: TypeIds.Array,
+// 	ReadonlyArray: TypeIds.ReadonlyArrayDefinition,
+// 	Map: TypeIds.MapDefinition,
+// 	WeakMap: TypeIds.WeakMapDefinition,
+// 	Set: TypeIds.SetDefinition,
+// 	WeakSet: TypeIds.WeakSetDefinition,
+// 	Generator: TypeIds.GeneratorDefinition,
+// 	AsyncGenerator: TypeIds.AsyncGeneratorDefinition,
+// 	Iterator: TypeIds.IteratorDefinition,
+// 	Iterable: TypeIds.IterableDefinition,
+// 	IterableIterator: TypeIds.IterableIteratorDefinition,
+// 	AsyncIterator: TypeIds.AsyncIteratorDefinition,
+// 	AsyncIterable: TypeIds.AsyncIterableDefinition,
+// 	AsyncIterableIterator: TypeIds.AsyncIterableIteratorDefinition,
 // 	// Proxy: ct("name", TypeKind.Proxy), // Proxy is only Ctor
 // };
 

@@ -110,12 +110,22 @@ export class TypeIdentifierGenerator {
 			return type;
 		}
 
+		if (ts.isTupleTypeNode(node)) {
+			const type = this.createTypeArgumentsTypeId(TypeIds.TupleDefinition, node.elements, valueContext);
+			this.identifiersMap.set(node, type);
+			return type;
+		}
+
 		if (ts.isUnionTypeNode(node)) {
 			return `#|{${node.types.map((typeNode) => this.generateTypeIdentifier(typeNode, false)).join(",")}}`;
 		}
 
 		if (ts.isIntersectionTypeNode(node)) {
 			return `#&{${node.types.map((typeNode) => this.generateTypeIdentifier(typeNode, false)).join(",")}}`;
+		}
+
+		if (ts.isTypeParameterDeclaration(node)) {
+			return `${this.generateTypeIdentifier(node.parent, false)}:${node.name.text}`;
 		}
 
 		const scope = this.scopeManager.getClosestScope(node);
@@ -131,7 +141,7 @@ export class TypeIdentifierGenerator {
 				let typeId: string | undefined;
 
 				if (declaration) {
-					typeId = createTypeNameDeclarationTypeId(node.typeName, moduleId, declaration);
+					typeId = this.createTypeNameDeclarationTypeId(node.typeName, moduleId, declaration);
 				}
 
 				const knownType = wellKnownType.get((node.typeName as ts.Identifier).escapedText + "");
@@ -161,7 +171,7 @@ export class TypeIdentifierGenerator {
 				const declaration = scope.getTypeDeclaration(topLevelIdentifier.text);
 
 				if (declaration) {
-					const type = createTypeNameDeclarationTypeId(node.exprName, moduleId, declaration);
+					const type = this.createTypeNameDeclarationTypeId(node.exprName, moduleId, declaration);
 					this.identifiersMap.set(node, type);
 					return type;
 				}
@@ -267,6 +277,28 @@ export class TypeIdentifierGenerator {
 			"}"
 		);
 	}
+
+	private createTypeNameDeclarationTypeId(
+		node: ts.Identifier | ts.QualifiedName,
+		moduleId: ModuleIdentifier,
+		declaration: TypeDeclarationInfo | ImportDeclarationInfo
+	): TypeIdentifier {
+		switch (declaration.kind) {
+			case InfoKind.AnyTypeDeclaration:
+			case InfoKind.TypeParameterDeclaration:
+				if (ts.isTypeParameterDeclaration(declaration.declaration)) {
+					return this.generateTypeIdentifier(declaration.declaration, false) ?? TypeIds.Invalid;
+				}
+
+				return moduleId + ":" + serializeTypePath(node, false);
+			case InfoKind.ImportDeclaration:
+				if (declaration.namespaceImport) {
+					return declaration.moduleId + ":" + serializeTypePath(node, true);
+				} else {
+					return declaration.moduleId + ":" + declaration.declaredName;
+				}
+		}
+	}
 }
 
 function createIdentifierDeclarationTypeId(
@@ -280,24 +312,6 @@ function createIdentifierDeclarationTypeId(
 		case InfoKind.ImportDeclaration:
 			if (declaration.namespaceImport) {
 				return declaration.moduleId + ":" + serializePath(node, true);
-			} else {
-				return declaration.moduleId + ":" + declaration.declaredName;
-			}
-	}
-}
-
-function createTypeNameDeclarationTypeId(
-	node: ts.Identifier | ts.QualifiedName,
-	moduleId: ModuleIdentifier,
-	declaration: TypeDeclarationInfo | ImportDeclarationInfo
-): TypeIdentifier {
-	switch (declaration.kind) {
-		case InfoKind.AnyTypeDeclaration:
-		case InfoKind.TypeParameterDeclaration:
-			return moduleId + ":" + serializeTypePath(node, false);
-		case InfoKind.ImportDeclaration:
-			if (declaration.namespaceImport) {
-				return declaration.moduleId + ":" + serializeTypePath(node, true);
 			} else {
 				return declaration.moduleId + ":" + declaration.declaredName;
 			}
