@@ -18,6 +18,7 @@ swc_core = { version = "0.82.*", features = ["ecma_plugin_transform"] }
 swc_ecma_parser = "0.139.1"
 swc_common = "0.32.*"
 swc_ecma_ast = "0.109.1"
+swc_ecma_utils = "0.122.1"
 #wasm-bindgen = { version = "0.2.82", features = ["enable-interning"] }
 
 # .cargo/config defines few alias to build plugin.

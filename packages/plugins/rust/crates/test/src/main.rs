@@ -33,6 +33,9 @@ export class Foo extends Employee {
 getType(Employee);
 getType<Employee>();
 getType<number>()
+getType<true>()
+getType<"foo">()
+getType<5n>()
 getType(getType<string>());
     "#.to_string();
 

@@ -6,36 +6,21 @@ mod utils;
 use std::sync::Arc;
 use swc_core::ecma::{
 	ast,
-	ast::CallExpr,
-	ast::Ident,
-	ast::Callee,
-	ast::MemberExpr,
-	ast::MemberProp,
-	ast::Expr,
-	ast::ExprOrSpread,
-	ast::Str,
-	ast::ModuleItem,
-	ast::ModuleDecl,
-	ast::ImportDecl,
-	ast::ImportSpecifier,
+	ast::EsVersion,
 	visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
-use swc_ecma_ast::EsVersion as ast_EsVersion;
+use swc_ecma_utils::{StmtLike};
 use swc_ecma_parser::{parse_file_as_program, Syntax, TsConfig};
-use swc_core::common::{Span};
-use swc_common::source_map::SourceMap;
-use swc_common::{
-	FileName
-};
+use swc_core::common::{Span, FileName, source_map::SourceMap};
 use swc::{Compiler};
 use swc::config::{SourceMapsConfig};
-use swc_core::ecma::ast::{BlockStmt, ClassDecl, ClassMember, FnDecl, Module, Stmt, EsVersion};
+
 use crate::generate_module_id::{ModuleIdentifier};
 use crate::generate_type_id::{TypeIdentifier};
 use crate::types::{TransformerContext};
+use crate::utils::create_prototype_assign_typeid_statement;
 
 const METADATA_IMPORT_IDENTIFIER: &str = "___metadataImport___";
-const PROTOTYPE_TYPE_PROPERTY_NAME: &str = "[[type]]";
 
 pub struct TransformVisitor {
 	module_id: ModuleIdentifier,
@@ -48,13 +33,47 @@ impl TransformVisitor {
 		TransformVisitor {
 			module_id: ModuleIdentifier::for_file(module_id, &transformer_context),
 			add_import: false,
-			transformer_context
+			transformer_context,
 		}
+	}
+
+	fn visit_mut_stmt_like<T>(&mut self, stmts: &mut Vec<T>)
+		where
+			Vec<T>: VisitMutWith<Self>,
+			T: StmtLike + VisitMutWith<Self>,
+	{
+		stmts.visit_mut_children_with(self);
+
+		let mut stmts_updated = Vec::with_capacity(stmts.len());
+
+		for stmt in stmts.drain(..) {
+			match stmt.try_into_stmt() {
+				Err(item) => {
+					stmts_updated.push(item);
+				}
+				Ok(stmt) => {
+					let stmt_clone = &stmt;
+
+					if let Some(decl) = stmt_clone.as_decl() {
+						if let ast::Decl::Fn(fn_decl) = decl {
+							let proto_statement = create_prototype_assign_typeid_statement(&*fn_decl, &self.module_id);
+							stmts_updated.push(T::from_stmt(stmt));
+							stmts_updated.push(T::from_stmt(proto_statement));
+							continue;
+						}
+					}
+
+					stmts_updated.push(T::from_stmt(stmt));
+				}
+			}
+		}
+
+		*stmts = stmts_updated;
 	}
 }
 
 impl VisitMut for TransformVisitor {
-	fn visit_mut_call_expr(&mut self, call_expression: &mut CallExpr) {
+	fn visit_mut_call_expr(&mut self, call_expression: &mut ast::CallExpr) {
 		call_expression.visit_mut_children_with(self);
 
 		// if let Some(type_args) = call_expression.type_args {
@@ -64,10 +83,10 @@ impl VisitMut for TransformVisitor {
 					if identifier.sym.to_string() == "getType".to_string() {
 						self.add_import = true;
 
-						let rtrn = CallExpr {
+						let rtrn = ast::CallExpr {
 							span: Span::default(),
 							// args: call_expression.args.clone(),
-							args: vec![ExprOrSpread::from(Expr::from(Str {
+							args: vec![ast::ExprOrSpread::from(ast::Expr::from(ast::Str {
 								span: Span::default(),
 								value: TypeIdentifier::new(&*(call_expression.type_args.as_ref().unwrap()).params[0], &self.module_id).id.into(),
 								raw: None,
@@ -75,14 +94,14 @@ impl VisitMut for TransformVisitor {
 						span: Span::default(),
 						elems: call_expression.args.clone(),
 					}.as_arg()*/],
-							callee: Callee::Expr(Box::new(MemberExpr {
+							callee: ast::Callee::Expr(Box::new(ast::MemberExpr {
 								span: Span::default(),
-								obj: Box::new(Ident {
+								obj: Box::new(ast::Ident {
 									span: Span::default(),
 									sym: METADATA_IMPORT_IDENTIFIER.into(),
 									optional: false,
 								}.into()),
-								prop: MemberProp::from(Ident::new("resolveType".into(), Default::default())),
+								prop: ast::MemberProp::from(ast::Ident::new("resolveType".into(), Default::default())),
 							}.into())),
 							type_args: Default::default(),
 						};
@@ -94,7 +113,7 @@ impl VisitMut for TransformVisitor {
 		}
 	}
 
-	fn visit_mut_class_decl(&mut self, declaration: &mut ClassDecl) {
+	fn visit_mut_class_decl(&mut self, declaration: &mut ast::ClassDecl) {
 		declaration.visit_mut_children_with(self);
 
 		/*
@@ -103,173 +122,53 @@ impl VisitMut for TransformVisitor {
 			ClassName.prototype["[[type]]"] = "@TypeId"
 		}
 		 */
-		declaration.class.body.insert(0, ClassMember::StaticBlock(ast::StaticBlock {
+		declaration.class.body.insert(0, ast::ClassMember::StaticBlock(ast::StaticBlock {
 			span: Span::default(),
-			body: BlockStmt {
+			body: ast::BlockStmt {
 				span: Span::default(),
 				stmts: vec![
-					Stmt::Expr(ast::ExprStmt {
-						span: Span::default(),
-						expr: Box::new(Expr::Assign(ast::AssignExpr {
-							span: Span::default(),
-							op: ast::AssignOp::Assign,
-							left: ast::PatOrExpr::Expr(Box::new(Expr::Member(MemberExpr {
-								span: Span::default(),
-								obj: Box::new(Expr::Member(MemberExpr {
-									span: Span::default(),
-									obj: Box::new(declaration.ident.clone().into()),
-									prop: MemberProp::Ident(Ident::new("prototype".into(), Span::default())),
-								})),
-								prop: MemberProp::Computed(ast::ComputedPropName {
-									span: Span::default(),
-									// expr: Box::new(MemberExpr {
-									// 	span: Span::default(),
-									// 	obj: Box::new(Ident {
-									// 		span: Span::default(),
-									// 		sym: METADATA_IMPORT_IDENTIFIER.into(),
-									// 		optional: false,
-									// 	}.into()),
-									// 	prop: MemberProp::from(Ident::new("symbols".into(), Default::default())),
-									// }.into()),
-									expr: Box::new(Expr::Lit(ast::Lit::Str(Str {
-										span: Span::default(),
-										value: PROTOTYPE_TYPE_PROPERTY_NAME.into(),
-										raw: None,
-									}))),
-								}),
-							}))),
-							right: Box::new(Expr::from(Str {
-								span: Span::default(),
-								value: TypeIdentifier::new(&*declaration, &self.module_id).id.into(),
-								raw: None,
-							})),
-						})),
-					}),
+					create_prototype_assign_typeid_statement(&*declaration, &self.module_id),
 				],
 			},
 		}));
 	}
 
-	fn visit_mut_fn_decl(&mut self, declaration: &mut FnDecl) {
-		declaration.visit_mut_children_with(self);
-
-		let ass = Box::new(Expr::Assign(ast::AssignExpr {
-			span: Span::default(),
-			op: ast::AssignOp::Assign,
-			left: ast::PatOrExpr::Expr(Box::new(Expr::Member(MemberExpr {
-				span: Span::default(),
-				obj: Box::new(Expr::Member(MemberExpr {
-					span: Span::default(),
-					obj: Box::new(declaration.ident.clone().into()),
-					prop: MemberProp::Ident(Ident::new("prototype".into(), Span::default())),
-				})),
-				prop: MemberProp::Computed(ast::ComputedPropName {
-					span: Span::default(),
-					// expr: Box::new(MemberExpr {
-					// 	span: Span::default(),
-					// 	obj: Box::new(Ident {
-					// 		span: Span::default(),
-					// 		sym: METADATA_IMPORT_IDENTIFIER.into(),
-					// 		optional: false,
-					// 	}.into()),
-					// 	prop: MemberProp::from(Ident::new("symbols".into(), Default::default())),
-					// }.into()),
-					expr: Box::new(Expr::Lit(ast::Lit::Str(Str {
-						span: Span::default(),
-						value: PROTOTYPE_TYPE_PROPERTY_NAME.into(),
-						raw: None,
-					}))),
-				}),
-			}))),
-			right: Box::new(Expr::from(Str {
-				span: Span::default(),
-				value: TypeIdentifier::new(&*declaration, &self.module_id).id.into(),
-				raw: None,
-			})),
-		}));
-
-		//
-		//
-		// /*
-		// add assignment after function declaration:
-		// FunctionIdentifier.prototype["[[type]]"] = "@TypeId"
-		//  */
-		// declaration.body.insert(0, ClassMember::StaticBlock(ast::StaticBlock {
-		// 	span: Span::default(),
-		// 	body: BlockStmt {
-		// 		span: Span::default(),
-		// 		stmts: vec![
-		// 			Stmt::Expr(ast::ExprStmt {
-		// 				span: Span::default(),
-		// 				expr: Box::new(Expr::Assign(ast::AssignExpr {
-		// 					span: Span::default(),
-		// 					op: ast::AssignOp::Assign,
-		// 					left: ast::PatOrExpr::Expr(Box::new(Expr::Member(MemberExpr {
-		// 						span: Span::default(),
-		// 						obj: Box::new(Expr::Member(MemberExpr {
-		// 							span: Span::default(),
-		// 							obj: Box::new(declaration.ident.clone().into()),
-		// 							prop: MemberProp::Ident(Ident::new("prototype".into(), Span::default())),
-		// 						})),
-		// 						prop: MemberProp::Computed(ast::ComputedPropName {
-		// 							span: Span::default(),
-		// 							// expr: Box::new(MemberExpr {
-		// 							// 	span: Span::default(),
-		// 							// 	obj: Box::new(Ident {
-		// 							// 		span: Span::default(),
-		// 							// 		sym: METADATA_IMPORT_IDENTIFIER.into(),
-		// 							// 		optional: false,
-		// 							// 	}.into()),
-		// 							// 	prop: MemberProp::from(Ident::new("symbols".into(), Default::default())),
-		// 							// }.into()),
-		// 							expr: Box::new(Expr::Lit(ast::Lit::Str(Str {
-		// 								span: Span::default(),
-		// 								value: PROTOTYPE_TYPE_PROPERTY_NAME.into(),
-		// 								raw: None,
-		// 							}))),
-		// 						}),
-		// 					}))),
-		// 					right: Box::new(Expr::from(Str {
-		// 						span: Span::default(),
-		// 						// TODO: Generate type identifier
-		// 						value: "type identifier".into(),
-		// 						raw: None,
-		// 					})),
-		// 				})),
-		// 			}),
-		// 		],
-		// 	},
-		// }));
-	}
-
-	fn visit_mut_module(&mut self, module: &mut Module) {
+	fn visit_mut_module(&mut self, module: &mut ast::Module) {
 		// *self.module = &module;
 
 		module.visit_mut_children_with(self);
 
 		if self.add_import {
-			module.body.insert(0, ModuleItem::ModuleDecl(
-				ModuleDecl::Import(ImportDecl {
+			module.body.insert(0, ast::ModuleItem::ModuleDecl(
+				ast::ModuleDecl::Import(ast::ImportDecl {
 					span: Span::default(),
-					specifiers: vec![ImportSpecifier::Namespace(ast::ImportStarAsSpecifier {
+					specifiers: vec![ast::ImportSpecifier::Namespace(ast::ImportStarAsSpecifier {
 						span: Span::default(),
-						local: Ident {
+						local: ast::Ident {
 							span: Span::default(),
 							sym: METADATA_IMPORT_IDENTIFIER.into(),
 							optional: false,
 							// type_ann: Default::default(),
 						},
 					})],
-					src: Box::new(Str {
+					src: Box::new(ast::Str {
 						span: Span::default(),
 						value: "./metadata.typelib".into(),
 						raw: None,
 					}),
 					type_only: false,
-					with: None
+					with: None,
 				})
 			));
 		}
+	}
+
+	fn visit_mut_module_items(&mut self, n: &mut Vec<ast::ModuleItem>) {
+		self.visit_mut_stmt_like(n);
+	}
+
+	fn visit_mut_stmts(&mut self, n: &mut Vec<ast::Stmt>) {
+		self.visit_mut_stmt_like(n);
 	}
 }
 
@@ -322,7 +221,7 @@ pub fn transform(file_path: String, source_code: String, transformer_context: Tr
 		dts: false,
 		no_early_errors: false,
 		disallow_ambiguous_jsx_like: false,
-	}), ast_EsVersion::EsNext, Default::default(), &mut errors).unwrap();
+	}), EsVersion::EsNext, Default::default(), &mut errors).unwrap();
 	// swc_ecma_parser::parse_file_as_program().unwrap();
 
 	let transformed_program = program.fold_with(&mut as_folder(TransformVisitor::new(file_path.to_string(), transformer_context)));
