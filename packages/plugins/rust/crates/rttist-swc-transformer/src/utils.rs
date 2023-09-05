@@ -163,16 +163,16 @@ pub fn keyword_kind_to_type_identifier(kind: TsKeywordTypeKind) -> TypeIdentifie
 pub fn literal_to_type_identifier(lit: &TsLit) -> TypeIdentifier {
 	return match lit {
 		TsLit::Bool(bool) => TypeIdentifier {
-			id: format!("#L({})", bool.value),
+			id: format!("#{}", bool.value),
 		},
-		TsLit::Str(bool) => TypeIdentifier {
-			id: format!("#L('{}')", bool.value),
+		TsLit::Str(str) => TypeIdentifier {
+			id: format!("#L('{}')", str.value),
 		},
-		TsLit::Number(bool) => TypeIdentifier {
-			id: format!("#L({})", bool.value),
+		TsLit::Number(number) => TypeIdentifier {
+			id: format!("#L({})", number.value),
 		},
-		TsLit::BigInt(bool) => TypeIdentifier {
-			id: format!("#L({}n)", bool.value),
+		TsLit::BigInt(bigInt) => TypeIdentifier {
+			id: format!("#L({}n)", bigInt.value),
 		},
 		// TsLit::Tpl(bool) => TypeIdentifier {
 		// 	id: format!("#{}", bool.value),

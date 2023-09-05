@@ -1,6 +1,6 @@
 {
     "name": "@rttist/ts-loader-wasm",
-    "version": "0.1.0-proto.0",
+    "version": "0.1.0-proto.1",
     "description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
     "author": "Roman Jámbor",
     "license": "MIT",
