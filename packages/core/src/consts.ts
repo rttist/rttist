@@ -54,6 +54,7 @@ export const TypeIds = {
 	BigInt64Array: "#BigInt64Array",
 	BigUint64Array: "#BigUint64Array",
 	ArrayDefinition: "#Array",
+	TupleDefinition: "#Tuple",
 	ReadonlyArrayDefinition: "#ReadonlyArray",
 	MapDefinition: "#Map",
 	WeakMapDefinition: "#WeakMap",
