@@ -2,7 +2,7 @@ import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import { Module } from "./Module";
 import { Type } from "./Type";
 import { getNativeTypes } from "./native-types";
-import { MetadataLibrary } from "./Metadata";
+import { MetadataLibrary } from "./MetadataLibrary";
 
 export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibrary): Type {
 	if (value === undefined) return Type.Undefined;

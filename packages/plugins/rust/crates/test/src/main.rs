@@ -37,6 +37,17 @@ getType<true>()
 getType<"foo">()
 getType<5n>()
 getType(getType<string>());
+
+console.log(getType<Array>().name);
+console.log(getType<Promise>().name);
+
+console.log(getType<Array<string>>().name);
+console.log(getType<Promise<string>>().name);
+console.log(getType<ReadonlyArray<string>>().name);
+console.log(getType<Set<string>>().name);
+console.log(getType<WeakSet<object>>().name);
+console.log(getType<Map<string, number>>().name);
+console.log(getType<WeakMap<object, number>>().name);
     "#.to_string();
 
     let res = transform(

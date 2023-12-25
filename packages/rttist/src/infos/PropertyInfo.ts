@@ -87,7 +87,7 @@ export class PropertyInfo {
 			(this.accessor ? Accessor[this.accessor] + " " : "") +
 			(this.accessModifier ? AccessModifier[this.accessModifier] + " " : "") +
 			(this.readonly ? "readonly " : "") +
-			`${this.name.toString()}${this.optional ? "?" : ""}: ${this.type.toString()}`
+			`${this.name.toString()}${this.optional ? "?" : ""}: ${this.type.displayName}`
 		);
 	}
 }

@@ -100,7 +100,7 @@ function createType(metadata: AnyTypeMetadata) {
 		case TypeKind.EnumLiteral:
 			return new EnumLiteralType(metadata);
 		case TypeKind.Promise:
-			return new PromiseType(TypeIds.PromiseDefinition, metadata);
+			return new PromiseType(metadata);
 		// TODO: Create the rest
 		// case TypeKind.Generator:
 		// 	return new Type();

@@ -4,7 +4,8 @@
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
 	"bin": {
-		"typegen": "./bin/typegen"
+		"typegen": "./bin/typegen",
+		"rttist": "./bin/rttist"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -17,7 +18,8 @@
 		"README.md",
 		"config-schema.json",
 		"dist/**/*.js",
-		"bin/typegen"
+		"bin/typegen",
+		"bin/rttist"
 	],
 	"keywords": [
 		"type",

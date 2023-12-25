@@ -1,16 +1,22 @@
 {
 	"private": true,
 	"name": "simple-tests",
-	"type": "module",
+	"type": "commonjs",
+	"scripts": {
+		"build": "rttist generate && node esbuild.build.js",
+		"start": "esbuild index.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
+	},
 	"reflection": {
 		"index": "dist/metadata.index.json",
 		"typelib": "dist/metadata.typelib.js"
 	},
 	"dependencies": {
+		"esbuild": "^0.19.3",
 		"hyper-express": "^6.5.6",
 		"rttist": "workspace:*"
 	},
 	"devDependencies": {
-		"@rttist/typegen": "workspace:*"
+		"@rttist/typegen": "workspace:*",
+		"esbuild-plugin-rttist": "workspace:*"
 	}
 }

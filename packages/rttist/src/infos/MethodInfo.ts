@@ -1,5 +1,5 @@
 import type { MethodInfoMetadata } from "../declarations";
-import type { AccessModifier } from "../enums";
+import { AccessModifier } from "../enums";
 import { PropertyFlags } from "../enums";
 import { DecoratorInfo } from "./DecoratorInfo";
 import { MemberName } from "../types/MemberName";
@@ -86,5 +86,19 @@ export class MethodInfo {
 	 */
 	getSignatures(): ReadonlyArray<SignatureInfo> {
 		return this._signatures;
+	}
+
+	toString(): string {
+		const signatures = this._signatures
+			.map(
+				(s) =>
+					(this._accessModifier ? AccessModifier[this._accessModifier] + " " : "") +
+					this._name.toString() +
+					(this._optional ? "?" : "") +
+					s.toString()
+			)
+			.join("\n");
+
+		return this._decorators.map((d) => "@" + d.name).join("\n") + signatures;
 	}
 }

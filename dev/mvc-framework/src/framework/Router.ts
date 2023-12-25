@@ -1,8 +1,9 @@
 import type { Server, Request, Response } from "hyper-express";
+import { route } from "./controllers/decorators/route";
 import { IController } from "./controllers/IController";
 import { IPathParameterParser } from "./controllers/IPathParameterParser";
 import { ClassType, ParameterInfo, FunctionType, InterfaceType } from "rttist";
-import { Metadata } from "../metadata.typelib";
+import { getType, Metadata } from "../metadata.typelib";
 
 export class Router {
 	constructor(
@@ -11,17 +12,17 @@ export class Router {
 	) {}
 
 	async registerControllers() {
-		//const routeDecoratorType = getType(route);
-		const typeRoute = Metadata.getTypes().find(
-			(t) => t.isFunction() && t.id.endsWith("/framework/controllers/decorators/route:route")
-		) as FunctionType | undefined;
+		const typeRoute = getType(route);
+		// const typeRoute = Metadata.getTypes().find(
+		// 	(t) => t.isFunction() && t.id.endsWith("/framework/controllers/decorators/route:route")
+		// ) as FunctionType | undefined;
 
 		if (!typeRoute) throw new Error("Unable to find route decorator type.");
 
-		//const typeIController = getType<IController>();
-		const typeIController = Metadata.getTypes().find(
-			(t) => t.isInterface() && t.id.includes("/framework/controllers/IController:IController")
-		) as InterfaceType | undefined;
+		const typeIController = getType<IController>();
+		// const typeIController = Metadata.getTypes().find(
+		// 	(t) => t.isInterface() && t.id.includes("/framework/controllers/IController:IController")
+		// ) as InterfaceType | undefined;
 
 		if (!typeIController) throw new Error("Unable to find controller interface type.");
 

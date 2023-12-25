@@ -1,7 +1,9 @@
 pub mod generate_module_id;
 pub mod generate_type_id;
 pub mod types;
+pub mod type_ids;
 mod utils;
+mod syntax_type_checker;
 
 use std::sync::Arc;
 use swc_core::ecma::{

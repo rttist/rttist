@@ -1,13 +1,13 @@
 import type { TypeReference } from "./declarations";
 import type { Type } from "./Type";
 import { Symbols } from "./symbols";
-import { getFunctionCallsiteTypeArgumentsOrInvalid } from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
-import { resolveMethodCallsite } from "./functions/resolveMethodCallsite";
+import { resolveFromFunctionCallsite } from "./functions/resolveFromFunctionCallsite";
+import { resolveFromMethodCallsite } from "./functions/resolveFromMethodCallsite";
 import { invalidTypeGenerator } from "./functions/invalidTypeGenerator";
 import { FncNames, RTTIST_NAMESPACE } from "@rttist/core";
 import { createCallsite } from "./functions/createCallsite";
 import { constructGeneric } from "./functions/constructGeneric";
-import { getClassTypeParameterReference } from "./functions/getClassTypeParameterReference";
+import { getClassTypeParameter } from "./functions/getClassTypeParameter";
 import { getGenericClass } from "./functions/getGenericClass";
 import { getGlobalThis } from "./utils/getGlobalThis";
 import { globalGetType } from "./global-get-type";
@@ -93,11 +93,11 @@ getGlobalThis()[RTTIST_NAMESPACE] = RttistObj = {
 	// TODO: All these functions require metadata library; we have to do something like with the getType (createGetType())
 	[FncNames.getGenericClass]: getGenericClass,
 	[FncNames.constructGeneric]: constructGeneric,
-	[FncNames.getClassTypeParameter]: getClassTypeParameterReference,
+	[FncNames.getClassTypeParameter]: getClassTypeParameter,
 	[FncNames.createCallsite]: createCallsite,
 	[FncNames.invalidTypeGenerator]: invalidTypeGenerator,
-	[FncNames.resolveFunctionCallsite]: getFunctionCallsiteTypeArgumentsOrInvalid,
-	[FncNames.resolveMethodCallsite]: resolveMethodCallsite,
+	[FncNames.resolveFunctionCallsite]: resolveFromFunctionCallsite,
+	[FncNames.resolveMethodCallsite]: resolveFromMethodCallsite,
 };
 
 getGlobalThis()[RTTIST_NAMESPACE].symbols = Symbols.metadata;

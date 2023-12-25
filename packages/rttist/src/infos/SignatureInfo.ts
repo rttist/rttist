@@ -4,6 +4,7 @@ import { LazyType } from "../utils/LazyType";
 import { LazyTypeArray } from "../utils/LazyTypeArray";
 import { ParameterInfo } from "./ParameterInfo";
 import { TypeParameterType } from "../types";
+import { AccessModifier, Accessor } from "../enums";
 
 export class SignatureInfo {
 	/**
@@ -55,5 +56,10 @@ export class SignatureInfo {
 	 */
 	getTypeParameters(): ReadonlyArray<TypeParameterType> {
 		return this._typeParametersRef.types as ReadonlyArray<TypeParameterType>;
+	}
+
+	toString(): string {
+		const parameters = this._parameters.map((p) => p.toString()).join(", ");
+		return `(${parameters}): ${this.returnType.displayName}`;
 	}
 }

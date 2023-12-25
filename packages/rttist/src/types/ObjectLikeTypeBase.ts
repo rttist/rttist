@@ -1,6 +1,6 @@
 import type { ObjectLikeBaseTypeMetadata } from "../declarations";
 import type { IndexInfo, MethodInfo, PropertyInfo } from "../infos";
-import { Type } from "../Type";
+import { PropsToStringify, Type } from "../Type";
 import { mapIndexes, mapMethods, mapProperties } from "../utils/mappers";
 
 export abstract class ObjectLikeTypeBase extends Type {
@@ -11,6 +11,7 @@ export abstract class ObjectLikeTypeBase extends Type {
 	private readonly _methods: ReadonlyArray<MethodInfo>;
 	/** @internal */
 	private readonly _indexes: ReadonlyArray<IndexInfo>;
+
 	// endregion
 
 	protected constructor(initializer: ObjectLikeBaseTypeMetadata) {
@@ -63,5 +64,12 @@ export abstract class ObjectLikeTypeBase extends Type {
 	 */
 	getMethod(name: string | number | symbol): MethodInfo | undefined {
 		return this._methods.find((x) => x.name.name === name);
+	}
+
+	protected override getPropsToStringify(): PropsToStringify {
+		return [
+			...this._properties.map((prop) => prop.toString()),
+			...this._methods.map((method) => method.toString()),
+		];
 	}
 }

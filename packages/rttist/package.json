@@ -13,17 +13,20 @@
 			"import": "./dist/esm/index.js",
 			"types": "./dist/index.d.ts"
 		},
-		"./dist/public.typelib": "./dist/public.typelib.js"
+		"./dist/public.typelib": "./dist/public.typelib.js",
+		"./package.json": "./package.json"
 	},
 	"engines": {
 		"node": ">=16.0.0"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "npm run bundle && pnpx @rttist/typegen@proto generate -f && npm run postbuild",
+		"build": "npm run prepublishOnly",
+		"prepublishOnly": "npm run bundle && pnpm exec typegen generate -f && npm run postbuild",
 		"bundle": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean",
 		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
-		"postbuild": "node ./post-build.js"
+		"postbuild": "node ./post-build.js",
+		"start": "tsc -w"
 	},
 	"files": [
 		"LICENSE",

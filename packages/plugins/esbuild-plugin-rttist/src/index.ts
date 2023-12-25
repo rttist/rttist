@@ -83,9 +83,11 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions) {
 					args.path,
 					new PackageInfo(pluginOptions.packageInfo.name, pluginOptions.tsRootDir) // TODO: Change PackageInfo to some object; we abuse PAckageInfo.rootDir to pass tsRootDir
 				);
+				console.log("onload:", build.initialOptions.tsconfig, build.initialOptions.tsconfigRaw);
 				const options: esbuild.TransformOptions = {
 					sourcefile: args.path,
 					loader: "ts",
+					tsconfigRaw: build.initialOptions.tsconfigRaw,
 				};
 
 				for (let prop of Object.keys(build.initialOptions)) {

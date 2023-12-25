@@ -100,7 +100,7 @@ export const metadataCollection: Array<{ add(library: any, stripInternals: boole
 import { metadataCollection } from "./metadata.index";
 const Metadata = new MetadataLibrary({
 	nullability: ${this.config.strictNullChecks ? "false" : "true"},
-}, GlobalMetadata);
+}, "@${this.config.packageInfo.name}${stripInternals ? "" : ":internal"}", GlobalMetadata);
 metadataCollection.forEach((mod) => mod.add(Metadata, ${stripInternals ? "true" : "false"}));
 export { Metadata };`,
 			"utf-8"
@@ -114,7 +114,7 @@ export { Metadata };`,
 * This file is generated automatically by the RTTIST TypeGen tool.
 * Do not edit it manually.
 */
-import { ModuleImporter, MetadataLibrary, createGetTypeFunction } from "rttist";
+import { ModuleImporter, MetadataLibrary, createGetTypeFunction, createCallsite, resolveFromFunctionCallsite, resolveFromMethodCallsite, getClassTypeParameter, } from "rttist";
 ${this.config.dependenciesInfo
 	.filter((dep) => dep.metadataPath !== undefined)
 	.map((dep) => `import "${dep.metadataImportSpecifier}";`)
@@ -138,7 +138,12 @@ ModuleImporter.registerImporters({
 
 export const getType = createGetTypeFunction(InternalMetadataLibrary);
 export const resolveType = InternalMetadataLibrary.resolveType.bind(InternalMetadataLibrary);
-
+export const _ = {
+	cs$: createCallsite,
+	resFnCs$: resolveFromFunctionCallsite,
+	resMCs$: resolveFromMethodCallsite,
+	getTP$: getClassTypeParameter,
+};
 /** @internal */
 export const Metadata: MetadataLibrary = InternalMetadataLibrary;`,
 			"utf-8"

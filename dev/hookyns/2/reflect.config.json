@@ -2,7 +2,8 @@
 	"$schema": "../../../packages/typegen/src/config-schema.json",
 	"metadata": {
 		"include": [
-			"**/*.ts"
+			"src/index.ts"
+//			"**/*.ts"
 		],
 		"encode": false,
 		"exclude": [

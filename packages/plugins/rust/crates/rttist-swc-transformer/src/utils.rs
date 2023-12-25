@@ -3,7 +3,7 @@ use swc_core::ecma::{
 	ast,
 };
 use swc_core::common::{Span};
-use swc_ecma_ast::{TsKeywordTypeKind, TsLit, TsLitType};
+use swc_ecma_ast::{TsKeywordTypeKind, TsLit};
 use crate::generate_module_id::ModuleIdentifier;
 use crate::generate_type_id::{IntoTypeIdentifier, TypeIdentifier};
 

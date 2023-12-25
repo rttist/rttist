@@ -1,6 +1,6 @@
-import type {TypeIdentifier, TypeMetadata} from "./declarations";
-import type {MetadataLibrary} from "./Metadata";
-import {MetadataScope} from "./metadata-scope";
+import type { TypeIdentifier, TypeMetadata } from "./declarations";
+import type { MetadataLibrary } from "./MetadataLibrary";
+import { MetadataScope } from "./metadata-scope";
 import type {
 	ClassType,
 	ConditionalType,
@@ -19,12 +19,12 @@ import type {
 	UnionType,
 	UniqueSymbolType,
 } from "./types";
-import type {Module} from "./Module";
-import {getFunctionCallsiteTypeArgumentsOrInvalid} from "./functions/getFunctionCallsiteTypeArgumentsOrInvalid";
-import {LazyModule} from "./utils/LazyModule";
-import {LazyType} from "./utils/LazyType";
-import {LazyTypeArray} from "./utils/LazyTypeArray";
-import {LiteralTypeKinds, PrimitiveTypeKinds, TypeKind} from "./enums";
+import type { Module } from "./Module";
+import { resolveFromFunctionCallsite } from "./functions/resolveFromFunctionCallsite";
+import { LazyModule } from "./utils/LazyModule";
+import { LazyType } from "./utils/LazyType";
+import { LazyTypeArray } from "./utils/LazyTypeArray";
+import { LiteralTypeKinds, PrimitiveTypeKinds, TypeKind } from "./enums";
 
 /**
  * Object representing TypeScript type in memory
@@ -114,6 +114,10 @@ export class Type {
 		return this._id;
 	}
 
+	get displayName(): string {
+		return `${TypeKind[this._kind]} ${this._name} [${this._id}]`;
+	}
+
 	/**
 	 * Kind of the type.
 	 */
@@ -188,6 +192,10 @@ export class Type {
 		this._typeArgumentsRef = new LazyTypeArray(initializer.typeArguments || []);
 	}
 
+	[Symbol.for("nodejs.util.inspect.custom")]() {
+		return this.toString();
+	}
+
 	/**
 	 * Returns true if type is equal to type passed as type argument.
 	 */
@@ -199,7 +207,7 @@ export class Type {
 	is<TType extends Type>(target: TType): target is TType;
 	is<T>(target?: Type): boolean {
 		if (target === undefined) {
-			const [targetTypeReference] = getFunctionCallsiteTypeArgumentsOrInvalid(this.is);
+			const [targetTypeReference] = resolveFromFunctionCallsite(this.is);
 			target = this.metadataLibrary.resolveType(targetTypeReference);
 		}
 
@@ -456,6 +464,31 @@ export class Type {
 	 * @returns {string} Returns string in format "Kind{fullName}"
 	 */
 	toString(): string {
-		return `${TypeKind[this._kind]}\{${this.id}}`;
+		return (
+			`${this.displayName} {` +
+			`\n    typelib ${this.metadataLibrary.name}\n    module  ${this.module.id}\n` +
+			this.stringifyProps(this.getPropsToStringify(), 1) +
+			"\n}"
+		);
+	}
+
+	/**
+	 * Returns string representation of the type's properties.
+	 * @protected
+	 */
+	protected getPropsToStringify(): PropsToStringify {
+		return [];
+	}
+
+	private stringifyProps(props: PropsToStringify, indent: number): string {
+		const indentation = "    ".repeat(indent);
+		return props
+			.map((prop) => {
+				const str = prop instanceof Array ? this.stringifyProps(prop, 1) : prop;
+				return str.replace(/^/gm, indentation);
+			})
+			.join("\n");
 	}
 }
+
+export type PropsToStringify = string[] | PropsToStringify[];

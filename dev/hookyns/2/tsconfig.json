@@ -3,27 +3,27 @@
 	"compilerOptions": {
 		"module": "CommonJS",
 		"moduleResolution": "node",
-		"target": "ESNext",
-		"lib": ["ESNext"],
+		"target": "es2022",
+		"lib": ["es2022"],
 		"removeComments": true,
 //		"declaration": false,
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"experimentalDecorators": true,
-		"rootDir": ".",
+		"rootDir": "src",
 		"outDir": "dist",
 		"plugins": [
 //			{
 //				"transform": "tst-reflect-transformer"
 //			}
 		],
-		"types": []
+		"types": ["node"]
 	},
-	"files": ["index.ts"],
-	"include": [
-		"framework",
-		"controllers"
-	],
+	"files": ["src/index.ts"],
+//	"include": [
+//		"framework",
+//		"controllers"
+//	],
 	"exclude": [
 		"node_modules/**/*",
 		"node_modules"

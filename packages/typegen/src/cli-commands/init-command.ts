@@ -2,7 +2,7 @@ import { CLI } from "../cli";
 import path from "path";
 import * as fs from "fs";
 import { prompt, ConfirmQuestion } from "inquirer";
-import { bgGray, green } from "chalk";
+import { bgGray, cyan, green } from "chalk";
 import { CommandLineArguments } from "../declarations/command-line-arguments";
 
 export async function initCommand(cli: CLI) {
@@ -13,9 +13,18 @@ export async function initCommand(cli: CLI) {
 		await handlePackageJson(args);
 
 		console.log(green(`\u2713 Done`));
+		console.log("Continue by running: ", cyan(`${getUsedCmdName()} generate`));
 	} catch (error: any) {
 		console.error(error instanceof Error ? error.message : error);
 	}
+}
+
+function getUsedCmdName() {
+	if (process.argv?.[0]?.toLowerCase().endsWith("typegen") || process.argv?.[1].toLowerCase().endsWith("typegen")) {
+		return "typegen";
+	}
+
+	return "rttist";
 }
 
 async function handleConfigFile(args: CommandLineArguments) {

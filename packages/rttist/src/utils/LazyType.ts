@@ -1,5 +1,5 @@
 import type { TypeReference } from "../declarations";
-import type { MetadataLibrary } from "../Metadata";
+import type { MetadataLibrary } from "../MetadataLibrary";
 import type { Type } from "../Type";
 import { MetadataScope } from "../metadata-scope";
 

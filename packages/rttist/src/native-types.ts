@@ -7,7 +7,23 @@ let created = false;
 let anyType: Type;
 let unknownFunction: Type;
 let nativeTypes: { [key: string]: Type } = {};
-let nativeGenericTypeDefinitions: { [key: string]: Type } = {};
+let nativeGenericTypeDefinitions: {
+	ArrayDefinition: Type;
+	ReadonlyArrayDefinition: Type;
+	MapDefinition: Type;
+	WeakMapDefinition: Type;
+	SetDefinition: Type;
+	WeakSetDefinition: Type;
+	PromiseDefinition: Type;
+	GeneratorDefinition: Type;
+	AsyncGeneratorDefinition: Type;
+	IteratorDefinition: Type;
+	IterableDefinition: Type;
+	IterableIteratorDefinition: Type;
+	AsyncIteratorDefinition: Type;
+	AsyncIterableDefinition: Type;
+	AsyncIterableIteratorDefinition: Type;
+} = {} as any;
 
 /**
  * @internal
@@ -41,6 +57,24 @@ export function getNativeTypes() {
 				},
 			],
 		});
+
+		nativeGenericTypeDefinitions = {
+			ArrayDefinition: cn("Array", "ArrayDefinition"),
+			ReadonlyArrayDefinition: cn("ReadonlyArray", "ReadonlyArrayDefinition"),
+			MapDefinition: cn("Map", "MapDefinition"),
+			WeakMapDefinition: cn("WeakMap", "WeakMapDefinition"),
+			SetDefinition: cn("Set", "SetDefinition"),
+			WeakSetDefinition: cn("WeakSet", "WeakSetDefinition"),
+			PromiseDefinition: cn("Promise", "PromiseDefinition"),
+			GeneratorDefinition: cn("Generator", "GeneratorDefinition"),
+			AsyncGeneratorDefinition: cn("AsyncGenerator", "AsyncGeneratorDefinition"),
+			IteratorDefinition: cn("Iterator", "IteratorDefinition"),
+			IterableDefinition: cn("Iterable", "IterableDefinition"),
+			IterableIteratorDefinition: cn("IterableIterator", "IterableIteratorDefinition"),
+			AsyncIteratorDefinition: cn("AsyncIterator", "AsyncIteratorDefinition"),
+			AsyncIterableDefinition: cn("AsyncIterable", "AsyncIterableDefinition"),
+			AsyncIterableIteratorDefinition: cn("AsyncIterableIterator", "AsyncIterableIteratorDefinition"),
+		};
 
 		nativeTypes = {
 			Invalid: cn("Invalid", "Invalid", ModuleIds.Invalid),
@@ -89,39 +123,21 @@ export function getNativeTypes() {
 			SharedArrayBuffer: cn("SharedArrayBuffer", "SharedArrayBuffer"),
 			Atomics: cn("Atomics", "Atomics"),
 			DataView: cn("DataView", "DataView"),
-			ArrayDefinition: cn("ArrayDefinition", "ArrayDefinition"),
-			ReadonlyArrayDefinition: cn("ReadonlyArray", "ReadonlyArrayDefinition"),
-			MapDefinition: cn("Map", "MapDefinition"),
-			WeakMapDefinition: cn("WeakMap", "WeakMapDefinition"),
-			SetDefinition: cn("Set", "SetDefinition"),
-			WeakSetDefinition: cn("WeakSet", "WeakSetDefinition"),
-			PromiseDefinition: cn("Promise", "PromiseDefinition"),
-			GeneratorDefinition: cn("Generator", "GeneratorDefinition"),
-			AsyncGeneratorDefinition: cn("AsyncGenerator", "AsyncGeneratorDefinition"),
-			IteratorDefinition: cn("Iterator", "IteratorDefinition"),
-			IterableDefinition: cn("Iterable", "IterableDefinition"),
-			IterableIteratorDefinition: cn("IterableIterator", "IterableIteratorDefinition"),
-			AsyncIteratorDefinition: cn("AsyncIterator", "AsyncIteratorDefinition"),
-			AsyncIterableDefinition: cn("AsyncIterable", "AsyncIterableDefinition"),
-			AsyncIterableIteratorDefinition: cn("AsyncIterableIterator", "AsyncIterableIteratorDefinition"),
-		};
-
-		nativeGenericTypeDefinitions = {
-			ArrayDefinition: cn("ArrayDefinition", "ArrayDefinition"),
-			ReadonlyArrayDefinition: cn("ReadonlyArray", "ReadonlyArrayDefinition"),
-			MapDefinition: cn("Map", "MapDefinition"),
-			WeakMapDefinition: cn("WeakMap", "WeakMapDefinition"),
-			SetDefinition: cn("Set", "SetDefinition"),
-			WeakSetDefinition: cn("WeakSet", "WeakSetDefinition"),
-			PromiseDefinition: cn("Promise", "PromiseDefinition"),
-			GeneratorDefinition: cn("Generator", "GeneratorDefinition"),
-			AsyncGeneratorDefinition: cn("AsyncGenerator", "AsyncGeneratorDefinition"),
-			IteratorDefinition: cn("Iterator", "IteratorDefinition"),
-			IterableDefinition: cn("Iterable", "IterableDefinition"),
-			IterableIteratorDefinition: cn("IterableIterator", "IterableIteratorDefinition"),
-			AsyncIteratorDefinition: cn("AsyncIterator", "AsyncIteratorDefinition"),
-			AsyncIterableDefinition: cn("AsyncIterable", "AsyncIterableDefinition"),
-			AsyncIterableIteratorDefinition: cn("AsyncIterableIterator", "AsyncIterableIteratorDefinition"),
+			ArrayDefinition: nativeGenericTypeDefinitions.ArrayDefinition,
+			ReadonlyArrayDefinition: nativeGenericTypeDefinitions.ReadonlyArrayDefinition,
+			MapDefinition: nativeGenericTypeDefinitions.MapDefinition,
+			WeakMapDefinition: nativeGenericTypeDefinitions.WeakMapDefinition,
+			SetDefinition: nativeGenericTypeDefinitions.SetDefinition,
+			WeakSetDefinition: nativeGenericTypeDefinitions.WeakSetDefinition,
+			PromiseDefinition: nativeGenericTypeDefinitions.PromiseDefinition,
+			GeneratorDefinition: nativeGenericTypeDefinitions.GeneratorDefinition,
+			AsyncGeneratorDefinition: nativeGenericTypeDefinitions.AsyncGeneratorDefinition,
+			IteratorDefinition: nativeGenericTypeDefinitions.IteratorDefinition,
+			IterableDefinition: nativeGenericTypeDefinitions.IterableDefinition,
+			IterableIteratorDefinition: nativeGenericTypeDefinitions.IterableIteratorDefinition,
+			AsyncIteratorDefinition: nativeGenericTypeDefinitions.AsyncIteratorDefinition,
+			AsyncIterableDefinition: nativeGenericTypeDefinitions.AsyncIterableDefinition,
+			AsyncIterableIteratorDefinition: nativeGenericTypeDefinitions.AsyncIterableIteratorDefinition,
 		};
 
 		created = true;
@@ -138,10 +154,11 @@ export function getNativeTypes() {
 function cn(name: string, propName: keyof TypeKind | keyof typeof TypeIds, module: string = ModuleIds.Native): Type {
 	const kind = (TypeKind as any)[propName];
 	const id = (TypeIds as any)[propName];
+	const isGenericTypeDefinition = propName.endsWith("Definition");
 
 	if (id === undefined || kind === undefined) {
 		throw new Error(`Invalid prop name. kind = ${kind}, id = ${id}`);
 	}
 
-	return new Type({ kind, name, id, module });
+	return new Type({ kind, name, id, module, isGenericTypeDefinition });
 }

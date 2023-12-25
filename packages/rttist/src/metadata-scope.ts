@@ -1,4 +1,4 @@
-import type { MetadataLibrary } from "./Metadata";
+import type { MetadataLibrary } from "./MetadataLibrary";
 
 export const MetadataScope: {
 	readonly current: MetadataLibrary;

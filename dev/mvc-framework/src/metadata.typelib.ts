@@ -1,7 +1,7 @@
 /*
-* This file is generated automatically by the RTTIST TypeGen tool.
-* Do not edit it manually.
-*/
+ * This file is generated automatically by the RTTIST TypeGen tool.
+ * Do not edit it manually.
+ */
 import { ModuleImporter, MetadataLibrary, createGetTypeFunction } from "rttist";
 import "rttist/dist/public.typelib";
 // @ts-ignore; configure this as an external dependency
@@ -20,13 +20,16 @@ ModuleImporter.registerImporters({
 	"@simple-tests/controllers/UserController": () => import("./controllers/UserController.js"),
 	"@simple-tests/framework/Application": () => import("./framework/Application.js"),
 	"@simple-tests/framework/Router": () => import("./framework/Router.js"),
-	"@simple-tests/framework/controllers/BasePathParameterParser": () => import("./framework/controllers/BasePathParameterParser.js"),
+	"@simple-tests/framework/controllers/BasePathParameterParser": () =>
+		import("./framework/controllers/BasePathParameterParser.js"),
 	"@simple-tests/framework/controllers/IController": () => import("./framework/controllers/IController.js"),
-	"@simple-tests/framework/controllers/IPathParameterParser": () => import("./framework/controllers/IPathParameterParser.js"),
+	"@simple-tests/framework/controllers/IPathParameterParser": () =>
+		import("./framework/controllers/IPathParameterParser.js"),
 	"@simple-tests/framework/controllers/decorators/route": () => import("./framework/controllers/decorators/route.js"),
 });
 
 export const getType = createGetTypeFunction(InternalMetadataLibrary);
+export const resolveType = InternalMetadataLibrary.resolveType.bind(InternalMetadataLibrary);
 
 /** @internal */
 export const Metadata: MetadataLibrary = InternalMetadataLibrary;

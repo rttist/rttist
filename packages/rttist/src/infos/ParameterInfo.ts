@@ -1,6 +1,6 @@
 import type { Type } from "../Type";
 import type { ParameterInfoMetadata } from "../declarations";
-import { ParameterFlags } from "../enums";
+import { AccessModifier, Accessor, ParameterFlags } from "../enums";
 import { LazyType } from "../utils/LazyType";
 import { DecoratorInfo } from "./DecoratorInfo";
 
@@ -56,5 +56,15 @@ export class ParameterInfo {
 	 */
 	getDecorators(): ReadonlyArray<DecoratorInfo> {
 		return this._decorators;
+	}
+
+	toString(): string {
+		return (
+			this.getDecorators()
+				.map((d) => "@" + d.name)
+				.join(" ") +
+			(this.rest ? "..." : "") +
+			`${this.name.toString()}${this.optional ? "?" : ""}: ${this.type.displayName}`
+		);
 	}
 }

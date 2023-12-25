@@ -25,21 +25,22 @@ import {
 } from "./types";
 import { TypeKind } from "./enums";
 
-const TYPE_IDENTIFIER_REGEX = /^#(.+?)\{(.+?)}(\?)?$/;
+const TYPE_IDENTIFIER_REGEX = /^([#@][^,|&]+?)\{(.+?)}(\?)?$/;
 const NATIVE_KNOWN_TYPES_CTOR_MAP = new Map<string, new (...args: any[]) => Type>([
-	["Promise", PromiseType],
-	["Array", ArrayType],
-	["ReadonlyArray", ReadonlyArrayType],
-	["Set", SetType],
-	["WeakSet", WeakSetType],
-	["Map", MapType],
-	["WeakMap", WeakMapType],
-	["Tuple", TupleType],
+	["#Promise", PromiseType],
+	["#Array", ArrayType],
+	["#ReadonlyArray", ReadonlyArrayType],
+	["#Set", SetType],
+	["#WeakSet", WeakSetType],
+	["#Map", MapType],
+	["#WeakMap", WeakMapType],
+	["#Tuple", TupleType],
 ]);
 
 export class MetadataLibrary {
 	private readonly modules = new Map<ModuleIdentifier, Module>();
 	private readonly types = new Map<TypeIdentifier, Type>();
+	private readonly isGlobalMetadataLibrary: boolean;
 
 	/**
 	 * Map of aliases - mapping type identifiers to type identifiers.
@@ -47,16 +48,31 @@ export class MetadataLibrary {
 	 */
 	private readonly aliases = new Map<TypeIdentifier, TypeIdentifier>();
 
-	constructor(configuration: TypesConfiguration, parentLibrary: MetadataLibrary);
+	constructor(configuration: TypesConfiguration, name: string, parentLibrary: MetadataLibrary);
 	/** @internal */
-	constructor(configuration: TypesConfiguration);
+	constructor(configuration: TypesConfiguration, name: string);
 	constructor(
 		public readonly configuration: TypesConfiguration,
+		public readonly name: string,
 		private readonly parentLibrary?: MetadataLibrary
 	) {
 		if (!parentLibrary && new.target !== GlobalMetadataLibrary) {
 			throw new Error("Cannot instantiate new MetadataLibrary without parent.");
 		}
+
+		this.isGlobalMetadataLibrary = new.target === GlobalMetadataLibrary;
+	}
+
+	toString() {
+		return (
+			`${this.name}` +
+			` (${this.modules.size} modules, ${this.types.size} types)` +
+			` ${JSON.stringify(this.configuration, undefined, 4)}`
+		);
+	}
+
+	[Symbol.for("nodejs.util.inspect.custom")]() {
+		return this.toString();
 	}
 
 	/**
@@ -123,6 +139,10 @@ export class MetadataLibrary {
 		}
 
 		// TODO: Resolve aliases
+
+		if (id === "#Array") {
+			debugger;
+		}
 
 		const existingType = this.types.get(id) ?? this.parentLibrary?.types.get(id);
 
@@ -298,8 +318,8 @@ export class MetadataLibrary {
 		}
 
 		// UNION or INTERSECTION
-		if (typeIdInfo.type === "|" || typeIdInfo.type === "&") {
-			const type = new (typeIdInfo.type === "|" ? UnionType : IntersectionType)({
+		if (typeIdInfo.type === "#|" || typeIdInfo.type === "#&") {
+			const type = new (typeIdInfo.type === "#|" ? UnionType : IntersectionType)({
 				id: id,
 				module: ModuleIds.Native,
 				name: typeIdInfo.type,
@@ -318,9 +338,22 @@ export class MetadataLibrary {
 			const type = new Ctor({
 				id: id,
 				module: ModuleIds.Native,
-				name: `${typeIdInfo.type}<'${typeIdInfo.arguments.length}>`,
+				name: `${typeIdInfo.type.slice(1)}<'${typeIdInfo.arguments.length}>`,
 				kind: TypeKind.Type,
 				typeArguments: typeIdInfo.arguments.map((typeId) => typeId),
+			});
+			this.addType(type);
+			return type;
+		}
+
+		if (typeIdInfo.type[0] === "@") {
+			const type = new Type({
+				id: id,
+				module: ModuleIds.Native,
+				name: `${typeIdInfo.type.slice(1)}<'${typeIdInfo.arguments.length}>`,
+				kind: TypeKind.Type,
+				typeArguments: typeIdInfo.arguments.map((typeId) => typeId),
+				genericTypeDefinition: typeIdInfo.type,
 			});
 			this.addType(type);
 			return type;
@@ -330,6 +363,6 @@ export class MetadataLibrary {
 
 export class GlobalMetadataLibrary extends MetadataLibrary {
 	constructor(configuration: TypesConfiguration) {
-		super(configuration);
+		super(configuration, "Global metadata library");
 	}
 }

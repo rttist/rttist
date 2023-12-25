@@ -1,4 +1,4 @@
-import { MetadataLibrary } from "./Metadata";
+import { MetadataLibrary } from "./MetadataLibrary";
 import { Type } from "./Type";
 import { getTypeOfRuntimeValue } from "./helpers";
 import { getCallsiteTypeArguments } from "@rttist/core";
