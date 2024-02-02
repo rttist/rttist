@@ -13,6 +13,7 @@
 		"lib": []
 	},
 	"files": [
-		"src/index.ts"
+		"src/index.ts",
+		"src/metadata.typelib.ts"
 	]
 }

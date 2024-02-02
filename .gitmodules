@@ -1,0 +1,3 @@
+[submodule "packages/plugins/rust"]
+	path = packages/plugins/rust
+	url = git@github.com:rttist/rttist-cargo.git

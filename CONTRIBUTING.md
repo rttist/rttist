@@ -18,7 +18,7 @@ Welcome and thank You for investing your time in contributing to my project! :ta
 
 Run the TypeGen by `node packages/typegen/dist/bin.js`.
 
-### Dev mode
+### Dev Mode
 
 To enable developer mode and logging, you must update reflect.config.js.
 
@@ -29,10 +29,14 @@ To enable developer mode and logging, you must update reflect.config.js.
 }
 ```
 
-## Some rules
+## Some Rules
 
 * Use type imports `import type {} from ""` whenever it is possible. In rttist package there is problem with circular dependencies.
 * Use `===` equality.
 
 ## Code-style
 This project use Prettier. There is `.prettierrc` config file in the repository root. There are no GIT hooks yet so please use the prettier to format the code using your IDE.
+
+## Transformers
+Transformers are written in Rust. There are plugins for eg. typescript compiler or esbuild written in TS but they all use the same Rust code.
+The RUst code is in separate git module which is private for now.

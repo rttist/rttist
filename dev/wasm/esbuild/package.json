@@ -1,0 +1,21 @@
+{
+	"name": "dev-wasm-esbuild",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepare": "pnpx @rttist/typegen@proto generate -f"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"rttist": "workspace:*"
+	},
+	"devDependencies": {
+		"esbuild-plugin-rttist": "workspace:*",
+		"@rttist/typegen": "workspace:*",
+		"esbuild": "^0.19.2"
+	}
+}

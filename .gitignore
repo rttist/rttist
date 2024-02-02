@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.metadata/
+.idea
+#/packages/plugins/rust/
+tsconfig.tsbuildinfo
+metadata.typelib.ts

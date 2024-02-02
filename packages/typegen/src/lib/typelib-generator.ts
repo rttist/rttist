@@ -114,12 +114,13 @@ export { Metadata };`,
 * This file is generated automatically by the RTTIST TypeGen tool.
 * Do not edit it manually.
 */
-import { ModuleImporter, MetadataLibrary, createGetTypeFunction, createCallsite, resolveFromFunctionCallsite, resolveFromMethodCallsite, getClassTypeParameter, } from "rttist";
+import { ModuleImporter, MetadataLibrary, createGetTypeFunction, createCallsite, resolveFromFunctionCallsite, resolveFromMethodCallsite, getClassTypeParameter, Type } from "rttist";
 ${this.config.dependenciesInfo
 	.filter((dep) => dep.metadataPath !== undefined)
 	.map((dep) => `import "${dep.metadataImportSpecifier}";`)
 	.join("\n")}
-// @ts-ignore; configure this as an external dependency
+
+// @ts-ignore; !! CONFIGURE THIS AS AN EXTERNAL DEPENDENCY !!
 import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
 
 ModuleImporter.registerImporters({
@@ -136,7 +137,7 @@ ModuleImporter.registerImporters({
 		.join("\n\t")}
 });
 
-export const getType = createGetTypeFunction(InternalMetadataLibrary);
+export const getType: <T>(...args: any[]) => Type = createGetTypeFunction(InternalMetadataLibrary);
 export const resolveType = InternalMetadataLibrary.resolveType.bind(InternalMetadataLibrary);
 export const _ = {
 	cs$: createCallsite,
