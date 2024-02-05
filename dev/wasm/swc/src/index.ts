@@ -1,9 +1,6 @@
 import { getType } from "./metadata.typelib";
 import { ClassType, PropertyInfo, SignatureInfo, Type, TypeParameterType } from "rttist";
-
-type union = string | number;
-
-console.log(getType<union>().toString());
+import { createLogger } from "./logging/logger-factory";
 
 export class Foo {
 	bar: string;
@@ -15,7 +12,9 @@ export class Foo {
 	}
 }
 
-console.log(getType(Foo).toString());
+createLogger<Foo>().then((fooLogger) => {
+	fooLogger.log("Hello, world!");
+});
 
 const foo = new Foo("", 5);
 

@@ -115,7 +115,7 @@ export class Type {
 	}
 
 	get displayName(): string {
-		return `${TypeKind[this._kind]} ${this._name} [${this._id}]`;
+		return `<${TypeKind[this._kind]} ${this._name} [${this._id}]>`;
 	}
 
 	/**
@@ -464,12 +464,15 @@ export class Type {
 	 * @returns {string} Returns string in format "Kind{fullName}"
 	 */
 	toString(): string {
-		return (
-			`${this.displayName} {` +
-			`\n    typelib ${this.metadataLibrary.name}\n    module  ${this.module.id}\n` +
-			this.stringifyProps(this.getPropsToStringify(), 1) +
-			"\n}"
-		);
+		const props = this.getPropsToStringify();
+
+		return `${this.displayName} {` +
+			"\n    ```typeinfo" +
+			`\n    typelib: ${this.metadataLibrary.name}\n    module:  ${this.module.id}\n` +
+			"    ```" +
+			props.length
+			? "\n"
+			: "" + this.stringifyProps(props, 1) + "\n}";
 	}
 
 	/**

@@ -26,17 +26,16 @@
 			"require": "./dist/index.js",
 			"import": "./dist/esm/index.js",
 			"types": "./dist/index.d.ts"
-		},
-		"./dist/public.typelib": "./dist/public.typelib.js"
+		}
 	},
 	"engines": {
 		"node": ">=16.0.0"
 	},
 	"dependencies": {
-		"tsup": "^7.2.0",
 		"@rttist/ts-loader-wasm": "workspace:^*"
 	},
 	"devDependencies": {
+		"tsup": "^7.2.0",
 		"@types/node": "^16.0.0"
 	},
 	"peerDependencies": {

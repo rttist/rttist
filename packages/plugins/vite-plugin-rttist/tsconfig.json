@@ -10,6 +10,7 @@
 		"removeComments": true,
 		"sourceMap": true,
 		"stripInternal": true,
+		"lib": []
 	},
 	"include": [
 		"./src/**/*.ts"

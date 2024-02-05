@@ -1,0 +1,56 @@
+{
+	"name": "vite-plugin-rttist",
+	"version": "4.0.0-alpha.0",
+	"description": "Rttist typegen plugin adding support for Vite",
+	"keywords": [
+		"rttist",
+		"plugin",
+		"esbuild",
+		"esbuild-plugin",
+		"swc",
+		"transformer",
+		"reflection",
+		"loader",
+		"typescript",
+		"runtime"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/esm/index.js",
+	"type": "commonjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"default": "./dist/index.js",
+			"require": "./dist/index.js",
+			"import": "./dist/esm/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"prepublishOnly": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --dts"
+	},
+	"files": [
+		"dist/**/*"
+	],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^16.0.0",
+		"tsup": "^7.2.0"
+	},
+	"dependencies": {
+		"@rttist/ts-loader-wasm": "workspace:^"
+	},
+	"peerDependencies": {
+		"vite": "4.x"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rttist/rttist.git",
+		"directory": "packages/plugins/vite"
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
+}

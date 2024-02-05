@@ -188,7 +188,7 @@ function createConfig(
 		typecheck: commandLineArguments.typecheck,
 
 		include: metadataConfig.get("include")!,
-		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "**/metadata.typelib.ts"]),
+		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "**/metadata.typelib.ts", "**/*.d.ts"]),
 
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
 		target: TargetPlatform[reflectionConfig.get("target") as keyof typeof TargetPlatform],

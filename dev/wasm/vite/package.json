@@ -1,23 +1,26 @@
 {
-	"name": "dev-wasm-esbuild",
+	"name": "dev-wasm-vite",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"prepare": "pnpx @rttist/typegen@proto generate -f",
-		"build": "node esbuild.build.js",
-		"start": "node dist/out.js"
+		"build": "vite build",
+		"preview": "vite preview",
+		"start": "vite"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
 	"dependencies": {
-		"rttist": "workspace:*"
+		"rttist": "workspace:*",
+		"solid-js": "^1.8.12"
 	},
 	"devDependencies": {
-		"esbuild-plugin-rttist": "workspace:*",
 		"@rttist/typegen": "workspace:*",
-		"esbuild": "^0.19.2"
+		"vite-plugin-rttist": "workspace:*",
+		"vite": "^5.0.12",
+		"vite-plugin-solid": "^2.8.0"
 	}
 }
