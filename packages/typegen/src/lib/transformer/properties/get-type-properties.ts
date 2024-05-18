@@ -39,7 +39,6 @@ const TypeFlagsMappers: { [typeFlag: number]: TypeMapper } = {
 
 /**
  * Return TypeProperties object describing given type.
- // * @param typeReference
  * @param type
  * @param symbol
  * @param context
@@ -83,34 +82,90 @@ export function getTypeProperties(
 		// );
 
 		if (declaration) {
-			// Type alias pointing to another type, directly.
-			if (declaration.type.kind === ts.SyntaxKind.TypeReference) {
-				// if (declaredSymbol && declaredSymbol != type.symbol)
-				return {
-					name: symbol.escapedName.toString(),
-					kind: TypeKind.Alias,
-					// TODO: Generate metadata
-					target: context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
-				} as TypeAliasProperties;
-			}
-
-			// Type alias of union.
-			if (declaration.type.kind === ts.SyntaxKind.UnionType) {
-			}
-
-			// Type alias of intersection.
-			if (declaration.type.kind === ts.SyntaxKind.IntersectionType) {
-			}
+			const targetType = context.typeChecker.getTypeAtLocation(declaration.type);
 
 			// Alias of complex type - object
 			if (declaration.type.kind === ts.SyntaxKind.TypeLiteral) {
+				const targetTypeRef = context.transformerContext.tsTypeTypeChecker.getType(
+					targetType,
+					targetType.symbol,
+					false,
+					true
+				);
+
+				// Generate METADATA for the target type of the alias.
+				context.metadata.generateMetadataForType(
+					targetTypeRef,
+					targetType,
+					false,
+					targetType.symbol,
+					undefined,
+					context
+				);
+
 				return {
 					name: symbol.escapedName.toString(),
-					kind: TypeKind.Alias, // TODO: This is not just an alias; this is a type literal
-					// TODO: Generate metadata
-					target: context.transformerContext.tsTypeTypeChecker.getType(type, symbol, false),
+					kind: TypeKind.Alias,
+					target: targetTypeRef,
 				} as TypeAliasProperties;
 			}
+
+			const targetTypeRef = context.transformerContext.syntaxTypeChecker.getType(declaration.type);
+
+			// Generate METADATA for the target type of the alias.
+			context.metadata.generateMetadataForType(
+				targetTypeRef,
+				targetType,
+				false,
+				targetType.symbol,
+				undefined,
+				context
+			);
+
+			return {
+				name: symbol.escapedName.toString(),
+				kind: TypeKind.Alias,
+				target: targetTypeRef,
+			} as TypeAliasProperties;
+
+			// // Type alias pointing to another type, directly.
+			// if (declaration.type.kind === ts.SyntaxKind.TypeReference) {
+			// 	// if (declaredSymbol && declaredSymbol != type.symbol)
+			// 	return {
+			// 		name: symbol.escapedName.toString(),
+			// 		kind: TypeKind.Alias,
+			// 		target: context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
+			// 	} as TypeAliasProperties;
+			// }
+
+			// // Type alias of union.
+			// if (declaration.type.kind === ts.SyntaxKind.UnionType) {
+			// 	context.metadata.generateMetadataForType(
+			// 		//context.transformerContext.syntaxTypeChecker.getType(declaration.type),
+			// 		targetTypeRef,
+			// 		targetType,
+			// 		false,
+			// 		targetType.symbol,
+			// 		undefined,
+			// 		context
+			// 	);
+			//
+			// 	return {
+			// 		name: symbol.escapedName.toString(),
+			// 		kind: TypeKind.Alias,
+			// 		target: context.transformerContext.syntaxTypeChecker.getType(declaration.type, false),
+			// 	} as TypeAliasProperties;
+			// }
+			//
+			// // Type alias of intersection.
+			// if (declaration.type.kind === ts.SyntaxKind.IntersectionType) {
+			// 	return {
+			// 		name: symbol.escapedName.toString(),
+			// 		kind: TypeKind.Alias,
+			// 		target: context.transformerContext.syntaxTypeChecker.getType(declaration.type, false),
+			// 	} as TypeAliasProperties;
+			// }
+			//
 		}
 	}
 

@@ -17,6 +17,7 @@ import * as fs from "fs/promises";
 import * as $fs from "fs";
 import { Client } from "memory-mapped-files";
 import { lazyTypescript } from "./utils/lazy-typescript";
+import "./debugger";
 
 let createClient: undefined | typeof import("memory-mapped-files").createClient;
 try {

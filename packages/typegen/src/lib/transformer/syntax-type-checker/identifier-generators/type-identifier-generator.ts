@@ -1,6 +1,7 @@
 ﻿import { TypeIds } from "@rttist/core";
 import { ModuleIdentifier, TypeIdentifier } from "rttist";
 import * as ts from "typescript";
+import { Config } from "../../../config/config";
 import { getTopLevelIdentifier } from "../../utils/get-top-level-identifier";
 import { getTopLevelTypeName } from "../../utils/get-top-level-type-name";
 import { isDeclaration } from "../../utils/is-declaration";
@@ -79,9 +80,16 @@ export const wellKnownType = new Map<string | number, string>([
 export class TypeIdentifierGenerator {
 	private readonly identifiersMap = new WeakMap<ts.Node, TypeIdentifier>();
 
-	constructor(private readonly scopeManager: ScopeManager) {}
+	constructor(
+		private readonly scopeManager: ScopeManager,
+		private readonly config: Config
+	) {}
 
 	generateTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIdentifier | undefined {
+		if (this.config.devMode) {
+			TypegenDebugger.generatingIdFor = node;
+		}
+
 		if (ts.isLiteralTypeNode(node)) {
 			node = node.literal;
 		}
@@ -221,7 +229,7 @@ export class TypeIdentifierGenerator {
 						}
 					}
 
-					name = (itNode.name.getText() ?? "") + (name ? "." + name : "");
+					name = (itNode.name.getText() ?? "") + (name ? separator + name : "");
 				}
 				itNode = itNode.parent;
 			} while (itNode && !ts.isSourceFile(itNode));

@@ -121,7 +121,7 @@ ${this.config.dependenciesInfo
 	.join("\n")}
 
 // @ts-ignore; !! CONFIGURE THIS AS AN EXTERNAL DEPENDENCY !!
-import { Metadata as InternalMetadataLibrary } from "./internal.typelib";
+import { Metadata as InternalMetadataLibrary } from "${this.config.typelibImportPath}";
 
 ModuleImporter.registerImporters({
 	${this.files

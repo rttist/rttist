@@ -22,3 +22,35 @@ PNPM
 ```bash
 pnpm install @rttist/typegen -g
 ```
+
+
+## How Are Ids Generated?
+Ids are generated as <code>`@${packageJson.name}/${pathToSourceFileFromRoot}:${nameOfTheType}`</code>.
+The `nameOfTheType` is export name of the type in the source file in most cases, but there are exceptions.
+
+**Nested types**
+> Nested types are types that are defined inside another type. For example:
+> 
+> ```typescript
+> export class A {
+>     static B = class B { }
+> }
+
+Names of nested types are generated as names separated by dots. From export name of the parent type to name of the nested type.
+So in the example above, the id of the nested type `B` would be `@${packageJson.name}/${pathToSourceFileFromRoot}:A.B`.
+
+**Generic type parameters**
+
+*TODO*
+
+**Anonymous types**
+> By anonymous types we mean types that are not explicitly named in the source code, so you cannot target them directly. 
+> For example, the following type is anonymous:
+> 
+> ```typescript
+> const x: { a: number } = { a: 1 };
+> ```
+> 
+> In this case, the type `{ a: number }` is anonymous.
+
+Ids for anonymous types are generated as <code>`@@${sourcefile.position}`</code>, where `sourcefile.position` is the position of the type in the source file. That means it is basically random identifier that is unique for a file.

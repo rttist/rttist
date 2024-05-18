@@ -11,6 +11,10 @@ import { typeAliasVisitor } from "./type-alias-visitor";
  * @param context
  */
 export function mainVisitor(nodeToVisit: ts.Node, context: Context): void {
+	if (context.transformerContext.config.devMode) {
+		TypegenDebugger.visitingNode = nodeToVisit;
+	}
+
 	switch (nodeToVisit.kind) {
 		case ts.SyntaxKind.ClassExpression:
 		case ts.SyntaxKind.ClassDeclaration:

@@ -36,7 +36,8 @@ export class TypeCheckerTypeIdentifierGenerator {
 	getTypeCheckerTypeIdentifier(
 		type: ts.Type,
 		symbol: ts.Symbol | undefined,
-		nullable: boolean
+		nullable: boolean,
+		anonymous: boolean = false
 	): TypeIdentifier | undefined {
 		if (isInvalidType(type)) {
 			return TypeIds.Invalid;
@@ -59,7 +60,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 		// const useProvidedSymbol = isAnonymous || isTypeAlias;
 
 		// Use symbol always when provided.
-		const useProvidedSymbol = symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0;
+		const useProvidedSymbol = !anonymous && symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0;
 
 		// In case of TypeAlias ignore the stored ref on type, instead try to find the ref on the symbol.
 		if (useProvidedSymbol && hasReflectedTypeReference(symbol!)) {
@@ -75,14 +76,19 @@ export class TypeCheckerTypeIdentifierGenerator {
 		let typeReference: TypeIdentifier | undefined = undefined;
 
 		// If no symbol defined, take it from type
-		if (symbol === undefined || !useProvidedSymbol) {
+		// TODO: I've just added ` && !anonymous` to fix issue with anonymous type literals under aliases, but I don't know why the `|| !useProvidedSymbol` is there. It overrides the symbol that may be correct.
+		if (symbol === undefined || (!useProvidedSymbol && !anonymous)) {
 			symbol = getSymbol(type, this.typeChecker);
 		}
 
 		const declaration = getDeclaration(symbol);
 
-		// If there is no declaration and/or symbol
-		if (!declaration || !symbol) {
+		if (this.config.devMode) {
+			TypegenDebugger.generatingIdFor = declaration;
+		}
+
+		// If there is no declaration and/or symbol (it's okay to not have symbol if we require anonymous symbol)
+		if (!declaration || (!symbol && !anonymous)) {
 			return this.getTypeRefWithoutDeclaration(type, symbol, nullable);
 		}
 
@@ -96,6 +102,10 @@ export class TypeCheckerTypeIdentifierGenerator {
 
 		// If it's type parameter
 		if ((type.flags & ts.TypeFlags.TypeParameter) !== 0) {
+			if (symbol === undefined) {
+				return this.getTypeRefWithoutDeclaration(type, undefined, nullable);
+			}
+
 			typeReference = this.getTypeRefOfTypeParameter(
 				type,
 				nullable,
@@ -108,8 +118,12 @@ export class TypeCheckerTypeIdentifierGenerator {
 		}
 		// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
 		else if (declaration.kind === ts.SyntaxKind.TypeLiteral) {
-			typeReference = sourceFileId + ":" + "AnonymousType:" + declaration.pos;
+			typeReference = sourceFileId + ":" + "@@" + declaration.pos;
 		} else {
+			if (symbol === undefined) {
+				return this.getTypeRefWithoutDeclaration(type, undefined, nullable);
+			}
+
 			// const knownTypeReference = getWellKnownTypeRef(sourceFileId, type, symbol);
 			//
 			// if (knownTypeReference !== undefined) {

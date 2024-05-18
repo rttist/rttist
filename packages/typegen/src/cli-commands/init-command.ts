@@ -50,7 +50,7 @@ async function handleConfigFile(args: CommandLineArguments) {
 	fs.writeFileSync(
 		configPath,
 		`{
-	"$schema": "./node_modules/@rttist/typegen/config-schema.json",
+	"$schema": "https://rttist.org/schema.json",
 	"metadata": {
 		"include": [
 			"src/**/*.ts"

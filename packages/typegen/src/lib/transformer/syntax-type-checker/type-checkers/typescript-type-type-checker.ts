@@ -9,11 +9,17 @@ import { TypeCheckerTypeIdentifierGenerator } from "../identifier-generators/typ
 export class TypeScriptTypeTypeChecker {
 	constructor(private readonly typeCheckerTypeIdentifierGenerator: TypeCheckerTypeIdentifierGenerator) {}
 
-	getType(type: ts.Type, symbol: ts.Symbol | undefined, nullable: boolean): TransformerTypeReference {
+	getType(
+		type: ts.Type,
+		symbol: ts.Symbol | undefined,
+		nullable: boolean,
+		anonymous: boolean = false
+	): TransformerTypeReference {
 		const typeIdentifier = this.typeCheckerTypeIdentifierGenerator.getTypeCheckerTypeIdentifier(
 			type,
 			symbol,
-			nullable
+			nullable,
+			anonymous
 		);
 		return typeIdentifier ? new TransformerTypeReference(typeIdentifier) : TransformerTypeReference.Invalid;
 	}

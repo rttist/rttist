@@ -26,7 +26,9 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		outDir: "dist/",
 		include: ["**/*"],
 		exclude: ["**/@types/node/**"],
+		includeDtsFiles: false,
 		// emit: "js"
+		typelibImportPath: "./internal.typelib",
 	},
 };
 
@@ -64,6 +66,8 @@ export type Config = {
 	readonly moduleResolution: ts.ModuleResolutionKind;
 	readonly module: ts.ModuleKind;
 	readonly strictNullChecks: boolean;
+
+	readonly typelibImportPath: string;
 };
 
 async function getDependenciesInfo(packageInfo: PackageInfo, logger: Logger): Promise<DependencyInfo[]> {
@@ -188,7 +192,11 @@ function createConfig(
 		typecheck: commandLineArguments.typecheck,
 
 		include: metadataConfig.get("include")!,
-		exclude: (metadataConfig.get("exclude") ?? []).concat([".metadata", "**/metadata.typelib.ts", "**/*.d.ts"]),
+		exclude: (metadataConfig.get("exclude") ?? []).concat(
+			[".metadata", "**/metadata.typelib.ts", metadataConfig.get("includeDtsFiles") ? null : "**/*.d.ts"].filter(
+				(x) => x
+			) as string[]
+		),
 
 		encode: ["true", true].includes(metadataConfig.get("encode")!),
 		target: TargetPlatform[reflectionConfig.get("target") as keyof typeof TargetPlatform],
@@ -219,6 +227,7 @@ function createConfig(
 		// this.plugins = (reflectionConfig.get("plugins") ?? DefaultConfiguration.plugins).map((plugin) =>
 		// 	this.getPlugin(plugin, projectRoot)
 		// );
+		typelibImportPath: metadataConfig.get("typelibImportPath")!,
 	};
 }
 

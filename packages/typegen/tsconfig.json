@@ -15,14 +15,16 @@
 		"lib": [
 			"es2022"
 		],
+		"types": []
 	},
 	"files": [
 		"src/declarations/globals.ts",
 		"src/bin.ts",
 		"src/worker.ts",
-		"src/lib/watcher.ts"
-	],
-//	"include": [
+		"src/lib/watcher.ts",
+		"src/lib/debugger.ts"
+	]
+	//	"include": [
 //		"src/**/*.ts"
 //	]
 }
