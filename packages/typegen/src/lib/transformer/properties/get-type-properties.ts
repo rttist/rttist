@@ -12,6 +12,7 @@ import { mapConditional } from "./mappers/map-conditional";
 import { mapIndexedAccessType } from "./mappers/map-indexed-access-type";
 import { mapStringMapping } from "./mappers/map-string-mapping";
 import { mapTemplateLiteral } from "./mappers/map-template-literal";
+import { mapTypeAlias } from "./mappers/map-type-alias";
 import { mapTypeParameter } from "./mappers/map-type-parameter";
 import { mapEnum } from "./mappers/mapEnum";
 import { mapEnumLiteral } from "./mappers/mapEnumLiteral";
@@ -70,103 +71,10 @@ export function getTypeProperties(
 		return { ...InvalidTypeProperties };
 	}
 
-	// TODO: Separate to mapTypeAlias file
-	// TODO: Solve this. We don't want to generate properties for aliases
 	// It's a TypeAlias
 	// if (hasReflectedTypeReference(symbol) && symbol.__ref.id != typeReference.id)
 	if (symbol !== undefined && (symbol.flags & ts.SymbolFlags.TypeAlias) !== 0) {
-		const declaration = getDeclaration<ts.TypeAliasDeclaration>(symbol);
-		// const declaredSymbol = declaration && (
-		// 	(declaration.type as any).symbol
-		// 	|| context.typeChecker.getSymbolAtLocation(declaration.type)
-		// );
-
-		if (declaration) {
-			const targetType = context.typeChecker.getTypeAtLocation(declaration.type);
-
-			// Alias of complex type - object
-			if (declaration.type.kind === ts.SyntaxKind.TypeLiteral) {
-				const targetTypeRef = context.transformerContext.tsTypeTypeChecker.getType(
-					targetType,
-					targetType.symbol,
-					false,
-					true
-				);
-
-				// Generate METADATA for the target type of the alias.
-				context.metadata.generateMetadataForType(
-					targetTypeRef,
-					targetType,
-					false,
-					targetType.symbol,
-					undefined,
-					context
-				);
-
-				return {
-					name: symbol.escapedName.toString(),
-					kind: TypeKind.Alias,
-					target: targetTypeRef,
-				} as TypeAliasProperties;
-			}
-
-			const targetTypeRef = context.transformerContext.syntaxTypeChecker.getType(declaration.type);
-
-			// Generate METADATA for the target type of the alias.
-			context.metadata.generateMetadataForType(
-				targetTypeRef,
-				targetType,
-				false,
-				targetType.symbol,
-				undefined,
-				context
-			);
-
-			return {
-				name: symbol.escapedName.toString(),
-				kind: TypeKind.Alias,
-				target: targetTypeRef,
-			} as TypeAliasProperties;
-
-			// // Type alias pointing to another type, directly.
-			// if (declaration.type.kind === ts.SyntaxKind.TypeReference) {
-			// 	// if (declaredSymbol && declaredSymbol != type.symbol)
-			// 	return {
-			// 		name: symbol.escapedName.toString(),
-			// 		kind: TypeKind.Alias,
-			// 		target: context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
-			// 	} as TypeAliasProperties;
-			// }
-
-			// // Type alias of union.
-			// if (declaration.type.kind === ts.SyntaxKind.UnionType) {
-			// 	context.metadata.generateMetadataForType(
-			// 		//context.transformerContext.syntaxTypeChecker.getType(declaration.type),
-			// 		targetTypeRef,
-			// 		targetType,
-			// 		false,
-			// 		targetType.symbol,
-			// 		undefined,
-			// 		context
-			// 	);
-			//
-			// 	return {
-			// 		name: symbol.escapedName.toString(),
-			// 		kind: TypeKind.Alias,
-			// 		target: context.transformerContext.syntaxTypeChecker.getType(declaration.type, false),
-			// 	} as TypeAliasProperties;
-			// }
-			//
-			// // Type alias of intersection.
-			// if (declaration.type.kind === ts.SyntaxKind.IntersectionType) {
-			// 	return {
-			// 		name: symbol.escapedName.toString(),
-			// 		kind: TypeKind.Alias,
-			// 		target: context.transformerContext.syntaxTypeChecker.getType(declaration.type, false),
-			// 	} as TypeAliasProperties;
-			// }
-			//
-		}
+		return mapTypeAlias(type, symbol, context);
 	}
 
 	let mapper: TypeMapper;

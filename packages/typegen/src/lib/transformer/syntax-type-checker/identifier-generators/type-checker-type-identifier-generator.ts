@@ -118,7 +118,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 		}
 		// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
 		else if (declaration.kind === ts.SyntaxKind.TypeLiteral) {
-			typeReference = sourceFileId + ":" + "@@" + declaration.pos;
+			typeReference = sourceFileId + ":" + "$" + declaration.pos;
 		} else {
 			if (symbol === undefined) {
 				return this.getTypeRefWithoutDeclaration(type, undefined, nullable);

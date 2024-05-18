@@ -53,4 +53,4 @@ So in the example above, the id of the nested type `B` would be `@${packageJson.
 > 
 > In this case, the type `{ a: number }` is anonymous.
 
-Ids for anonymous types are generated as <code>`@@${sourcefile.position}`</code>, where `sourcefile.position` is the position of the type in the source file. That means it is basically random identifier that is unique for a file.
+Ids for anonymous types are generated as <code>`$${sourcefile.position}`</code>, where `sourcefile.position` is the position of the type in the source file. That means it is basically random identifier that is unique for a file.
