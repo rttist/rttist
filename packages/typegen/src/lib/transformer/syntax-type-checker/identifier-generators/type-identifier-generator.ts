@@ -139,6 +139,10 @@ export class TypeIdentifierGenerator {
 		const scope = this.scopeManager.getClosestScope(node);
 		const moduleId = scope.moduleScope.id;
 
+		if (ts.isTypeLiteralNode(node)) {
+			return `${moduleId}:$${node.pos}`;
+		}
+
 		// Type referenced from scope
 		if (ts.isTypeReferenceNode(node)) {
 			const topLevelIdentifier = getTopLevelTypeName(node.typeName);

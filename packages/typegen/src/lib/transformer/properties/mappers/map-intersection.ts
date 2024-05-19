@@ -12,15 +12,15 @@ export function mapIntersection(
 	return {
 		kind: TypeKind.Intersection,
 		types: type.types.map(
-			(type) => context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false)
-			// context.metadata.generateMetadataForType(
-			// 	context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
-			// 	type,
-			// 	false,
-			// 	undefined,
-			// 	undefined,
-			// 	context
-			// ).typeReference
+			(type) =>
+				context.metadata.generateMetadataForType(
+					context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
+					type,
+					false,
+					undefined,
+					undefined,
+					context
+				).typeReference
 		),
 	} as IntersectionTypeProperties;
 }

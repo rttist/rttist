@@ -8,15 +8,15 @@ export function mapUnion(type: ts.UnionType, symbol: ts.Symbol | undefined, cont
 	return {
 		kind: TypeKind.Union,
 		types: type.types.map(
-			(type) => context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false)
-			// context.metadata.generateMetadataForType(
-			// 	context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
-			// 	type,
-			// 	false,
-			// 	undefined,
-			// 	undefined,
-			// 	context
-			// ).typeReference
+			(type) =>
+				context.metadata.generateMetadataForType(
+					context.transformerContext.tsTypeTypeChecker.getType(type, undefined, false),
+					type,
+					false,
+					undefined,
+					undefined,
+					context
+				).typeReference
 		),
 	} as UnionTypeProperties;
 }

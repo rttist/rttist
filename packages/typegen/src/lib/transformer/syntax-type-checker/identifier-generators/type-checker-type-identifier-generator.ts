@@ -191,6 +191,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 				}
 			}
 
+			// TODO: Should this return? What about setReflectedTypeReference?
 			return (
 				(isKnownType ? "#" : sourceFileId + ":") +
 				typeName +

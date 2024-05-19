@@ -92,7 +92,11 @@ export class MetadataLibrary {
 		context: Context
 	) {
 		// TODO: Implement properly! We do not want to generate properties for intrinsic types. But we have to handle generic types such as Array<SomeOfMyProjectTypes>.
-		if (typeReference.id.charAt(0) === "#") {
+		if (
+			typeReference.id.charAt(0) === "#" &&
+			typeReference.id.charAt(1) !== "|" &&
+			typeReference.id.charAt(1) !== "&"
+		) {
 			return {
 				typeReference: typeReference,
 				type: type,
