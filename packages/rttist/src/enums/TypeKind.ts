@@ -40,6 +40,7 @@ export enum TypeKind {
 
 	ArrayDefinition,
 	ReadonlyArrayDefinition,
+	TupleDefinition,
 	MapDefinition,
 	WeakMapDefinition,
 	SetDefinition,
@@ -78,7 +79,6 @@ export enum TypeKind {
 	UniqueSymbol,
 	ESSymbol,
 	Promise,
-	Tuple,
 	Generator,
 	AsyncGenerator,
 	Iterator,
@@ -130,6 +130,7 @@ export type NativeTypeKind =
 	| TypeKind.Atomics
 	| TypeKind.DataView
 	| TypeKind.ArrayDefinition
+	| TypeKind.TupleDefinition
 	| TypeKind.ReadonlyArrayDefinition
 	| TypeKind.MapDefinition
 	| TypeKind.WeakMapDefinition

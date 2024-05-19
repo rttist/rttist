@@ -47,6 +47,6 @@ export class WeakMapType extends KnownGenericType<readonly [Type, Type]> {
 
 export class TupleType extends KnownGenericType<readonly Type[]> {
 	constructor(initializer: TypeMetadata) {
-		super(TypeIds.ArrayDefinition, initializer);
+		super(TypeIds.TupleDefinition, initializer);
 	}
 }

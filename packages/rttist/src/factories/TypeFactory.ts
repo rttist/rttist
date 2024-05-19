@@ -50,7 +50,6 @@ type TypeKindToTypeMap = {
 	[TypeKind.Enum]: EnumType;
 	[TypeKind.EnumLiteral]: EnumLiteralType;
 	[TypeKind.Promise]: PromiseType;
-	[TypeKind.Tuple]: TupleType;
 	// TODO: Add the rest
 };
 

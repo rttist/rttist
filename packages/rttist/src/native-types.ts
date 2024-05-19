@@ -10,6 +10,7 @@ let nativeTypes: { [key: string]: Type } = {};
 let nativeGenericTypeDefinitions: {
 	ArrayDefinition: Type;
 	ReadonlyArrayDefinition: Type;
+	TupleDefinition: Type;
 	MapDefinition: Type;
 	WeakMapDefinition: Type;
 	SetDefinition: Type;
@@ -61,6 +62,7 @@ export function getNativeTypes() {
 		nativeGenericTypeDefinitions = {
 			ArrayDefinition: cn("Array", "ArrayDefinition"),
 			ReadonlyArrayDefinition: cn("ReadonlyArray", "ReadonlyArrayDefinition"),
+			TupleDefinition: cn("Tuple", "TupleDefinition"),
 			MapDefinition: cn("Map", "MapDefinition"),
 			WeakMapDefinition: cn("WeakMap", "WeakMapDefinition"),
 			SetDefinition: cn("Set", "SetDefinition"),
@@ -125,6 +127,7 @@ export function getNativeTypes() {
 			DataView: cn("DataView", "DataView"),
 			ArrayDefinition: nativeGenericTypeDefinitions.ArrayDefinition,
 			ReadonlyArrayDefinition: nativeGenericTypeDefinitions.ReadonlyArrayDefinition,
+			TupleDefinition: nativeGenericTypeDefinitions.TupleDefinition,
 			MapDefinition: nativeGenericTypeDefinitions.MapDefinition,
 			WeakMapDefinition: nativeGenericTypeDefinitions.WeakMapDefinition,
 			SetDefinition: nativeGenericTypeDefinitions.SetDefinition,

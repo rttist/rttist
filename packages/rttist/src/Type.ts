@@ -1,7 +1,8 @@
 import type { TypeIdentifier, TypeMetadata } from "./declarations";
 import type { MetadataLibrary } from "./MetadataLibrary";
 import { MetadataScope } from "./metadata-scope";
-import type {
+import {
+	ArrayType,
 	ClassType,
 	ConditionalType,
 	EnumType,
@@ -14,6 +15,7 @@ import type {
 	ObjectLikeTypeBase,
 	ObjectType,
 	TemplateType,
+	TupleType,
 	TypeAliasType,
 	TypeParameterType,
 	UnionType,
@@ -61,6 +63,7 @@ export class Type {
 	public declare static readonly BigInt64Array: Type;
 	public declare static readonly BigUint64Array: Type;
 	public declare static readonly ArrayDefinition: Type;
+	public declare static readonly TupleDefinition: Type;
 	public declare static readonly ReadonlyArrayDefinition: Type;
 	public declare static readonly MapDefinition: Type;
 	public declare static readonly WeakMapDefinition: Type;
@@ -297,7 +300,7 @@ export class Type {
 	/**
 	 * Check if this type is an Array.
 	 */
-	isArray(): this is GenericType<InterfaceType> {
+	isArray(): this is ArrayType {
 		return (
 			this.isGenericType() &&
 			(this.genericTypeDefinition === Type.ArrayDefinition ||
@@ -308,8 +311,11 @@ export class Type {
 	/**
 	 * Check if this type is a Tuple.
 	 */
-	isTuple(): this is GenericType<InterfaceType> {
-		return this._kind === TypeKind.Tuple;
+	isTuple(): this is TupleType {
+		return (
+			this.isGenericType() &&
+			this.genericTypeDefinition === Type.TupleDefinition
+		);
 	}
 
 	/**
@@ -466,13 +472,15 @@ export class Type {
 	toString(): string {
 		const props = this.getPropsToStringify();
 
-		return `${this.displayName} {` +
-			"\n    ```typeinfo" +
-			`\n    typelib: ${this.metadataLibrary.name}\n    module:  ${this.module.id}\n` +
+		return (
+			`${this.displayName} {\n` +
+			"    ```typeinfo\n" +
+			`    typelib: ${this.metadataLibrary.name}\n    module:  ${this.module.id}\n` +
 			"    ```" +
-			props.length
-			? "\n"
-			: "" + this.stringifyProps(props, 1) + "\n}";
+			(props.length ? "\n" : "") +
+			this.stringifyProps(props, 1) +
+			"\n}"
+		);
 	}
 
 	/**

@@ -138,15 +138,9 @@ export class MetadataLibrary {
 			throw new Error("Invalid type reference.");
 		}
 
-		// TODO: Resolve aliases
-
-		if (id === "#Array") {
-			debugger;
-		}
-
 		const existingType = this.types.get(id) ?? this.parentLibrary?.types.get(id);
 
-		if (existingType) {
+		if (existingType !== undefined) {
 			return existingType;
 		}
 

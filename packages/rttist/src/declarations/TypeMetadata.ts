@@ -135,10 +135,6 @@ export interface IndexedAccessTypeMetadata extends TypeMetadata {
 	indexType: TypeReference;
 }
 
-export interface TupleTypeMetadata extends TypeMetadata {
-	kind: TypeKind.Tuple;
-}
-
 export interface PromiseTypeMetadata extends TypeMetadata {
 	kind: TypeKind.Promise;
 }
@@ -212,7 +208,6 @@ export type AnyTypeMetadata =
 	| FunctionTypeMetadata
 	| GeneratorFunctionTypeMetadata
 	| IndexedAccessTypeMetadata
-	| TupleTypeMetadata
 	| PromiseTypeMetadata
 	| NamespaceTypeMetadata
 	| ModuleTypeMetadata;
