@@ -1,13 +1,12 @@
 {
 	"name": "vite-plugin-rttist",
-	"version": "4.0.0-alpha.0",
-	"description": "Rttist typegen plugin adding support for Vite",
+	"version": "4.3.0-alpha.0",
+	"description": "RTTIST plugin adding support for advanced reflection features to Vite",
 	"keywords": [
 		"rttist",
 		"plugin",
-		"esbuild",
-		"esbuild-plugin",
-		"swc",
+		"vite",
+		"vite-plugin",
 		"transformer",
 		"reflection",
 		"loader",
@@ -42,7 +41,7 @@
 		"@rttist/ts-loader-wasm": "workspace:^"
 	},
 	"peerDependencies": {
-		"vite": "4.x"
+		"vite": ">=4.3.0 || <5.0.0"
 	},
 	"repository": {
 		"type": "git",
