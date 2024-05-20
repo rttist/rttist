@@ -1,17 +1,12 @@
-import type { ConfigEnv, ModuleNode, Plugin, ResolvedConfig, UserConfig } from "vite";
+import type { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from "vite";
 import * as fs from "node:fs";
 import { resolve } from "node:path";
 import { PackageInfo, transform } from "@rttist/ts-loader-wasm";
-
-// import { fileURLToPath } from "node:url";
 
 const TS_FLE_NAME_REGEX = /\.[mc]?tsx?/i;
 const VUE_SCRIPT_REGEX = /<script .*>([\s\S]*)<\/script>/gi;
 const TYPELIB_REGEX = /\/internal.typelib$/;
 const PREFIXED_TYPELIB_REGEX = /\u{0}.*\/internal.typelib$/u;
-
-// const METADATA_REGEX = /\/.metadata\//;
-// const PREFIXED_METADATA_REGEX = /\u{0}\/.metadata\//u;
 
 // SEE: https://vitejs.dev/guide/api-plugin.html
 
@@ -50,7 +45,7 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions): Plugin {
 
 	let viteOutDir: string | null = null;
 	let viteCommand: string | null = null;
-	let metadataTypelibModule: ModuleNode | null = null;
+	// let metadataTypelibModule: ModuleNode | null = null;
 
 	return {
 		name: "vite-plugin-rttist",
@@ -71,18 +66,13 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions): Plugin {
 				}
 
 				return "\0" + id;
-
-				// return "\0" + id + "?url";
-				// return fileURLToPath(new URL("internal.typelib.js", import.meta.url));
-				// return "\0" + id + "?url";
-				// return { id: "\0" + id, external: true };
 			}
 		},
 		handleHotUpdate(ctx) {
 			// Ignore update of metadata.typelib.ts; it's changed together with internal.typelib that causes a loop.
 			// Ignoring metadata.typelib is fine, because it gets invalidated by update of internal.typelib.ts.
 			if (ctx.file.includes("/metadata.typelib.ts")) {
-				metadataTypelibModule = ctx.modules[0];
+				// metadataTypelibModule = ctx.modules[0];
 
 				// for (let module of ctx.modules) {
 				// 	for (let importer of module.importers) {
@@ -156,11 +146,6 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions): Plugin {
 
 			// Read internal.typelib from disk
 			if (PREFIXED_TYPELIB_REGEX.test(id)) {
-				// console.log(id);
-				// return "";
-				// return `export * from "/internal.typelib.js";`;
-				// return `export * from "${fileURLToPath(new URL("internal.typelib.js", import.meta.url))}"`;
-				// return `export * from "/internal.typelib.js"`;
 				const internalTypelibPath = resolve(pluginOptions.metadataOutDir, "internal.typelib.js");
 				return await fs.promises.readFile(internalTypelibPath, "utf8");
 			}
@@ -181,18 +166,8 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions): Plugin {
 				return code;
 			}
 		},
-		// transform(code: string, id: string) {
-		// 	if (PREFIXED_TYPELIB_REGEX.test(id)) {
-		// 		console.log(id);
-		// 		return {
-		// 			code: `export * from "/internal.typelib.js";`,
-		// 			map: null,
-		// 		};
-		// 	}
-		// },
 		config(_: UserConfig, env: ConfigEnv) {
 			viteCommand = env.command;
-			// const internalTypeLibIdentifier = resolve(pluginOptions.metadataOutDir, "internal.typelib.js");
 
 			return {
 				server: {
@@ -200,64 +175,8 @@ export function rttistPlugin(pluginOptions: RttistPluginOptions): Plugin {
 						ignored: [/\/.metadata\//],
 					},
 				},
-				// build: {
-				// 	rollupOptions: {
-				// 		// external: ["/internal.typelib?url"],
-				// 		// external: ["/internal.typelib.js"],
-				// 		// external: (id) => {
-				// 		// 	console.log("external check", id);
-				// 		// 	return id.includes("internal.typelib");
-				// 		// },
-				// 		// external: [internalTypeLibIdentifier],
-				// 		// // Mark all files from .metadata as external
-				// 		// external: (id) => {
-				// 		// 	return METADATA_REGEX.test(id) || TYPELIB_REGEX.test(id);
-				// 		// },
-				// 		// output: {
-				// 		// 	globals: {
-				// 		// 		[internalTypeLibIdentifier]:
-				// 		// 	},
-				// 		// },
-				// 	},
-				// },
 			};
 		},
-		// closeBundle() {
-		// 	if (viteOutDir) {
-		// 		// Copy internal.typelib.js to the output directory
-		// 		fs.copyFileSync(
-		// 			resolve(pluginOptions.metadataOutDir, "internal.typelib.js"),
-		// 			resolve(viteOutDir, "internal.typelib.js")
-		// 		);
-		// 	}
-		// },
-
-		// transform(code: string, id: string) {
-		// 	if (id.endsWith(".vue")) {
-		// 		// TODO: This is just a super simple implementation to get it working. Should be implemented using proper parser.
-		// 		code = code.replace(VUE_SCRIPT_REGEX, (_: string, code: string) => {
-		// 			return transpile(code, id, pluginOptions);
-		// 		});
-		// 	} else if (TS_FLE_NAME_REGEX.test(id)) {
-		// 		code = transpile(code, id, pluginOptions);
-		// 	}
-		//
-		// 	return {
-		// 		code,
-		// 		map: null, // Prevents missing sourcemap warning
-		// 	};
-		// },
-		// resolveId() and load() can be used for virtual modules.
-		// resolveId(id: string) {
-		// 	if (METADATA_REGEX.test(id)) {
-		// 		return "\0" + id;
-		// 	}
-		// },
-		// load(id: string) {
-		// 	if (PREFIXED_METADATA_REGEX.test(id)) {
-		// 		return `export const metadata = {}`;
-		// 	}
-		// },
 	};
 }
 
