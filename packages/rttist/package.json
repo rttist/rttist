@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-beta.7",
+	"version": "1.0.0-beta.8",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "./dist/index.js",
 	"module": "./dist/esm/index.js",
@@ -14,6 +14,8 @@
 			"types": "./dist/index.d.ts"
 		},
 		"./dist/public.typelib": "./dist/public.typelib.js",
+		"./dist/public.typelib.js": "./dist/public.typelib.js",
+		"./dist/public.typelib.ts": "./dist/public.typelib.js",
 		"./package.json": "./package.json"
 	},
 	"engines": {
@@ -24,6 +26,7 @@
 		"build": "npm run prepublishOnly",
 		"prepublishOnly": "npm run bundle && pnpm exec typegen generate -f && npm run postbuild",
 		"bundle": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean",
+		"dev": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --sourcemap --watch",
 		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
 		"postbuild": "node ./post-build.js",
 		"start": "tsc -w"

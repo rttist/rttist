@@ -184,6 +184,16 @@ export class MetadataLibrary {
 		});
 	}
 
+	clearMetadata() {
+		// TODO: This clears all teh types, including native types; we should remove only types from user's code
+		this.modules.clear();
+		this.types.clear();
+
+		if (this.parentLibrary) {
+			this.parentLibrary.clearMetadata();
+		}
+	}
+
 	/**
 	 * Add Module with its Types to the Metadata.
 	 * @param modules
