@@ -1,32 +1,13 @@
-import { createSignal } from "solid-js";
 import solidLogo from "./assets/solid.svg";
 import viteLogo from "/vite.svg";
+import rttistLogo from "/rttist.png";
+import { Metadata } from "./metadata.typelib";
+import { Component } from "./types/Component";
+import { FunctionType } from "rttist";
 import "./App.css";
-import { createLogger } from "./logging/logger-factory.ts";
-import { getType } from "./metadata.typelib.ts";
 
 function App() {
-	const [count, setCount] = createSignal(0);
-
-	class Foo {
-		bar: string;
-		baz: number;
-
-		constructor(bar: string, baz: number) {
-			this.bar = bar;
-			this.baz = baz;
-		}
-	}
-
-	const foo = new Foo("", 5);
-
-	console.log(foo);
-	console.log(getType<Foo>().id);
-	console.log(getType(Foo).id);
-
-	createLogger<Foo>().then((fooLogger) => {
-		fooLogger.log("Hello, world!");
-	});
+	const appComponents = Metadata.getTypes().filter((type) => type.isFunction() && type.exported) as FunctionType[];
 
 	return (
 		<>
@@ -37,15 +18,19 @@ function App() {
 				<a href="https://solidjs.com" target="_blank">
 					<img src={solidLogo} class="logo solid" alt="Solid logo" />
 				</a>
+				<a href="https://rttist.org" target="_blank">
+					<img src={rttistLogo} class="logo" alt="RTTIST logo" />
+				</a>
 			</div>
-			<h1>Vite + Solid</h1>
+			<h1>Vite + Solid + RTTIST</h1>
+			<p class="read-the-docs">Click on the logos to learn more</p>
+
 			<div class="card">
-				<button onClick={() => setCount((count) => count + 1)}>count is {count()}</button>
-				<p>
-					Edit <code>src/App.tsx</code> and save to test HMR
-				</p>
+				<h2>Components</h2>
+				{appComponents.map((component) => (
+					<Component function={component} />
+				))}
 			</div>
-			<p class="read-the-docs">Click on the Vite and Solid logos to learn more</p>
 		</>
 	);
 }

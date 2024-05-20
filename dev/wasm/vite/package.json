@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"prepare": "pnpx @rttist/typegen@proto generate -f",
-		"build": "vite build",
+		"build": "typegen generate && vite build",
 		"preview": "vite preview",
 		"start": "vite"
 	},
@@ -20,7 +20,7 @@
 	"devDependencies": {
 		"@rttist/typegen": "workspace:*",
 		"vite-plugin-rttist": "workspace:*",
-		"vite": "^5.0.12",
-		"vite-plugin-solid": "^2.8.0"
+		"vite": "^4.5.3",
+		"vite-plugin-solid": "^2.10.2"
 	}
 }

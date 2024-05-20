@@ -6,7 +6,11 @@
 			"src/**/*.tsx"
 		],
 		"encode": false,
-		"exclude": []
+		"exclude": [
+			"src/vite-env.d.ts"
+		],
+		"outDir": "dist"
 	},
-	"logLevel": "Info"
+	"logLevel": "Debug",
+	"devMode": true
 }
