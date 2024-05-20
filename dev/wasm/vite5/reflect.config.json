@@ -11,6 +11,5 @@
 		],
 		"outDir": "dist"
 	},
-	"logLevel": "Debug",
-	"devMode": true
+	"logLevel": "Info"
 }
