@@ -74,8 +74,8 @@ We provide TS to TS compiler (npm: [@rttist/ts-loader-wasm](https://www.npmjs.co
 
 For now, we provide plugins for:
 - esbuild,
-- Vite (work in progress - ~90 %),
-- SWC (work in progress - ~90 %),
+- Vite,
+- SWC,
 - ttypescript (work in progress).
 
 ## Alpha Warning!
