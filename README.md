@@ -11,9 +11,9 @@
 RTTIST (pronounced /ˈɑː(r)tɪst/, like artist) is a TypeScript runtime reflection system inspired by the C#'s reflection.
 
 It consists of several parts:
-- [Metadata Generator - TypeGen](https://docs.rttist.org/#/en/getting-started/typegen.md) - a standalone command-line tool that generates metadata from TypeScript types.
-- [Runtime Library](https://docs.rttist.org/#/en/getting-started/runtime.md) - a library that provides runtime reflection functionality.
-- [Transformers](https://docs.rttist.org/#/en/getting-started/transformers.md) - a set of transformers that extend the functionality of the TypeScript build/bundle tools.
+- [Metadata Generator - TypeGen](https://docs.rttist.org/#/en/typegen) - a standalone command-line tool that generates metadata from TypeScript types.
+- [Runtime Library](https://docs.rttist.org/#/en/runtime) - a library that provides runtime reflection functionality.
+- [Transformers](https://docs.rttist.org/#/en/transformers/transformers) - a set of transformers that extend the functionality of the TypeScript build/bundle tools.
 
 To access base functionality, you only need to install the TypeGen and the runtime library.
 The transformers are optional. They are only needed if you want to use the extended functionality.
