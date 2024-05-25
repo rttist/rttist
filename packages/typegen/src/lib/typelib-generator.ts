@@ -108,6 +108,24 @@ export { Metadata };`,
 	}
 
 	private async generateProjectTypelibImporter() {
+		const filesToImport = this.files
+			.filter((file) => !file.endsWith(".d.ts"))
+			.map((file, index) => {
+				const absolutePath = path.resolve(this.config.projectRoot, file);
+				const moduleId = this.moduleIdentifierGenerator.generateModuleIdentifier(absolutePath);
+				const relativePathFromTsRootDir = removeExtension(
+					normalizePath(path.relative(this.config.tsRootDir, absolutePath))
+				);
+
+				return `"${moduleId}": () => import("./${relativePathFromTsRootDir}.js"),`;
+			})
+			.join("\n\t");
+
+		const importOfDependencies = this.config.dependenciesInfo
+			.filter((dep) => dep.metadataPath !== undefined)
+			.map((dep) => `import "${dep.metadataImportSpecifier}";`)
+			.join("\n");
+
 		await fs.writeFile(
 			resolvePath(this.config.tsRootDir, "metadata.typelib.ts"),
 			`/*
@@ -115,26 +133,15 @@ export { Metadata };`,
 * Do not edit it manually.
 */
 import { ModuleImporter, MetadataLibrary, createGetTypeFunction, createCallsite, resolveFromFunctionCallsite, resolveFromMethodCallsite, getClassTypeParameter, Type } from "rttist";
-${this.config.dependenciesInfo
-	.filter((dep) => dep.metadataPath !== undefined)
-	.map((dep) => `import "${dep.metadataImportSpecifier}";`)
-	.join("\n")}
+
+// Typelibs of depdendencies
+${importOfDependencies}
 
 // @ts-ignore; !! CONFIGURE THIS AS AN EXTERNAL DEPENDENCY !!
 import { Metadata as InternalMetadataLibrary } from "${this.config.typelibImportPath}";
 
 ModuleImporter.registerImporters({
-	${this.files
-		.map((file, index) => {
-			const absolutePath = path.resolve(this.config.projectRoot, file);
-			const moduleId = this.moduleIdentifierGenerator.generateModuleIdentifier(absolutePath);
-			const relativePathFromTsRootDir = removeExtension(
-				normalizePath(path.relative(this.config.tsRootDir, absolutePath))
-			);
-
-			return `"${moduleId}": () => import("./${relativePathFromTsRootDir}.js"),`;
-		})
-		.join("\n\t")}
+	${filesToImport}
 });
 
 export const getType: <T>(...args: any[]) => Type = createGetTypeFunction(InternalMetadataLibrary);
