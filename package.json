@@ -12,7 +12,8 @@
 		"tests"
 	],
 	"scripts": {
-		"test": "rimraf ./tests/dist/ && ttsc -p ./tests/tsconfig.json && ttsc -p ./tests/tsconfig-strict-null.json && ttsc -p ./tests/tsconfig-mjs.json && jest",
+		"test": "cd tests && npm run test",
+		"test:ts-old": "rimraf ./tests/dist/ && ttsc -p ./tests/tsconfig.json && ttsc -p ./tests/tsconfig-strict-null.json && ttsc -p ./tests/tsconfig-mjs.json && jest",
 		"test:base": "rimraf ./tests/dist/ && ttsc -p ./tests/tsconfig.json && jest",
 		"test:coverage": "npm test -- --coverage",
 		"test:badges": "npm run test:coverage && make-coverage-badge -- --output-path ./docs/_images/coverage-badge.svg"

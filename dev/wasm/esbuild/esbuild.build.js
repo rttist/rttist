@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require("node:path");
 const esbuild = require("esbuild");
 const { rttistPlugin } = require("esbuild-plugin-rttist");
 

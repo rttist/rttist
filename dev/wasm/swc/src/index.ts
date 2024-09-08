@@ -1,5 +1,5 @@
-import { getType } from "./metadata.typelib";
 import { ClassType, PropertyInfo, SignatureInfo, Type, TypeParameterType } from "rttist";
+import { getType } from "./metadata.typelib";
 import { createLogger } from "./logging/logger-factory";
 
 export class Foo {

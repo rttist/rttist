@@ -5,3 +5,4 @@ dist/
 .swc
 tsconfig.tsbuildinfo
 metadata.typelib.ts
+tests/dist-*

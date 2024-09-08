@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "CommonJS",
+//		"moduleResolution": "NodeNext",
 		"target": "ES2020",
 		"strict": true,
 		"outDir": "dist",

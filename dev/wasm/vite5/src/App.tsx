@@ -20,7 +20,7 @@ function App() {
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					Learn Solid
+					Learn Solid 2
 				</a>
 			</header>
 

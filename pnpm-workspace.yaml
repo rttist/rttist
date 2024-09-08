@@ -11,6 +11,7 @@
 #    - 'packages/plugins/swc'
 #    - 'tests/'
     - 'dev/mvc-framework'
+    - 'dev/dts'
     - 'dev/hookyns/2'
     - 'dev/hookyns/webpack'
     - 'dev/wasm/esbuild'

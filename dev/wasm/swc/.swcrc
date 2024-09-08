@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/swcrc",
   "jsc": {
-//   	"baseUrl": "./",
+  	"baseUrl": "F:/Work/packages/rttist/dev/wasm/swc/src",
     "target": "es2022",
     "parser": {
       "syntax": "typescript",
@@ -11,20 +11,18 @@
       "dynamicImport": true,
       "privateMethod": false,
     },
-//     "transform": null,
-//     "loose": false,
-//     "externalHelpers": false,
-    // Requires v1.2.50 or upper and requires target to be es2016 or upper.
-    //"keepClassNames": false
 	"experimental": {
 		"plugins": [
 			["swc-plugin-rttist", {
 				// Usually "name" property from the package.json of your package
 				"name": "@demo",
-				"rootDir": "src"
+				"rootDir": "F:/Work/packages/rttist/dev/wasm/swc/src"
 			}]
 		]
 	}
+  },
+  "module": {
+    "type": "commonjs"
   },
   "sourceMaps": false,
   "minify": false

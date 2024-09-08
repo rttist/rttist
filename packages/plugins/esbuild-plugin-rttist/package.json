@@ -9,7 +9,6 @@
 		"plugin",
 		"esbuild",
 		"esbuild-plugin",
-		"swc",
 		"transformer",
 		"reflection",
 		"loader",
@@ -39,7 +38,7 @@
 		"@types/node": "^16.0.0"
 	},
 	"peerDependencies": {
-		"esbuild": "^0.19.2"
+		"esbuild": ">=0.19.2"
 	},
 	"scripts": {
 		"prepublishOnly": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --dts"

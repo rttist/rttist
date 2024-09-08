@@ -1,9 +1,35 @@
-import { getType } from "./metadata.typelib";
+import { getType, Metadata } from "./metadata.typelib";
 import { ClassType, PropertyInfo, SignatureInfo, Type, TypeParameterType } from "rttist";
+import "./nesting/nested-file";
 
-type union = string | number;
+export type Union = { fooBar: string } | { barFoo: number };
+const unionType = getType<Union>();
+console.log(unionType.isTypeAlias() && unionType.target.toString());
 
-console.log(getType<union>().toString());
+export type Intersection = { fooBar: string } & { barFoo: number };
+const intersectionType = getType<Intersection>();
+console.log(intersectionType.isTypeAlias() && intersectionType.target.toString());
+
+type NonObjectTypeLiteralAlias = ["foo"];
+const nonObjectTypeLiteralAliasType = getType<NonObjectTypeLiteralAlias>();
+console.log(nonObjectTypeLiteralAliasType.isTypeAlias() && nonObjectTypeLiteralAliasType.target.toString());
+console.log("isTuple", nonObjectTypeLiteralAliasType.isTypeAlias() && nonObjectTypeLiteralAliasType.target.isTuple());
+console.log(
+	nonObjectTypeLiteralAliasType.isTypeAlias() &&
+		nonObjectTypeLiteralAliasType.target.isTuple() &&
+		nonObjectTypeLiteralAliasType.target.getTypeArguments().map((arg) => arg.toString())
+);
+
+type StringArray = string[];
+const stringArrayType = getType<StringArray>();
+console.log(stringArrayType.isTypeAlias() && stringArrayType.target.toString());
+
+type TypeLiteralAlias = {
+	foo: string;
+	bar: number;
+};
+const typeLiteralAliasType = getType<TypeLiteralAlias>();
+console.log(typeLiteralAliasType.isTypeAlias() && typeLiteralAliasType.target.toString());
 
 export class Foo {
 	bar: string;
