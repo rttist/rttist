@@ -170,7 +170,7 @@ function createConfig(
 		// getter to lazy-load typescript
 		get parsedCommandLine() {
 			if (tsParsedCommandLine === undefined) {
-				tsParsedCommandLine = getTsConfig(commandLineArguments);
+				tsParsedCommandLine = getTsConfig(projectRoot);
 			}
 			return tsParsedCommandLine;
 		},

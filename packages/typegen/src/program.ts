@@ -1,4 +1,5 @@
-import { startTime } from "./lib/utils/performance-import-time-start";
+// Keep PerformanceTracker first because of start time.
+import { PerformanceTracker } from "./utils/PerformanceTracker";
 import type { Entry } from "fast-glob";
 import FastGlob from "fast-glob";
 import type { CLI } from "./cli";
@@ -9,12 +10,13 @@ import { CacheStats } from "./lib/cache/cache-stats";
 import { WorkerArguments } from "./declarations/worker-arguments";
 import { Logger, LogLevel } from "./lib/logging";
 import { LogBuffer } from "./lib/logging/log-buffer";
-import { TypeLibBundleResult, TypelibGenerator } from "./lib/typelib-generator";
+import { TypelibGenerator } from "./lib/typelib-generator";
 import { resolvePath } from "./lib/utils/path";
 import * as cliProgress from "cli-progress";
 import { WorkerMessageType } from "./declarations/worker-message-type";
 import { ModuleIdentifierGenerator } from "./lib/transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
-import { blue, cyan, dim, green, whiteBright } from "chalk";
+import { blue, dim, green } from "chalk";
+import { printInitialMessage, printNoChangesDetected } from "./utils/console-messages";
 
 let startCacheServer: undefined | typeof import("memory-mapped-files").startCacheServer;
 try {
@@ -26,16 +28,7 @@ try {
 
 export class Program {
 	private readonly logger = new Logger("Program", undefined, LogBuffer.autoFlush);
-	private readonly performanceEntries: {
-		parseStart: number;
-		start: number;
-		initialization?: number;
-		metadataGenerationFinished?: number;
-		completed?: number;
-	} = {
-		parseStart: startTime,
-		start: performance.now(),
-	};
+	private readonly performanceTracker = new PerformanceTracker();
 
 	constructor(private readonly cli: CLI) {}
 
@@ -47,11 +40,11 @@ export class Program {
 		const config = await this.getConfig();
 
 		Logger.setLevel(config.logLevel);
-		this.printInitialMessage(config);
+		printInitialMessage(this.logger, config);
 		const stats = new CacheStats(config, this.logger);
 		const allFiles = await this.getSourceFilesWithStats(config);
-		const changedFilesToRegenerate = this.getFilesToRegenerate(allFiles, config, stats);
 		const allFilesPath = allFiles.map((x) => x.path);
+		const changedFilesToRegenerate = this.getFilesToRegenerate(allFiles, config, stats);
 		const typelibGenerator = new TypelibGenerator(config, new ModuleIdentifierGenerator(config), allFilesPath);
 
 		// run MMF cache server
@@ -85,20 +78,21 @@ export class Program {
 		const workers = await this.spawnWorkers(changedFilesToRegenerate, config);
 
 		const progressBar = this.createProgressBar(changedFilesToRegenerate);
-		this.performanceEntries.initialization = performance.now();
+		this.performanceTracker.init();
 		await this.waitWorkersFinishedPromise(workers, progressBar);
-		this.performanceEntries.metadataGenerationFinished = performance.now();
+		this.performanceTracker.metadataGenerated();
 
 		this.flushWorkersLogBuffer(workers);
 		await this.waitWorkersExitPromise(workers);
 
-		const typelibResult = await typelibGenerator.generate();
-		this.performanceEntries.completed = performance.now();
+		await typelibGenerator.generate();
+		this.performanceTracker.finish();
 
 		this.logger.buffer.log("");
 		this.logger.buffer.log(green("\u2713 Done"));
 
 		this.printPerformanceInfo(config);
+		this.performanceTracker.printPerformanceInfo();
 
 		stats.value.lastGeneration = new Date();
 		stats.persist();
@@ -141,7 +135,7 @@ export class Program {
 	}
 
 	private handleNoChangesDetected(config: Config) {
-		this.printNoChangesDetected();
+		printNoChangesDetected(this.logger);
 		this.performanceEntries.initialization = performance.now();
 		this.printPerformanceInfo(config);
 	}
@@ -206,89 +200,6 @@ export class Program {
 		// this.logger.debug("Workers spawned:", workers.length);
 
 		return workers;
-	}
-
-	private printInitialMessage(config: Config) {
-		this.logger.log(
-			LogLevel.Info,
-			undefined,
-			"Configuration",
-			`\n\t${whiteBright("project root:".padEnd(18, " ") /*, LogColor.bright*/)} ${blue(config.projectRoot)}`,
-			// "\n\ttypescript root directory: " + config.tsRootDir, // tsRootDir required typescript; but we don't want to import it early
-			`\n\t${whiteBright("cache directory:".padEnd(18, " "))} ${blue(config.cacheDir)}`
-		);
-		this.logger.buffer.log("");
-	}
-
-	private printNoChangesDetected() {
-		this.logger.buffer.log(
-			`${green("\u2713 No changes detected.")}\n\t${dim("Use '-f' or '--force' to force generation.")}`
-		);
-	}
-
-	private printPerformanceInfo(config: Config) {
-		this.logger.buffer.log("");
-		this.logger.log(
-			config.devMode ? LogLevel.Dev : LogLevel.Debug,
-			undefined,
-			`\n\t${dim("Importing modules: ")} ${blue(
-				roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart).toString()
-			)} ${dim("sec.")}`,
-
-			`\n\t${dim("Initialization: ")} ${blue(
-				roundPerfTime(
-					(this.performanceEntries.initialization ?? performance.now()) - this.performanceEntries.start
-				).toString()
-			)} ${dim("sec.")}`,
-
-			...(this.performanceEntries.metadataGenerationFinished === undefined ||
-			this.performanceEntries.initialization === undefined
-				? []
-				: [
-						`\n\t${dim("Generating metadata: ")} ${blue(
-							roundPerfTime(
-								this.performanceEntries.metadataGenerationFinished -
-									this.performanceEntries.initialization
-							).toString()
-						)} ${dim("sec.")}`,
-				  ]),
-
-			...(this.performanceEntries.completed === undefined ||
-			this.performanceEntries.metadataGenerationFinished === undefined
-				? []
-				: [
-						`\n\t${dim("Bundling typelib: ")} ${blue(
-							roundPerfTime(
-								this.performanceEntries.completed - this.performanceEntries.metadataGenerationFinished
-							).toString()
-						)} ${dim("sec.")}`,
-				  ]),
-
-			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
-				? []
-				: [
-						`\n\tTotal time: ${blue(
-							roundPerfTime(
-								this.performanceEntries.completed - this.performanceEntries.parseStart
-							).toString()
-						)} sec.`,
-				  ]),
-			"\n"
-
-			// "\n\tProcessed",
-			// this.metadata.getNumberOfTypes(),
-			// "type(s) from",
-			// this.metadata.getNumberOfModules(),
-			// "module(s)."
-		);
-
-		function roundPerfTime(time: number): number | string {
-			if (time < 0) {
-				return "N/A";
-			}
-
-			return Math.round(time * 100) / 100000;
-		}
 	}
 
 	/**

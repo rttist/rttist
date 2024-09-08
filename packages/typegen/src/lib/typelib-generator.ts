@@ -117,7 +117,7 @@ export { Metadata };`,
 					normalizePath(path.relative(this.config.tsRootDir, absolutePath))
 				);
 
-				return `"${moduleId}": () => import("./${relativePathFromTsRootDir}.js"),`;
+				return `"${moduleId}": () => import("./${relativePathFromTsRootDir}.js?url"),`;
 			})
 			.join("\n\t");
 

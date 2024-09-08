@@ -3,13 +3,16 @@
 	"version": "0.1.0-proto.13",
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
+	"main": "./dist/main.js",
+	"types": "./dist/main.d.ts",
 	"bin": {
 		"typegen": "./bin/typegen",
 		"rttist": "./bin/rttist"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "esbuild src/bin.ts src/worker.ts --bundle --minify --outdir=dist --platform=node --packages=external",
+		"build": "npm run prepare",
+		"prepare": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --minify --outdir=dist --platform=node --packages=external",
 		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare",
 		"start": "esbuild src/bin.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
 	},
