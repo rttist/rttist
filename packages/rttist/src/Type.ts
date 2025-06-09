@@ -1,7 +1,7 @@
 import type { TypeIdentifier, TypeMetadata } from "./declarations";
 import type { MetadataLibrary } from "./MetadataLibrary";
 import { MetadataScope } from "./metadata-scope";
-import {
+import type {
 	ArrayType,
 	ClassType,
 	ConditionalType,
@@ -23,6 +23,7 @@ import {
 } from "./types";
 import type { Module } from "./Module";
 import { resolveFromFunctionCallsite } from "./functions/resolveFromFunctionCallsite";
+import { typeSymbol } from "./utils/instanceOf";
 import { LazyModule } from "./utils/LazyModule";
 import { LazyType } from "./utils/LazyType";
 import { LazyTypeArray } from "./utils/LazyTypeArray";
@@ -32,6 +33,8 @@ import { LiteralTypeKinds, PrimitiveTypeKinds, TypeKind } from "./enums";
  * Object representing TypeScript type in memory
  */
 export class Type {
+	private static readonly __type = typeSymbol;
+
 	public declare static readonly Invalid: Type;
 	public declare static readonly NonPrimitiveObject: Type;
 	public declare static readonly Any: Type;
@@ -40,6 +43,7 @@ export class Type {
 	public declare static readonly Never: Type;
 	public declare static readonly Null: Type;
 	public declare static readonly Undefined: Type;
+	public declare static readonly Intrinsic: Type;
 	public declare static readonly String: Type;
 	public declare static readonly Number: Type;
 	public declare static readonly BigInt: Type;
@@ -129,7 +133,7 @@ export class Type {
 	}
 
 	/**
-	 * Module which declare type represented by the this Type instance.
+	 * Module which declare type represented by this Type instance.
 	 */
 	get module(): Module {
 		return this._moduleRef.module;
@@ -312,10 +316,7 @@ export class Type {
 	 * Check if this type is a Tuple.
 	 */
 	isTuple(): this is TupleType {
-		return (
-			this.isGenericType() &&
-			this.genericTypeDefinition === Type.TupleDefinition
-		);
+		return this.isGenericType() && this.genericTypeDefinition === Type.TupleDefinition;
 	}
 
 	/**
@@ -452,6 +453,13 @@ export class Type {
 	}
 
 	/**
+	 * Check if this type is an "intrinsic".
+	 */
+	isIntrinsic(): boolean {
+		return this._kind === TypeKind.Intrinsic;
+	}
+
+	/**
 	 * Check if this type is an "undefined".
 	 */
 	isUndefined(): boolean {
@@ -473,6 +481,7 @@ export class Type {
 		const props = this.getPropsToStringify();
 
 		return (
+			// biome-ignore lint/style/useTemplate: <explanation>
 			`${this.displayName} {\n` +
 			"    ```typeinfo\n" +
 			`    typelib: ${this.metadataLibrary.name}\n    module:  ${this.module.id}\n` +
@@ -495,7 +504,7 @@ export class Type {
 		const indentation = "    ".repeat(indent);
 		return props
 			.map((prop) => {
-				const str = prop instanceof Array ? this.stringifyProps(prop, 1) : prop;
+				const str = Array.isArray(prop) ? this.stringifyProps(prop, 1) : prop;
 				return str.replace(/^/gm, indentation);
 			})
 			.join("\n");

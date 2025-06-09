@@ -1,15 +1,11 @@
 {
-	"$schema": "https://rttist.org/schema.json",
+	"$schema": "./node_modules/@rttist/typegen/config-schema.json",
 	"metadata": {
-		"include": [
-			"src/**/*.ts",
-			"src/**/*.tsx"
-		],
+		"include": ["src/**/*.ts", "src/**/*.tsx"],
 		"encode": false,
-		"exclude": [
-			"src/vite-env.d.ts"
-		],
+		"exclude": ["src/vite-env.d.ts"],
 		"outDir": "dist"
 	},
-	"logLevel": "Info"
+	"logLevel": "Dev",
+	"preset": "vite"
 }

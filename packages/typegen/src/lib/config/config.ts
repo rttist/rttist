@@ -1,21 +1,23 @@
 import type * as ts from "typescript";
+import { ModuleResolutionKind } from "typescript";
 import type { PackageInfo } from "../../declarations/package-info";
 import type { DependencyInfo } from "../../declarations/dependency-info";
 import type { PackageJson } from "../../declarations/package-json";
 import type { ConfigReflectionSection } from "./config-reflection-section";
-import { ConfigurationBuilder, IRootConfiguration } from "@netleaf/extensions-configuration";
+import { ConfigurationBuilder, type IRootConfiguration } from "@netleaf/extensions-configuration";
 import fs from "fs/promises";
 import path from "path";
-import { CommandLineArguments } from "../../declarations/command-line-arguments";
+import type { CommandLineArguments } from "../../declarations/command-line-arguments";
 import { TargetPlatform } from "../../declarations/target-platform";
 import { Logger, LogLevel } from "../logging";
 import { joinPaths, normalizePath, resolvePath } from "../utils/path";
 import { getPackageInfo } from "./get-package-info";
 import { getTsConfig } from "./get-ts-config";
 import { lazyTypescript } from "../utils/lazy-typescript";
-import { removeExtension } from "../transformer/utils/removeExtension";
+import { removeExtension } from "../transformer/utils/remove-extension";
 
 const DefaultConfiguration: ConfigReflectionSection = {
+	preset: null,
 	devMode: false,
 	logLevel: "Info",
 	dependencyResolution: "typelibs",
@@ -29,6 +31,17 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		includeDtsFiles: false,
 		// emit: "js"
 		typelibImportPath: "./internal.typelib",
+		target: "es2020",
+	},
+};
+
+const Presets: Record<Exclude<ConfigReflectionSection["preset"], null>, ConfigReflectionSection> = {
+	vite: {
+		...DefaultConfiguration,
+		metadata: {
+			...DefaultConfiguration.metadata,
+			// typelibImportPath: "virtual:internal.typelib",
+		},
 	},
 };
 
@@ -66,8 +79,10 @@ export type Config = {
 	readonly moduleResolution: ts.ModuleResolutionKind;
 	readonly module: ts.ModuleKind;
 	readonly strictNullChecks: boolean;
+	readonly explicitFileExtensions: boolean;
 
 	readonly typelibImportPath: string;
+	readonly metadataTarget: string;
 };
 
 async function getDependenciesInfo(packageInfo: PackageInfo, logger: Logger): Promise<DependencyInfo[]> {
@@ -138,21 +153,33 @@ async function readPackageJson(joinedPath: string, packageName: any, logger: Log
 }
 
 export async function getParsedConfig(cliArguments: CommandLineArguments): Promise<Config> {
-	const root: IRootConfiguration<ConfigReflectionSection> = await createBuilder(cliArguments.projectRoot).build();
+	const root: IRootConfiguration<ConfigReflectionSection> = await (
+		await createBuilder(cliArguments.projectRoot)
+	).build();
 	const packageInfo = getPackageInfo(cliArguments.projectRoot);
 	const dependenciesInfo = await getDependenciesInfo(packageInfo, new Logger("Config"));
 	return createConfig(cliArguments, root, packageInfo, dependenciesInfo);
 }
 
-function createBuilder(configRoot: string /*, transformerConfigSection: OptionalConfigReflectionSection*/) {
-	return (
-		new ConfigurationBuilder()
-			.setRootDirectory(configRoot)
-			.addObject(DefaultConfiguration)
-			// .addObject(transformerConfigSection)
-			.addJsonFile("reflect.config.json", { optional: true /*, synchronous: true*/ })
-			.addJsFile("reflect.config.js", { optional: true /*, synchronous: true*/ })
-	);
+async function createBuilder(configRoot: string) {
+	// React config files to get the preset value
+	const configFiles = await new ConfigurationBuilder()
+		.setRootDirectory(configRoot)
+		.addJsonFile("reflect.config.json", { optional: true })
+		.addJsFile("reflect.config.js", { optional: true })
+		.build();
+
+	const presetName = configFiles.get<ConfigReflectionSection["preset"]>("preset");
+	const preset: ConfigReflectionSection =
+		typeof presetName === "string" ? (Presets[presetName] ?? DefaultConfiguration) : DefaultConfiguration;
+
+	// Create new configuration builder with given preset as default value
+	// MAYDO: configuration files are going to be read again; optimize!
+	return new ConfigurationBuilder()
+		.setRootDirectory(configRoot)
+		.addObject(preset)
+		.addJsonFile("reflect.config.json", { optional: true })
+		.addJsFile("reflect.config.js", { optional: true });
 }
 
 function createConfig(
@@ -224,10 +251,16 @@ function createConfig(
 		logLevel: LogLevel[reflectionConfig.get("logLevel") ?? (devMode ? "Debug" : "Warning")],
 		dependencyResolution: reflectionConfig.get("dependencyResolution") ?? DefaultConfiguration.dependencyResolution,
 
+		get explicitFileExtensions() {
+			const res = this.moduleResolution;
+			return res === ModuleResolutionKind.Node16 || res === ModuleResolutionKind.NodeNext;
+		},
+
 		// this.plugins = (reflectionConfig.get("plugins") ?? DefaultConfiguration.plugins).map((plugin) =>
 		// 	this.getPlugin(plugin, projectRoot)
 		// );
 		typelibImportPath: metadataConfig.get("typelibImportPath")!,
+		metadataTarget: metadataConfig.get("target")!,
 	};
 }
 

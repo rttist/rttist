@@ -14,8 +14,9 @@ export const MetadataScope: {
 	doWithScope(scope: MetadataLibrary, action: () => void): void {
 		const previousScope = this.current;
 		this.setScope(scope);
+
 		try {
-			return action();
+			action();
 		} finally {
 			this.setScope(previousScope);
 		}

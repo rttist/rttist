@@ -1,12 +1,7 @@
 {
-	"$schema": "./node_modules/@rttist/typegen/config-schema.json",
+	"$schema": "../typegen/config-schema.json",
 	"metadata": {
-		"include": [
-			"src/Type.ts",
-			"src/Module.ts",
-			"src/types/*.ts",
-			"src/infos/*.ts"
-		],
+		"include": ["src/Type.ts", "src/Module.ts", "src/types/*.ts", "src/infos/*.ts"],
 		"encode": false,
 		"exclude": []
 	},

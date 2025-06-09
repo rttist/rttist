@@ -24,6 +24,7 @@ export const PrimitiveTypeKinds = new Set([
 
 export const NonPrimitiveKeywordTypeKinds = new Set([
 	TypeKind.Void,
+	TypeKind.Intrinsic,
 	TypeKind.Never,
 	TypeKind.Unknown,
 	TypeKind.Any,

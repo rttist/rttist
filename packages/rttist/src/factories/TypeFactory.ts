@@ -1,5 +1,4 @@
 import type { AnyTypeMetadata } from "../declarations";
-import { TypeIds } from "@rttist/core";
 import { TypeKind } from "../enums";
 import { Type } from "../Type";
 import {

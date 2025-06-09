@@ -20,6 +20,7 @@
 	"exclude": [
 		"node_modules/**/*",
 		"dist/**/*",
-		"src/metadata.typelib.ts"
+		"src/metadata.typelib.ts",
+		"assets/virtual-typelib.d.ts"
 	]
 }

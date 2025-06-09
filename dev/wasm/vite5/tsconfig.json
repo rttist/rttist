@@ -3,18 +3,18 @@
 		"strict": true,
 		"target": "ESNext",
 		"module": "ESNext",
-		"rootDir": "src",
-		"moduleResolution": "node",
+		//		"rootDir": "src",
+		"moduleResolution": "bundler",
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
-		"types": [
-			"vite/client"
-		],
+		"resolveJsonModule": true,
+		"types": ["vite/client"],
 		"noEmit": true,
 		"isolatedModules": true
 	},
+	"include": ["src/**/*"],
 	"references": [
 		{
 			"path": "./tsconfig.node.json"

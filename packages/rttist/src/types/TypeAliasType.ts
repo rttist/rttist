@@ -1,5 +1,5 @@
 ﻿import type { TypeAliasTypeMetadata } from "../declarations";
-import { PropsToStringify, Type } from "../Type";
+import { type PropsToStringify, Type } from "../Type";
 import { LazyType } from "../utils/LazyType";
 
 export class TypeAliasType extends Type {

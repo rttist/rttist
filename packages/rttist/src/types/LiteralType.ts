@@ -53,6 +53,7 @@ export class LiteralType extends Type {
 	private parseValue(value: any): any {
 		switch (this._kind) {
 			case TypeKind.StringLiteral:
+				// biome-ignore lint/style/useTemplate: overkill
 				return value + "";
 			case TypeKind.NumberLiteral:
 				return Number(value);

@@ -1,16 +1,19 @@
 import type { FSWatcher } from "chokidar";
+import { FsReadWriteOnlyStorage } from "./cache/fs-read-write-only-storage";
 import type { Config } from "./config/config";
 import * as chokidar from "chokidar";
 import { Logger } from "./logging";
-import { TypelibGenerator } from "./typelib-generator";
-import { MetadataGenerator } from "./metadata-generator";
+import type { TypelibGenerator } from "./typelib-generator";
+import type { MetadataGenerator } from "./metadata-generator";
 import { LogBuffer } from "./logging/log-buffer";
 import { resolveSourceFileCachePath } from "./utils/resolve-sourcefile-cache-path";
-import * as fs from "fs";
+import * as fs from "node:fs";
+
+// TODO: Reimplement this to use new IncrementalGenerator
 
 export class Watcher {
 	private readonly logger = new Logger("Watcher", undefined, LogBuffer.autoFlush);
-	private readonly metadataGenerator: MetadataGenerator;
+	// private readonly metadataGenerator: MetadataGenerator;
 
 	private watcher?: FSWatcher;
 	private readyToWatch = false;
@@ -19,22 +22,27 @@ export class Watcher {
 		private readonly config: Config,
 		private readonly typelibGenerator: TypelibGenerator
 	) {
-		this.metadataGenerator = new MetadataGenerator(this.config);
-
-		this.metadataGenerator.on("write", (sourceFilePath, metadataPath) => {
-			this.logger.info(`Regenerated metadata of file`, sourceFilePath);
-		});
+		// this.metadataGenerator = new MetadataGenerator(
+		// 	this.config,
+		// 	undefined,
+		// 	new FsReadWriteOnlyStorage(),
+		// 	new FsReadWriteOnlyStorage()
+		// );
+		//
+		// this.metadataGenerator.on("write", (metadata) => {
+		// 	this.logger.info(`Regenerated metadata of file`, metadata.fileName);
+		// });
 	}
 
 	/**
 	 * Start watching files.
 	 */
 	watch() {
-		this.watcher = this.createWatcher();
-		this.clearOnKill();
-		this.registerEventHandlers();
-
-		this.logger.info("Watching for file changes...");
+		// this.watcher = this.createWatcher();
+		// this.clearOnKill();
+		// this.registerEventHandlers();
+		//
+		// this.logger.info("Watching for file changes...");
 	}
 
 	private createWatcher() {
@@ -81,11 +89,11 @@ export class Watcher {
 					path.startsWith(dirPath)
 				);
 
-				removedFiles.forEach((path) => {
+				for (const path of removedFiles) {
 					try {
 						fs.unlinkSync(resolveSourceFileCachePath(path, this.config));
 					} catch (e) {}
-				});
+				}
 
 				await this.regenerateMetadata([]);
 				await this.typelibGenerator.filesRemoved(removedFiles);
@@ -96,11 +104,11 @@ export class Watcher {
 	}
 
 	private async regenerateMetadata(paths: string[]) {
-		this.logger.info("File change detected. Starting incremental compilation...");
-
-		// Regenerate metadata of given files.
-		if (paths.length > 0) {
-			await this.metadataGenerator.generate(paths);
-		}
+		// this.logger.info("File change detected. Starting incremental compilation...");
+		//
+		// // Regenerate metadata of given files.
+		// if (paths.length > 0) {
+		// 	await this.metadataGenerator.generate(paths);
+		// }
 	}
 }

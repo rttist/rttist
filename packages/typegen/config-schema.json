@@ -58,6 +58,12 @@
 			"default": "Universal",
 			"type": "string",
 			"enum": ["Universal", "Server"]
+		},
+		"preset": {
+			"description": "Configuration preset",
+			"default": null,
+			"type": "string",
+			"enum": ["vite"]
 		}
 	},
 	"required": ["metadata"],

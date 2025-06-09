@@ -1,6 +1,6 @@
 import type { Type } from "../Type";
 import { KnownGenericType } from "./KnownGenericType";
-import { TypeMetadata } from "../declarations";
+import type { TypeMetadata } from "../declarations";
 import { TypeIds } from "@rttist/core";
 
 export class PromiseType extends KnownGenericType<readonly [Type]> {

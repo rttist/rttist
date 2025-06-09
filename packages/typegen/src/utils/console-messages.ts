@@ -1,6 +1,6 @@
 import { blue, dim, green, whiteBright } from "chalk";
-import { Config } from "../lib/config/config";
-import { LogLevel, Logger } from "../lib/logging";
+import type { Config } from "../lib/config/config";
+import { LogLevel, type Logger } from "../lib/logging";
 
 export function printInitialMessage(logger: Logger, config: Config) {
 	logger.log(

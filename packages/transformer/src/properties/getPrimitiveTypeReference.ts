@@ -35,4 +35,5 @@ const PrimitiveTypesRefMap: { [flag: number]: TransformerTypeReference } = {
 	[ts.TypeFlags.Undefined]: TransformerTypeReference.Undefined,
 	[ts.TypeFlags.Null]: TransformerTypeReference.Null,
 	[ts.TypeFlags.Void]: TransformerTypeReference.Void,
+	[ts.TypeFlags.Intrinsic]: TransformerTypeReference.Intrinsic,
 };

@@ -423,6 +423,7 @@ const PrimitiveTypesRefMap: { [flag: number]: TypeIdentifier } = {
 	[ts.TypeFlags.Undefined]: TypeIds.Undefined,
 	[ts.TypeFlags.Null]: TypeIds.Null,
 	[ts.TypeFlags.Void]: TypeIds.Void,
+	// [ts.TypeFlags.Intrinsic]: TypeIds.Intrinsic,
 };
 
 export function getPrimitiveTypeReference(type: ts.Type): TypeIdentifier | undefined {

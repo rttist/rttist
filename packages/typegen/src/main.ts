@@ -1,8 +1,16 @@
-import { MetadataLibrary } from "rttist";
-import { getParsedConfig } from "./lib/config/config";
-import { Logger } from "./lib/logging";
+export * from "./declarations/command-line-arguments";
+export * from "./declarations/type-properties";
+export * from "./lib/config/config";
+export * from "./metadata-generator-spawner";
+export * from "./lib/metadata-generator";
+export * from "./lib/metadata/module-metadata";
 
-export async function generateMetadata(): MetadataLibrary {
-	const config = await getParsedConfig(this.cli.getCommandLineArguments());
-	Logger.setLevel(config.logLevel);
-}
+export * from "./incremental-generator";
+
+export * from "./lib/cache/cached-storage";
+export * from "./lib/cache/cached-storage";
+export * from "./lib/cache/fs-cached-storage";
+
+export * from "./lib/logging";
+
+export * from "./utils/console-messages";

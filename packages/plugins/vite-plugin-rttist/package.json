@@ -14,39 +14,39 @@
 		"runtime"
 	],
 	"main": "./dist/index.js",
-	"module": "./dist/esm/index.js",
-	"type": "commonjs",
+	"module": "./dist/index.js",
+	"type": "module",
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
-			"default": "./dist/index.js",
+			"import": "./dist/index.js",
 			"require": "./dist/index.js",
-			"import": "./dist/esm/index.js",
-			"types": "./dist/index.d.ts"
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"scripts": {
-		"prepublishOnly": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --dts"
+		"build": "npm run prepublishOnly",
+		"prepublishOnly": "tsup src/index.ts --format esm,cjs --tsconfig tsconfig.json --clean --dts --external tsup --external @types/node --external @rttist/ts-loader-wasm"
 	},
-	"files": [
-		"dist/**/*"
-	],
+	"files": ["dist/**/*"],
 	"author": "Roman Jámbor",
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^18.0.0",
-		"tsup": "^7.2.0"
+		"@types/node": "^22.15.21",
+		"tsup": "^7.3.0"
 	},
 	"dependencies": {
 		"@rttist/ts-loader-wasm": "workspace:^"
 	},
 	"peerDependencies": {
-		"vite": ">=5.0.0"
+		"vite": ">=5.0.0",
+		"@rttist/typegen": "workspace:^"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/rttist/rttist.git",
-		"directory": "packages/plugins/vite"
+		"directory": "packages/plugins/vite-plugin-rttist"
 	},
 	"bugs": {
 		"url": "https://github.com/rttist/rttist/issues"

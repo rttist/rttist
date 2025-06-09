@@ -9,6 +9,7 @@ export enum TypeKind {
 	Void,
 	Undefined,
 	Null,
+	Intrinsic,
 	Boolean,
 	False,
 	True,
@@ -101,6 +102,7 @@ export type NativeTypeKind =
 	| TypeKind.Never
 	| TypeKind.Null
 	| TypeKind.Undefined
+	| TypeKind.Intrinsic
 	| TypeKind.NonPrimitiveObject
 	| TypeKind.String
 	| TypeKind.Number

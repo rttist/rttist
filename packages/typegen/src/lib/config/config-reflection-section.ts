@@ -5,6 +5,8 @@ import { LogLevel } from "../logging";
  * @internal
  */
 export type ConfigReflectionSection = {
+	preset: null | "vite";
+
 	/**
 	 * Optional section which tells transformer how to generate metadata.
 	 */
@@ -60,6 +62,11 @@ export type ConfigReflectionSection = {
 		 * @default "./internal.typelib"
 		 */
 		typelibImportPath: string;
+
+		/**
+		 * Target JS lang version for the generated metadata.
+		 */
+		target: "es2015" | "es2020" | "esnext";
 	};
 
 	/**

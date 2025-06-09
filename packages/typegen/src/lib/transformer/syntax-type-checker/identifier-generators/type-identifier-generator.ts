@@ -21,6 +21,8 @@ export const wellKnownType = new Map<string | number, string>([
 	[ts.SyntaxKind.UnknownKeyword, TypeIds.Unknown],
 	["void", TypeIds.Void],
 	[ts.SyntaxKind.VoidKeyword, TypeIds.Void],
+	["intrinsic", TypeIds.Intrinsic],
+	[ts.SyntaxKind.IntrinsicKeyword, TypeIds.Intrinsic],
 	["never", TypeIds.Never],
 	[ts.SyntaxKind.NeverKeyword, TypeIds.Never],
 	["null", TypeIds.Null],

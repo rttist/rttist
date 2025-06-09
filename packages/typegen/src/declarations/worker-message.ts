@@ -2,4 +2,9 @@
 
 export type WorkerMessage = {
 	type: WorkerMessageType;
-}
+};
+
+export type FileFinishedWorkerMessagePayload = {
+	fileName: string;
+	cacheFileName: string;
+};

@@ -1,24 +1,16 @@
+import type { ExpandableMetadataLibrary } from "./MetadataLibrary";
 import type { Type } from "./Type";
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
-import { GenericTypeFactory } from "./factories";
-import { resolveSingletonInstance } from "./resolveSingletonInstance";
+import { PROTOTYPE_TYPE_INSTANCE_PROPERTY, PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
+import { getGenericTypeFactory } from "./factories/TypeFactoryProvider";
 
-class Register {
+export class GenericTypeRegister {
+	constructor(private readonly metadataLibrary: ExpandableMetadataLibrary) {}
+
 	/**
 	 * Classes of dynamically created generic types.
 	 * @private
 	 */
 	private readonly createdTypes: { [fullName: string]: Function } = {};
-
-	/**
-	 * Generates the "fullName" for the generic type created from generic type definition and type arguments.
-	 * @param genericTypeDefinition
-	 * @param typeParameters
-	 * @private
-	 */
-	private getId(genericTypeDefinition: Type, typeParameters: readonly Type[]) {
-		return genericTypeDefinition.id + "{" + typeParameters.map((tp) => tp.id).join(",") + "}";
-	}
 
 	/**
 	 * Return generic type created from generic type definition and type arguments.
@@ -30,7 +22,7 @@ class Register {
 		classCtor: { new (...args: any[]): T },
 		typeParameters: readonly Type[]
 	): { new (...args: any[]): T } {
-		const genericTypeDefinition = Rttist.getType(classCtor);
+		const genericTypeDefinition = this.metadataLibrary.getType(classCtor);
 
 		if (!genericTypeDefinition.isClass()) {
 			console.error("GenericTypeRegister.getGenericClass called for type which is not a ClassType.");
@@ -38,29 +30,39 @@ class Register {
 			return class Invalid {} as any;
 		}
 
-		const fullName = this.getId(genericTypeDefinition, typeParameters);
-		let genericClass = this.createdTypes[fullName];
+		const id = GenericTypeRegister.getId(genericTypeDefinition, typeParameters);
+		let genericClass = this.createdTypes[id];
 
 		if (!genericClass) {
-			const name = classCtor.name + "{}";
+			const name = `${classCtor.name}{${typeParameters.map((p) => p.name).join(",")}}`;
 
-			this.createdTypes[fullName] = genericClass = {
+			this.createdTypes[id] = genericClass = {
 				[name]: class extends (classCtor as any) {
-					constructor(...args: any[]) {
-						super(...args);
-					}
+					// constructor(...args: any[]) {
+					// 	super(...args);
+					// }
 				},
 			}[name];
 
-			genericClass.prototype[PROTOTYPE_TYPE_PROPERTY] = GenericTypeFactory.create(
-				genericTypeDefinition,
-				typeParameters,
-				fullName
-			);
+			const type: Type = getGenericTypeFactory().create(id, genericTypeDefinition, typeParameters);
+
+			// Add type into the typelib
+			this.metadataLibrary.addType(type);
+
+			genericClass.prototype[PROTOTYPE_TYPE_INSTANCE_PROPERTY] = type;
+			genericClass.prototype[PROTOTYPE_TYPE_PROPERTY] = type.id;
 		}
 
 		return genericClass as any;
 	}
-}
 
-export const GenericTypeRegister = resolveSingletonInstance("rttist/GenericTypeRegister", () => new Register());
+	/**
+	 * Generates the "fullName" for the generic type created from generic type definition and type arguments.
+	 * @param genericTypeDefinition
+	 * @param typeParameters
+	 * @private
+	 */
+	private static getId(genericTypeDefinition: Type, typeParameters: readonly Type[]) {
+		return `${genericTypeDefinition.id}{${typeParameters.map((tp) => tp.id).join(",")}}`;
+	}
+}

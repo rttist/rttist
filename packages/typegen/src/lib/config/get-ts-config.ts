@@ -1,5 +1,4 @@
 import type { ParseConfigFileHost, ParsedCommandLine } from "typescript";
-import type { CommandLineArguments } from "../../declarations/command-line-arguments";
 import { resolvePath } from "../utils/path";
 import { lazyTypescript } from "../utils/lazy-typescript";
 

@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "NodeNext",
 		"target": "ES2022",
 		"rootDir": "src",
 		"outDir": "dist",
@@ -12,7 +12,5 @@
 		"stripInternal": true,
 		"lib": []
 	},
-	"include": [
-		"./src/**/*.ts"
-	],
+	"include": ["./src/**/*.ts"]
 }

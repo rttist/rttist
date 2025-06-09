@@ -5,7 +5,7 @@
 			"path": "./packages/core/tsconfig.json"
 		},
 		{
-			"path": "./packages/abstract/tsconfig.json"
+			"path": "./packages/rttist/tsconfig.json"
 		},
 		{
 			"path": "./packages/transformer/tsconfig.json"

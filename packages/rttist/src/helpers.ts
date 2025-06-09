@@ -1,8 +1,8 @@
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
-import { Module } from "./Module";
+import { PROTOTYPE_TYPE_INSTANCE_PROPERTY, PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
 import { Type } from "./Type";
 import { getNativeTypes } from "./native-types";
-import { MetadataLibrary } from "./MetadataLibrary";
+import type { MetadataLibrary } from "./MetadataLibrary";
+import { instanceOfType, instanceOfModule } from "./utils/instanceOf";
 
 export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibrary): Type {
 	if (value === undefined) return Type.Undefined;
@@ -26,8 +26,8 @@ export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibra
 	if (value instanceof Float64Array) return Type.Float64Array;
 	if (value instanceof BigInt64Array) return Type.BigInt64Array;
 	if (value instanceof BigUint64Array) return Type.BigUint64Array;
-	if (value instanceof Type) return Type.Type;
-	if (value instanceof Module) return Type.Module;
+	if (instanceOfType(value)) return Type.Type;
+	if (instanceOfModule(value)) return Type.Module;
 
 	if (value.constructor === undefined) {
 		return Type.Unknown;
@@ -35,6 +35,14 @@ export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibra
 
 	if (value.constructor === Object) return Type.NonPrimitiveObject;
 	if (value.constructor === Array) return getNativeTypes().AnyArray;
+
+	const typeInstance =
+		value.prototype?.[PROTOTYPE_TYPE_INSTANCE_PROPERTY] ||
+		(value.constructor.prototype[PROTOTYPE_TYPE_INSTANCE_PROPERTY] as Type | undefined);
+
+	if (typeInstance !== undefined) {
+		return typeInstance;
+	}
 
 	const typeRef =
 		value.prototype?.[PROTOTYPE_TYPE_PROPERTY] ||

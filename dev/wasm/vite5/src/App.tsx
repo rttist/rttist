@@ -1,7 +1,8 @@
-import rttistLogo from "./assets/rttist.png";
+import type { FunctionType } from "rttist";
+import { Metadata } from "rttist/typelib";
+// import { Metadata } from "virtual:typelib";
 import styles from "./App.module.css";
-import { FunctionType } from "rttist";
-import { Metadata } from "./metadata.typelib";
+import rttistLogo from "./assets/rttist.png";
 import { Component } from "./types/Component";
 
 function App() {

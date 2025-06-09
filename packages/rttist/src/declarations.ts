@@ -1,5 +1,41 @@
-import type { IndexFlags, MethodFlags, ParameterFlags, PropertyFlags, SymbolKind, TypeKind } from "../enums";
-import type { AsyncCtorReference, ModuleIdentifier, TypeIdentifier, TypeReference } from "./index";
+import type { IndexFlags, MethodFlags, ParameterFlags, PropertyFlags, SymbolKind, TypeKind } from "./enums";
+
+export type AsyncCtorReference = () => Promise<{ new (...args: any[]): any } | undefined>;
+export type ModuleIdentifier = string;
+export type ModuleReference = ModuleIdentifier;
+export type TypeIdentifier = string;
+export type TypeReference = TypeIdentifier;
+export type TypesConfiguration = { nullability?: boolean };
+
+/**
+ * A generic argument placeholder.
+ * @remarks Can be used as generic type argument for generic types when you want to refer to a generic type definition
+ * instead of specific generic type.Or when you want to "discard" generic type argument and let the system infer it;
+ * so the system will know the callsite should be generated but the type should be inferred.
+ *
+ * This must be implemented by a transformer.
+ *
+ * @example
+ * ## Referring to generic type definition
+ * ```ts
+ * class GenericClass<T> {}
+ *
+ * getType<GenericClass<_>>(); // returns GenericTypeDefinition instead of GenericClass
+ * ```
+ * so
+ * ```ts
+ * getType<GenericClass<_>>() === getType<GenericClass<any>>().genericTypeDefinition
+ * ```
+ *
+ * @example
+ * ## Forced type inference
+ * ```ts
+ * foo<_>(() => new SomeClass());
+ *
+ * function foo<T>(factory: () => T): T {}
+ * ```
+ */
+export type _ = any;
 
 export interface TypeMetadata {
 	id: TypeIdentifier;
@@ -211,3 +247,12 @@ export type AnyTypeMetadata =
 	| PromiseTypeMetadata
 	| NamespaceTypeMetadata
 	| ModuleTypeMetadata;
+
+export type ModuleMetadata = {
+	id: ModuleIdentifier;
+	name: string;
+	path: string;
+	import?: () => Promise<object | undefined>;
+	children?: ModuleReference[];
+	types?: AnyTypeMetadata[];
+};

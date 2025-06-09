@@ -1,0 +1,66 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"ignore": ["node_modules", "dist", "out", "coverage"]
+	},
+	"organizeImports": {
+		"enabled": true,
+		"ignore": [
+			"./packages/rttist/**/*.ts"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentWidth": 4,
+		"indentStyle": "tab",
+		"lineWidth": 120,
+		"lineEnding": "crlf",
+		"ignore": ["node_modules", "dist", "out", "coverage"]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "warn",
+				"useImportType": "warn",
+				"noParameterAssign": "info"
+			},
+			"complexity": {
+				"noBannedTypes": "off",
+				"noStaticOnlyClass": "off"
+			},
+			"correctness": {
+				"useExhaustiveDependencies": "off",
+				"useJsxKeyInIterable": "off"
+			}
+		},
+		"ignore": ["node_modules", "dist", "out", "coverage"]
+	},
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "always",
+			"jsxQuoteStyle": "double",
+			"semicolons": "always",
+			"trailingCommas": "es5",
+			"quoteProperties": "asNeeded",
+			"bracketSpacing": true,
+			"bracketSameLine": false,
+			"quoteStyle": "double"
+		}
+	},
+	"json": {
+		"parser": {
+			"allowComments": true
+		}
+	}
+}

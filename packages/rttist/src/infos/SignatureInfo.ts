@@ -3,8 +3,7 @@ import type { SignatureMetadataBase } from "../declarations";
 import { LazyType } from "../utils/LazyType";
 import { LazyTypeArray } from "../utils/LazyTypeArray";
 import { ParameterInfo } from "./ParameterInfo";
-import { TypeParameterType } from "../types";
-import { AccessModifier, Accessor } from "../enums";
+import type { TypeParameterType } from "../types";
 
 export class SignatureInfo {
 	/**

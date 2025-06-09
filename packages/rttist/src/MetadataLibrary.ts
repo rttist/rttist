@@ -6,7 +6,9 @@ import type {
 	TypeReference,
 	TypesConfiguration,
 } from "./declarations";
-import { ModuleIds } from "@rttist/core";
+import { getCallsiteTypeArguments, ModuleIds, PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
+import { GenericTypeRegister } from "./GenericTypeRegister";
+import { getTypeOfRuntimeValue } from "./helpers";
 import { Module } from "./Module";
 import { Type } from "./Type";
 import { MetadataScope } from "./metadata-scope";
@@ -24,7 +26,10 @@ import {
 	WeakSetType,
 } from "./types";
 import { TypeKind } from "./enums";
+import { getGlobalThis } from "./utils/getGlobalThis";
+import { instanceOfModule, instanceOfType } from "./utils/instanceOf";
 
+const ERROR_DISABLE_PROPERTY_NAME = "reflect-gettype-error-disable";
 const TYPE_IDENTIFIER_REGEX = /^([#@][^,|&]+?)\{(.+?)}(\?)?$/;
 const NATIVE_KNOWN_TYPES_CTOR_MAP = new Map<string, new (...args: any[]) => Type>([
 	["#Promise", PromiseType],
@@ -37,10 +42,138 @@ const NATIVE_KNOWN_TYPES_CTOR_MAP = new Map<string, new (...args: any[]) => Type
 	["#Tuple", TupleType],
 ]);
 
-export class MetadataLibrary {
+export interface MetadataLibrary {
+	readonly configuration: TypesConfiguration;
+	readonly name: string;
+
+	toString(): string;
+
+	/**
+	 * Returns the first Type from the library that satisfies the provided predicate.
+	 * If no Type satisfies the predicate, undefined is returned.
+	 * @param predicate
+	 * @returns {Type | undefined}
+	 */
+	findType(predicate: (type: Type) => boolean): Type | undefined;
+
+	/**
+	 * Returns all the Types contained in the Metadata.
+	 */
+	getTypes(): Type[];
+
+	/**
+	 * Returns the first Module from the library that satisfies the provided predicate.
+	 * If no Module satisfies the predicate, undefined is returned.
+	 * @param predicate
+	 * @returns {Module | undefined}
+	 */
+	findModule(predicate: (module: Module) => boolean): Module | undefined;
+
+	/**
+	 * Returns all Modules contained in the library.
+	 */
+	getModules(): Module[];
+
+	/**
+	 * Returns a Type instance identified by the reference. Returns Type.Invalid if no Type found.
+	 * @param id
+	 */
+	resolveType(id: TypeReference): Type;
+
+	/**
+	 * Returns a Module instance identified by the reference. Returns Module.Invalid if no Module found.
+	 * @param id
+	 */
+	resolveModule(id: ModuleReference): Module;
+
+	/**
+	 * Cast type to expandable library allowing you to modify the library.
+	 */
+	asExpandable(): ExpandableMetadataLibrary;
+
+	/**
+	 * Returns Type object for passed generic type parameter or function parameter.
+	 * @param [args] Optional parameter for cases when you want to get Type object from runtime value.
+	 * Always use generic type parameter if you can statically access the type.
+	 * Use this runtime function argument only if you have no other option.
+	 * It is reliable only for classes, functions and primitives (such as undefined, true, false, numbers, strings).
+	 * @example
+	 * getType<MyInterface>() // returns Type object for `MyInterface` interface.
+	 * getType<MyClass>() // returns Type object for `MyClass` class.
+	 * getType(someClassCtor) // returns Type object corresponding to class stored in `someClassCtor` variable.
+	 * getType(someClassInstance) // returns Type object corresponding to class of instance stored in `someClassInstance` variable.
+	 */
+	getType<T>(...args: any[]): Type;
+
+	/**
+	 * Returns a generic class for the given class constructor and type parameters.
+	 * @param classCtor
+	 * @param typeParameters
+	 * @remarks This method is used to create a generic class with the given type parameters.
+	 * Created generic classes are cached and stored in the metadata library after creation.
+	 * Created generic class inherits from the original class constructor.
+	 */
+	getGenericClass<T>(classCtor: { new (...args: any[]): T }, ...typeParameters: Type[]): Function;
+
+	/**
+	 * The static Reflect.construct() method acts like the new operator, but as a function.
+	 * It is equivalent to calling new target(...args).
+	 * It gives also the added option to specify a different prototype.
+	 * @param target The target function to call.
+	 * @param typeParameters An array specifying the type arguments.
+	 * @param argumentsList An array-like object specifying the arguments with which target should be called.
+	 * @param newTarget The constructor whose prototype should be used.
+	 * See also the new.target operator. If newTarget is not present, its value defaults to target.
+	 * @returns A new instance of target (or newTarget, if present),
+	 * initialized by target as a constructor with the given argumentsList.
+	 */
+	constructGeneric<TType = any>(
+		target: Function,
+		typeParameters: Array<Type | TypeReference>,
+		argumentsList: ArrayLike<any>,
+		newTarget?: Function
+	): TType;
+}
+
+export type ExpandableMetadataLibrary = Omit<MetadataLibrary, "asExpandable"> & {
+	/**
+	 * Add complex Metadata for a module.
+	 * @param moduleMetadata
+	 * @param stripInternals
+	 */
+	addMetadata(moduleMetadata: ModuleMetadata, stripInternals: boolean): void;
+
+	/**
+	 * Clear all metadata.
+	 */
+	clearMetadata(): void;
+
+	/**
+	 * Add Module with its Types to the Metadata.
+	 * @param modules
+	 */
+	addModule(...modules: Module[]): void;
+
+	/**
+	 * Add Types to the Metadata.
+	 * @param types
+	 */
+	addType(...types: Type[]): void;
+
+	/**
+	 * Add an alias for type
+	 * @param aliases
+	 */
+	addAliases(aliases: { [alias: TypeIdentifier]: TypeIdentifier }): void;
+};
+
+export type IMetadataLibrary = MetadataLibrary & ExpandableMetadataLibrary;
+
+export class BaseMetadataLibrary implements IMetadataLibrary {
 	private readonly modules = new Map<ModuleIdentifier, Module>();
 	private readonly types = new Map<TypeIdentifier, Type>();
 	private readonly isGlobalMetadataLibrary: boolean;
+	private readonly genericTypeRegister = new GenericTypeRegister(this);
 
 	/**
 	 * Map of aliases - mapping type identifiers to type identifiers.
@@ -48,21 +181,36 @@ export class MetadataLibrary {
 	 */
 	private readonly aliases = new Map<TypeIdentifier, TypeIdentifier>();
 
-	constructor(configuration: TypesConfiguration, name: string, parentLibrary: MetadataLibrary);
+	constructor(configuration: TypesConfiguration, name: string, parentLibrary: BaseMetadataLibrary);
 	/** @internal */
 	constructor(configuration: TypesConfiguration, name: string);
 	constructor(
 		public readonly configuration: TypesConfiguration,
 		public readonly name: string,
-		private readonly parentLibrary?: MetadataLibrary
+		private readonly parentLibrary?: BaseMetadataLibrary
 	) {
 		if (!parentLibrary && new.target !== GlobalMetadataLibrary) {
 			throw new Error("Cannot instantiate new MetadataLibrary without parent.");
 		}
 
 		this.isGlobalMetadataLibrary = new.target === GlobalMetadataLibrary;
+
+		this.getType = this.getType.bind(this);
+		this.resolveType = this.resolveType.bind(this);
+		this.getGenericClass = this.getGenericClass.bind(this);
+		this.constructGeneric = this.constructGeneric.bind(this);
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	asExpandable(): ExpandableMetadataLibrary {
+		return this;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	toString() {
 		return (
 			`${this.name}` +
@@ -73,6 +221,62 @@ export class MetadataLibrary {
 
 	[Symbol.for("nodejs.util.inspect.custom")]() {
 		return this.toString();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	getGenericClass<T>(classCtor: { new (...args: any[]): T }, ...typeParameters: Type[]): Function {
+		if (typeParameters.length === 0) {
+			const callsiteArgs = getCallsiteTypeArguments(this.getGenericClass);
+
+			if (callsiteArgs !== undefined && (callsiteArgs.length !== 0 || !!callsiteArgs[0])) {
+				const type = this.resolveType(callsiteArgs[0]);
+
+				return this.genericTypeRegister.getGenericClass(
+					classCtor,
+					type.isGenericType() ? type.getTypeArguments() : []
+				);
+			}
+		}
+
+		return this.genericTypeRegister.getGenericClass(classCtor, typeParameters);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	constructGeneric<TType = any>(
+		target: Function,
+		typeParameters: Array<Type | TypeReference>,
+		argumentsList: ArrayLike<any>,
+		newTarget?: Function
+	): TType {
+		const Class = this.getGenericClass(
+			target as { new (...args: any[]): unknown },
+			...typeParameters.map((tpReference) =>
+				instanceOfType(tpReference) ? tpReference : this.resolveType(tpReference)
+			)
+		);
+
+		if (newTarget !== undefined) {
+			newTarget = this.inheritNewTarget(newTarget, Class);
+		}
+
+		return Reflect.construct(Class, argumentsList, newTarget ?? Class);
+	}
+
+	private inheritNewTarget(newTarget: Function, Class: Function) {
+		const name = newTarget.name !== undefined ? `${newTarget.name}{}` : Class.name;
+		const inheritedNewTarget = {
+			[name]: class {},
+		}[name];
+
+		Object.setPrototypeOf(inheritedNewTarget.prototype, newTarget.prototype);
+
+		(inheritedNewTarget.prototype as any)[PROTOTYPE_TYPE_PROPERTY] = Class.prototype[PROTOTYPE_TYPE_PROPERTY];
+
+		return inheritedNewTarget;
 	}
 
 	/**
@@ -205,17 +409,17 @@ export class MetadataLibrary {
 			return;
 		}
 
-		for (let module of modules) {
+		for (const module of modules) {
 			// noinspection SuspiciousTypeOfGuard
-			if (!(module instanceof Module)) {
+			if (!instanceOfModule(module)) {
 				throw new Error("Given module is not an instance of the Module class.");
 			}
 
 			if (module.id !== ModuleIds.Native && module.id !== ModuleIds.Invalid && this.modules.has(module.id)) {
 				throw new Error(`Module with id '${module.id}' already exists.`);
-			} else {
-				this.modules.set(module.id, module);
 			}
+
+			this.modules.set(module.id, module);
 
 			// Add types from the module
 			this.addType(...module.getTypes());
@@ -233,9 +437,9 @@ export class MetadataLibrary {
 			return;
 		}
 
-		for (let type of types) {
+		for (const type of types) {
 			// noinspection SuspiciousTypeOfGuard
-			if (!(type instanceof Type)) {
+			if (!instanceOfType(type)) {
 				throw new Error("Given type is not an instance of the Type class.");
 			}
 
@@ -263,11 +467,45 @@ export class MetadataLibrary {
 			return;
 		}
 
-		Object.entries(aliases).forEach(([alias, target]) => {
+		for (const [alias, target] of Object.entries(aliases)) {
 			this.aliases.set(alias, target);
-		});
+		}
 
 		// TODO: maybe we can resolve aliases here? Always store alias and final type; not alias to alias. But it will cost startup time.
+	}
+
+	getType<T>(...args: any[]): Type {
+		if (args.length) {
+			return getTypeOfRuntimeValue(args[0], this);
+		}
+
+		const callsiteArgs = getCallsiteTypeArguments(this.getType);
+
+		if (callsiteArgs !== undefined) {
+			if (callsiteArgs.length === 0 || callsiteArgs[0] === undefined) {
+				return Type.Invalid;
+			}
+
+			return this.resolveType(callsiteArgs[0]);
+		}
+
+		const globalObject = getGlobalThis();
+
+		if (!globalObject[ERROR_DISABLE_PROPERTY_NAME]) {
+			console.debug(
+				// biome-ignore lint/style/useTemplate: <explanation>
+				"[ERR] RTTIST: You are calling `getType()` function directly. " +
+					"More information at https://github.com/rttist/rttist/issues/17. " +
+					"To suppress this message, create field '" +
+					ERROR_DISABLE_PROPERTY_NAME +
+					"' in global object (window | global | globalThis) eg. `window['" +
+					ERROR_DISABLE_PROPERTY_NAME +
+					"'] = true;`"
+			);
+		}
+
+		// In case of direct call without argument nor callsite, we'll return Invalid type.
+		return Type.Invalid;
 	}
 
 	private createLiteralType(id: string) {
@@ -276,14 +514,14 @@ export class MetadataLibrary {
 			value[value.length - 1] === "n"
 				? TypeKind.BigIntLiteral
 				: value[0] === "'"
-				? TypeKind.StringLiteral
-				: value === "true"
-				? TypeKind.True
-				: value === "false"
-				? TypeKind.False
-				: value[0] === "/"
-				? TypeKind.RegExpLiteral
-				: TypeKind.NumberLiteral;
+					? TypeKind.StringLiteral
+					: value === "true"
+						? TypeKind.True
+						: value === "false"
+							? TypeKind.False
+							: value[0] === "/"
+								? TypeKind.RegExpLiteral
+								: TypeKind.NumberLiteral;
 
 		return new LiteralType({
 			id: id,
@@ -309,7 +547,7 @@ export class MetadataLibrary {
 	}
 
 	private handleAdhocType(id: TypeReference) {
-		if (id.slice(0, 3) == "#L(") {
+		if (id.slice(0, 3) === "#L(") {
 			const type = this.createLiteralType(id);
 			this.addType(type);
 			return type;
@@ -365,7 +603,7 @@ export class MetadataLibrary {
 	}
 }
 
-export class GlobalMetadataLibrary extends MetadataLibrary {
+export class GlobalMetadataLibrary extends BaseMetadataLibrary {
 	constructor(configuration: TypesConfiguration) {
 		super(configuration, "Global metadata library");
 	}

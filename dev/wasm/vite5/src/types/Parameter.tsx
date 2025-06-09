@@ -1,4 +1,4 @@
-import { ParameterInfo } from "rttist";
+import type { ParameterInfo } from "rttist";
 
 type Props = {
 	parameter: ParameterInfo;
@@ -11,3 +11,5 @@ export function Parameter(props: Props) {
 		</span>
 	);
 }
+
+// export function test(props: { test: string }) {}

@@ -1,22 +1,22 @@
-﻿packages:
-    - 'packages/core'
-    - 'packages/rttist'
-#    - 'packages/runtime' TODO: This is new thin tst-reflect on top of Rttist
-    - 'packages/typegen'
-    - 'packages/plugins/rust/crates/rttist-ts-loader'
-    - 'packages/plugins/rust/crates/rttist-ts-loader-wasm'
-    - 'packages/plugins/rust/crates/swc-plugin-rttist'
-    - 'packages/plugins/esbuild-plugin-rttist'
-    - 'packages/plugins/vite-plugin-rttist'
-#    - 'packages/plugins/swc'
-#    - 'tests/'
-    - 'dev/mvc-framework'
-    - 'dev/dts'
-    - 'dev/hookyns/2'
-    - 'dev/hookyns/webpack'
-    - 'dev/wasm/esbuild'
-    - 'dev/wasm/swc'
-    - 'dev/wasm/vite'
-    - 'dev/wasm/vite5'
-#    - 'dev-packages/pkg1'
-#    - 'dev-packages/pkg2-mjs'
+packages:
+  - packages/core
+  - packages/rttist
+  - packages/typegen
+  - packages/plugins/rust/crates/rttist-ts-loader
+  - packages/plugins/rust/crates/rttist-ts-loader-wasm
+  - packages/plugins/rust/crates/swc-plugin-rttist
+  - packages/plugins/esbuild-plugin-rttist
+  - packages/plugins/vite-plugin-rttist
+  - packages/plugins/webpack-plugin-rttist
+  - packages/plugins/node
+  - dev/mvc-framework
+  - dev/dts
+  - dev/hookyns/2
+  - dev/hookyns/webpack
+  - dev/wasm/esbuild
+#  - dev/wasm/swc
+#  - dev/wasm/vite
+  - dev/wasm/vite5
+#  - dev/create-react-app
+ignoredBuiltDependencies:
+  - wasm-pack

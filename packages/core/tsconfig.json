@@ -7,16 +7,12 @@
 		"stripInternal": true,
 		"declaration": true,
 		"outDir": "dist",
-		"rootDir": "./src",
-		"baseUrl": "./src",
-		"composite": true,
+		"rootDir": "src",
+		"baseUrl": ".",
+//		"composite": true,
 		"lib": []
 	},
-	"include": [
-		"./src/**/*.ts"
-	],
-	"exclude": [
-		"node_modules/**/*",
-		"dist/**/*"
+	"files": [
+		"src/index.ts"
 	]
 }

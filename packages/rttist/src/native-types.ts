@@ -34,7 +34,7 @@ export function getNativeTypes() {
 		anyType = new Type({
 			kind: TypeKind.Interface,
 			name: "Array",
-			id: "#Array{" + TypeIds.Any + "}",
+			id: `#Array{${TypeIds.Any}}`,
 			module: ModuleIds.Native,
 			genericTypeDefinition: "#Array",
 			typeArguments: [TypeIds.Any],
@@ -87,6 +87,7 @@ export function getNativeTypes() {
 			Never: cn("never", "Never"),
 			Null: cn("null", "Null"),
 			Undefined: cn("undefined", "Undefined"),
+			Intrinsic: cn("intrinsic", "Intrinsic"),
 			String: cn("String", "String"),
 			Number: cn("Number", "Number"),
 			BigInt: cn("BigInt", "BigInt"),

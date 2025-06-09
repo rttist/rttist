@@ -1,6 +1,6 @@
 import type { ObjectLikeBaseTypeMetadata } from "../declarations";
 import type { IndexInfo, MethodInfo, PropertyInfo } from "../infos";
-import { PropsToStringify, Type } from "../Type";
+import { type PropsToStringify, Type } from "../Type";
 import { mapIndexes, mapMethods, mapProperties } from "../utils/mappers";
 
 export abstract class ObjectLikeTypeBase extends Type {

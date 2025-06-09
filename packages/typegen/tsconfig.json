@@ -5,7 +5,6 @@
 		"moduleResolution": "nodenext",
 		"sourceMap": true,
 		"declaration": true,
-		"noEmit": true,
 		"stripInternal": true,
 		"strict": true,
 		"outDir": "dist",
@@ -13,12 +12,13 @@
 		"baseUrl": ".",
 		"isolatedModules": true,
 		"forceConsistentCasingInFileNames": true,
-		"lib": [
-			"es2022"
-		],
+		"jsxFactory": "React.createElement",
+		"jsxFragmentFactory": "React.Fragment",
+		"lib": ["es2022"],
 		"types": []
 	},
 	"files": [
+		"src/main.ts",
 		"src/declarations/globals.ts",
 		"src/bin.ts",
 		"src/worker.ts",
@@ -26,6 +26,6 @@
 		"src/lib/debugger.ts"
 	]
 	//	"include": [
-//		"src/**/*.ts"
-//	]
+	//		"src/**/*.ts"
+	//	]
 }
