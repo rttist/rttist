@@ -1,6 +1,6 @@
 {
 	"name": "vite-plugin-rttist",
-	"version": "5.0.0-alpha.0",
+	"version": "5.0.0-rc.0",
 	"description": "RTTIST plugin adding support for advanced reflection features to Vite",
 	"keywords": [
 		"rttist",
