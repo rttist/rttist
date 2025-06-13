@@ -1,7 +1,7 @@
 import type { Logger } from "../logging";
 import type { Config } from "../config/config";
 import { resolvePath } from "../utils/path";
-import * as $fs from "fs";
+import * as $fs from "node:fs";
 
 export type CacheStatsProps = {
 	lastGeneration: Date;
@@ -41,9 +41,9 @@ export class CacheStats {
 		try {
 			this._value = {
 				...this._value,
-				...(JSON.parse(stats, function (key, value) {
+				...(JSON.parse(stats, (key, value) => {
 					if (typeof value === "string") {
-						let match = value.match(JSON_DATE_REGEX);
+						const match = value.match(JSON_DATE_REGEX);
 
 						if (match) {
 							return new Date(match[0]);

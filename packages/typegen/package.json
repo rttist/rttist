@@ -1,26 +1,24 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.1.0-proto.11",
+	"version": "0.2.0-rc.1",
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
+	"main": "./dist/main.js",
+	"types": "./dist/main.d.ts",
 	"bin": {
 		"typegen": "./bin/typegen",
 		"rttist": "./bin/rttist"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "esbuild src/bin.ts src/worker.ts --bundle --minify --outdir=dist --platform=node --packages=external",
+		"build": "npm run prepare",
+		"build:dev": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --target=es2022 --outdir=dist --platform=node --packages=external && npm run types",
+		"types": "tsc --emitDeclarationOnly",
+		"prepare": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --target=es2022 --minify --outdir=dist --platform=node --packages=external && npm run types",
 		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare",
-		"start": "esbuild src/bin.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
+		"start": "esbuild src/bin.ts src/main.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
 	},
-	"files": [
-		"LICENSE",
-		"README.md",
-		"config-schema.json",
-		"dist/**/*.js",
-		"bin/typegen",
-		"bin/rttist"
-	],
+	"files": ["LICENSE", "README.md", "config-schema.json", "dist/**/*.js", "bin/typegen", "bin/rttist"],
 	"keywords": [
 		"type",
 		"types",
@@ -42,24 +40,24 @@
 		"@netleaf/extensions-configuration": "^0.5.2",
 		"@rttist/core": "workspace:^",
 		"chalk": "^4.1.2",
-		"chokidar": "^3.5.3",
+		"chokidar": "^4.0.3",
 		"cli-progress": "^3.12.0",
 		"commander": "^11.0.0",
 		"esbuild": "^0.18.11",
 		"fast-glob": "^3.3.0",
 		"inquirer": "8.2.6",
-		"memory-mapped-files": "^0.1.1",
-		"micromatch": "^4.0.5",
+		"micromatch": "^4.0.8",
+		"minimatch": "^10.0.1",
 		"nanospinner": "^1.1.0",
 		"promise-cs": "^1.0.2",
 		"rttist": "workspace:^",
-		"typescript": "5.1.6"
+		"typescript": "5.8.3"
 	},
 	"devDependencies": {
 		"@types/cli-progress": "^3.11.0",
 		"@types/inquirer": "^8.2.6",
 		"@types/micromatch": "^4.0.2",
-		"@types/node": "^18.0.0",
+		"@types/node": "^22.15.21",
 		"rimraf": "^3.0.2"
 	},
 	"repository": {
@@ -70,5 +68,8 @@
 	"bugs": {
 		"url": "https://github.com/rttist/rttist/issues"
 	},
-	"homepage": "https://rttist.org"
+	"homepage": "https://rttist.org",
+	"engines": {
+		"node": ">=22.0.0"
+	}
 }

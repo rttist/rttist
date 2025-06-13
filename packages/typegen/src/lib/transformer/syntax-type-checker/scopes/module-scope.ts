@@ -1,6 +1,6 @@
-import { ModuleIdentifier } from "rttist";
-import * as ts from "typescript";
-import { ImportDeclarationInfo, Scope } from "./scope";
+import type { ModuleIdentifier } from "rttist";
+import type * as ts from "typescript";
+import { type ImportDeclarationInfo, Scope } from "./scope";
 
 export class ModuleScope extends Scope {
 	protected readonly importDeclarations = new Map<string, ImportDeclarationInfo>();

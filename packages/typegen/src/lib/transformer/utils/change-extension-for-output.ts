@@ -1,6 +1,6 @@
 import type { Config } from "../../config/config";
 import { isFileExtensionRequired } from "./is-file-extension-required";
-import { removeExtension } from "./removeExtension";
+import { removeExtension } from "./remove-extension";
 
 export function changeExtensionForOutput(sourceFilePath: string, config: Config): string {
 	const filePath = removeExtension(sourceFilePath);

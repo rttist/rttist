@@ -1,9 +1,14 @@
-import type { ClassType } from "../types";
+import { PROTOTYPE_TYPE_INSTANCE_PROPERTY, type TypeIdentifier } from "@rttist/core";
 import { Type } from "../Type";
-import { PROTOTYPE_TYPE_PROPERTY } from "@rttist/core";
+import type { ClassType } from "../types";
 
-export function getClassTypeParameter(instance: any, typeParameterName: string): string {
-	const classType = Object.getPrototypeOf(instance)[PROTOTYPE_TYPE_PROPERTY] as ClassType;
+export function getClassTypeParameter(instance: any, typeParameterName: string): TypeIdentifier {
+	const classType = Object.getPrototypeOf(instance)[PROTOTYPE_TYPE_INSTANCE_PROPERTY] as ClassType;
+
+	if (classType === undefined) {
+		return Type.Invalid.id;
+	}
+
 	const argumentIndex = classType.genericTypeDefinition
 		?.getTypeArguments()
 		.findIndex((ta) => ta.name === typeParameterName);

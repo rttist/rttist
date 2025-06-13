@@ -14,12 +14,10 @@ export class LazyModuleArray<TModule = Module> {
 	public readonly length: number;
 
 	get modules(): ReadonlyArray<TModule> {
-		return (
-			this._modules ??
-			(this._modules = Object.freeze(
-				this._references.map((module) => this.metadataLibrary.resolveModule(module) as TModule)
-			))
+		this._modules ??= Object.freeze(
+			this._references.map((module) => this.metadataLibrary.resolveModule(module) as TModule)
 		);
+		return this._modules;
 	}
 
 	constructor(moduleRefs: ReadonlyArray<ModuleReference>) {

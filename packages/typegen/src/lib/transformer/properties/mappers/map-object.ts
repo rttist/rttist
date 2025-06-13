@@ -16,10 +16,9 @@ import { mapIndexes } from "../map-indexes";
 import { mapMethods } from "../map-methods";
 import { mapObjectLiteral } from "./map-object-literal";
 import { mapFunction } from "./map-function";
-import { mapTuple } from "./mapTuple";
 
 const ObjectFlagsMappers: { [typeFlag: number]: TypeMapper } = {
-	[ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
+	// [ts.ObjectFlags.Tuple]: mapTuple as TypeMapper,
 	[ts.ObjectFlags.ObjectLiteral]: mapObjectLiteral as TypeMapper,
 	[ts.ObjectFlags.Anonymous]: mapObjectLiteral as TypeMapper,
 };

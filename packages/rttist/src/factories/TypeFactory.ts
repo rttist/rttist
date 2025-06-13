@@ -1,5 +1,4 @@
 import type { AnyTypeMetadata } from "../declarations";
-import { TypeIds } from "@rttist/core";
 import { TypeKind } from "../enums";
 import { Type } from "../Type";
 import {
@@ -50,7 +49,6 @@ type TypeKindToTypeMap = {
 	[TypeKind.Enum]: EnumType;
 	[TypeKind.EnumLiteral]: EnumLiteralType;
 	[TypeKind.Promise]: PromiseType;
-	[TypeKind.Tuple]: TupleType;
 	// TODO: Add the rest
 };
 

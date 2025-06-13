@@ -11,6 +11,7 @@ const map: { [typeKind: number]: TypeSerializer } = {
 	[TypeKind.Never]: typeKindOnlyTypeSerializer,
 	[TypeKind.Null]: typeKindOnlyTypeSerializer,
 	[TypeKind.Undefined]: typeKindOnlyTypeSerializer,
+	[TypeKind.Intrinsic]: typeKindOnlyTypeSerializer,
 	[TypeKind.NonPrimitiveObject]: typeKindOnlyTypeSerializer,
 	[TypeKind.String]: typeKindOnlyTypeSerializer,
 	[TypeKind.Number]: typeKindOnlyTypeSerializer,

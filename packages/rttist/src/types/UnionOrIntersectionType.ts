@@ -27,6 +27,6 @@ export abstract class UnionOrIntersectionType extends Type {
 	 * Returns string representation of the type.
 	 */
 	toString(): string {
-		return `{${this.types.map((t) => t.toString()).join(this.operatorSymbol)}`;
+		return `${this.types.map((t) => t.toString()).join(this.operatorSymbol)}`;
 	}
 }

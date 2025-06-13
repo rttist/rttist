@@ -4,13 +4,13 @@ import { dim, gray } from "chalk";
 import { LogColor, LogColorNames } from "./log-color";
 
 const LEVEL_MAP = {
-	[LogLevel.None]: 0,
+	[LogLevel.Dev]: 0,
 	[LogLevel.Trace]: 1,
 	[LogLevel.Debug]: 2,
 	[LogLevel.Info]: 3,
 	[LogLevel.Warning]: 4,
 	[LogLevel.Error]: 5,
-	[LogLevel.Dev]: 6,
+	[LogLevel.None]: 6,
 	[LogLevel.Always]: 7,
 };
 
@@ -70,7 +70,7 @@ export class Logger {
 		context?: string,
 		public readonly buffer: LogBuffer = LogBuffer.default
 	) {
-		this.contextSuffix = context ? "\n\tContext: " + context : "";
+		this.contextSuffix = context ? `\n\tContext: ${context}` : "";
 	}
 
 	/**
@@ -78,7 +78,7 @@ export class Logger {
 	 * @param logLevel
 	 */
 	static setLevel(logLevel: LogLevel) {
-		this.logLevel = LEVEL_MAP[logLevel];
+		Logger.logLevel = LEVEL_MAP[logLevel];
 	}
 
 	/**
@@ -86,7 +86,7 @@ export class Logger {
 	 * @param prefix
 	 */
 	static setGlobalPrefix(prefix: string) {
-		this.globalPrefix = prefix;
+		Logger.globalPrefix = prefix;
 	}
 
 	when(level: LogLevel, argsCallback: () => any[]) {

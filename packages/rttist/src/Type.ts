@@ -2,6 +2,7 @@ import type { TypeIdentifier, TypeMetadata } from "./declarations";
 import type { MetadataLibrary } from "./MetadataLibrary";
 import { MetadataScope } from "./metadata-scope";
 import type {
+	ArrayType,
 	ClassType,
 	ConditionalType,
 	EnumType,
@@ -14,6 +15,7 @@ import type {
 	ObjectLikeTypeBase,
 	ObjectType,
 	TemplateType,
+	TupleType,
 	TypeAliasType,
 	TypeParameterType,
 	UnionType,
@@ -21,6 +23,7 @@ import type {
 } from "./types";
 import type { Module } from "./Module";
 import { resolveFromFunctionCallsite } from "./functions/resolveFromFunctionCallsite";
+import { typeSymbol } from "./utils/instanceOf";
 import { LazyModule } from "./utils/LazyModule";
 import { LazyType } from "./utils/LazyType";
 import { LazyTypeArray } from "./utils/LazyTypeArray";
@@ -30,6 +33,9 @@ import { LiteralTypeKinds, PrimitiveTypeKinds, TypeKind } from "./enums";
  * Object representing TypeScript type in memory
  */
 export class Type {
+	// @ts-ignore
+	private static readonly __type = typeSymbol;
+
 	public declare static readonly Invalid: Type;
 	public declare static readonly NonPrimitiveObject: Type;
 	public declare static readonly Any: Type;
@@ -38,6 +44,7 @@ export class Type {
 	public declare static readonly Never: Type;
 	public declare static readonly Null: Type;
 	public declare static readonly Undefined: Type;
+	public declare static readonly Intrinsic: Type;
 	public declare static readonly String: Type;
 	public declare static readonly Number: Type;
 	public declare static readonly BigInt: Type;
@@ -61,6 +68,7 @@ export class Type {
 	public declare static readonly BigInt64Array: Type;
 	public declare static readonly BigUint64Array: Type;
 	public declare static readonly ArrayDefinition: Type;
+	public declare static readonly TupleDefinition: Type;
 	public declare static readonly ReadonlyArrayDefinition: Type;
 	public declare static readonly MapDefinition: Type;
 	public declare static readonly WeakMapDefinition: Type;
@@ -97,7 +105,7 @@ export class Type {
 	/** @internal */
 	protected readonly _typeArgumentsRef: LazyTypeArray;
 	/** @internal */
-	protected readonly _definitionRef?: LazyType<GenericType<Type>>;
+	protected readonly _definitionRef?: LazyType<GenericType<Type>> | undefined;
 	/** @internal */
 	protected readonly _isGenericTypeDefinition: boolean;
 	/** @internal */
@@ -115,7 +123,7 @@ export class Type {
 	}
 
 	get displayName(): string {
-		return `${TypeKind[this._kind]} ${this._name} [${this._id}]`;
+		return `<${TypeKind[this._kind]} ${this._name} [${this._id}]>`;
 	}
 
 	/**
@@ -126,7 +134,7 @@ export class Type {
 	}
 
 	/**
-	 * Module which declare type represented by the this Type instance.
+	 * Module which declare type represented by this Type instance.
 	 */
 	get module(): Module {
 		return this._moduleRef.module;
@@ -208,7 +216,8 @@ export class Type {
 	is<T>(target?: Type): boolean {
 		if (target === undefined) {
 			const [targetTypeReference] = resolveFromFunctionCallsite(this.is);
-			target = this.metadataLibrary.resolveType(targetTypeReference);
+			// biome-ignore lint/style/noNonNullAssertion: It is guaranteed to be defined
+			target = this.metadataLibrary.resolveType(targetTypeReference!);
 		}
 
 		return this._id === target._id;
@@ -297,7 +306,7 @@ export class Type {
 	/**
 	 * Check if this type is an Array.
 	 */
-	isArray(): this is GenericType<InterfaceType> {
+	isArray(): this is ArrayType {
 		return (
 			this.isGenericType() &&
 			(this.genericTypeDefinition === Type.ArrayDefinition ||
@@ -308,8 +317,8 @@ export class Type {
 	/**
 	 * Check if this type is a Tuple.
 	 */
-	isTuple(): this is GenericType<InterfaceType> {
-		return this._kind === TypeKind.Tuple;
+	isTuple(): this is TupleType {
+		return this.isGenericType() && this.genericTypeDefinition === Type.TupleDefinition;
 	}
 
 	/**
@@ -446,6 +455,13 @@ export class Type {
 	}
 
 	/**
+	 * Check if this type is an "intrinsic".
+	 */
+	isIntrinsic(): boolean {
+		return this._kind === TypeKind.Intrinsic;
+	}
+
+	/**
 	 * Check if this type is an "undefined".
 	 */
 	isUndefined(): boolean {
@@ -464,10 +480,16 @@ export class Type {
 	 * @returns {string} Returns string in format "Kind{fullName}"
 	 */
 	toString(): string {
+		const props = this.getPropsToStringify();
+
 		return (
-			`${this.displayName} {` +
-			`\n    typelib ${this.metadataLibrary.name}\n    module  ${this.module.id}\n` +
-			this.stringifyProps(this.getPropsToStringify(), 1) +
+			// biome-ignore lint/style/useTemplate: <explanation>
+			`${this.displayName} {\n` +
+			"    ```typeinfo\n" +
+			`    typelib: ${this.metadataLibrary.name}\n    module:  ${this.module.id}\n` +
+			"    ```" +
+			(props.length ? "\n" : "") +
+			this.stringifyProps(props, 1) +
 			"\n}"
 		);
 	}
@@ -484,7 +506,7 @@ export class Type {
 		const indentation = "    ".repeat(indent);
 		return props
 			.map((prop) => {
-				const str = prop instanceof Array ? this.stringifyProps(prop, 1) : prop;
+				const str = Array.isArray(prop) ? this.stringifyProps(prop, 1) : prop;
 				return str.replace(/^/gm, indentation);
 			})
 			.join("\n");

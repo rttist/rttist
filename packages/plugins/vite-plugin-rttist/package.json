@@ -1,0 +1,56 @@
+{
+	"name": "vite-plugin-rttist",
+	"version": "5.0.0-rc.1",
+	"description": "RTTIST plugin adding support for advanced reflection features to Vite",
+	"keywords": [
+		"rttist",
+		"plugin",
+		"vite",
+		"vite-plugin",
+		"transformer",
+		"reflection",
+		"loader",
+		"typescript",
+		"runtime"
+	],
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "npm run prepublishOnly",
+		"build:dev": "tsup src/index.ts --format esm,cjs --tsconfig tsconfig.json --clean --dts --external tsup --external @types/node --external @rttist/ts-loader-wasm --sourcemap",
+		"prepublishOnly": "tsup src/index.ts --format esm,cjs --tsconfig tsconfig.json --clean --dts --minify --external tsup --external @types/node --external @rttist/ts-loader-wasm"
+	},
+	"files": ["dist/**/*"],
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.15.21",
+		"tsup": "^7.3.0"
+	},
+	"dependencies": {
+		"@rttist/ts-loader-wasm": "workspace:^"
+	},
+	"peerDependencies": {
+		"vite": "5.4.19",
+		"@rttist/typegen": "workspace:^"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rttist/rttist.git",
+		"directory": "packages/plugins/vite-plugin-rttist"
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
+}

@@ -24,6 +24,7 @@ export class TransformerTypeReference
 	public static readonly Void = new TransformerTypeReference(ModuleIds.Native, "Void", TypeKind.Void);
 	public static readonly Undefined = new TransformerTypeReference(ModuleIds.Native, "Undefined", TypeKind.Undefined);
 	public static readonly Null = new TransformerTypeReference(ModuleIds.Native, "Null", TypeKind.Null);
+	public static readonly Intrinsic = new TransformerTypeReference(ModuleIds.Native, "Intrinsic", TypeKind.Intrinsic);
 	public static readonly Never = new TransformerTypeReference(ModuleIds.Native, "Never", TypeKind.Never);
 	public static readonly String = new TransformerTypeReference(ModuleIds.Native, "String", TypeKind.String);
 	public static readonly Number = new TransformerTypeReference(ModuleIds.Native, "Number", TypeKind.Number);

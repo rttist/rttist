@@ -1,4 +1,4 @@
-﻿import {
+﻿import type {
 	ClassTypeMetadata,
 	DecoratorInfoMetadata,
 	IndexInfoMetadata,
@@ -25,8 +25,8 @@
 	EnumLiteralTypeMetadata,
 	FunctionTypeMetadata,
 } from "rttist";
-import * as ts from "typescript";
-import { TransformerTypeReference } from "../lib/metadata/transformer-type-reference";
+import type * as ts from "typescript";
+import type { TransformerTypeReference } from "../lib/metadata/transformer-type-reference";
 
 /**
  * Request given keys to exist in type.
@@ -267,6 +267,10 @@ export type FunctionProperties = Match<
 export type TypeProperties =
 	| NativeBaseTypeProperties // | NonNativeBaseTypeProperties
 	| LiteralTypeProperties
+	| NonNativeOnlyTypeProperties;
+
+export type NonNativeOnlyTypeProperties =
+	| (Pick<LiteralTypeProperties, "value"> & NonNativeBaseTypeProperties)
 	| UnionTypeProperties
 	| IntersectionTypeProperties
 	| ObjectProperties

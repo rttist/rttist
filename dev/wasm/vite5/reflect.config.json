@@ -1,0 +1,11 @@
+{
+	"$schema": "./node_modules/@rttist/typegen/config-schema.json",
+	"metadata": {
+		"include": ["src/**/*.ts", "src/**/*.tsx"],
+		"encode": false,
+		"exclude": ["src/vite-env.d.ts"],
+		"outDir": "dist"
+	},
+	"logLevel": "Dev",
+	"preset": "vite"
+}

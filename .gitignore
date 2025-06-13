@@ -2,6 +2,7 @@ node_modules/
 dist/
 .metadata/
 .idea
-#/packages/plugins/rust/
+.swc
 tsconfig.tsbuildinfo
 metadata.typelib.ts
+tests/dist-*

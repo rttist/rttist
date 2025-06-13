@@ -1,10 +1,13 @@
 import type { AnyTypeMetadata, ModuleIdentifier, ModuleMetadata } from "./declarations";
 import type { Type } from "./Type";
-import { TypeFactory } from "./factories";
+import { getTypeFactory } from "./factories/TypeFactoryProvider";
 import { ModuleImporter } from "./ModuleImporter";
+import { moduleSymbol } from "./utils/instanceOf";
 import { LazyModuleArray } from "./utils/LazyModuleArray";
 
 export class Module {
+	private static readonly __type = moduleSymbol;
+
 	/**
 	 * Module for all the native types.
 	 */
@@ -59,7 +62,7 @@ export class Module {
 		this._types = Object.freeze(
 			(initializer.types || []).map((typeMetadata) => {
 				(typeMetadata as any).module = initializer.id;
-				return TypeFactory.create(typeMetadata as AnyTypeMetadata);
+				return getTypeFactory().create(typeMetadata as AnyTypeMetadata);
 			})
 		);
 	}

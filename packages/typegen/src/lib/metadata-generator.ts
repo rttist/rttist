@@ -1,58 +1,79 @@
+import $path from "node:path";
+import { type AnyTypeMetadata, Module } from "rttist";
 import type * as ts from "typescript";
-import { Config } from "./config/config";
-import { LogColor, Logger, LogLevel } from "./logging";
-import { LogBuffer } from "./logging/log-buffer";
+import type { NonNativeOnlyTypeProperties } from "../declarations/type-properties";
+import type { CachedStorage } from "./cache/cached-storage";
+import type { Config } from "./config/config";
+import { LogColor, Logger, LogLevel, LogBuffer } from "./logging";
 import { MetadataPrinter } from "./metadata/metadata-printer";
 import { ScopeRegistry } from "./transformer/syntax-type-checker/scopes/scope-registry";
 import { ModuleIdentifierGenerator } from "./transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
 import { ScopeAnalyzer } from "./transformer/syntax-type-checker/scope-analyzer";
 import { TransformerContext } from "./transformer/contexts/transformer-context";
-import { dirname, normalizePath } from "./utils/path";
+import { isExpression } from "./transformer/utils/to-expression";
+import { toNormalizedProjectPath } from "./utils/path";
 import { ModuleMetadata } from "./metadata/module-metadata";
+import type { ModuleMetadata as RuntimeModuleMetadata } from "rttist";
 import { Context } from "./transformer/contexts/context";
 import { SourceFileContext } from "./transformer/contexts/source-file-context";
 import { mainVisitor } from "./transformer/visitors/main-visitor";
-import { resolveSourceFileCachePath } from "./utils/resolve-sourcefile-cache-path";
-import * as fs from "fs/promises";
-import * as $fs from "fs";
-import { Client } from "memory-mapped-files";
-import { lazyTypescript } from "./utils/lazy-typescript";
-
-let createClient: undefined | typeof import("memory-mapped-files").createClient;
-try {
-	// createClient = require("memory-mapped-files").createClient;
-	// import { createClient as cc } from "memory-mapped-files";
-	// createClient = cc;
-	// // createClient = (await import("memory-mapped-files")).createClient;
-} catch (e) {}
+import { resolveMetadataCachePath, resolveSourceFileCachePath } from "./utils/resolve-sourcefile-cache-path";
+import "./debugger";
+import type { TypescriptProgramProvider } from "../typescript-program-provider";
 
 export type EventName = "write";
+export type WriteEventHandler = (metadata: ModuleMetadataGeneratorResult) => void;
+export type EventHandlers = {
+	write: WriteEventHandler;
+};
 
-export type WriteEventHandler = (sourceFilePath: string, metadataPath: string) => void;
+/**
+ * Metadata of a single TS module
+ */
+export type ModuleMetadataGeneratorResult = {
+	/**
+	 * Raw serializable metadata of the module.
+	 */
+	metadata: RuntimeModuleMetadata;
 
-export class MetadataGenerator {
+	/**
+	 * Module object equal to the Module from RTTIST runtime
+	 */
+	get module(): Module;
+
+	/**
+	 * Printed TypeScript code of the metadata file
+	 */
+	metadataSourceFile: string;
+
+	/**
+	 * Path for the `metadataSourceFile`
+	 */
+	metadataSourceFilePath: string;
+
+	/**
+	 * Normalized path of the source TS file
+	 */
+	sourceFilePath: string;
+};
+
+export class MetadataGenerator implements AsyncDisposable {
 	private readonly eventHandlers = new Map<EventName, WriteEventHandler[]>([["write", []]]);
 	private readonly logger = new Logger("MetadataGenerator", undefined, LogBuffer.default);
 	private readonly metadataPrinter: MetadataPrinter;
-	// private readonly scopeRegistry: ScopeRegistry;
 	private readonly moduleIdentifierGenerator: ModuleIdentifierGenerator;
-	// private readonly scopeAnalyzer: ScopeAnalyzer;
-	private readonly mmfClient?: Client;
-	private readonly tsCompilerOptions: ts.CompilerOptions;
-	private readonly tsCompilerHost: ts.CompilerHost;
 
-	constructor(private readonly config: Config) {
+	constructor(
+		private readonly config: Config,
+		private readonly typescriptProgramProvider: TypescriptProgramProvider,
+		private readonly sourceFilesCachedStorage: CachedStorage,
+		private readonly metadataCachedStorage: CachedStorage
+	) {
 		this.metadataPrinter = new MetadataPrinter(config);
 		this.moduleIdentifierGenerator = new ModuleIdentifierGenerator(config);
-
-		this.mmfClient = createClient?.();
-		this.tsCompilerOptions = this.getCompilerOptions(this.config);
-		this.tsCompilerHost = this.createCompilerHost(this.tsCompilerOptions, this.config, this.mmfClient);
 	}
 
-	dispose() {
-		this.mmfClient?.dispose();
-	}
+	async [Symbol.asyncDispose](): Promise<void> {}
 
 	on<TEventName extends EventName>(
 		eventName: TEventName,
@@ -68,10 +89,17 @@ export class MetadataGenerator {
 		handlers.push(handler);
 	}
 
-	async generate(sourceFiles: string[]): Promise<void> {
+	/**
+	 * Generates metadata for the given TypeScript files.
+	 * @param sourceFilePaths List of project normalized paths (absolute paths with forward slashes) to the source files.
+	 */
+	async generate(sourceFilePaths: string[]): Promise<Record<string, ModuleMetadataGeneratorResult>> {
 		const scopeRegistry = new ScopeRegistry();
 		const scopeAnalyzer = new ScopeAnalyzer(this.config, scopeRegistry, this.moduleIdentifierGenerator);
-		const program = lazyTypescript.get().createProgram(sourceFiles, this.tsCompilerOptions, this.tsCompilerHost);
+
+		// TODO: Try to use TS Incremental Program
+		const program = this.typescriptProgramProvider.getProgram(sourceFilePaths, this.sourceFilesCachedStorage);
+
 		const transformerContext = new TransformerContext(
 			program,
 			this.config,
@@ -82,12 +110,17 @@ export class MetadataGenerator {
 
 		const writePromises: Promise<void>[] = [];
 		const transformationContext: ts.TransformationContext = null as any;
-		const sourceFilesSet = new Set(sourceFiles.map(normalizePath));
+		const sourceFilesSet = new Set(sourceFilePaths);
+		const results: Record<string, ModuleMetadataGeneratorResult> = {};
 
-		for (let sourceFileNode of program.getSourceFiles()) {
-			if (!sourceFilesSet.has(sourceFileNode.fileName)) {
+		for (const sourceFileNode of program.getSourceFiles()) {
+			const normalizedFilename = toNormalizedProjectPath(sourceFileNode.fileName, this.config);
+
+			// TS sometimes set `fileName` to absolute path, so we need to normalize it.
+			if (!sourceFilesSet.has(normalizedFilename)) {
 				continue;
 			}
+
 			// // Skip if it is external SourceFile or if file is not included by config.
 			// if (
 			// 	program.isSourceFileFromExternalLibrary(sourceFileNode) ||
@@ -104,8 +137,6 @@ export class MetadataGenerator {
 				);
 			}
 
-			// const sourceFileStart = performance.now();
-
 			const moduleScope = scopeAnalyzer.analyzeSourceFile(sourceFileNode, transformationContext);
 			const moduleMetadata = ModuleMetadata.createFromSourceFile(sourceFileNode, this.config, moduleScope);
 
@@ -121,11 +152,52 @@ export class MetadataGenerator {
 			// Visit SourceFile using the main visitor.
 			mainVisitor(sourceFileNode, context);
 
-			// this.perfEntries.sourceFiles.push(performance.now() - sourceFileStart);
+			const printedSourceFile = this.metadataPrinter.printMetadata(moduleMetadata);
+			const config = this.config;
+			let module: Module | undefined;
+			let metadata: RuntimeModuleMetadata | undefined;
 
-			writePromises.push(
-				this.persistModuleMetadata(sourceFileNode, this.config, this.metadataPrinter, moduleMetadata)
-			);
+			// Add to results
+			const result: ModuleMetadataGeneratorResult = {
+				sourceFilePath: normalizedFilename,
+				get metadata() {
+					if (metadata === undefined) {
+						const { id, name, children, types } = moduleMetadata.getModuleProperties(config);
+						metadata = {
+							id,
+							name,
+							path: normalizedFilename,
+							children,
+							import: () => import($path.normalize(normalizedFilename)),
+							// TODO: Validate this; this may be incorrect
+							types: types?.map((t) => {
+								const props: Record<string, any> = {};
+								for (const [key, value] of Object.entries(t)) {
+									if (value && isExpression(value)) {
+										continue;
+									}
+									props[key] = value;
+								}
+								return props as AnyTypeMetadata;
+							}) as NonNativeOnlyTypeProperties[] as AnyTypeMetadata[],
+						};
+					}
+
+					return metadata;
+				},
+				get module() {
+					if (module === undefined) {
+						module = new Module(this.metadata);
+					}
+
+					return module;
+				},
+				metadataSourceFile: printedSourceFile,
+				metadataSourceFilePath: resolveSourceFileCachePath(sourceFileNode.fileName, this.config),
+			};
+			results[sourceFileNode.fileName] = result;
+
+			writePromises.push(this.persistModuleMetadata(result));
 
 			if (this.config.devMode) {
 				this.logger.log(
@@ -136,77 +208,38 @@ export class MetadataGenerator {
 			}
 		}
 
+		// Wait for persistence of all the files
 		await Promise.all(writePromises);
+
+		return results;
 	}
 
-	private async persistModuleMetadata(
-		sourceFileNode: ts.SourceFile,
-		config: Config,
-		metadataPrinter: MetadataPrinter,
-		moduleMetadata: ModuleMetadata
-	): Promise<void> {
-		const filePath = resolveSourceFileCachePath(sourceFileNode.fileName, config);
-		const fileMetadataDirname = dirname(filePath);
+	private async persistModuleMetadata(metadata: ModuleMetadataGeneratorResult): Promise<void> {
+		const metadataPath = resolveMetadataCachePath(metadata.sourceFilePath, this.config);
 
 		try {
-			return await fs.writeFile(filePath, metadataPrinter.printMetadata(moduleMetadata), "utf8");
+			await this.metadataCachedStorage.write(metadata.metadataSourceFilePath, metadata.metadataSourceFile);
+			await this.metadataCachedStorage.write(metadataPath, JSON.stringify(metadata.metadata));
 		} catch (e) {
-			$fs.mkdirSync(fileMetadataDirname, { recursive: true });
-			return fs.writeFile(filePath, metadataPrinter.printMetadata(moduleMetadata), "utf8");
+			console.error(e);
 		} finally {
-			this.invokeEventHandlers("write", sourceFileNode.fileName, filePath);
+			// TODO: Remove write event and use CachedStorage events instead.
+			this.invokeEventHandlers("write", metadata);
 			// writeFileCallback(sourceFileNode.fileName);
 		}
 	}
 
-	private createCompilerHost(options: ts.CompilerOptions, config: Config, mmfClient?: Client) {
-		const host = lazyTypescript.get().createCompilerHost(options);
-
-		host.writeFile = (fileName: string, contents: string) => {
-			// writeFileCallback(fileName);
-		};
-
-		if (mmfClient) {
-			host.readFile = (fileName) => {
-				const file = mmfClient.getFile(fileName.replace(config.tsRootDir, ""));
-
-				if (file) {
-					return file;
-				}
-
-				return $fs.readFileSync(fileName, "utf-8");
-			};
-		}
-
-		return host;
-	}
-
-	private getCompilerOptions(config: Config) {
-		const options: ts.CompilerOptions = {
-			...config.compilerOptions,
-			// isolatedModules: true,
-			// noLib: true,
-			// skipDefaultLibCheck: true,
-			// noResolve: true,
-			// skipDefaultLibCheck: config.typecheck,
-			noResolve: !config.typecheck,
-			// noResolve: true,
-			declaration: false,
-			declarationMap: false,
-			sourceMap: false,
-			allowJs: true,
-		};
-		return options;
-	}
-
-	private invokeEventHandlers(eventName: EventName, ...args: any[]) {
+	private invokeEventHandlers<TEventName extends EventName>(
+		eventName: TEventName,
+		...args: Parameters<EventHandlers[TEventName]>
+	) {
 		const handlers = this.eventHandlers.get(eventName);
 
 		if (handlers === undefined) {
 			return;
 		}
 
-		for (let handler of handlers) {
+		for (const handler of handlers) {
 			handler.apply(undefined, args as any);
 		}
 	}

@@ -1,0 +1,1 @@
+`typing` is dedicated to generating .d.ts types for RTTIST runtime for better developer experience.

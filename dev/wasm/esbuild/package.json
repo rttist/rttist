@@ -5,7 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "pnpx @rttist/typegen@proto generate -f"
+		"prepare": "pnpx @rttist/typegen@proto generate -f",
+		"build": "node esbuild.build.js",
+		"start": "node dist/out.js"
 	},
 	"keywords": [],
 	"author": "",

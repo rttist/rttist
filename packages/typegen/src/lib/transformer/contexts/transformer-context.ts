@@ -64,7 +64,7 @@ export class TransformerContext {
 		this.metadataManager = new MetadataManager(config, this.metadata, this.dependencyManager);
 		this.scopeManager = new ScopeManager(this.scopeAnalyzer, this.scopeRegistry);
 		this.syntaxTypeChecker = new SyntaxTypeChecker(
-			new TypeIdentifierGenerator(this.scopeManager),
+			new TypeIdentifierGenerator(this.scopeManager, this.config),
 			new Logger("SyntaxTypeChecker", undefined, LogBuffer.default)
 		);
 		this.tsTypeTypeChecker = new TypeScriptTypeTypeChecker(

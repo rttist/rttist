@@ -1,6 +1,6 @@
 import type { Type } from "../Type";
 import { KnownGenericType } from "./KnownGenericType";
-import { TypeMetadata } from "../declarations";
+import type { TypeMetadata } from "../declarations";
 import { TypeIds } from "@rttist/core";
 
 export class PromiseType extends KnownGenericType<readonly [Type]> {
@@ -47,6 +47,6 @@ export class WeakMapType extends KnownGenericType<readonly [Type, Type]> {
 
 export class TupleType extends KnownGenericType<readonly Type[]> {
 	constructor(initializer: TypeMetadata) {
-		super(TypeIds.ArrayDefinition, initializer);
+		super(TypeIds.TupleDefinition, initializer);
 	}
 }

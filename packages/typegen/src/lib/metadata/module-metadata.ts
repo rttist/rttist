@@ -1,11 +1,11 @@
+import { ModuleIds } from "@rttist/core";
 import type { ModuleIdentifier, TypeIdentifier } from "rttist";
+import type * as ts from "typescript";
 import { TargetPlatform } from "../../declarations/target-platform";
 import type { TypeInfo } from "../../declarations/type-info";
 import type { ModuleMetadataProperties, ModuleProperties } from "../../declarations/type-properties";
-import * as ts from "typescript";
-import { ModuleIds } from "@rttist/core";
-import { Config } from "../config/config";
-import { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
+import type { Config } from "../config/config";
+import type { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
 
 /**
  * Class containing metadata of one Module/SourceFile.
@@ -29,7 +29,14 @@ export class ModuleMetadata {
 		name: "",
 	});
 
+	/**
+	 * @internal
+	 */
 	private readonly moduleProperties: ModuleMetadataProperties;
+
+	/**
+	 * @internal
+	 */
 	private readonly types = new Map<TypeIdentifier, TypeInfo>();
 
 	get id(): ModuleIdentifier {
@@ -38,6 +45,7 @@ export class ModuleMetadata {
 
 	/**
 	 * @param properties
+	 * @internal
 	 */
 	constructor(properties: ModuleMetadataProperties) {
 		this.moduleProperties = properties;
@@ -45,6 +53,7 @@ export class ModuleMetadata {
 
 	/**
 	 * Create ModuleMetadata object from SourceFile.
+	 * @internal
 	 * @param sourceFile
 	 * @param config
 	 * @param scope
@@ -75,6 +84,7 @@ export class ModuleMetadata {
 
 	/**
 	 * Try to add type to the module metadata. Returns true if type was added, false if type was included already.
+	 * @internal
 	 * @param typeInfo
 	 */
 	addType(typeInfo: TypeInfo): void {

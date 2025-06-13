@@ -1,16 +1,7 @@
 export const PROTOTYPE_TYPE_PROPERTY = "[[type]]";
+export const PROTOTYPE_TYPE_INSTANCE_PROPERTY = "[[$type]]";
 export const CALLSITE_TYPE_ARGS_PROPERTY = "[[csTArgs]]";
-export const RTTIST_NAMESPACE = "Rttist";
-
-export const FncNames = {
-	createCallsite: "cs$",
-	getClassTypeParameter: "getTP$",
-	invalidTypeGenerator: "utg$",
-	resolveFunctionCallsite: "resFnCs$",
-	resolveMethodCallsite: "resMCs$",
-	getGenericClass: "getGenericClass",
-	constructGeneric: "constructGeneric",
-} as const;
+export const CALLSITE_ARGS_TYPE_PROPERTY = "[[csArgsT]]";
 
 export const ModuleIds = {
 	Native: "::native",
@@ -21,7 +12,7 @@ export const ModuleIds = {
 } as const;
 
 export const TypeIds = {
-	Invalid: ModuleIds.Invalid + "::Invalid",
+	Invalid: `${ModuleIds.Invalid}::Invalid`,
 
 	NonPrimitiveObject: "#object",
 	Function: "#Function",
@@ -31,6 +22,7 @@ export const TypeIds = {
 	Never: "#never",
 	Null: "#null",
 	Undefined: "#undefined",
+	Intrinsic: "#intrinsic",
 	String: "#String",
 	Number: "#Number",
 	BigInt: "#BigInt",

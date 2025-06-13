@@ -7,5 +7,6 @@
 		"encode": false,
 		"exclude": []
 	},
-	"logLevel": "Info"
+	"logLevel": "Info",
+	"devMode": true
 }

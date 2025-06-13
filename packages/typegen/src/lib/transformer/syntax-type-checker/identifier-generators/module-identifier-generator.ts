@@ -1,7 +1,7 @@
 ﻿import type * as ts from "typescript";
-import * as path from "path";
-import { ModuleIdentifier } from "rttist";
-import { Config } from "../../../config/config";
+import * as path from "node:path";
+import type { ModuleIdentifier } from "rttist";
+import type { Config } from "../../../config/config";
 
 export class ModuleIdentifierGenerator {
 	constructor(private readonly config: Config) {}
@@ -14,16 +14,16 @@ export class ModuleIdentifierGenerator {
 		const nodeModulesIndex = modulePath.lastIndexOf("node_modules");
 
 		if (nodeModulesIndex !== -1) {
-			return "@" + modulePath.slice(nodeModulesIndex + 13).replace(/\\/g, "/");
+			return `@${modulePath.slice(nodeModulesIndex + 13).replace(/\\/g, "/")}`;
 		}
 
-		let relativePath = removeExtension(modulePath.replace(/\\/g, "/")).replace(
+		const relativePath = removeExtension(modulePath.replace(/\\/g, "/")).replace(
 			this.config.tsRootDir.replace(/\\/g, "/"),
 			""
 		);
 
 		if (relativePath[0] === "/") {
-			return "@" + this.config.packageInfo.name + relativePath;
+			return `@${this.config.packageInfo.name}${relativePath}`;
 		}
 
 		return `@${this.config.packageInfo.name}/${relativePath}`;

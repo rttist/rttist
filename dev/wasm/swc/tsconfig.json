@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"module": "CommonJS",
+//		"moduleResolution": "NodeNext",
+		"target": "ES2020",
+		"strict": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"baseUrl": ".",
+//		"lib": []
+	},
+	"include": [
+		"src/**/*.ts"
+	],
+}

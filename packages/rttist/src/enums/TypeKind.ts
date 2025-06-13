@@ -9,6 +9,7 @@ export enum TypeKind {
 	Void,
 	Undefined,
 	Null,
+	Intrinsic,
 	Boolean,
 	False,
 	True,
@@ -40,6 +41,7 @@ export enum TypeKind {
 
 	ArrayDefinition,
 	ReadonlyArrayDefinition,
+	TupleDefinition,
 	MapDefinition,
 	WeakMapDefinition,
 	SetDefinition,
@@ -78,7 +80,6 @@ export enum TypeKind {
 	UniqueSymbol,
 	ESSymbol,
 	Promise,
-	Tuple,
 	Generator,
 	AsyncGenerator,
 	Iterator,
@@ -101,6 +102,7 @@ export type NativeTypeKind =
 	| TypeKind.Never
 	| TypeKind.Null
 	| TypeKind.Undefined
+	| TypeKind.Intrinsic
 	| TypeKind.NonPrimitiveObject
 	| TypeKind.String
 	| TypeKind.Number
@@ -130,6 +132,7 @@ export type NativeTypeKind =
 	| TypeKind.Atomics
 	| TypeKind.DataView
 	| TypeKind.ArrayDefinition
+	| TypeKind.TupleDefinition
 	| TypeKind.ReadonlyArrayDefinition
 	| TypeKind.MapDefinition
 	| TypeKind.WeakMapDefinition

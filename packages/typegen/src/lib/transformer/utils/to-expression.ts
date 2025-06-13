@@ -4,7 +4,7 @@ import type { Config } from "../../config/config";
 import { TransformerTypeReference } from "../../metadata/transformer-type-reference";
 
 export function toExpression(value: any, config: Config): ts.Expression {
-	if (value != undefined) {
+	if (value !== undefined && value !== null) {
 		switch (typeof value) {
 			case "string":
 				return ts.factory.createStringLiteral(value);
@@ -15,7 +15,7 @@ export function toExpression(value: any, config: Config): ts.Expression {
 		}
 
 		// noinspection SuspiciousTypeOfGuard
-		if (value instanceof Array) {
+		if (Array.isArray(value)) {
 			return ts.factory.createArrayLiteralExpression(value.map((val) => toExpression(val, config)));
 		}
 
@@ -39,9 +39,9 @@ export function toExpression(value: any, config: Config): ts.Expression {
 		}
 
 		if (value.constructor === Object) {
-			let propertyAssignments: Array<ts.PropertyAssignment> = [];
+			const propertyAssignments: Array<ts.PropertyAssignment> = [];
 
-			for (let prop in value) {
+			for (const prop in value) {
 				// Ignoring properties assigned to undefined
 				if (value.hasOwnProperty(prop) && value[prop] !== undefined) {
 					const expr = toExpression(value[prop], config);
@@ -68,7 +68,7 @@ export function toExpression(value: any, config: Config): ts.Expression {
 	return ts.factory.createNull();
 }
 
-function isExpression(value: any) {
+export function isExpression(value: any) {
 	return (
 		value.hasOwnProperty("kind") &&
 		(value.constructor.name === "NodeObject" ||

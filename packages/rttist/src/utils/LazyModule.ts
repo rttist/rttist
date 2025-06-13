@@ -12,7 +12,8 @@ export class LazyModule {
 	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	get module(): Module {
-		return this._module ?? (this._module = this.metadataLibrary.resolveModule(this._reference));
+		this._module ??= this.metadataLibrary.resolveModule(this._reference);
+		return this._module;
 	}
 
 	constructor(moduleRef: ModuleReference) {

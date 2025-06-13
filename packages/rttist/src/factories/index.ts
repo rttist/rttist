@@ -1,2 +1,2 @@
-export * from "./TypeFactory";
 export * from "./GenericTypeFactory";
+export * from "./TypeFactory";

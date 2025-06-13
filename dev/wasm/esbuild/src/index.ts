@@ -1,5 +1,35 @@
-import { getType } from "./metadata.typelib";
+import { getType, Metadata } from "./metadata.typelib";
 import { ClassType, PropertyInfo, SignatureInfo, Type, TypeParameterType } from "rttist";
+import "./nesting/nested-file";
+
+export type Union = { fooBar: string } | { barFoo: number };
+const unionType = getType<Union>();
+console.log(unionType.isTypeAlias() && unionType.target.toString());
+
+export type Intersection = { fooBar: string } & { barFoo: number };
+const intersectionType = getType<Intersection>();
+console.log(intersectionType.isTypeAlias() && intersectionType.target.toString());
+
+type NonObjectTypeLiteralAlias = ["foo"];
+const nonObjectTypeLiteralAliasType = getType<NonObjectTypeLiteralAlias>();
+console.log(nonObjectTypeLiteralAliasType.isTypeAlias() && nonObjectTypeLiteralAliasType.target.toString());
+console.log("isTuple", nonObjectTypeLiteralAliasType.isTypeAlias() && nonObjectTypeLiteralAliasType.target.isTuple());
+console.log(
+	nonObjectTypeLiteralAliasType.isTypeAlias() &&
+		nonObjectTypeLiteralAliasType.target.isTuple() &&
+		nonObjectTypeLiteralAliasType.target.getTypeArguments().map((arg) => arg.toString())
+);
+
+type StringArray = string[];
+const stringArrayType = getType<StringArray>();
+console.log(stringArrayType.isTypeAlias() && stringArrayType.target.toString());
+
+type TypeLiteralAlias = {
+	foo: string;
+	bar: number;
+};
+const typeLiteralAliasType = getType<TypeLiteralAlias>();
+console.log(typeLiteralAliasType.isTypeAlias() && typeLiteralAliasType.target.toString());
 
 export class Foo {
 	bar: string;
@@ -10,6 +40,8 @@ export class Foo {
 		this.baz = baz;
 	}
 }
+
+console.log(getType(Foo).toString());
 
 const foo = new Foo("", 5);
 
@@ -35,7 +67,7 @@ function someFunc<T>(param1: T, param2: string): Array<number> {
 
 const someFuncType = getType(someFunc);
 
-const signatures: SignatureInfo[] = someFuncType.isFunction() ? someFuncType.getSignatures() : [];
+const signatures: readonly SignatureInfo[] = someFuncType.isFunction() ? someFuncType.getSignatures() : [];
 console.log("Signatures of,", someFuncType.name);
 for (let signature of signatures) {
 	const tps: ReadonlyArray<TypeParameterType> = signature.getTypeParameters();

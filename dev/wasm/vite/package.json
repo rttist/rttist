@@ -1,0 +1,25 @@
+{
+	"name": "dev-wasm-vite",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "vite",
+		"dev": "vite",
+		"build": "typegen generate && vite build",
+		"preview": "vite preview"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"rttist": "workspace:*",
+		"solid-js": "^1.8.12"
+	},
+	"devDependencies": {
+		"@rttist/typegen": "workspace:*",
+		"vite-plugin-rttist": "workspace:*",
+		"vite": "^4.5.3",
+		"vite-plugin-solid": "^2.10.2"
+	}
+}

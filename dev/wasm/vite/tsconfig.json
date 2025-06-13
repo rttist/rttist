@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"target": "ESNext",
+		"module": "ESNext",
+		"rootDir": "src",
+		"moduleResolution": "bundler",
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"types": [
+			"vite/client"
+		],
+		"noEmit": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"isolatedDeclarations": true,
+		"resolveJsonModule": true
+	},
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		}
+	]
+}
