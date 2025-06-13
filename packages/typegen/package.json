@@ -1,6 +1,6 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.2.0-rc.0",
+	"version": "0.2.0-rc.1",
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
 	"main": "./dist/main.js",
@@ -16,7 +16,7 @@
 		"types": "tsc --emitDeclarationOnly",
 		"prepare": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --target=es2022 --minify --outdir=dist --platform=node --packages=external && npm run types",
 		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare",
-		"start": "esbuild src/bin.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
+		"start": "esbuild src/bin.ts src/main.ts src/worker.ts --bundle --outdir=dist --platform=node --packages=external --watch --sourcemap=linked"
 	},
 	"files": ["LICENSE", "README.md", "config-schema.json", "dist/**/*.js", "bin/typegen", "bin/rttist"],
 	"keywords": [
@@ -46,8 +46,8 @@
 		"esbuild": "^0.18.11",
 		"fast-glob": "^3.3.0",
 		"inquirer": "8.2.6",
-		"memory-mapped-files": "^0.1.1",
 		"micromatch": "^4.0.8",
+		"minimatch": "^10.0.1",
 		"nanospinner": "^1.1.0",
 		"promise-cs": "^1.0.2",
 		"rttist": "workspace:^",

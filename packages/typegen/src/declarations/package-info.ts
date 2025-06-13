@@ -1,4 +1,4 @@
-import { PackageJson } from "./package-json";
+import type { PackageJson } from "./package-json";
 
 /**
  * Package information.

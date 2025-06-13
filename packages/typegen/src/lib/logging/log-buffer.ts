@@ -10,7 +10,7 @@
 
 	log(...args: any[]) {
 		if (this.autoFlush) {
-			console.log(...args);
+			globalThis.console.log(...args);
 			return;
 		}
 
@@ -19,7 +19,7 @@
 
 	flush() {
 		for (const args of this.buffer.splice(0, this.buffer.length)) {
-			console.log(...args);
+			globalThis.console.log(...args);
 		}
 	}
 }

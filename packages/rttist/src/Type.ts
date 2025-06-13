@@ -33,6 +33,7 @@ import { LiteralTypeKinds, PrimitiveTypeKinds, TypeKind } from "./enums";
  * Object representing TypeScript type in memory
  */
 export class Type {
+	// @ts-ignore
 	private static readonly __type = typeSymbol;
 
 	public declare static readonly Invalid: Type;
@@ -104,7 +105,7 @@ export class Type {
 	/** @internal */
 	protected readonly _typeArgumentsRef: LazyTypeArray;
 	/** @internal */
-	protected readonly _definitionRef?: LazyType<GenericType<Type>>;
+	protected readonly _definitionRef?: LazyType<GenericType<Type>> | undefined;
 	/** @internal */
 	protected readonly _isGenericTypeDefinition: boolean;
 	/** @internal */
@@ -215,7 +216,8 @@ export class Type {
 	is<T>(target?: Type): boolean {
 		if (target === undefined) {
 			const [targetTypeReference] = resolveFromFunctionCallsite(this.is);
-			target = this.metadataLibrary.resolveType(targetTypeReference);
+			// biome-ignore lint/style/noNonNullAssertion: It is guaranteed to be defined
+			target = this.metadataLibrary.resolveType(targetTypeReference!);
 		}
 
 		return this._id === target._id;

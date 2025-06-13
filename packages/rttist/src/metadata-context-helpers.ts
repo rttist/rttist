@@ -8,7 +8,10 @@ export type MetadataContextHelpers = {
 		typeArgs: { [typeParameterIndex: number]: TypeReference },
 		...args: any[]
 	) => unknown;
-	resFnCs$: (fn: Function) => Array<TypeReference> | Generator<TypeReference, void, unknown>;
+	resFnCs$: (
+		fn: Function,
+		argumentTypesMappers?: Array<(typeReference: TypeReference) => TypeReference>
+	) => Array<TypeReference> | Generator<TypeReference, void, unknown>;
 	getTP$: (instance: any, typeParameterName: string) => TypeIdentifier;
 	getGC$: MetadataLibrary["getGenericClass"];
 	cg$: MetadataLibrary["constructGeneric"];

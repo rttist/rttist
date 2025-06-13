@@ -1,12 +1,12 @@
 // Keep PerformanceTracker first because of start time.
+import { ConfigProvider } from "./lib/config/ConfigProvider";
 import { PerformanceTracker } from "./utils/PerformanceTracker";
 import { TypescriptCompilerHostFactory } from "./lib/typescript-compilerhost-factory";
 import { projectFilesProvider } from "./project-files-provider";
 import { TypescriptProgramProvider } from "./typescript-program-provider";
-import { type Config, getParsedConfig } from "./lib/config/config";
+import type { Config } from "./lib/config/config";
 import { CacheStats } from "./lib/cache/cache-stats";
-import { Logger, LogLevel } from "./lib/logging";
-import { LogBuffer } from "./lib/logging/log-buffer";
+import { Logger, LogLevel, LogBuffer } from "./lib/logging";
 import { TypelibGenerator } from "./lib/typelib-generator";
 import * as cliProgress from "cli-progress";
 import { ModuleIdentifierGenerator } from "./lib/transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
@@ -22,7 +22,7 @@ export class Program {
 	constructor(private readonly args: CommandLineArguments) {}
 
 	private async getConfig(): Promise<Config> {
-		return await getParsedConfig(this.args);
+		return await ConfigProvider.getConfig(this.args);
 	}
 
 	public async run(): Promise<void> {

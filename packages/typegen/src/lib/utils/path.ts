@@ -1,4 +1,4 @@
-import * as $path from "path";
+import * as $path from "node:path";
 import type { Config } from "../config/config";
 import { removeExtension } from "../transformer/utils/remove-extension";
 
@@ -20,6 +20,29 @@ export function normalizePath(pathToNormalize: string) {
 
 export function relativePath(from: string, to: string) {
 	return $path.relative(from, to);
+}
+
+export function isAbsolute(path: string) {
+	return $path.isAbsolute(path);
+}
+
+export function toNormalizedProjectPath(file: string, config: Config): string {
+	if (!isAbsolute(file)) {
+		file = joinPaths(config.normalizedProjectRoot, file);
+	}
+
+	return normalizePath(file);
+}
+
+export function toNormalizedRelativeProjectPath(file: string, config: Config): string {
+	file = normalizePath(file);
+
+	if (file.length > config.normalizedProjectRoot.length) {
+		// remove project root path and remove leading slashes
+		return file.slice(config.normalizedProjectRoot.length).replace(/^[\\/]+/, "");
+	}
+
+	return file;
 }
 
 /**

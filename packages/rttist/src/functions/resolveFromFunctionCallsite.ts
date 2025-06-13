@@ -1,5 +1,5 @@
 import type { AnyTypeMetadata, TypeReference } from "../declarations";
-import { CALLSITE_ARGS_TYPE_PROPERTY, CALLSITE_TYPE_ARGS_PROPERTY } from "@rttist/core";
+import { CALLSITE_ARGS_TYPE_PROPERTY, CALLSITE_TYPE_ARGS_PROPERTY, TypeIds } from "@rttist/core";
 import { getTypeFactory } from "../factories/TypeFactoryProvider";
 import type { MetadataLibrary } from "../MetadataLibrary";
 import { invalidTypeGenerator } from "./invalidTypeGenerator";
@@ -45,7 +45,14 @@ export function resolveFromFunctionCallsite(
 				}
 
 				const argType = callsiteArgsType[i];
-				yield argumentTypesMappers[i](argType);
+
+				if (argType === undefined) {
+					yield TypeIds.Invalid;
+					continue;
+				}
+
+				const mapper = argumentTypesMappers[i];
+				yield mapper?.(argType) ?? TypeIds.Invalid;
 			}
 
 			yield* invalidTypeGenerator();

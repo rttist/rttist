@@ -1,9 +1,9 @@
-import { CLI } from "../cli";
-import path from "path";
-import * as fs from "fs";
-import { prompt, ConfirmQuestion } from "inquirer";
+import type { CLI } from "../cli";
+import path from "node:path";
+import * as fs from "node:fs";
+import { prompt, type ConfirmQuestion } from "inquirer";
 import { bgGray, cyan, green } from "chalk";
-import { CommandLineArguments } from "../declarations/command-line-arguments";
+import type { CommandLineArguments } from "../declarations/command-line-arguments";
 
 export async function initCommand(cli: CLI) {
 	const args = cli.getCommandLineArguments();
@@ -12,7 +12,7 @@ export async function initCommand(cli: CLI) {
 		await handleConfigFile(args);
 		await handlePackageJson(args);
 
-		console.log(green(`\u2713 Done`));
+		console.log(green("\u2713 Done"));
 		console.log("Continue by running: ", cyan(`${getUsedCmdName()} generate`));
 	} catch (error: any) {
 		console.error(error instanceof Error ? error.message : error);
@@ -63,7 +63,7 @@ async function handleConfigFile(args: CommandLineArguments) {
 		{ encoding: "utf-8" }
 	);
 
-	console.log(green(`\u2713 Config file created.`));
+	console.log(green("\u2713 Config file created."));
 }
 
 async function handlePackageJson(args: CommandLineArguments) {
@@ -71,7 +71,7 @@ async function handlePackageJson(args: CommandLineArguments) {
 		{
 			type: "confirm",
 			name: "patchPackageJson",
-			message: `Is this project intended to be a library? (It will add a reflection section to package.json)`,
+			message: "Is this project intended to be a library? (It will add a reflection section to package.json)",
 		} as ConfirmQuestion,
 	])) as { patchPackageJson: boolean };
 
@@ -99,7 +99,7 @@ async function handlePackageJson(args: CommandLineArguments) {
 	}
 
 	fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, indent), { encoding: "utf-8" });
-	console.log(green(`\u2713 Package json file patched.`));
+	console.log(green("\u2713 Package json file patched."));
 }
 
 function detectJsonIndent(packageJsonContent: string) {

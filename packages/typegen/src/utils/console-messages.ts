@@ -7,9 +7,9 @@ export function printInitialMessage(logger: Logger, config: Config) {
 		LogLevel.Info,
 		undefined,
 		"Configuration",
-		`\n\t${whiteBright("project root:".padEnd(18, " ") /*, LogColor.bright*/)} ${blue(config.projectRoot)}`,
-		// "\n\ttypescript root directory: " + config.tsRootDir, // tsRootDir required typescript; but we don't want to import it early
-		`\n\t${whiteBright("cache directory:".padEnd(18, " "))} ${blue(config.cacheDir)}`
+		`\n\t${whiteBright("project root:".padEnd(20, " ") /*, LogColor.bright*/)} ${blue(config.projectRoot)}`,
+		// `\n\t${whiteBright("TypeScript rootDir:".padEnd(20, " "))} ${config.tsRootDir}`, // tsRootDir requires typescript; but we don't want to import it early
+		`\n\t${whiteBright("cache directory:".padEnd(20, " "))} ${blue(config.cacheDir)}`
 	);
 	logger.buffer.log("");
 }

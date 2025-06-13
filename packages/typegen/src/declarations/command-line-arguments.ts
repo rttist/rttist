@@ -15,6 +15,7 @@ export type CommandLineArguments = {
 	/**
 	 * Use type checking to have more accurate metadata.
 	 * @default true
+	 * @deprecated
 	 */
 	typecheck: boolean;
 };

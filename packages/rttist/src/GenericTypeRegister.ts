@@ -36,13 +36,14 @@ export class GenericTypeRegister {
 		if (!genericClass) {
 			const name = `${classCtor.name}{${typeParameters.map((p) => p.name).join(",")}}`;
 
+			// biome-ignore lint/style/noNonNullAssertion: lie
 			this.createdTypes[id] = genericClass = {
 				[name]: class extends (classCtor as any) {
 					// constructor(...args: any[]) {
 					// 	super(...args);
 					// }
 				},
-			}[name];
+			}[name]!;
 
 			const type: Type = getGenericTypeFactory().create(id, genericTypeDefinition, typeParameters);
 

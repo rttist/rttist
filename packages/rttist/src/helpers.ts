@@ -34,7 +34,7 @@ export function getTypeOfRuntimeValue(value: any, metadataLibrary: MetadataLibra
 	}
 
 	if (value.constructor === Object) return Type.NonPrimitiveObject;
-	if (value.constructor === Array) return getNativeTypes().AnyArray;
+	if (Array.isArray(value)) return getNativeTypes().AnyArray;
 
 	const typeInstance =
 		value.prototype?.[PROTOTYPE_TYPE_INSTANCE_PROPERTY] ||

@@ -1,7 +1,19 @@
 import { blue, dim } from "chalk";
-import { Config } from "../lib/config/config";
-import { Logger, LogLevel } from "../lib/logging";
+import type { Config } from "../lib/config/config";
+import { type Logger, LogLevel } from "../lib/logging";
 import { startTime } from "../lib/utils/performance-import-time-start";
+
+const formatter = new Intl.NumberFormat();
+
+export function formatPerformanceResult(start: number, end: number): string {
+	const duration = end - start;
+
+	if (duration < 0) {
+		return `N/A ${dim("sec.")}`;
+	}
+
+	return `${blue(formatter.format(Math.round(duration * 100) / 100000))} ${dim("sec.")}`;
+}
 
 export class PerformanceTracker {
 	private readonly performanceEntries: {
@@ -36,48 +48,29 @@ export class PerformanceTracker {
 		logger.log(
 			config.devMode ? LogLevel.Dev : LogLevel.Debug,
 			undefined,
-			`\n\t${dim("Importing modules: ")} ${blue(
-				roundPerfTime(this.performanceEntries.start - this.performanceEntries.parseStart).toString()
-			)} ${dim("sec.")}`,
+			`\n\t${dim("Importing modules: ")} ${formatPerformanceResult(this.performanceEntries.parseStart, this.performanceEntries.start)}`,
 
-			`\n\t${dim("Initialization: ")} ${blue(
-				roundPerfTime(
-					(this.performanceEntries.initialization ?? performance.now()) - this.performanceEntries.start
-				).toString()
-			)} ${dim("sec.")}`,
+			`\n\t${dim("Initialization: ")} ${formatPerformanceResult(this.performanceEntries.start, this.performanceEntries.initialization ?? performance.now())}`,
 
 			...(this.performanceEntries.metadataGenerationFinished === undefined ||
 			this.performanceEntries.initialization === undefined
 				? []
 				: [
-						`\n\t${dim("Generating metadata: ")} ${blue(
-							roundPerfTime(
-								this.performanceEntries.metadataGenerationFinished -
-									this.performanceEntries.initialization
-							).toString()
-						)} ${dim("sec.")}`,
-				  ]),
+						`\n\t${dim("Generating metadata: ")} ${formatPerformanceResult(this.performanceEntries.initialization, this.performanceEntries.metadataGenerationFinished)}`,
+					]),
 
 			...(this.performanceEntries.completed === undefined ||
 			this.performanceEntries.metadataGenerationFinished === undefined
 				? []
 				: [
-						`\n\t${dim("Bundling typelib: ")} ${blue(
-							roundPerfTime(
-								this.performanceEntries.completed - this.performanceEntries.metadataGenerationFinished
-							).toString()
-						)} ${dim("sec.")}`,
-				  ]),
+						`\n\t${dim("Bundling typelib: ")} ${formatPerformanceResult(this.performanceEntries.metadataGenerationFinished, this.performanceEntries.completed)}`,
+					]),
 
 			...(this.performanceEntries.completed === undefined || this.performanceEntries.initialization === undefined
 				? []
 				: [
-						`\n\tTotal time: ${blue(
-							roundPerfTime(
-								this.performanceEntries.completed - this.performanceEntries.parseStart
-							).toString()
-						)} sec.`,
-				  ]),
+						`\n\tTotal time: ${formatPerformanceResult(this.performanceEntries.parseStart, this.performanceEntries.completed)}`,
+					]),
 			"\n"
 
 			// "\n\tProcessed",
@@ -86,13 +79,5 @@ export class PerformanceTracker {
 			// this.metadata.getNumberOfModules(),
 			// "module(s)."
 		);
-
-		function roundPerfTime(time: number): number | string {
-			if (time < 0) {
-				return "N/A";
-			}
-
-			return Math.round(time * 100) / 100000;
-		}
 	}
 }

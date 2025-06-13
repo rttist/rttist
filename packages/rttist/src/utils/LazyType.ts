@@ -21,7 +21,8 @@ export class LazyType<TType extends Type = Type> {
 	private readonly metadataLibrary: MetadataLibrary = MetadataScope.current;
 
 	get type(): TType {
-		return this._type ?? (this._type = this.metadataLibrary.resolveType(this._reference) as TType);
+		this._type ??= this.metadataLibrary.resolveType(this._reference) as TType;
+		return this._type;
 	}
 
 	constructor(typeReference: TypeReference) {

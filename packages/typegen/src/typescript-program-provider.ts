@@ -28,12 +28,17 @@ export class TypescriptProgramProvider {
 			// skipDefaultLibCheck: true,
 			// noResolve: true,
 			// skipDefaultLibCheck: config.typecheck,
-			noResolve: !config.typecheck,
+			// noResolve: !config.typecheck,
 			// noResolve: true,
 			declaration: false,
 			declarationMap: false,
 			sourceMap: false,
+			target: lazyTypescript.get().ScriptTarget.ESNext,
+
 			allowJs: true,
+			// TODO: This is experiment; we have to test what that actually mean; will it prevent type inference of types from node_modules?
+			skipLibCheck: true,
+			noLib: true,
 		};
 
 		return options;

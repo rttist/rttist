@@ -1,23 +1,10 @@
 import { Program } from "../program";
-import { CLI } from "../cli";
+import type { CLI } from "../cli";
 
 export function generateCommand(cli: CLI) {
 	const program = new Program(cli.getCommandLineArguments());
 
-	program
-		.run()
-		.catch(async (error: any) => {
-			console.error("Program failed.", error);
-
-			// TODO: Use it in finally block
-			try {
-				(await import("memory-mapped-files")).stopCacheServer();
-			} catch (e) {}
-		})
-		.finally(() => {
-			// TODO: Keep it in finally; but it logs .NET exception
-			// try {
-			// 	require("memory-mapped-files").stopCacheServer();
-			// } catch (e) {}
-		});
+	program.run().catch(async (error: any) => {
+		console.error("Program failed.", error);
+	});
 }

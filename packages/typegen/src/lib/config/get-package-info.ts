@@ -1,6 +1,6 @@
-﻿import * as fs from "fs";
-import { PackageInfo } from "../../declarations/package-info";
-import { PackageJson } from "../../declarations/package-json";
+﻿import * as fs from "node:fs";
+import type { PackageInfo } from "../../declarations/package-info";
+import type { PackageJson } from "../../declarations/package-json";
 import { resolvePath } from "../utils/path";
 
 const UNKNOWN_PACKAGE_NAME = "@@this";

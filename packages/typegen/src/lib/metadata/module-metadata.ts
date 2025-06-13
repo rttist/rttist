@@ -1,11 +1,11 @@
+import { ModuleIds } from "@rttist/core";
 import type { ModuleIdentifier, TypeIdentifier } from "rttist";
+import type * as ts from "typescript";
 import { TargetPlatform } from "../../declarations/target-platform";
 import type { TypeInfo } from "../../declarations/type-info";
 import type { ModuleMetadataProperties, ModuleProperties } from "../../declarations/type-properties";
-import type * as ts from "typescript";
-import { ModuleIds } from "@rttist/core";
-import { Config } from "../config/config";
-import { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
+import type { Config } from "../config/config";
+import type { ModuleScope } from "../transformer/syntax-type-checker/scopes/module-scope";
 
 /**
  * Class containing metadata of one Module/SourceFile.

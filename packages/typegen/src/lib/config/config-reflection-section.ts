@@ -1,5 +1,5 @@
-import { TargetPlatform } from "../../declarations/target-platform";
-import { LogLevel } from "../logging";
+import type { TargetPlatform } from "../../declarations/target-platform";
+import type { LogLevel } from "../logging";
 
 /**
  * @internal
@@ -67,6 +67,12 @@ export type ConfigReflectionSection = {
 		 * Target JS lang version for the generated metadata.
 		 */
 		target: "es2015" | "es2020" | "esnext";
+
+		/**
+		 * Name of packages which should be excluded from importing into metadata.
+		 * @default []
+		 */
+		excludePackages: string[];
 	};
 
 	/**

@@ -1,6 +1,7 @@
 export * from "./declarations/command-line-arguments";
 export * from "./declarations/type-properties";
 export * from "./lib/config/config";
+export * from "./lib/config/ConfigProvider";
 export * from "./metadata-generator-spawner";
 export * from "./lib/metadata-generator";
 export * from "./lib/metadata/module-metadata";

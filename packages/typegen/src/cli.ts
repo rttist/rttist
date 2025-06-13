@@ -1,10 +1,10 @@
-import { Command, program } from "commander";
-import { CommandLineArguments } from "./declarations/command-line-arguments";
-import { resolvePath } from "./lib/utils/path";
-import * as fs from "fs";
-import * as path from "path";
-import { initCommand } from "./cli-commands/init-command";
+import { program } from "commander";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { generateCommand } from "./cli-commands/generate-command";
+import { initCommand } from "./cli-commands/init-command";
+import type { CommandLineArguments } from "./declarations/command-line-arguments";
+import { resolvePath } from "./lib/utils/path";
 
 export class CLI {
 	private commandOptions: object = {};
@@ -27,8 +27,6 @@ export class CLI {
 			this.commandOptions = actionCommand.opts();
 		});
 
-		const cli = this;
-
 		program
 			.command("generate")
 			.description(
@@ -36,12 +34,12 @@ export class CLI {
 			)
 			.option("-w, --watch", "enable watch mode.")
 			.option("-f, --force", "force generation of all file.")
-			.action(() => generateCommand(cli));
+			.action(() => generateCommand(this));
 
 		program
 			.command("init")
 			.description("Create config file with recommended options and add reflection section to package.json.")
-			.action(() => initCommand(cli));
+			.action(() => initCommand(this));
 
 		// program.option(
 		// 	"--tsconfig <path>",

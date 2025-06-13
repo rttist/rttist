@@ -1,5 +1,6 @@
 import type { CreateSourceFileOptions, Path, ScriptTarget } from "typescript";
 import type * as ts from "typescript";
+import { projectFilesProvider } from "../project-files-provider";
 import { lazyTypescript } from "./utils/lazy-typescript";
 import type { Config } from "./config/config";
 import type { CachedStorage } from "./cache/cached-storage";
@@ -16,6 +17,8 @@ export class TypescriptCompilerHostFactory {
 	 */
 	public createCompilerHost(compilerOptions: ts.CompilerOptions, sourceFilesCachedStorage: CachedStorage) {
 		const sourceFileCache = new Map<string, ts.SourceFile>();
+
+		// TODO: Implement invalidate
 		sourceFilesCachedStorage.on("invalidate", (fileName: string) => {});
 
 		const typescript: typeof ts = lazyTypescript.get();
@@ -23,6 +26,11 @@ export class TypescriptCompilerHostFactory {
 		const host = typescript.createCompilerHost(compilerOptions);
 
 		host.readFile = (fileName: string) => {
+			// Do not resolve files that are not included.
+			if (!projectFilesProvider.isProjectFile(fileName, this.config)) {
+				return "";
+			}
+
 			return sourceFilesCachedStorage.readSync(fileName) ?? "";
 		};
 

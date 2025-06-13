@@ -13,7 +13,7 @@
 		"@rttist/typegen": "workspace:*",
 		"typescript": "^5.4.2",
 		"vite": "^5.2.11",
-		"vite-plugin-solid": "^2.10.2",
+		"vite-plugin-solid": "^2.11.6",
 		"vite-plugin-rttist": "workspace:*"
 	},
 	"dependencies": {

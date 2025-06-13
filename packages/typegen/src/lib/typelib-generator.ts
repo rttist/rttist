@@ -126,6 +126,10 @@ export const metadataCollection: Array<{ add(library: any, stripInternals: boole
 			resolvePath(this.config.cacheDir, typelibFileName),
 			`import { BaseMetadataLibrary, GlobalMetadata } from "rttist";
 import { metadataCollection } from "./metadata.index";
+
+// Clear global metadata to prevent duplicates in case of HMR
+GlobalMetadata.clearMetadata("@${this.config.packageInfo.name}");
+
 const Metadata = new BaseMetadataLibrary({
 	nullability: ${this.config.strictNullChecks ? "false" : "true"},
 }, "@${this.config.packageInfo.name}${stripInternals ? "" : ":internal"}", GlobalMetadata);

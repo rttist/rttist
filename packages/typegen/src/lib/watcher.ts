@@ -1,11 +1,8 @@
 import type { FSWatcher } from "chokidar";
-import { FsReadWriteOnlyStorage } from "./cache/fs-read-write-only-storage";
 import type { Config } from "./config/config";
 import * as chokidar from "chokidar";
-import { Logger } from "./logging";
+import { Logger, LogBuffer } from "./logging";
 import type { TypelibGenerator } from "./typelib-generator";
-import type { MetadataGenerator } from "./metadata-generator";
-import { LogBuffer } from "./logging/log-buffer";
 import { resolveSourceFileCachePath } from "./utils/resolve-sourcefile-cache-path";
 import * as fs from "node:fs";
 

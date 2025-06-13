@@ -1,9 +1,25 @@
-import type { FunctionType } from "rttist";
-import { Metadata } from "rttist/typelib";
-// import { Metadata } from "virtual:typelib";
+import type { FunctionType, Type } from "rttist";
+import { Metadata, getType } from "rttist/typelib";
 import styles from "./App.module.css";
 import rttistLogo from "./assets/rttist.png";
 import { Component } from "./types/Component";
+
+class Foo<TType> {
+	printNameOfType() {
+		console.log("Id of the generic parameter is:", getType<TType>().id);
+	}
+}
+
+const stringFoo = new Foo<string>();
+console.log(stringFoo);
+
+console.log(getType<Foo<string>>().toString());
+console.log(Metadata.getTypes().filter((x: Type) => x.isClass()));
+console.log(Metadata.getGenericClass(Foo, getType<string>()));
+stringFoo.printNameOfType();
+
+const dateFoo = new Foo<Date>();
+dateFoo.printNameOfType();
 
 function App() {
 	const appComponents = Metadata.getTypes().filter((type) => type.isFunction() && type.exported) as FunctionType[];

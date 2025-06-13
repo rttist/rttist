@@ -1,16 +1,20 @@
+import fs from "node:fs/promises";
+import $path from "node:path";
 import { CacheStats } from "./lib/cache/cache-stats";
-import { type Config, getParsedConfig } from "./lib/config/config";
+import type { Config } from "./lib/config/config";
 import type { Logger } from "./lib/logging";
 import type { CachedStorage } from "./lib/cache/cached-storage";
-import { MetadataGenerator, type MetadataGeneratorResult } from "./lib/metadata-generator";
+import { MetadataGenerator, type ModuleMetadataGeneratorResult } from "./lib/metadata-generator";
 import { ModuleIdentifierGenerator } from "./lib/transformer/syntax-type-checker/identifier-generators/module-identifier-generator";
 import { TypelibGenerator } from "./lib/typelib-generator";
-import { normalizePath, resolvePath } from "./lib/utils/path";
+import { toNormalizedProjectPath } from "./lib/utils/path";
 import { resolveMetadataCachePath, resolveSourceFileCachePath } from "./lib/utils/resolve-sourcefile-cache-path";
 import { projectFilesProvider } from "./project-files-provider";
 import { TypescriptProgramProvider } from "./typescript-program-provider";
 import { TypescriptCompilerHostFactory } from "./lib/typescript-compilerhost-factory";
 import PromiseSource from "promise-cs";
+import { formatPerformanceResult } from "./utils/PerformanceTracker";
+import { Module, type ModuleMetadata as RuntimeModuleMetadata } from "rttist";
 
 export type IncrementalGeneratorOptions = {
 	/**
@@ -26,8 +30,10 @@ export class IncrementalGenerator {
 	private readonly _cacheStats: CacheStats;
 	private readonly _metadataGenerator: MetadataGenerator;
 	private readonly _typelibGenerator: TypelibGenerator;
+	private readonly _programProvider: TypescriptProgramProvider;
 
-	private runningGeneratePromiseCompletionSource?: PromiseSource<Record<string, MetadataGeneratorResult>> = undefined;
+	private runningGeneratePromiseCompletionSource?: PromiseSource<Record<string, ModuleMetadataGeneratorResult>> =
+		undefined;
 
 	get config(): Config {
 		return this._config;
@@ -38,23 +44,31 @@ export class IncrementalGenerator {
 	 * @param _logger
 	 * @param _sourceFilesCachedStorage CachedStorage for source TS files.
 	 * @param _metadataCachedStorage CachedStorage for metadata generated TS metadata files.
-	 * @param _programProvider
 	 */
 	constructor(
 		private readonly _config: Config,
 		private readonly _logger: Logger,
 		private readonly _sourceFilesCachedStorage: CachedStorage,
-		private readonly _metadataCachedStorage: CachedStorage,
-		private readonly _programProvider: TypescriptProgramProvider
+		private readonly _metadataCachedStorage: CachedStorage
 	) {
-		this._cacheStats = new CacheStats(_config, this._logger);
+		const compilerHostFactory = new TypescriptCompilerHostFactory(_config);
+		this._programProvider = new TypescriptProgramProvider(_config, compilerHostFactory);
+
+		this._cacheStats = new CacheStats(_config, _logger);
 		this._metadataGenerator = new MetadataGenerator(
-			this._config,
+			_config,
 			this._programProvider,
 			this._sourceFilesCachedStorage,
 			this._metadataCachedStorage
 		);
 		this._typelibGenerator = new TypelibGenerator(_config, new ModuleIdentifierGenerator(_config));
+	}
+
+	/**
+	 * Required to initialize the generator; it will load the cache stats and prepare the generator.
+	 */
+	async initialize(): Promise<void> {
+		await fs.mkdir(this._config.cacheDir, { recursive: true });
 	}
 
 	/**
@@ -65,36 +79,12 @@ export class IncrementalGenerator {
 		return entries.map((entry) => entry.path);
 	}
 
-	/**
-	 *
-	 * @param logger
-	 * @param sourceFilesCachedStorage CachedStorage for source TS files.
-	 * @param metadataCachedStorage CachedStorage for metadata generated TS metadata files.
-	 * @param options
-	 */
-	static async create(
-		logger: Logger,
-		sourceFilesCachedStorage: CachedStorage,
-		metadataCachedStorage: CachedStorage,
-		options: IncrementalGeneratorOptions
-	): Promise<IncrementalGenerator> {
-		const config = await getParsedConfig({
-			...options,
-			typecheck: true,
-			watch: false,
-			force: false,
-		});
+	isProjectFile(file: string): boolean {
+		return projectFilesProvider.isProjectFile(file, this._config);
+	}
 
-		const compilerHostFactory = new TypescriptCompilerHostFactory(config);
-		const typescriptProgramProvider = new TypescriptProgramProvider(config, compilerHostFactory);
-
-		return new IncrementalGenerator(
-			config,
-			logger,
-			sourceFilesCachedStorage,
-			metadataCachedStorage,
-			typescriptProgramProvider
-		);
+	isGenerating(): boolean {
+		return this.runningGeneratePromiseCompletionSource !== undefined;
 	}
 
 	/**
@@ -114,47 +104,53 @@ export class IncrementalGenerator {
 		filesToRegenerate: string[],
 		force: boolean,
 		regenerateAllFiles = false
-	): Promise<Record<string, MetadataGeneratorResult>> {
+	): Promise<Record<string, ModuleMetadataGeneratorResult>> {
 		if (filesToRegenerate.length === 0 && !regenerateAllFiles) {
+			this._logger.debug("No files to regenerate metadata for.");
 			return {};
 		}
 
 		if (this.runningGeneratePromiseCompletionSource !== undefined) {
+			this._logger.trace("Already generating metadata, returning previous promise.");
 			return this.runningGeneratePromiseCompletionSource?.promise;
 		}
 
 		try {
-			const promiseSource = new PromiseSource<Record<string, MetadataGeneratorResult>>();
+			const perfStart = performance.now();
+			const promiseSource = new PromiseSource<Record<string, ModuleMetadataGeneratorResult>>();
 			this.runningGeneratePromiseCompletionSource = promiseSource;
 
-			// Normalize paths to be relative to project root
-			const projectRootWithTrailingSlash = `${normalizePath(this._config.projectRoot)}/`;
-			filesToRegenerate = filesToRegenerate.map((file) =>
-				normalizePath(file).replace(projectRootWithTrailingSlash, "")
+			// Normalize paths
+			let normalizedFilesToRegenerate = filesToRegenerate.map((file) =>
+				toNormalizedProjectPath(file, this._config)
 			);
 
-			let changedFilesToRegenerate = filesToRegenerate;
-			const result: Record<string, MetadataGeneratorResult> = {};
+			let changedFilesToRegenerate = normalizedFilesToRegenerate;
+			const result: Record<string, ModuleMetadataGeneratorResult> = {};
 
 			// TODO: Optimize! We don't want to access FS every time. We should track the files.
-			const allFiles = await projectFilesProvider.getSourceFilesWithStats(this._config);
+			const allFilesWithStats = await projectFilesProvider.getSourceFilesWithStats(this._config);
 
 			// When not forced, try to reuse cached metadata.
 			if (!force) {
 				const filesWithUpdatedStats = projectFilesProvider.getFilesToRegenerate(
-					allFiles,
+					allFilesWithStats,
 					this._config,
 					this._cacheStats
 				);
 
 				// OVERRIDE filesToRegenerate
 				if (regenerateAllFiles) {
-					filesToRegenerate = allFiles.map((file) => file.path);
+					normalizedFilesToRegenerate = allFilesWithStats.map((file) => file.path);
 				}
 
-				const unchangedFiles = filesToRegenerate.filter((file) => !filesWithUpdatedStats.includes(file));
+				const unchangedFiles = normalizedFilesToRegenerate.filter(
+					(file) => !filesWithUpdatedStats.includes(file)
+				);
 				// Update files requested to regenerate to files that were changed and that we want to regenerate.
-				changedFilesToRegenerate = filesWithUpdatedStats.filter((file) => filesToRegenerate.includes(file));
+				changedFilesToRegenerate = filesWithUpdatedStats.filter((file) =>
+					normalizedFilesToRegenerate.includes(file)
+				);
 
 				// Try to load cached metadata; we just guess that it is in cache, but we don't know that for sure
 				// (there may be Stat file but cache was manually deleted by user).
@@ -167,12 +163,32 @@ export class IncrementalGenerator {
 					try {
 						const cachedSourceFile = await this._metadataCachedStorage.read(metadataSourceFilePath);
 						const cachedMetadata = await this._metadataCachedStorage.read(metadataPath);
+						let metadata: RuntimeModuleMetadata;
+						let module: Module;
 
 						if (cachedSourceFile && cachedMetadata) {
 							result[cachedFile] = {
-								fileName: cachedFile,
+								sourceFilePath: cachedFile,
 								metadataSourceFile: cachedSourceFile,
-								metadata: JSON.parse(cachedMetadata),
+								metadataSourceFilePath: cachedFile,
+								get metadata() {
+									if (metadata === undefined) {
+										const parsedMetadata = JSON.parse(cachedMetadata);
+										metadata = {
+											...parsedMetadata,
+											import: () => import($path.resolve(cachedFile)),
+										};
+									}
+
+									return metadata;
+								},
+								get module() {
+									if (module === undefined) {
+										module = new Module(this.metadata);
+									}
+
+									return module;
+								},
 							};
 						} else {
 							changedFilesToRegenerate.push(cachedFile);
@@ -184,15 +200,19 @@ export class IncrementalGenerator {
 			}
 
 			if (changedFilesToRegenerate.length === 0) {
+				this._logger.info(
+					"No files to regenerate metadata for, returning cached results.\n\tElapsed time: ",
+					formatPerformanceResult(perfStart, performance.now())
+				);
 				return {};
 			}
 
-			changedFilesToRegenerate = changedFilesToRegenerate.map((path) => normalizePath(path));
+			this._logger.info("Generating metadata for file(s):", changedFilesToRegenerate);
 
 			const regeneratedResult = await this._metadataGenerator.generate(changedFilesToRegenerate);
 
 			// TODO: We don't have to regenerate typelibs if there is no new or deleted file.; just bundle would require it.
-			await this._typelibGenerator.generate(allFiles.map((entry) => entry.path));
+			await this._typelibGenerator.generate(allFilesWithStats.map((entry) => entry.path));
 
 			for (const [file, metadataResult] of Object.entries(regeneratedResult)) {
 				result[file] = metadataResult;
@@ -206,6 +226,11 @@ export class IncrementalGenerator {
 			setTimeout(() => {
 				promiseSource.resolve(result);
 			});
+
+			this._logger.info(
+				"Metadata generation finished within: ",
+				formatPerformanceResult(perfStart, performance.now())
+			);
 
 			return result;
 		} finally {

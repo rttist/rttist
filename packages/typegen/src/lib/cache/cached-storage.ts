@@ -1,7 +1,9 @@
 export type InvalidateCachedStorageEventHandler = (fileName: string) => void;
+export type WriteCachedStorageEventHandler = (fileName: string) => void;
 
 export type CacheStorageEventHandler = {
 	invalidate: InvalidateCachedStorageEventHandler;
+	write: WriteCachedStorageEventHandler;
 };
 
 export interface CachedStorage {

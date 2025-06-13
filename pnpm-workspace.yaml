@@ -7,6 +7,7 @@ packages:
   - packages/plugins/rust/crates/swc-plugin-rttist
   - packages/plugins/esbuild-plugin-rttist
   - packages/plugins/vite-plugin-rttist
+#  - packages/plugins/vite6-plugin-rttist
   - packages/plugins/webpack-plugin-rttist
   - packages/plugins/node
   - dev/mvc-framework
@@ -17,6 +18,7 @@ packages:
 #  - dev/wasm/swc
 #  - dev/wasm/vite
   - dev/wasm/vite5
+  - dev/wasm/vite6
 #  - dev/create-react-app
 ignoredBuiltDependencies:
   - wasm-pack

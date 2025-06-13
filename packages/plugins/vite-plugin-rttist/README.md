@@ -23,18 +23,20 @@ import solid from "vite-plugin-solid";
 import packageJson from "./package.json";
 
 export default defineConfig({
-	plugins: [
-		// < 2. Initialize the plugin
-		rttistPlugin({
+    plugins: [
+        // < 2. Initialize the plugin
+        rttistPlugin({
             // Package/project info used to generate type identifiers
-			packageInfo: { name: packageJson.name, rootDir: __dirname },
-            // "rootDir" from tsconfig
-			tsRootDir: join(__dirname, "src"),
-		}),
-		solid(),
-	],
+            packageInfo: { name: packageJson.name, rootDir: __dirname },
+            // project root where tsconfig.json and reflect.config.json are located
+            projectRoot: join(__dirname, "src"),
+        }),
+        solid(),
+    ],
 });
 ```
+
+> You do not need to install `@rttist/typegen` or any transformer, the plugin will handle it for you.
 
 ## Versioning
 This package is versioned by the `Vite` versions. 

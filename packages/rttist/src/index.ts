@@ -1,9 +1,9 @@
 // keep order of imports & exports - there are circular dependencies
 import { Type } from "./Type";
 import { Module } from "./Module";
-
 import { setGenericTypeFactory, setTypeFactory } from "./factories/TypeFactoryProvider";
 import { TypeFactory, GenericTypeFactory } from "./factories";
+
 setTypeFactory(TypeFactory);
 setGenericTypeFactory(GenericTypeFactory);
 
@@ -26,12 +26,12 @@ for (const [prop, type] of Object.entries(nativeTypes).concat(Object.entries(nat
 import "./globals";
 import { ModuleIds } from "@rttist/core";
 
+GlobalMetadata.addType(...Object.values(nativeTypes));
+GlobalMetadata.addType(AnyArray, UnknownFunction);
+GlobalMetadata.addModule(Module.Native, Module.Invalid, Module.Dynamic);
+
 export { Module, Type, GlobalMetadata };
 export type { MetadataContextHelpers } from "./metadata-context-helpers";
-
-import type { MetadataLibrary } from "./MetadataLibrary";
-const getType: MetadataLibrary["getType"] = GlobalMetadata.getType;
-export { getType };
 
 export * from "./enums";
 export * from "./declarations";
@@ -47,7 +47,3 @@ export { createCallsite } from "./functions/createCallsite";
 export * from "./factories";
 export * from "./symbols";
 export { ModuleImporter } from "./ModuleImporter";
-
-GlobalMetadata.addType(...Object.values(nativeTypes));
-GlobalMetadata.addType(AnyArray, UnknownFunction);
-GlobalMetadata.addModule(Module.Native, Module.Invalid, Module.Dynamic);

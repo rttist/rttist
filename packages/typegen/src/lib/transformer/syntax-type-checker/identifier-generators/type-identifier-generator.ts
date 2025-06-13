@@ -1,14 +1,14 @@
 ﻿import { TypeIds } from "@rttist/core";
-import { ModuleIdentifier, TypeIdentifier } from "rttist";
+import type { ModuleIdentifier, TypeIdentifier } from "rttist";
 import * as ts from "typescript";
-import { Config } from "../../../config/config";
+import type { Config } from "../../../config/config";
 import { getTopLevelIdentifier } from "../../utils/get-top-level-identifier";
 import { getTopLevelTypeName } from "../../utils/get-top-level-type-name";
 import { isDeclaration } from "../../utils/is-declaration";
 import { isNamedDeclaration } from "../../utils/is-named-declaration";
 import { getModifiers } from "../../utils/modifier-helpers";
-import { DeclarationInfo, ImportDeclarationInfo, InfoKind, TypeDeclarationInfo } from "../scopes/scope";
-import { ScopeManager } from "../scopes/scope-manager";
+import { type DeclarationInfo, type ImportDeclarationInfo, InfoKind, type TypeDeclarationInfo } from "../scopes/scope";
+import type { ScopeManager } from "../scopes/scope-manager";
 
 // Mapping name of types and TS node kinds to Typ identifiers
 export const wellKnownType = new Map<string | number, string>([
@@ -207,7 +207,7 @@ export class TypeIdentifierGenerator {
 					return type;
 				}
 
-				const knownType = wellKnownType.get(topLevelIdentifier.escapedText + "");
+				const knownType = wellKnownType.get(`${topLevelIdentifier.escapedText}`);
 				if (knownType) {
 					this.identifiersMap.set(node, knownType);
 					return knownType;
@@ -240,7 +240,7 @@ export class TypeIdentifierGenerator {
 				itNode = itNode.parent;
 			} while (itNode && !ts.isSourceFile(itNode));
 
-			const type = moduleId + ":" + name;
+			const type = `${moduleId}:${name}`;
 			this.identifiersMap.set(node, type);
 			return type;
 			// }
@@ -284,12 +284,7 @@ export class TypeIdentifierGenerator {
 		typeArguments: ts.NodeArray<ts.TypeNode> | Array<ts.TypeNode>,
 		valueContext: boolean
 	): TypeIdentifier {
-		return (
-			typeId +
-			"{" +
-			typeArguments.map((typeArgument) => this.generateTypeIdentifier(typeArgument, valueContext)).join(",") +
-			"}"
-		);
+		return `${typeId}{${typeArguments.map((typeArgument) => this.generateTypeIdentifier(typeArgument, valueContext)).join(",")}}`;
 	}
 
 	private createTypeNameDeclarationTypeId(
@@ -304,13 +299,12 @@ export class TypeIdentifierGenerator {
 					return this.generateTypeIdentifier(declaration.declaration, false) ?? TypeIds.Invalid;
 				}
 
-				return moduleId + ":" + serializeTypePath(node, false);
+				return `${moduleId}:${serializeTypePath(node, false)}`;
 			case InfoKind.ImportDeclaration:
 				if (declaration.namespaceImport) {
-					return declaration.moduleId + ":" + serializeTypePath(node, true);
-				} else {
-					return declaration.moduleId + ":" + declaration.declaredName;
+					return `${declaration.moduleId}:${serializeTypePath(node, true)}`;
 				}
+				return `${declaration.moduleId}:${declaration.declaredName}`;
 		}
 	}
 }
@@ -322,13 +316,12 @@ function createIdentifierDeclarationTypeId(
 ): TypeIdentifier {
 	switch (declaration.kind) {
 		case InfoKind.NamedDeclaration:
-			return moduleId + ":" + serializePath(node, false);
+			return `${moduleId}:${serializePath(node, false)}`;
 		case InfoKind.ImportDeclaration:
 			if (declaration.namespaceImport) {
-				return declaration.moduleId + ":" + serializePath(node, true);
-			} else {
-				return declaration.moduleId + ":" + declaration.declaredName;
+				return `${declaration.moduleId}:${serializePath(node, true)}`;
 			}
+			return `${declaration.moduleId}:${declaration.declaredName}`;
 	}
 }
 
@@ -337,10 +330,10 @@ function serializePath(node: ts.Identifier | ts.PropertyAccessExpression, skipRo
 	let nested: ts.LeftHandSideExpression = node;
 
 	while (ts.isPropertyAccessExpression(nested)) {
-		path = nested.name.text + "." + path;
+		path = `${nested.name.text}.${path}`;
 
 		if (!skipRootIdentifier && ts.isIdentifier(nested.expression)) {
-			path = nested.expression.text + "." + path;
+			path = `${nested.expression.text}.${path}`;
 			break;
 		}
 
@@ -355,10 +348,10 @@ function serializeTypePath(node: ts.Identifier | ts.QualifiedName, skipRootIdent
 	let nested: ts.EntityName = node;
 
 	while (ts.isQualifiedName(nested)) {
-		path = nested.right.text + "." + path;
+		path = `${nested.right.text}.${path}`;
 
 		if (!skipRootIdentifier && ts.isIdentifier(nested.left)) {
-			path = nested.left.text + "." + path;
+			path = `${nested.left.text}.${path}`;
 			break;
 		}
 
@@ -392,7 +385,7 @@ function getLiteralTypeIdentifier(node: ts.Node, valueContext: boolean): TypeIde
 		}
 	}
 
-	let val;
+	let val: string;
 	switch (node.kind) {
 		case ts.SyntaxKind.StringLiteral:
 			val = `'${node.text}'`;

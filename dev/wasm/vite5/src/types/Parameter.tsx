@@ -12,4 +12,4 @@ export function Parameter(props: Props) {
 	);
 }
 
-// export function test(props: { test: string }) {}
+export function fnc(testprops: { test: string }) {}

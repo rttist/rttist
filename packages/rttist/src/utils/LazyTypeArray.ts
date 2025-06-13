@@ -14,12 +14,8 @@ export class LazyTypeArray<TType = Type> {
 	public readonly length: number;
 
 	get types(): ReadonlyArray<TType> {
-		return (
-			this._types ??
-			(this._types = Object.freeze(
-				this._references.map((type) => this.metadataLibrary.resolveType(type) as TType)
-			))
-		);
+		this._types ??= Object.freeze(this._references.map((type) => this.metadataLibrary.resolveType(type) as TType));
+		return this._types;
 	}
 
 	constructor(typeRefs: ReadonlyArray<TypeReference>) {

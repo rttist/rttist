@@ -145,8 +145,9 @@ export type ExpandableMetadataLibrary = Omit<MetadataLibrary, "asExpandable"> & 
 
 	/**
 	 * Clear all metadata.
+	 * @param packageName Name of the package to clear metadata for.
 	 */
-	clearMetadata(): void;
+	clearMetadata(packageName: string): void;
 
 	/**
 	 * Add Module with its Types to the Metadata.
@@ -230,7 +231,7 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 		if (typeParameters.length === 0) {
 			const callsiteArgs = getCallsiteTypeArguments(this.getGenericClass);
 
-			if (callsiteArgs !== undefined && (callsiteArgs.length !== 0 || !!callsiteArgs[0])) {
+			if (callsiteArgs?.[0] !== undefined) {
 				const type = this.resolveType(callsiteArgs[0]);
 
 				return this.genericTypeRegister.getGenericClass(
@@ -259,6 +260,8 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 			)
 		);
 
+		console.log(Class);
+
 		if (newTarget !== undefined) {
 			newTarget = this.inheritNewTarget(newTarget, Class);
 		}
@@ -268,9 +271,11 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 
 	private inheritNewTarget(newTarget: Function, Class: Function) {
 		const name = newTarget.name !== undefined ? `${newTarget.name}{}` : Class.name;
+
+		// biome-ignore lint/style/noNonNullAssertion: <explanation>
 		const inheritedNewTarget = {
 			[name]: class {},
-		}[name];
+		}[name]!;
 
 		Object.setPrototypeOf(inheritedNewTarget.prototype, newTarget.prototype);
 
@@ -388,13 +393,21 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 		});
 	}
 
-	clearMetadata() {
-		// TODO: This clears all teh types, including native types; we should remove only types from user's code
-		this.modules.clear();
-		this.types.clear();
+	clearMetadata(packageName: string) {
+		const packagePrefix = `${packageName}/`;
 
-		if (this.parentLibrary) {
-			this.parentLibrary.clearMetadata();
+		for (const typeId of this.types.keys()) {
+			if (typeId.startsWith(packagePrefix)) {
+				this.types.delete(typeId);
+				this.parentLibrary?.types.delete(typeId);
+			}
+		}
+
+		for (const moduleId of this.modules.keys()) {
+			if (moduleId.startsWith(packagePrefix)) {
+				this.modules.delete(moduleId);
+				this.parentLibrary?.modules.delete(moduleId);
+			}
 		}
 	}
 
@@ -540,8 +553,8 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 		}
 
 		return {
-			type: match[1],
-			arguments: match[2].split(","),
+			type: match[1]!,
+			arguments: match[2]!.split(","),
 			nullable: match[3] === "?",
 		};
 	}
@@ -556,7 +569,7 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 		const typeIdInfo = this.getTypeIdInfo(id);
 
 		if (!typeIdInfo) {
-			return;
+			return undefined;
 		}
 
 		// UNION or INTERSECTION
@@ -600,6 +613,8 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 			this.addType(type);
 			return type;
 		}
+
+		return undefined;
 	}
 }
 
