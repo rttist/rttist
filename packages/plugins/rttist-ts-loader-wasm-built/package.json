@@ -1,6 +1,6 @@
 {
 	"name": "@rttist/ts-loader-wasm",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
 	"author": "Roman Jámbor",
 	"license": "MIT",
@@ -27,11 +27,15 @@
 		"prepack": "npm run build"
 	},
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=20.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.21",
 		"typescript": "^5.8.3",
 		"wasm-pack": "^0.13.1"
-	}
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
 }
