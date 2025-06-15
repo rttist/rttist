@@ -53,7 +53,10 @@ async function handleConfigFile(args: CommandLineArguments) {
 	"$schema": "https://rttist.org/schema.json",
 	"metadata": {
 		"include": [
-			"src/**/*.ts"
+			"src/**/*.ts",
+			"src/**/*.tsx",
+			"src/**/*.mts",
+			"src/**/*.cts"
 		],
 		"encode": false,
 		"exclude": []

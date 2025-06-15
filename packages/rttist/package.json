@@ -1,6 +1,6 @@
 {
 	"name": "rttist",
-	"version": "1.0.0-rc.1",
+	"version": "1.0.0-rc.4",
 	"description": "Abstract declarations for TypeScript runtime reflection",
 	"main": "./dist/index.js",
 	"module": "./dist/esm/index.js",
@@ -25,10 +25,11 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "npm run prepublishOnly",
+		"build:dev": "tsup src/index.ts --format esm,cjs --legacy-output --tsconfig tsconfig.json --sourcemap --sourcemap",
 		"prepublishOnly": "npm run bundle && npm run postbuild",
 		"bundle": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean",
 		"typegen": "node ../typegen/dist/bin.js generate -f",
-		"dev": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --sourcemap --watch",
+		"dev": "tsup src/index.ts --format esm,cjs --legacy-output --tsconfig tsconfig.json --sourcemap --sourcemap --watch",
 		"generate:types": "tsc --emitDeclarationOnly --outDir dist",
 		"postbuild": "node ./post-build.js",
 		"start": "tsc -w"
@@ -40,7 +41,7 @@
 		"dist/esm/index.js",
 		"dist/esm/package.json",
 		"dist/**/*.d.ts",
-		"dist/assets/*.d.ts"
+		"assets/*.d.ts"
 	],
 	"keywords": [
 		"abstract",

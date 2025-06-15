@@ -6,7 +6,7 @@ export class KnownGenericType<TParams extends ReadonlyArray<Type>> extends Type 
 	/**
 	 * Definition of the generic type.
 	 */
-	get genericTypeDefinition(): GenericType<Type> {
+	override get genericTypeDefinition(): GenericType<Type> {
 		return this._definitionRef!.type;
 	}
 
@@ -19,7 +19,7 @@ export class KnownGenericType<TParams extends ReadonlyArray<Type>> extends Type 
 	 * Returns array of generic type arguments.
 	 * @internal Exposed by {@link GenericType}.
 	 */
-	getTypeArguments(): TParams {
+	override getTypeArguments(): TParams {
 		return this._typeArgumentsRef.types as unknown as TParams;
 	}
 }

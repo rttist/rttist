@@ -42,6 +42,18 @@
 			},
 			"required": ["include"]
 		},
+		"transformer": {
+			"description": "Configuration section for the transformer",
+			"type": "object",
+			"properties": {
+				"useRuntimeGenericClasses": {
+					"description": "Use runtime generic classes. That means that the RTTIST handles all `new` expression (e.g. `new MyClass<Foo>()` in your code and generates generic classes at runtime and creates instances of them.",
+					"default": true,
+					"type": "boolean"
+				}
+			},
+			"required": []
+		},
 		"devMode": {
 			"description": "Enable or disable DEBUG mode (progress logging and extra warnings).",
 			"default": false,

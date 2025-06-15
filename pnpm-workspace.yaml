@@ -2,13 +2,13 @@ packages:
   - packages/core
   - packages/rttist
   - packages/typegen
-  - packages/plugins/rust/crates/rttist-ts-loader
-  - packages/plugins/rust/crates/rttist-ts-loader-wasm
-  - packages/plugins/rust/crates/swc-plugin-rttist
+#  - packages/plugins/rust/crates/rttist-ts-loader
+#  - packages/plugins/rust/crates/rttist-ts-loader-wasm
+  - packages/plugins/rttist-ts-loader-wasm-built
   - packages/plugins/esbuild-plugin-rttist
-  - packages/plugins/vite-plugin-rttist
-#  - packages/plugins/vite6-plugin-rttist
-  - packages/plugins/webpack-plugin-rttist
+#  - packages/plugins/vite-plugin-rttist
+  - packages/plugins/vite6-plugin-rttist
+#  - packages/plugins/webpack-plugin-rttist
   - packages/plugins/node
   - dev/mvc-framework
   - dev/dts

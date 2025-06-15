@@ -30,7 +30,8 @@
 			"suspicious": {
 				"noExplicitAny": "off",
 				"noPrototypeBuiltins": "off",
-				"noConstEnum": "off"
+				"noConstEnum": "off",
+				"noSelfCompare": "off"
 			},
 			"style": {
 				"noNonNullAssertion": "warn",

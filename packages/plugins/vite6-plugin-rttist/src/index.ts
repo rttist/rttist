@@ -6,6 +6,7 @@ import {
 	Logger,
 	ConfigProvider,
 	printInitialMessage,
+	type Config,
 } from "@rttist/typegen";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -181,7 +182,7 @@ export async function rttistPlugin(pluginOptions: RttistPluginOptions): Promise<
 
 				// TODO: This is just a super simple implementation to get it working. Should be implemented using proper parser.
 				code = code.replace(VUE_SCRIPT_REGEX, (_: string, code: string) => {
-					return transformCode(code, id, tsRootDir!, pluginOptions.packageInfo);
+					return transformCode(code, id, tsRootDir, pluginOptions, config);
 				});
 
 				return code;
@@ -190,7 +191,7 @@ export async function rttistPlugin(pluginOptions: RttistPluginOptions): Promise<
 			// Transform all TS files
 			if (TS_FILE_NAME_REGEX.test(id)) {
 				let code = await fs.promises.readFile(id, "utf8");
-				code = transformCode(code, id, tsRootDir!, pluginOptions.packageInfo);
+				code = transformCode(code, id, tsRootDir, pluginOptions, config);
 				return code;
 			}
 		},
@@ -213,16 +214,17 @@ function transformCode(
 	code: string,
 	filePath: string,
 	tsRootDir: string,
-	packageInfo: RttistPluginOptions["packageInfo"]
+	pluginOptions: RttistPluginOptions,
+	config: Config
 ) {
 	return transform(
 		code,
 		filePath,
-		new PackageInfo(packageInfo.name, tsRootDir), // TODO: We abuse PackageInfo.rootDir to pass tsRootDir, but it should be correct; even if the package root differ from tsRoot, we want to generate paths from tsRoot
+		new PackageInfo(pluginOptions.packageInfo.name, tsRootDir), // TODO: We abuse PackageInfo.rootDir to pass tsRootDir, but it should be correct; even if the package root differ from tsRoot, we want to generate paths from tsRoot
 		{
 			// TODO: Reflect configuration
 			module: ModuleSystem.Preserve,
-			runtimeGenericClasses: true,
+			runtimeGenericClasses: config.useRuntimeGenericClasses,
 		}
 	);
 }

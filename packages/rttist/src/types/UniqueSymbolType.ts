@@ -13,7 +13,7 @@ export type KnownUniqueSymbolType = UniqueSymbolType & {
  */
 export class UniqueSymbolType extends Type {
 	/** @internal */
-	private readonly _key?: string;
+	private readonly _key: string | undefined;
 	/** @internal */
 	private readonly _symbol?: symbol;
 

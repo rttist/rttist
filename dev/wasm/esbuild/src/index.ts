@@ -1,14 +1,26 @@
-import { getType, Metadata } from "./metadata.typelib";
-import { ClassType, PropertyInfo, SignatureInfo, Type, TypeParameterType } from "rttist";
+import { getType, Metadata } from "rttist/typelib";
+import { type _, type ClassType, type PropertyInfo, type SignatureInfo, Type, type TypeParameterType } from "rttist";
 import "./nesting/nested-file";
 
 export type Union = { fooBar: string } | { barFoo: number };
 const unionType = getType<Union>();
-console.log(unionType.isTypeAlias() && unionType.target.toString());
+console.log(
+	"ASSERT union: TRUE",
+	unionType.isTypeAlias() && unionType.target.isUnion() && unionType.target.types.length === 2
+);
+console.info(unionType.isTypeAlias() && unionType.target.toString().replace(/^/gm, "\t"));
+console.log("");
 
 export type Intersection = { fooBar: string } & { barFoo: number };
 const intersectionType = getType<Intersection>();
-console.log(intersectionType.isTypeAlias() && intersectionType.target.toString());
+console.log(
+	"ASSERT intersection: TRUE",
+	intersectionType.isTypeAlias() &&
+		intersectionType.target.isIntersection() &&
+		intersectionType.target.types.length === 2
+);
+console.info(intersectionType.isTypeAlias() && intersectionType.target.toString().replace(/^/gm, "\t"));
+console.log("");
 
 type NonObjectTypeLiteralAlias = ["foo"];
 const nonObjectTypeLiteralAliasType = getType<NonObjectTypeLiteralAlias>();
@@ -19,6 +31,7 @@ console.log(
 		nonObjectTypeLiteralAliasType.target.isTuple() &&
 		nonObjectTypeLiteralAliasType.target.getTypeArguments().map((arg) => arg.toString())
 );
+console.log("\n");
 
 type StringArray = string[];
 const stringArrayType = getType<StringArray>();
@@ -69,7 +82,7 @@ const someFuncType = getType(someFunc);
 
 const signatures: readonly SignatureInfo[] = someFuncType.isFunction() ? someFuncType.getSignatures() : [];
 console.log("Signatures of,", someFuncType.name);
-for (let signature of signatures) {
+for (const signature of signatures) {
 	const tps: ReadonlyArray<TypeParameterType> = signature.getTypeParameters();
 	const typeParams = tps.length ? `<${tps.map((tp) => tp.name)}>` : "";
 
@@ -104,8 +117,8 @@ console.log("Bar.foo return type:", barType.getMethod("foo")?.getSignatures()[0]
 /**@ts-ignore*/
 const barType2 = getType<Bar>() as ClassType;
 console.log(
-	"barType == barType2",
-	barType == barType2,
+	"barType === barType2",
+	barType === barType2,
 	"is generic type definition:",
 	barType2.isGenericTypeDefinition()
 );
@@ -120,15 +133,18 @@ console.log(
 	"isGenericTypeDefinition",
 	stringBarType.isGenericTypeDefinition(),
 	"stringBarType.genericTypeDefinition == type of Bar",
-	stringBarType.isGenericType() && stringBarType.genericTypeDefinition == barType
+	stringBarType.isGenericType() && stringBarType.genericTypeDefinition === barType
 );
 
 class StringBar extends Bar<string> {}
 
-/**@ts-ignore*/
-console.log(getType<Array>().name, getType<Array>() == getType<Array>(), getType<Array>().isGenericTypeDefinition());
-/**@ts-ignore*/
-console.log(getType<Promise>().name);
+console.log(
+	getType<Array<_>>().name,
+	getType<Array<_>>() === getType<Array<_>>(),
+	getType<Array<_>>().isGenericTypeDefinition()
+);
+
+console.log(getType<Promise<_>>().name);
 
 console.log(getType<Array<string>>().name);
 console.log(getType<Promise<string>>().name);

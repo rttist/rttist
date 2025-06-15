@@ -75,6 +75,15 @@ export type ConfigReflectionSection = {
 		excludePackages: string[];
 	};
 
+	transformer: {
+		/**
+		 * Use runtime generic classes.
+		 * That means that the RTTIST handles all `new` expression (e.g. `new MyClass<Foo>()` in your code and generates generic classes at runtime and creates instances of them.
+		 * @default true
+		 */
+		useRuntimeGenericClasses: boolean;
+	};
+
 	/**
 	 * How to resolve dependencies.
 	 * @description This options change how deep should your metadata be. Skipped dependencies will be replaced by "unknown" types.
