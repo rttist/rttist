@@ -44,3 +44,12 @@ esbuild
         console.error(err);
     });
 ```
+
+## Versioning
+This package is versioned by the `esbuild` versions.
+
+New versions will be added only when there are some breaking changes in esbuild API, so use the latest version lower or equal to your esbuild version.
+In case of any problems, please file an issue.
+
+## License
+This project is licensed under the [MIT license](./LICENSE).

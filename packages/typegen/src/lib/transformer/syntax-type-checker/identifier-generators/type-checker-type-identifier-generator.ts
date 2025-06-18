@@ -1,10 +1,10 @@
 ﻿import { TypeIds } from "@rttist/core";
-import { TypeIdentifier } from "rttist";
+import type { TypeIdentifier } from "rttist";
 import * as ts from "typescript";
-import { Logger } from "../../../logging";
+import type { Logger } from "../../../logging";
 import {
-	ReflectedSymbolWithReference,
-	ReflectedTypeWithReference,
+	type ReflectedSymbolWithReference,
+	type ReflectedTypeWithReference,
 	TransformerTypeReference,
 } from "../../../metadata/transformer-type-reference";
 import { printTypeDebugInfo } from "../../tracers/printTypeDebugInfo";
@@ -18,9 +18,9 @@ import {
 	isLiteral,
 	toBigIntLiteral,
 } from "../../utils/typeHelpers";
-import { ScopeManager } from "../scopes/scope-manager";
-import { ModuleIdentifierGenerator } from "./module-identifier-generator";
-import { Config } from "../../../config/config";
+import type { ScopeManager } from "../scopes/scope-manager";
+import type { ModuleIdentifierGenerator } from "./module-identifier-generator";
+import type { Config } from "../../../config/config";
 import { wellKnownType } from "./type-identifier-generator";
 
 export class TypeCheckerTypeIdentifierGenerator {
@@ -37,16 +37,25 @@ export class TypeCheckerTypeIdentifierGenerator {
 		type: ts.Type,
 		symbol: ts.Symbol | undefined,
 		nullable: boolean,
-		anonymous: boolean = false
+		anonymous = false
 	): TypeIdentifier | undefined {
+		let invalidTypeSymbol: ts.Symbol | undefined = undefined;
+
 		if (isInvalidType(type)) {
-			return TypeIds.Invalid;
+			if (type.aliasSymbol === undefined) {
+				return TypeIds.Invalid;
+			}
+
+			invalidTypeSymbol = type.aliasSymbol;
 		}
 
-		const primitiveTypeReference = getPrimitiveTypeReference(type);
+		// Skip primitive type resolve, because error types has ANY flag, even they refer to symbol of correct type.
+		if (invalidTypeSymbol === undefined) {
+			const primitiveTypeReference = getPrimitiveTypeReference(type);
 
-		if (primitiveTypeReference !== undefined) {
-			return primitiveTypeReference;
+			if (primitiveTypeReference !== undefined) {
+				return primitiveTypeReference;
+			}
 		}
 
 		const literalTypeReference = getLiteralTypeReference(type);
@@ -118,7 +127,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 		}
 		// TypeLiteral - it is not stored under any variable/alias anything, so we can generate "random" identifier.
 		else if (declaration.kind === ts.SyntaxKind.TypeLiteral) {
-			typeReference = sourceFileId + ":" + "$" + declaration.pos;
+			typeReference = `${sourceFileId}:$${declaration.pos}`;
 		} else {
 			if (symbol === undefined) {
 				return this.getTypeRefWithoutDeclaration(type, undefined, nullable);
@@ -164,8 +173,8 @@ export class TypeCheckerTypeIdentifierGenerator {
 			let typeName = symbol.escapedName.toString();
 
 			if ((type.flags & ts.TypeFlags.UniqueESSymbol) !== 0) {
-				let name = getUniqueSymbolName(type);
-				typeName = name ? "UniqueSymbol@" + name : typeName;
+				const name = getUniqueSymbolName(type);
+				typeName = name ? `UniqueSymbol@${name}` : typeName;
 			}
 
 			let isKnownType = wellKnownType.has(typeName);
@@ -186,7 +195,7 @@ export class TypeCheckerTypeIdentifierGenerator {
 				let parentSymbol: ts.Symbol = (symbol as any).parent;
 
 				while (parentSymbol !== undefined && (parentSymbol.flags & ts.SymbolFlags.Module) === 0) {
-					typeName = parentSymbol.escapedName + "." + typeName;
+					typeName = `${parentSymbol.escapedName}.${typeName}`;
 					parentSymbol = (parentSymbol as any).parent;
 				}
 			}
@@ -197,10 +206,10 @@ export class TypeCheckerTypeIdentifierGenerator {
 				typeName +
 				(typeArguments.length
 					? "{" +
-					  typeArguments
+						typeArguments
 							.map((typeArg) => this.getTypeCheckerTypeIdentifier(typeArg, undefined, false))
 							.join(",") +
-					  "}"
+						"}"
 					: "")
 			);
 
@@ -256,6 +265,23 @@ export class TypeCheckerTypeIdentifierGenerator {
 				return `${TypeIds.TupleDefinition}{${typeArguments
 					.map((typeArg: ts.Type) => this.getTypeCheckerTypeIdentifier(typeArg, undefined, false))
 					.join(",")}}`;
+			}
+
+			if (symbol?.escapedName !== undefined) {
+				const knownTypeIdentifier = wellKnownType.get(symbol.escapedName);
+				const aliasTypeArguments: ts.Type[] =
+					(type as ts.GenericType).aliasTypeArguments ?? (type as any).resolvedTypeArguments ?? [];
+
+				if (knownTypeIdentifier !== undefined) {
+					return (
+						knownTypeIdentifier +
+						(aliasTypeArguments.length
+							? `{${aliasTypeArguments
+									.map((typeArg) => this.getTypeCheckerTypeIdentifier(typeArg, undefined, false))
+									.join(",")}}`
+							: "")
+					);
+				}
 			}
 
 			// TODO: Log this.
@@ -444,8 +470,8 @@ function getLiteralTypeReference(type: ts.Type) {
 			typeof type.value === "object"
 				? toBigIntLiteral(type.value as ts.PseudoBigInt)
 				: typeof type.value === "string"
-				? "'" + type.value + "'"
-				: type.value;
+					? "'" + type.value + "'"
+					: type.value;
 
 		return "#L(" + val + ")";
 	}

@@ -21,7 +21,7 @@ export class ClassType extends ObjectLikeTypeBase {
 	/** @internal */
 	private readonly _abstract: boolean;
 	/** @internal */
-	private readonly _extendsRef?: LazyType<ClassType>;
+	private readonly _extendsRef: LazyType<ClassType> | undefined;
 	// endregion
 
 	/**

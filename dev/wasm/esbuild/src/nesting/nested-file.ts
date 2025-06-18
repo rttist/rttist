@@ -1,4 +1,5 @@
-import { getType } from "../metadata.typelib";
+import type { Type } from "rttist";
+import { getType } from "rttist/typelib";
 
 class Foo {
 	bar: string;
@@ -10,4 +11,7 @@ class Foo {
 	}
 }
 
-console.log("Nested type:", getType<Foo>().id);
+const FooType: Type = getType<Foo>();
+console.log("ASSERT true", "@dev-wasm-esbuild/nesting/nested-file:Foo" === FooType.id);
+console.log(FooType.toString().replace(/^/gm, "\t"));
+console.log("");

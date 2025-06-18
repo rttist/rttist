@@ -1,6 +1,6 @@
 {
 	"name": "esbuild-plugin-rttist",
-	"version": "0.1.2",
+	"version": "0.19.1",
 	"description": "RTTIST plugin adding support for advanced reflection features to esbuild",
 	"author": "Roman Jámbor",
 	"license": "MIT",
@@ -17,31 +17,37 @@
 	],
 	"main": "./dist/index.js",
 	"module": "./dist/esm/index.js",
-	"type": "commonjs",
-	"types": "./dist/index.d.ts",
+	"types": "./dist/index.d.mts",
 	"exports": {
 		".": {
-			"default": "./dist/index.js",
-			"require": "./dist/index.js",
-			"import": "./dist/esm/index.js",
-			"types": "./dist/index.d.ts"
+			"import": {
+				"types": "./index.d.mts",
+				"default": "./dist/index.mjs"
+			},
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"engines": {
 		"node": ">=16.0.0"
-	},
-	"dependencies": {
-		"@rttist/ts-loader-wasm": "workspace:^*"
 	},
 	"devDependencies": {
 		"tsup": "^7.2.0",
 		"@types/node": "^16.0.0"
 	},
 	"peerDependencies": {
-		"esbuild": ">=0.19.2"
+		"esbuild": ">=0.19.2",
+		"@rttist/ts-loader-wasm": "workspace:^*",
+		"@rttist/typegen": "workspace:^*"
 	},
 	"scripts": {
-		"prepublishOnly": "tsup src/index.ts --format esm,cjs --legacy-output --minify --tsconfig tsconfig.json --clean --dts"
+		"build": "npm run prepublishOnly",
+		"build:dev": "tsup src/index.ts --format esm,cjs --tsconfig tsconfig.json --clean --dts --sourcemap",
+		"prepublishOnly": "tsup src/index.ts --format esm,cjs --minify --tsconfig tsconfig.json --clean --dts"
 	},
 	"files": [
 		"LICENSE",
@@ -51,5 +57,9 @@
 		"dist/esm/index.js",
 		"dist/esm/package.json",
 		"dist/**/*.d.ts"
-	]
+	],
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
 }

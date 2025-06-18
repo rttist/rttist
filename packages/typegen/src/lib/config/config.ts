@@ -28,6 +28,8 @@ export type Config = {
 	readonly dependenciesInfo: DependencyInfo[];
 	readonly encode: boolean;
 
+	readonly useRuntimeGenericClasses: boolean;
+
 	// public readonly metadataIndexPath: string;
 	// public readonly metadataTypelibPath: string;
 

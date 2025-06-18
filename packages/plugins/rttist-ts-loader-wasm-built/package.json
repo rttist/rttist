@@ -1,0 +1,41 @@
+{
+	"name": "@rttist/ts-loader-wasm",
+	"version": "0.2.4",
+	"description": "TypeScript loader transforming source code allowing usage of advanced RTTIST reflection features.",
+	"author": "Roman Jámbor",
+	"license": "MIT",
+	"keywords": [
+		"rttist",
+		"plugin",
+		"oxc",
+		"transformer",
+		"reflection",
+		"loader",
+		"typescript",
+		"runtime"
+	],
+	"main": "pkg/rttist_ts_loader_wasm.js",
+	"types": "pkg/rttist_ts_loader_wasm.d.ts",
+	"files": [
+		"pkg/rttist_ts_loader_wasm_bg.wasm",
+		"pkg/rttist_ts_loader_wasm.js",
+		"pkg/rttist_ts_loader_wasm.d.ts"
+	],
+	"scripts": {
+		"build": "wasm-pack build --scope rttist -t nodejs --release && npm run copyToRttistRepo",
+		"copyToRttistRepo": "node copy-pkg-to-rttist.js",
+		"prepack": "npm run build"
+	},
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.21",
+		"typescript": "^5.8.3",
+		"wasm-pack": "^0.13.1"
+	},
+	"bugs": {
+		"url": "https://github.com/rttist/rttist/issues"
+	},
+	"homepage": "https://rttist.org"
+}

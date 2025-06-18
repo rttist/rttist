@@ -260,8 +260,6 @@ export class BaseMetadataLibrary implements IMetadataLibrary {
 			)
 		);
 
-		console.log(Class);
-
 		if (newTarget !== undefined) {
 			newTarget = this.inheritNewTarget(newTarget, Class);
 		}

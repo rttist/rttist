@@ -128,7 +128,7 @@ export class IncrementalGenerator {
 			let changedFilesToRegenerate = normalizedFilesToRegenerate;
 			const result: Record<string, ModuleMetadataGeneratorResult> = {};
 
-			// TODO: Optimize! We don't want to access FS every time. We should track the files.
+			// TODO: Optimize! We don't want to access FS every time. We should track the files.; esbuild does not provide list of changed files in watch mode, so this is kinda saving it. Maybe esbuild plugin should handle it on it's own
 			const allFilesWithStats = await projectFilesProvider.getSourceFilesWithStats(this._config);
 
 			// When not forced, try to reuse cached metadata.

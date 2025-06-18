@@ -74,6 +74,9 @@ const DefaultConfiguration: ConfigReflectionSection = {
 		target: "es2020",
 		excludePackages: [],
 	},
+	transformer: {
+		useRuntimeGenericClasses: true,
+	},
 };
 
 const Presets: Record<Exclude<ConfigReflectionSection["preset"], null>, ConfigReflectionSection> = {
@@ -198,6 +201,7 @@ function createConfig(
 ): Config {
 	const projectRoot = commandLineArguments.projectRoot;
 	const metadataConfig = reflectionConfig.getSection("metadata");
+	const transformerConfig = reflectionConfig.getSection("transformer");
 	const devMode = ["true", true].includes(reflectionConfig.get("devMode") ?? DefaultConfiguration.devMode);
 
 	let tsParsedCommandLine: ts.ParsedCommandLine | undefined;
@@ -272,6 +276,8 @@ function createConfig(
 		// );
 		typelibImportPath: metadataConfig.get("typelibImportPath")!,
 		metadataTarget: metadataConfig.get("target")!,
+
+		useRuntimeGenericClasses: transformerConfig.get("useRuntimeGenericClasses") ?? true,
 	};
 }
 

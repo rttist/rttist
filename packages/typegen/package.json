@@ -1,6 +1,6 @@
 {
 	"name": "@rttist/typegen",
-	"version": "0.2.0-rc.1",
+	"version": "0.2.0",
 	"description": "Type generator for RTTIST",
 	"type": "commonjs",
 	"main": "./dist/main.js",
@@ -12,7 +12,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "npm run prepare",
-		"build:dev": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --target=es2022 --outdir=dist --platform=node --packages=external && npm run types",
+		"build:dev": "tsc",
 		"types": "tsc --emitDeclarationOnly",
 		"prepare": "esbuild src/bin.ts src/worker.ts src/main.ts --bundle --target=es2022 --minify --outdir=dist --platform=node --packages=external && npm run types",
 		"prepublishOnly": "rimraf ./dist/ && rimraf ./tsconfig.tsbuildinfo && npm run prepare",
@@ -70,6 +70,6 @@
 	},
 	"homepage": "https://rttist.org",
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=20.0.0"
 	}
 }

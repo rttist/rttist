@@ -1,16 +1,12 @@
 {
 	"name": "dev-wasm-esbuild",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"private": true,
+	"type": "module",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "pnpx @rttist/typegen@proto generate -f",
 		"build": "node esbuild.build.js",
+		"dev": "node esbuild.build.js --watch",
 		"start": "node dist/out.js"
 	},
-	"keywords": [],
-	"author": "",
 	"license": "MIT",
 	"dependencies": {
 		"rttist": "workspace:*"
