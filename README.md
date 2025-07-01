@@ -6,6 +6,11 @@
 
 <!-- ![Code coverage](docs/_images/coverage-badge.svg) -->
 
+> !\
+> RTTIST is successor of [tst-reflect](https://github.com/Hookyns/tst-reflect).\
+> !
+
+
 ## What is RTTIST?
 
 RTTIST (pronounced /ˈɑː(r)tɪst/, like artist) is a TypeScript runtime reflection system inspired by the C#'s reflection.
